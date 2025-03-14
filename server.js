@@ -9,10 +9,14 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Set up static file serving
-app.use(express.static(path.join(__dirname, 'public')));
+// Set up static file serving with cache control for better performance
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: '1y',
+  etag: true
+}));
 
-// Set up GOV.UK Frontend assets
+// Fallback for GOV.UK Frontend assets if not found in public directory
+// This helps during development but the build script should copy these for production
 app.use('/assets', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk/assets')));
 app.use('/scripts', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk')));
 
