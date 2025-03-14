@@ -20,22 +20,8 @@ app.use(express.static(path.join(__dirname, 'public'), {
 app.use('/assets', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk/assets')));
 app.use('/scripts', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk')));
 
-// Copy GOV.UK Frontend CSS to public directory
-const govukCssPath = path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.css');
-const govukCssMapPath = path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.css.map');
-const publicCssDir = path.join(__dirname, 'public/stylesheets');
-
-if (!fs.existsSync(publicCssDir)) {
-  fs.mkdirSync(publicCssDir, { recursive: true });
-}
-
-if (fs.existsSync(govukCssPath)) {
-  fs.copyFileSync(govukCssPath, path.join(publicCssDir, 'govuk-frontend.min.css'));
-}
-
-if (fs.existsSync(govukCssMapPath)) {
-  fs.copyFileSync(govukCssMapPath, path.join(publicCssDir, 'govuk-frontend.min.css.map'));
-}
+// Assets are pre-copied during the build process
+// No runtime file operations needed for Vercel's read-only environment
 
 // Set up view engine
 app.set('view engine', 'njk');
