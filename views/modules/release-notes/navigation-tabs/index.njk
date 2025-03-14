@@ -1,0 +1,65 @@
+{# Two-tier navigation tabs component for release notes #}
+
+{% macro academicYearTabs(academicYears, selectedYear, view) %}
+  {# Academic Year Navigation - Main Level #}
+  <h2 class="govuk-tabs__title" id="academic-years-heading">Academic Years</h2>
+  <ul class="govuk-tabs__list" role="tablist" aria-labelledby="academic-years-heading">
+    {% for year in academicYears %}
+      <li class="govuk-tabs__list-item{% if year === selectedYear %} govuk-tabs__list-item--selected{% endif %}" role="presentation">
+        <a class="govuk-tabs__tab" href="?year={{ year }}{% if view %}&view={{ view }}{% endif %}" role="tab" aria-selected="{% if year === selectedYear %}true{% else %}false{% endif %}" data-year="{{ year }}">
+          {{ year }}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endmacro %}
+
+{% macro viewTypeTabs(selectedYear, view) %}
+  {# View Type Navigation - Secondary Level #}
+  {% if selectedYear %}
+    <div class="govuk-tabs__panel">
+      <ul class="govuk-tabs__list" role="tablist" aria-labelledby="views-heading">
+        <li class="govuk-tabs__list-item{% if view == 'list' %} govuk-tabs__list-item--selected{% endif %}" role="presentation">
+          <a class="govuk-tabs__tab" href="?year={{ selectedYear }}&view=list" role="tab" aria-selected="{% if view == 'list' %}true{% else %}false{% endif %}" data-view="list">
+            List View
+          </a>
+        </li>
+        <li class="govuk-tabs__list-item{% if view == 'summary' %} govuk-tabs__list-item--selected{% endif %}" role="presentation">
+          <a class="govuk-tabs__tab" href="?year={{ selectedYear }}&view=summary" role="tab" aria-selected="{% if view == 'summary' %}true{% else %}false{% endif %}" data-view="summary">
+            Change Summary
+          </a>
+        </li>
+        <li class="govuk-tabs__list-item{% if view == 'timeline' %} govuk-tabs__list-item--selected{% endif %}" role="presentation">
+          <a class="govuk-tabs__tab" href="?year={{ selectedYear }}&view=timeline" role="tab" aria-selected="{% if view == 'timeline' %}true{% else %}false{% endif %}" data-view="timeline">
+            Timeline
+          </a>
+        </li>
+      </ul>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('.govuk-tabs__tab');
+        tabs.forEach(tab => {
+          tab.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = new URL(window.location.href);
+            if (this.dataset.year) {
+              url.searchParams.set('year', this.dataset.year);
+            }
+            if (this.dataset.view) {
+              url.searchParams.set('view', this.dataset.view);
+            }
+            window.location.href = url.toString();
+          });
+        });
+      });
+    </script>
+  {% endif %}
+{% endmacro %}
+
+{% macro twoTierTabs(academicYears, selectedYear, view) %}
+  <div class="govuk-tabs" data-module="govuk-tabs" id="main-content">
+    {{ academicYearTabs(academicYears, selectedYear, view) }}
+    {{ viewTypeTabs(selectedYear, view) }}
+  </div>
+{% endmacro %}

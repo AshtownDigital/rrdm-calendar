@@ -1,0 +1,441 @@
+{
+  "academicYears": [
+    {
+      "id": "all",
+      "name": "All"
+    },
+    {
+      "id": "2025-26",
+      "name": "2025/26"
+    },
+    {
+      "id": "2024-25",
+      "name": "2024/25"
+    },
+    {
+      "id": "2023-24",
+      "name": "2023/24"
+    }
+  ],
+  "items": [
+    {
+      "id": "region",
+      "name": "Region",
+      "description": "Geographical regions of the United Kingdom used for statistical and administrative purposes",
+      "status": "Active",
+      "changeType": "No Change",
+      "lastUpdated": "2025-09-01",
+      "values": [
+        {
+          "id": "E12000001",
+          "name": "North East",
+          "description": "North East region of England",
+          "status": "Active",
+          "changeType": "No Change"
+        },
+        {
+          "id": "E12000002",
+          "name": "North West",
+          "description": "North West region of England",
+          "status": "Active",
+          "changeType": "No Change"
+        },
+        {
+          "id": "E12000003",
+          "name": "Yorkshire and The Humber",
+          "description": "Yorkshire and The Humber region of England",
+          "status": "Active",
+          "changeType": "No Change"
+        },
+        {
+          "id": "E12000004",
+          "name": "East Midlands",
+          "description": "East Midlands region of England",
+          "status": "Active",
+          "changeType": "No Change"
+        },
+        {
+          "id": "E12000005",
+          "name": "West Midlands",
+          "description": "West Midlands region of England",
+          "status": "Active",
+          "changeType": "No Change"
+        },
+        {
+          "id": "E12000006",
+          "name": "East of England",
+          "description": "East of England region",
+          "status": "Active",
+          "changeType": "No Change"
+        },
+        {
+          "id": "E12000007",
+          "name": "London",
+          "description": "London region",
+          "status": "Active",
+          "changeType": "Updated",
+          "changeSummary": "Updated description to reflect administrative changes"
+        },
+        {
+          "id": "E12000008",
+          "name": "South East",
+          "description": "South East region of England",
+          "status": "Active",
+          "changeType": "No Change"
+        },
+        {
+          "id": "E12000009",
+          "name": "South West",
+          "description": "South West region of England",
+          "status": "Active",
+          "changeType": "No Change"
+        },
+        {
+          "id": "N07000001",
+          "name": "Northern Ireland",
+          "description": "Northern Ireland region",
+          "status": "Active",
+          "changeType": "New",
+          "changeSummary": "Added to support Northern Ireland data collection"
+        },
+        {
+          "id": "S15000001",
+          "name": "Scotland",
+          "description": "Scotland region",
+          "status": "Active",
+          "changeType": "No Change"
+        },
+        {
+          "id": "W08000001",
+          "name": "Wales",
+          "description": "Wales region",
+          "status": "Active",
+          "changeType": "No Change"
+        }
+      ],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "No Change",
+          "summary": "No updates required",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "sex",
+      "name": "Sex",
+      "status": "Active",
+      "changeType": "No Change",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "No Change",
+          "summary": "No updates required",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "nationality",
+      "name": "Nationality",
+      "status": "Active",
+      "changeType": "Updated",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "Updated",
+          "summary": "Updated nationality codes",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "ethnicity",
+      "name": "Ethnicity",
+      "status": "Active",
+      "changeType": "No Change",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "No Change",
+          "summary": "No updates required",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "disabilities",
+      "name": "Disabilities",
+      "status": "Active",
+      "changeType": "Updated",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "Updated",
+          "summary": "Updated disability codes",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "course-level",
+      "name": "Course Level",
+      "description": "Classification of higher education courses by their academic level and qualification aim",
+      "status": "Active",
+      "changeType": "No Change",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "No Change",
+          "summary": "No updates required",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "course-education-phase",
+      "name": "Course Education Phase",
+      "description": "Educational phases covered by teacher training courses, such as primary, secondary, or further education",
+      "status": "Active",
+      "changeType": "No Change",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "No Change",
+          "summary": "No updates required",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "course-itt-subject",
+      "name": "Course ITT Subject",
+      "description": "Subject specializations available for Initial Teacher Training (ITT) courses",
+      "status": "Active",
+      "changeType": "Updated",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "Updated",
+          "summary": "Updated subject codes",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "course-age-range",
+      "name": "Course Age Range",
+      "description": "Age ranges of pupils that teacher training courses prepare teachers to teach",
+      "status": "Active",
+      "changeType": "No Change",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "No Change",
+          "summary": "No updates required",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "training-route",
+      "name": "Training Route",
+      "status": "Active",
+      "changeType": "Updated",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "Updated",
+          "summary": "Added new training routes",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "study-mode",
+      "name": "Study Mode",
+      "status": "Active",
+      "changeType": "No Change",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "No Change",
+          "summary": "No updates required",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "training-initiative",
+      "name": "Training Initiative",
+      "status": "Active",
+      "changeType": "New",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "New",
+          "summary": "Added new training initiatives",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "funding-type",
+      "name": "Funding Type",
+      "description": "Categories of financial support available for teacher training courses and students",
+      "status": "Active",
+      "changeType": "Updated",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "Updated",
+          "summary": "Updated funding types",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "degree-country",
+      "name": "Degree Country",
+      "description": "Countries where academic qualifications were awarded to teacher training applicants",
+      "status": "Active",
+      "changeType": "Updated",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "Updated",
+          "summary": "Updated country codes",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "degree-subjects",
+      "name": "Degree Subjects",
+      "description": "Academic subjects studied by teacher training applicants in their previous degrees",
+      "status": "Active",
+      "changeType": "Updated",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "Updated",
+          "summary": "Updated subject list",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "degree-uk-types",
+      "name": "Degree UK Degree Types",
+      "status": "Active",
+      "changeType": "No Change",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "No Change",
+          "summary": "No updates required",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "degree-uk-institutions",
+      "name": "Degree UK Awarding Institution",
+      "description": "UK higher education institutions authorized to award degrees and other academic qualifications",
+      "status": "Active",
+      "changeType": "Updated",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "Updated",
+          "summary": "Updated institution list",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "degree-uk-grade",
+      "name": "Degree UK Grade",
+      "status": "Active",
+      "changeType": "No Change",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "No Change",
+          "summary": "No updates required",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "degree-non-uk-types",
+      "name": "Degree Non-UK Degree Types",
+      "status": "Active",
+      "changeType": "New",
+      "lastUpdated": "2025-09-01",
+      "values": [],
+      "history": [
+        {
+          "academicYear": "2025/26",
+          "status": "Active",
+          "changeType": "New",
+          "summary": "Added non-UK degree types",
+          "lastUpdated": "2025-09-01"
+        }
+      ]
+    }
+  ]
+}

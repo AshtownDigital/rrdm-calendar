@@ -1,0 +1,63 @@
+{
+  "id": "sex",
+  "name": "Sex",
+  "hesaName": "Sex",
+  "description": "The sex of a person, as recorded for statistical purposes",
+  "type": "new",
+  "status": "active",
+  "academicYear": "2025/2026",
+  "values": [
+    {
+      "id": "10",
+      "name": "Female",
+      "hesaName": "Sex",
+      "description": "Person identifies as female",
+      "status": "active",
+      "mappedValue": "female",
+      "changeType": "new",
+      "changeSummary": "New reference data value created"
+    },
+    {
+      "id": "11",
+      "name": "Male",
+      "hesaName": "Sex",
+      "description": "Person identifies as male",
+      "status": "active",
+      "mappedValue": "male",
+      "changeType": "new",
+      "changeSummary": "New reference data value created"
+    },
+    {
+      "id": "12",
+      "name": "Other",
+      "hesaName": "Sex",
+      "description": "Person identifies in another way",
+      "status": "active",
+      "mappedValue": "other",
+      "changeType": "new",
+      "changeSummary": "New reference data value created"
+    },
+    {
+      "id": "96",
+      "name": "Prefer not to say",
+      "hesaName": "Sex",
+      "description": "Person prefers not to disclose their sex",
+      "status": "active",
+      "mappedValue": "prefer_not_to_say",
+      "changeType": "new",
+      "changeSummary": "New reference data value created"
+    },
+    {
+      "id": "99",
+      "name": "Not provided",
+      "hesaName": "Sex",
+      "description": "No information provided about person's sex",
+      "status": "active",
+      "mappedValue": "sex_not_provided",
+      "changeType": "new",
+      "changeSummary": "New reference data value created"
+    }
+  ],
+  "lastUpdated": "2025-03-11",
+  "version": "1.0.0"
+}

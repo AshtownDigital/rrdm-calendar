@@ -1,0 +1,90 @@
+{
+  "academicYear": "2025/2026",
+  "version": "1.0.0",
+  "releaseDate": "2025-03-11",
+  "approvedBy": "System Administrator",
+  "changes": {
+    "new": {
+      "items": [
+        {
+          "name": "Training Route",
+          "status": "inactive",
+          "type": "Removed",
+          "changeType": "removed",
+          "changeSummary": "All training route values have been removed",
+          "values": [
+            {
+              "name": "School Direct (tuition fee)",
+              "description": "School Direct training programme (tuition fee)"
+            },
+            {
+              "name": "School Direct (salaried)",
+              "description": "School Direct training programme (salaried)"
+            },
+            {
+              "name": "Opt-in undergraduate",
+              "description": "Undergraduate initial teacher training programme (opt-in)"
+            },
+            {
+              "name": "Postgraduate Teaching Apprenticeship",
+              "description": "Postgraduate Teaching Apprenticeship programme"
+            },
+            {
+              "name": "Provider-led (undergraduate)",
+              "description": "Provider-led undergraduate initial teacher training programme"
+            },
+            {
+              "name": "Provider-led (postgraduate)",
+              "description": "Provider-led postgraduate initial teacher training programme"
+            },
+            {
+              "name": "Teacher Degree Apprenticeship",
+              "description": "Teacher Degree Apprenticeship programme"
+            }
+          ]
+        },
+        {
+          "name": "Sex",
+          "values": [
+            {
+              "name": "Female",
+              "description": "Person identifies as female"
+            },
+            {
+              "name": "Male",
+              "description": "Person identifies as male"
+            },
+            {
+              "name": "Other",
+              "description": "Person identifies in another way"
+            },
+            {
+              "name": "Prefer not to say",
+              "description": "Person prefers not to disclose their sex"
+            },
+            {
+              "name": "Not provided",
+              "description": "No information provided about person's sex"
+            }
+          ]
+        }
+      ],
+      "values": []
+    },
+    "updated": [
+      {
+        "name": "Sex",
+        "changeSummary": "Definition refined for clarity",
+        "details": "Updated Intersex definition for better clarity and inclusivity"
+      }
+    ],
+    "removed": [
+      {
+        "name": "Training Route",
+        "changeSummary": "All training route values have been removed",
+        "details": "Training route codes discontinued and removed from the system"
+      }
+    ],
+    "noChange": []
+  }
+}

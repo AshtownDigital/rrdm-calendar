@@ -1,0 +1,53 @@
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+<h1 class="govuk-heading-xl">{{ value.name }} History</h1>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <dl class="govuk-summary-list">
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Current Status</dt>
+        <dd class="govuk-summary-list__value">{{ value.status }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Current Change Type</dt>
+        <dd class="govuk-summary-list__value">{{ value.changeType }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Parent Item</dt>
+        <dd class="govuk-summary-list__value">{{ item.name }}</dd>
+      </div>
+    </dl>
+  </div>
+</div>
+
+<table class="govuk-table data-table">
+  <caption class="govuk-table__caption govuk-table__caption--m">History</caption>
+  <thead class="govuk-table__head data-table__header">
+    <tr class="govuk-table__row">
+      <th class="govuk-table__header">Academic Year</th>
+      <th class="govuk-table__header">Status</th>
+      <th class="govuk-table__header">Change Type</th>
+      <th class="govuk-table__header">Summary</th>
+      <th class="govuk-table__header">Last Updated</th>
+    </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+    {% for entry in history %}
+    <tr class="govuk-table__row">
+      <td class="govuk-table__cell">{{ entry.academicYear }}</td>
+      <td class="govuk-table__cell">{{ entry.status }}</td>
+      <td class="govuk-table__cell">{{ entry.changeType }}</td>
+      <td class="govuk-table__cell">{{ entry.summary }}</td>
+      <td class="govuk-table__cell">{{ entry.lastUpdated | date }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="button-group">
+  <a href="/values/{{ item.id }}" class="govuk-button">Back to Values</a>
+  <a href="/items" class="govuk-button govuk-button--secondary">All Items</a>
+</div>
+{% endblock %}

@@ -1,0 +1,283 @@
+{
+  "academicYear": "2025/2026",
+  "version": "1.0.0",
+  "releaseDate": "2025-03-13",
+  "approvedBy": "Data Standards Team",
+  "changes": {
+    "new": {
+      "items": [
+        {
+          "name": "Region",
+          "type": "Location",
+          "category": "Geographic",
+          "hesaCode": "REGON",
+          "values": [
+            {
+              "name": "North East",
+              "code": "NE",
+              "description": "North East region of England"
+            },
+            {
+              "name": "London",
+              "code": "LDN",
+              "description": "London region"
+            }
+          ]
+        },
+        {
+          "name": "Course Education Phase",
+          "type": "Course",
+          "category": "Education Level",
+          "hesaCode": "CEPHSE",
+          "values": [
+            {
+              "name": "Primary",
+              "code": "PRIM",
+              "description": "Primary education phase"
+            },
+            {
+              "name": "Secondary",
+              "code": "SEC",
+              "description": "Secondary education phase"
+            }
+          ]
+        },
+        {
+          "name": "Degree UK Grade",
+          "type": "Qualification",
+          "category": "Academic Achievement",
+          "hesaCode": "DUKGD",
+          "values": [
+            {
+              "name": "First Class Honours",
+              "code": "1ST",
+              "description": "First class honours degree classification"
+            },
+            {
+              "name": "Upper Second Class Honours",
+              "code": "2_1",
+              "description": "Upper second class honours degree classification"
+            }
+          ]
+        }
+      ]
+    },
+    "updated": [
+      {
+        "name": "Course Level",
+        "type": "Course",
+        "category": "Qualification Level",
+        "hesaCode": "CRSLVL",
+        "changeSummary": "Added comprehensive list of course levels",
+        "details": "Updated to include all relevant undergraduate and postgraduate teaching qualifications",
+        "values": [
+          {
+            "name": "BA",
+            "code": "BA",
+            "description": "Bachelor of Arts"
+          },
+          {
+            "name": "BA (Hons)",
+            "code": "BAHON",
+            "description": "Bachelor of Arts with Honours"
+          },
+          {
+            "name": "BEd",
+            "code": "BED",
+            "description": "Bachelor of Education"
+          },
+          {
+            "name": "BEd (Hons)",
+            "code": "BEDHON",
+            "description": "Bachelor of Education with Honours"
+          },
+          {
+            "name": "BSc",
+            "code": "BSC",
+            "description": "Bachelor of Science"
+          },
+          {
+            "name": "BSc (Hons)",
+            "code": "BSCHON",
+            "description": "Bachelor of Science with Honours"
+          },
+          {
+            "name": "Postgraduate Certificate in Education",
+            "code": "PGCE",
+            "description": "Postgraduate level teaching qualification"
+          },
+          {
+            "name": "Postgraduate Diploma in Education",
+            "code": "PGDE",
+            "description": "Postgraduate diploma level teaching qualification"
+          },
+          {
+            "name": "Undergraduate Master of Teaching",
+            "code": "UGMT",
+            "description": "Integrated undergraduate master's degree in teaching"
+          },
+          {
+            "name": "Professional Graduate Certificate in Education",
+            "code": "PGCERT",
+            "description": "Professional graduate level teaching qualification"
+          },
+          {
+            "name": "Masters, not by research",
+            "code": "MAST",
+            "description": "Taught master's degree qualification"
+          }
+        ]
+      },
+      {
+        "name": "Training Route",
+        "type": "Course",
+        "category": "Delivery Method",
+        "hesaCode": "TRNRT",
+        "changeSummary": "Added Teacher Degree Apprenticeship route",
+        "details": "Extended training routes to include the new Teacher Degree Apprenticeship pathway",
+        "values": [
+          {
+            "name": "Teacher Degree Apprenticeship",
+            "code": "TDAP",
+            "description": "Apprenticeship route combining degree study with teacher training"
+          }
+        ]
+      },
+      {
+        "name": "Sex",
+        "type": "Personal",
+        "category": "Demographics",
+        "hesaCode": "SEXID",
+        "changeSummary": "Updated terminology and descriptions",
+        "details": "Revised terminology to align with current standards",
+        "values": [
+          {
+            "name": "Female",
+            "code": "F",
+            "description": "Female"
+          },
+          {
+            "name": "Male",
+            "code": "M",
+            "description": "Male"
+          },
+          {
+            "name": "Other",
+            "code": "O",
+            "description": "Other sex identity"
+          },
+          {
+            "name": "Intersex",
+            "code": "I",
+            "description": "Intersex"
+          },
+          {
+            "name": "Not provided",
+            "code": "X",
+            "description": "Information not provided by the individual"
+          }
+        ]
+      },
+      {
+        "name": "Disabilities",
+        "type": "Personal",
+        "category": "Support Needs",
+        "hesaCode": "DISAB",
+        "changeSummary": "Added new disability categories",
+        "details": "Extended disability categories to be more inclusive"
+      },
+      {
+        "name": "Course ITT Subject",
+        "type": "Course",
+        "category": "Subject Area",
+        "hesaCode": "ITTSBJ",
+        "changeSummary": "Added new teaching subjects",
+        "details": "Added new subjects to reflect curriculum changes"
+      }
+    ],
+      "noChange": [
+      {
+        "name": "Nationality",
+        "type": "Personal",
+        "category": "Demographics",
+        "hesaCode": "NATNL"
+      },
+      {
+        "name": "Ethnicity",
+        "type": "Personal",
+        "category": "Demographics",
+        "hesaCode": "ETHNIC"
+      },
+      {
+        "name": "Course Age Range",
+        "type": "Course",
+        "category": "Target Age Group",
+        "hesaCode": "CRSAGE",
+        "values": [
+          {
+            "name": "3 to 11",
+            "code": "3_11",
+            "description": "Early Years and Primary (ages 3-11)"
+          },
+          {
+            "name": "5 to 11",
+            "code": "5_11",
+            "description": "Primary (ages 5-11)"
+          },
+          {
+            "name": "3 to 7",
+            "code": "3_7",
+            "description": "Early Years (ages 3-7)"
+          },
+          {
+            "name": "11 to 16",
+            "code": "11_16",
+            "description": "Secondary (ages 11-16)"
+          },
+          {
+            "name": "11 to 18",
+            "code": "11_18",
+            "description": "Secondary and Post-16 (ages 11-18)"
+          },
+          {
+            "name": "Other age range",
+            "code": "OTHER",
+            "description": "Age range not listed above"
+          }
+        ]
+      },
+      {
+        "name": "Study Mode",
+        "hesaCode": "STDMOD"
+      },
+      {
+        "name": "Training Initiative",
+        "hesaCode": "TRNINT"
+      },
+      {
+        "name": "Funding Type",
+        "hesaCode": "FNDTYP"
+      },
+      {
+        "name": "Degree Country",
+        "hesaCode": "DGCTRY"
+      },
+      {
+        "name": "Degree Subjects",
+        "hesaCode": "DGSUBJ"
+      },
+      {
+        "name": "Degree UK Degree Types",
+        "hesaCode": "DUKTYP"
+      },
+      {
+        "name": "Degree UK Awarding Institution",
+        "hesaCode": "DUKAWI"
+      },
+      {
+        "name": "Degree Non-UK Degree Types",
+        "hesaCode": "DNUKTP"
+      }
+    ]
+  }
+}

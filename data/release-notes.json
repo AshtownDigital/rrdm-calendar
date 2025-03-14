@@ -1,0 +1,128 @@
+{
+  "2025-26": {
+    "newItems": [
+      {
+        "name": "Training Initiative",
+        "type": "Item",
+        "category": "Training",
+        "values": [
+          {
+            "name": "Returners Programme",
+            "summary": "New initiative for returning teachers"
+          },
+          {
+            "name": "Career Changers",
+            "summary": "Programme for professionals transitioning to teaching"
+          }
+        ]
+      },
+      {
+        "name": "Training Routes",
+        "type": "Value",
+        "category": "Training",
+        "values": [
+          {
+            "name": "Apprenticeship",
+            "summary": "New route for teaching apprenticeships"
+          },
+          {
+            "name": "International Fast-Track",
+            "summary": "Accelerated route for international teachers"
+          }
+        ]
+      },
+      {
+        "name": "Gender Identity",
+        "type": "Item",
+        "category": "Personal",
+        "values": [
+          {
+            "name": "Cisgender",
+            "summary": "Added to capture gender identity information"
+          },
+          {
+            "name": "Transgender",
+            "summary": "Added to capture gender identity information"
+          }
+        ]
+      },
+      {
+        "name": "Sex",
+        "type": "Value",
+        "category": "Personal",
+        "values": [
+          {
+            "name": "Male",
+            "summary": "Added as a new value"
+          }
+        ]
+      }
+    ],
+    "noChangeItems": [
+      {
+        "name": "Sex",
+        "summary": "No updates"
+      },
+      {
+        "name": "Training Routes",
+        "summary": "No updates"
+      }
+    ],
+    "updatedItems": [
+      {
+        "name": "Sex",
+        "values": [
+          {
+            "name": "Intersex",
+            "summary": "Definition refined for clarity"
+          }
+        ]
+      },
+      {
+        "name": "Training Routes",
+        "summary": "Added new route: International QTS"
+      }
+    ],
+    "removedItems": [
+      {
+        "name": "Education Phase",
+        "summary": "No longer classified"
+      },
+      {
+        "name": "Training Routes",
+        "values": [
+          {
+            "name": "Now Teach",
+            "summary": "Discontinued"
+          }
+        ]
+      }
+    ],
+    "approvedBy": "System Administrator",
+    "version": "1.0",
+    "releaseDate": "2025-09-01"
+  },
+  "2024-25": {
+    "noChangeItems": [
+      {
+        "name": "Sex",
+        "summary": "No updates"
+      }
+    ],
+    "updatedItems": [
+      {
+        "name": "Training Routes",
+        "values": [
+          {
+            "name": "School Direct Salaried",
+            "summary": "Updated eligibility criteria"
+          }
+        ]
+      }
+    ],
+    "removedItems": [],
+    "approvedBy": "System Administrator",
+    "version": "1.0",
+    "releaseDate": "2024-09-01"
+  }
+}

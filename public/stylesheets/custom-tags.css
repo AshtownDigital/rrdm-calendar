@@ -1,0 +1,52 @@
+/* Using only standard GOV.UK Design System tag colors */
+/* No custom colors - the standard GOV.UK Frontend CSS already includes these */
+
+/* Standard GOV.UK tag colors for reference:
+.govuk-tag (default) - #1d70b8 (blue)
+.govuk-tag--grey - #505a5f
+.govuk-tag--green - #00703c
+.govuk-tag--turquoise - #10403B
+.govuk-tag--blue - #1d70b8
+.govuk-tag--purple - #4c2c92
+.govuk-tag--pink - #d53880
+.govuk-tag--red - #d4351c
+.govuk-tag--orange - #f47738
+.govuk-tag--yellow - #ffdd00 (with dark text)
+*/
+
+/* Custom styles for summary lists */
+.govuk-summary-card__content {
+  padding: 15px;
+}
+
+/* Compact summary lists with borders */
+.govuk-summary-list {
+  margin-bottom: 0;
+}
+
+.govuk-summary-list__key,
+.govuk-summary-list__value {
+  padding: 0 !important;
+}
+
+.govuk-summary-card__content .govuk-summary-list__key {
+  width: 50%;
+}
+
+.govuk-summary-card__content .govuk-summary-list__value {
+  width: 50%;
+}
+
+/* Show borders between rows with proper spacing */
+.govuk-summary-list__row {
+  border-bottom: 1px solid #b1b4b6;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+}
+
+/* Last row doesn't need a border */
+.govuk-summary-list__row:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}

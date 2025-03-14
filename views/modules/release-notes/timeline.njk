@@ -1,0 +1,91 @@
+{% extends "../../layouts/base.njk" %}
+{% from "../release-notes/navigation-tabs/index.njk" import twoTierTabs %}
+
+{% block pageTitle %}
+  {% if selectedYear %}{{ selectedYear }} {% endif %}Timeline - {{ serviceName }}
+{% endblock %}
+
+{% block stylesheets %}
+  <link href="/stylesheets/govuk-frontend.min.css" rel="stylesheet">
+  <link href="/stylesheets/release-notes.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Timeline{% if selectedYear %} - {{ selectedYear }}{% endif %}</h1>
+    
+    {# Skip link for keyboard navigation #}
+    <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
+
+    {# Include the two-tier navigation tabs component #}
+    {{ twoTierTabs(academicYears, selectedYear, view) }}
+
+    <div class="govuk-tabs__panel" id="tab-timeline">
+      <div id="main-content" class="govuk-!-margin-bottom-6" tabindex="-1">
+        <h2 class="govuk-heading-l">Release Timeline for {{ selectedYear }}</h2>
+        
+        {# Release Notes Timeline #}
+        <ol class="app-timeline">
+          {% for event in releaseNotes.timeline %}
+            <li class="app-timeline-event">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ event.date | date("D MMMM YYYY") }}</h3>
+              <p class="govuk-body">{{ event.description }}</p>
+              {% if event.changes %}
+                <ul class="govuk-list govuk-list--bullet">
+                  {% for change in event.changes %}
+                    <li>{{ change }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ol>
+
+        <h2 class="govuk-heading-l govuk-!-margin-top-6">Reference Data Update Process for {{ selectedYear }}</h2>
+        <p class="govuk-body">The following timeline shows the standard process for updating reference data for each academic year.</p>
+        
+        <ol class="app-timeline">
+          {% for event in timeline.timeline %}
+            <li class="app-timeline-event">
+              <span class="govuk-tag govuk-tag--{{ event.tag }}">Phase {{ loop.index }}</span>
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1 govuk-!-margin-top-2">{{ event.description }}</h3>
+              <div class="govuk-summary-list">
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">Timeline</dt>
+                  <dd class="govuk-summary-list__value">
+                    {{ event.date | date("D MMMM YYYY") }}{% if event.endDate %} - {{ event.endDate | date("D MMMM YYYY") }}{% endif %}
+                  </dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">Activity</dt>
+                  <dd class="govuk-summary-list__value">{{ event.activity }}</dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">Deadline</dt>
+                  <dd class="govuk-summary-list__value">{{ event.deadline }}</dd>
+                </div>
+              </div>
+            </li>
+          {% endfor %}
+        </ol>
+      </div>
+
+
+      
+      {# Action Buttons #}
+      <div class="govuk-button-group govuk-!-margin-top-6">
+        <a href="/" class="govuk-button govuk-button--secondary">
+          <span aria-hidden="true">&larr; </span>Back to Dashboard
+        </a>
+        <a href="?year={{ selectedYear }}&view=list" class="govuk-button">
+          View Full List
+        </a>
+        <a href="?year={{ selectedYear }}&view=summary" class="govuk-button govuk-button--secondary">
+          View Change Summary
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

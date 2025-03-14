@@ -1,0 +1,229 @@
+{% extends "layouts/base.njk" %}
+
+{% block pageTitle %}
+  {{ item.name }} - {{ selectedYear }} - {{ serviceName }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container">
+  {# Skip link for keyboard navigation #}
+  <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
+  
+  <main class="govuk-main-wrapper" id="main-content" role="main">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        <a href="/items" class="govuk-back-link">Back to Reference Data Items</a>
+        <span class="govuk-caption-xl">Reference Data Item Details</span>
+        <h1 class="govuk-heading-xl">{{ item.name }} - {{ selectedYear }}</h1>
+
+<!-- Item Details Sections -->
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <!-- General Properties Section -->
+    <div class="govuk-summary-card">
+      <div class="govuk-summary-card__title-wrapper">
+        <h2 class="govuk-summary-card__title">
+          General Properties
+        </h2>
+        <ul class="govuk-summary-card__actions">
+          <li class="govuk-summary-card__action">
+            <a class="govuk-link" href="/items/{{ item.id }}/history">View history<span class="govuk-visually-hidden"> of {{ item.name }}</span></a>
+          </li>
+        </ul>
+      </div>
+      <div class="govuk-summary-card__content">
+        <dl class="govuk-summary-list govuk-!-margin-bottom-0">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Item Name</dt>
+            <dd class="govuk-summary-list__value">{{ item.name }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Academic Year</dt>
+            <dd class="govuk-summary-list__value">{{ item.academicYear }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Status</dt>
+            <dd class="govuk-summary-list__value">
+              {{ item.status | title }}
+            </dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Description</dt>
+            <dd class="govuk-summary-list__value">{{ item.description }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Change Type</dt>
+            <dd class="govuk-summary-list__value">
+              {% if item.changeType === 'new' or item.changeType === 'New' %}
+                <strong class="govuk-tag govuk-tag--blue">{{ item.changeType | title }}</strong>
+              {% elif item.changeType === 'no change' or item.changeType === 'No Change' %}
+                <strong class="govuk-tag govuk-tag--grey">{{ item.changeType | title }}</strong>
+              {% elif item.changeType === 'updated' or item.changeType === 'Updated' %}
+                <strong class="govuk-tag govuk-tag--yellow">{{ item.changeType | title }}</strong>
+              {% elif item.changeType === 'removed' or item.changeType === 'Removed' %}
+                <strong class="govuk-tag govuk-tag--red">{{ item.changeType | title }}</strong>
+              {% elif item.changeType === 'delayed' or item.changeType === 'Delayed' %}
+                <strong class="govuk-tag govuk-tag--orange">{{ item.changeType | title }}</strong>
+              {% else %}
+                <strong class="govuk-tag">{{ item.changeType | title }}</strong>
+              {% endif %}
+            </dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Last Updated</dt>
+            <dd class="govuk-summary-list__value">{{ item.lastUpdated | date }}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <!-- Data Type & Format Section -->
+    <div class="govuk-summary-card govuk-!-margin-top-6">
+      <div class="govuk-summary-card__title-wrapper">
+        <h2 class="govuk-summary-card__title">
+          Data Type & Format
+        </h2>
+      </div>
+      <div class="govuk-summary-card__content">
+        <dl class="govuk-summary-list govuk-!-margin-bottom-0">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Data Type</dt>
+            <dd class="govuk-summary-list__value">{{ item.dataType if item.dataType else 'String' }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Format</dt>
+            <dd class="govuk-summary-list__value">{{ item.format if item.format else 'N/A' }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">CSV Name</dt>
+            <dd class="govuk-summary-list__value">{{ item.csvName }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">API Name</dt>
+            <dd class="govuk-summary-list__value">{{ item.apiName }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">HESA Code</dt>
+            <dd class="govuk-summary-list__value">{{ item.hesaCode if item.hesaCode else 'N/A' }}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <!-- Validation Rules Section -->
+    <div class="govuk-summary-card govuk-!-margin-top-6">
+      <div class="govuk-summary-card__title-wrapper">
+        <h2 class="govuk-summary-card__title">
+          Validation Rules
+        </h2>
+      </div>
+      <div class="govuk-summary-card__content">
+        <dl class="govuk-summary-list govuk-!-margin-bottom-0">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Required</dt>
+            <dd class="govuk-summary-list__value">{{ 'Yes' if item.required else 'No' }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Minimum Length</dt>
+            <dd class="govuk-summary-list__value">{{ item.minLength if item.minLength else 'N/A' }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Maximum Length</dt>
+            <dd class="govuk-summary-list__value">{{ item.maxLength if item.maxLength else 'N/A' }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Validation Pattern</dt>
+            <dd class="govuk-summary-list__value">{{ item.validationPattern if item.validationPattern else 'N/A' }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Validation Notes</dt>
+            <dd class="govuk-summary-list__value">{{ item.validationNotes if item.validationNotes else 'No additional validation rules' }}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <!-- Storage & Security Section -->
+    <div class="govuk-summary-card govuk-!-margin-top-6">
+      <div class="govuk-summary-card__title-wrapper">
+        <h2 class="govuk-summary-card__title">
+          Storage & Security
+        </h2>
+      </div>
+      <div class="govuk-summary-card__content">
+        <dl class="govuk-summary-list govuk-!-margin-bottom-0">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Database Column Name</dt>
+            <dd class="govuk-summary-list__value">{{ item.dbColumnName if item.dbColumnName else item.apiName }}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l">Reference Data Values</h2>
+    {% if values.length > 0 %}
+      <p class="govuk-body">Showing {{ values.length }} values for {{ item.name }} in {{ selectedYear }}</p>
+      
+      <div class="govuk-!-margin-bottom-4">
+        <a class="govuk-link" href="/items/{{ item.id }}/history">View item history</a>
+      </div>
+
+      <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-table__caption--m">{{ item.name }} Values</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">HESA Code</th>
+            <th scope="col" class="govuk-table__header">Name</th>
+            <th scope="col" class="govuk-table__header">Status</th>
+            <th scope="col" class="govuk-table__header">Change Type</th>
+            <th scope="col" class="govuk-table__header">Change Summary</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for value in values %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ value.id }}</td>
+            <td class="govuk-table__cell">{{ value.name }}</td>
+            <td class="govuk-table__cell">
+              {{ value.status | title }}
+            </td>
+            <td class="govuk-table__cell">
+              {% if value.changeType === 'new' or value.changeType === 'New' %}
+                <strong class="govuk-tag govuk-tag--blue">{{ value.changeType | title }}</strong>
+              {% elif value.changeType === 'no change' or value.changeType === 'No Change' %}
+                <strong class="govuk-tag govuk-tag--grey">{{ value.changeType | title }}</strong>
+              {% elif value.changeType === 'updated' or value.changeType === 'Updated' %}
+                <strong class="govuk-tag govuk-tag--yellow">{{ value.changeType | title }}</strong>
+              {% elif value.changeType === 'removed' or value.changeType === 'Removed' %}
+                <strong class="govuk-tag govuk-tag--red">{{ value.changeType | title }}</strong>
+              {% elif value.changeType === 'delayed' or value.changeType === 'Delayed' %}
+                <strong class="govuk-tag govuk-tag--orange">{{ value.changeType | title }}</strong>
+              {% else %}
+                <strong class="govuk-tag">{{ value.changeType | title }}</strong>
+              {% endif %}
+            </td>
+            <td class="govuk-table__cell">{{ value.changeSummary if value.changeSummary else "" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="govuk-body">No values found for this reference data item.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="govuk-button-group">
+  <a href="/items" class="govuk-button">Back to Reference Data Items for {{ selectedYear }}</a>
+  <a href="/items/{{ item.id }}/history" class="govuk-button govuk-button--secondary">View History</a>
+  <a href="/dashboard" class="govuk-button govuk-button--secondary">Back to Dashboard</a>
+</div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

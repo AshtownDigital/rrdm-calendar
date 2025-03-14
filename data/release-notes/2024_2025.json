@@ -1,0 +1,103 @@
+{
+  "academicYear": "2024/2025",
+  "version": "2.1.0",
+  "releaseDate": "2024-08-15",
+  "approvedBy": "HESA Data Management Team",
+  "changes": {
+    "new": {
+      "items": [
+        {
+          "name": "Mode of Study",
+          "hesaCode": "MDSTY",
+          "values": [
+            {
+              "name": "Distance Learning",
+              "code": "DSTNC",
+              "description": "Learning delivered remotely without regular face-to-face contact"
+            },
+            {
+              "name": "Full-time",
+              "code": "FLTM",
+              "description": "Student is studying on a full-time basis"
+            },
+            {
+              "name": "Part-time",
+              "code": "PRTM",
+              "description": "Student is studying on a part-time basis"
+            }
+          ]
+        },
+        {
+          "name": "Funding Source",
+          "hesaCode": "FNDSRC",
+          "values": [
+            {
+              "name": "Student Loans Company",
+              "code": "SLC",
+              "description": "Funded through the Student Loans Company"
+            },
+            {
+              "name": "Self-funded",
+              "code": "SELF",
+              "description": "Student is self-funding their studies"
+            },
+            {
+              "name": "Employer Sponsored",
+              "code": "EMPL",
+              "description": "Studies funded by employer"
+            }
+          ]
+        }
+      ]
+    },
+    "updated": [
+      {
+        "name": "Qualification Aim",
+        "hesaCode": "QUAIM",
+        "changeSummary": "Updated descriptions for clarity",
+        "details": "Revised descriptions to better reflect current qualification frameworks",
+        "values": [
+          {
+            "name": "Bachelor's Degree with Honours",
+            "code": "BSCH",
+            "description": "First degree with honours classification"
+          },
+          {
+            "name": "Master's Degree",
+            "code": "MAST",
+            "description": "Postgraduate master's level qualification"
+          },
+          {
+            "name": "Foundation Degree",
+            "code": "FNDG",
+            "description": "Two-year qualification equivalent to two-thirds of a bachelor's degree"
+          }
+        ]
+      }
+    ],
+    "removed": [],
+    "noChange": [
+      {
+        "name": "Subject Specialisms",
+        "hesaCode": "SBJSPC",
+        "values": [
+          {
+            "name": "Mathematics",
+            "code": "MATH",
+            "description": "Mathematics and its applications"
+          },
+          {
+            "name": "English",
+            "code": "ENGL",
+            "description": "English language and literature"
+          },
+          {
+            "name": "Physics",
+            "code": "PHYS",
+            "description": "Physics and physical sciences"
+          }
+        ]
+      }
+    ]
+  }
+}

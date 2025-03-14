@@ -1,0 +1,176 @@
+{% extends "../../layouts/base.njk" %}
+{% from "../release-notes/navigation-tabs/index.njk" import academicYearTabs, viewTypeTabs %}
+
+{% block pageTitle %}
+  {% if selectedYear %}{{ selectedYear }} {% endif %}Reference Data Items - {{ serviceName }}
+{% endblock %}
+
+{% block stylesheets %}
+  <link href="/stylesheets/govuk-frontend.min.css" rel="stylesheet">
+  <link href="/stylesheets/release-notes.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Reference Data Items{% if selectedYear %} - {{ selectedYear }}{% endif %}</h1>
+    
+    {# Skip link for keyboard navigation #}
+    <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
+
+    {# Include the navigation tabs components #}
+    {{ academicYearTabs(academicYears, selectedYear, view) }}
+    {{ viewTypeTabs(selectedYear, view) }}
+
+    <div class="govuk-tabs__panel" id="tab-items">
+      <div class="govuk-!-margin-bottom-6">
+        <h2 class="govuk-heading-l">Reference Data Items for {{ selectedYear }}</h2>
+        
+        {% if releaseNotes and releaseNotes.changes and releaseNotes.changes.new and releaseNotes.changes.new.items and releaseNotes.changes.new.items.length > 0 %}
+          <h3 class="govuk-heading-m">New Items</h3>
+          <table class="govuk-table">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Item Name</th>
+                <th scope="col" class="govuk-table__header">Type</th>
+                <th scope="col" class="govuk-table__header">Category</th>
+                <th scope="col" class="govuk-table__header">Status</th>
+                <th scope="col" class="govuk-table__header">Change Type</th>
+                <th scope="col" class="govuk-table__header">Example Values</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for item in releaseNotes.changes.new.items %}
+                <tr class="govuk-table__row">
+                  <td class="govuk-table__cell">
+                    {% set itemId = item.name | lower | replace(' ', '-') %}
+                    {% set academicYearId = selectedYear | replace('/', '-') | lower %}
+                    <a href="/items/{{ itemId }}/values?academic-year={{ academicYearId }}" class="govuk-link">{{ item.name }}</a>
+                  </td>
+                  <td class="govuk-table__cell">{{ item.type }}</td>
+                  <td class="govuk-table__cell">{{ item.category }}</td>
+                  <td class="govuk-table__cell">
+                    <strong class="govuk-tag govuk-tag--green">Active</strong>
+                  </td>
+                  <td class="govuk-table__cell">
+                    <strong class="govuk-tag">New</strong>
+                  </td>
+                  <td class="govuk-table__cell">
+                    {% if item.values and item.values.length > 0 %}
+                      {% set valueNames = [] %}
+                      {% for value in item.values %}
+                        {% if value.name %}
+                          {% set valueNames = (valueNames.push(value.name), valueNames) %}
+                        {% endif %}
+                      {% endfor %}
+                      {{ valueNames | join(", ") }}
+                    {% else %}
+                      <span class="govuk-hint">No example values available</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="govuk-body">No new reference data items available for this academic year.</p>
+        {% endif %}
+        
+        {% if releaseNotes and releaseNotes.changes and releaseNotes.changes.updated and releaseNotes.changes.updated.length > 0 %}
+          <h3 class="govuk-heading-m">Updated Items</h3>
+          <table class="govuk-table">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Item Name</th>
+                <th scope="col" class="govuk-table__header">Type</th>
+                <th scope="col" class="govuk-table__header">Category</th>
+                <th scope="col" class="govuk-table__header">Status</th>
+                <th scope="col" class="govuk-table__header">Change Type</th>
+                <th scope="col" class="govuk-table__header">Example Values</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for item in releaseNotes.changes.updated %}
+                <tr class="govuk-table__row">
+                  <td class="govuk-table__cell">
+                    {% set itemId = item.name | lower | replace(' ', '-') %}
+                    {% set academicYearId = selectedYear | replace('/', '-') | lower %}
+                    <a href="/items/{{ itemId }}/values?academic-year={{ academicYearId }}" class="govuk-link">{{ item.name }}</a>
+                  </td>
+                  <td class="govuk-table__cell">{{ item.type }}</td>
+                  <td class="govuk-table__cell">{{ item.category }}</td>
+                  <td class="govuk-table__cell">
+                    <strong class="govuk-tag govuk-tag--green">Active</strong>
+                  </td>
+                  <td class="govuk-table__cell">
+                    <strong class="govuk-tag govuk-tag--yellow">Updated</strong>
+                  </td>
+                  <td class="govuk-table__cell">
+                    {% if item.values and item.values.length > 0 %}
+                      {% set valueNames = [] %}
+                      {% for value in item.values %}
+                        {% set valueNames = (valueNames.push(value.name), valueNames) %}
+                      {% endfor %}
+                      {{ valueNames | join(', ') }}
+                    {% else %}
+                      No example values available
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="govuk-body">No updated reference data items available for this academic year.</p>
+        {% endif %}
+        
+        {% if releaseNotes and releaseNotes.changes and releaseNotes.changes.unchanged and releaseNotes.changes.unchanged.length > 0 %}
+          <h3 class="govuk-heading-m">Unchanged Items</h3>
+          <table class="govuk-table">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Item Name</th>
+                <th scope="col" class="govuk-table__header">Type</th>
+                <th scope="col" class="govuk-table__header">Category</th>
+                <th scope="col" class="govuk-table__header">Status</th>
+                <th scope="col" class="govuk-table__header">Change Type</th>
+                <th scope="col" class="govuk-table__header">Example Values</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for item in releaseNotes.changes.unchanged %}
+                <tr class="govuk-table__row">
+                  <td class="govuk-table__cell">
+                    {% set itemId = item.name | lower | replace(' ', '-') %}
+                    {% set academicYearId = selectedYear | replace('/', '-') | lower %}
+                    <a href="/items/{{ itemId }}/values?academic-year={{ academicYearId }}" class="govuk-link">{{ item.name }}</a>
+                  </td>
+                  <td class="govuk-table__cell">{{ item.type }}</td>
+                  <td class="govuk-table__cell">{{ item.category }}</td>
+                  <td class="govuk-table__cell">
+                    <strong class="govuk-tag govuk-tag--green">Active</strong>
+                  </td>
+                  <td class="govuk-table__cell">
+                    <strong class="govuk-tag govuk-tag--grey">No Change</strong>
+                  </td>
+                  <td class="govuk-table__cell">
+                    {% if item.values and item.values.length > 0 %}
+                      {% set valueNames = [] %}
+                      {% for value in item.values %}
+                        {% set valueNames = (valueNames.push(value.name), valueNames) %}
+                      {% endfor %}
+                      {{ valueNames | join(', ') }}
+                    {% else %}
+                      No example values available
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
