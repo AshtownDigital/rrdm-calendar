@@ -84,7 +84,7 @@ app.get('/', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Server error:', err.stack);
   res.status(500).render('error', {
     title: 'Error',
     message: 'Something went wrong'
@@ -100,8 +100,14 @@ app.use((req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
 
+// Only start the server when running directly with Node.js
+// This prevents the server from trying to start in Vercel's serverless environment
+if (!process.env.VERCEL && require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+// Export the Express app for serverless environments
 module.exports = app;
