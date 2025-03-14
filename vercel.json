@@ -28,11 +28,6 @@
       "dest": "/server.js"
     }
   ],
-  "staticFiles": {
-    "public/stylesheets/govuk-frontend.min.css": "node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.css",
-    "public/stylesheets/govuk-frontend.min.css.map": "node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.css.map",
-    "public/scripts/govuk-frontend.min.js": "node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.js"
-  },
   "headers": [
     {
       "source": "/assets/(.*)",
