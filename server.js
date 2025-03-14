@@ -70,12 +70,18 @@ const valuesRouter = require('./routes/values/index');
 const releaseNotesRouter = require('./routes/release-notes/index');
 const restorePointsRouter = require('./routes/restore-points');
 
+// Import API routes for Vercel serverless optimization
+const apiRouter = require('./api');
+
 // Use route modules
 app.use('/dashboard', dashboardRouter);
 app.use('/items', itemsRouter);
 app.use('/values', valuesRouter);
 app.use('/release-notes', releaseNotesRouter);
 app.use('/restore-points', restorePointsRouter);
+
+// Use API routes for Vercel serverless optimization
+app.use('/api', apiRouter);
 
 // Redirect root to dashboard
 app.get('/', (req, res) => {
