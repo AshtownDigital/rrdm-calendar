@@ -31,6 +31,7 @@
       <th scope="col" class="govuk-table__header">Status</th>
       <th scope="col" class="govuk-table__header">Change Type</th>
       <th scope="col" class="govuk-table__header">Academic Year</th>
+      <th scope="col" class="govuk-table__header">Item Source</th>
       <th scope="col" class="govuk-table__header">Last Updated</th>
       <th scope="col" class="govuk-table__header">Actions</th>
     </tr>
@@ -60,6 +61,9 @@
         {% endif %}
       </td>
       <td class="govuk-table__cell">{{ item.academicYear }}</td>
+      <td class="govuk-table__cell">
+        {{ item.itemSource | default('Data Gem') }}
+      </td>
       <td class="govuk-table__cell">{{ item.lastUpdated | date("D MMMM YYYY") }}</td>
       <td class="govuk-table__cell">{{ item.actions | safe }}</td>
     </tr>

@@ -23,6 +23,7 @@
       "name": "Region",
       "description": "Geographical regions of the United Kingdom used for statistical and administrative purposes",
       "status": "Active",
+      "itemSource": "Data Gem",
       "changeType": "No Change",
       "lastUpdated": "2025-09-01",
       "values": [
