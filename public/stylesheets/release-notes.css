@@ -1,5 +1,109 @@
 /* Release Notes Specific Styles */
 
+/* Improved navigation structure */
+/* Primary navigation (academic year) */
+.govuk-tabs__list {
+  margin-bottom: 0 !important;
+  border-bottom: 2px solid #1d70b8 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+}
+
+.govuk-tabs__list-item {
+  margin-right: 5px !important;
+  border-radius: 5px 5px 0 0 !important;
+  border: 1px solid #b1b4b6 !important;
+  border-bottom: none !important;
+}
+
+/* Secondary navigation (view types) */
+.govuk-tabs__panel {
+  padding: 0 !important;
+  margin-top: 0 !important;
+  border: none !important;
+  background-color: #f3f2f1 !important;
+}
+
+.govuk-tabs__panel .govuk-tabs__list {
+  background-color: #f3f2f1 !important;
+  border-bottom: 1px solid #b1b4b6 !important;
+  padding: 0 15px !important;
+}
+
+.govuk-tabs__panel .govuk-tabs__list-item {
+  margin-right: 5px !important;
+  margin-bottom: 0 !important;
+  border: none !important;
+  border-bottom: 4px solid transparent !important;
+}
+
+/* Content panel */
+.govuk-tabs__panel .govuk-tabs__panel {
+  background-color: white !important;
+  padding: 30px !important;
+  border: 1px solid #b1b4b6 !important;
+  border-top: none !important;
+}
+
+/* Primary navigation (academic year) selected tab styling */
+.govuk-tabs__list-item--selected {
+  background-color: #1d70b8 !important;
+  border: 1px solid #1d70b8 !important;
+  border-bottom: none !important;
+}
+
+.govuk-tabs__list-item--selected .govuk-tabs__tab {
+  color: white !important;
+  font-weight: bold !important;
+}
+
+/* Secondary navigation (view types) selected tab styling */
+.govuk-tabs__panel .govuk-tabs__list-item--selected {
+  border-bottom: 4px solid #1d70b8 !important;
+  background-color: transparent !important;
+}
+
+.govuk-tabs__panel .govuk-tabs__list-item--selected .govuk-tabs__tab {
+  color: #1d70b8 !important;
+  font-weight: bold !important;
+  background-color: transparent !important;
+}
+
+/* Hover effects for tabs */
+.govuk-tabs__list-item:hover {
+  background-color: #f8f8f8 !important;
+}
+
+.govuk-tabs__list-item--selected:hover {
+  /* Keep the same background as the selected state */
+  background-color: #1d70b8 !important;
+}
+
+.govuk-tabs__panel .govuk-tabs__list-item:hover {
+  border-bottom: 4px solid #b1b4b6 !important;
+  background-color: transparent !important;
+}
+
+.govuk-tabs__panel .govuk-tabs__list-item--selected:hover {
+  border-bottom: 4px solid #1d70b8 !important;
+  background-color: transparent !important;
+}
+
+/* Style for the selected academic year display */
+.selected-year-display {
+  background-color: #f3f2f1;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  font-weight: bold;
+  border-left: 4px solid #1d70b8;
+  color: #1d70b8;
+}
+
+/* Remove only the top margin from the second level tabs list */
+.govuk-tabs__panel .govuk-tabs__list {
+  margin-top: 0 !important;
+}
+
 /* Skip Link - Accessibility */
 .govuk-skip-link {
   position: absolute;

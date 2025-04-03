@@ -8,6 +8,7 @@
       "new": {
         "items": [
           {
+            "id": "sex",
             "name": "Sex",
             "type": "Personal",
             "category": "Demographics",
@@ -35,6 +36,7 @@
             ]
           },
           {
+            "id": "disability-status",
             "name": "Disability Status",
             "type": "Personal",
             "category": "Demographics",
@@ -136,24 +138,28 @@
       ],
       "noChange": [
         {
+          "id": "gender",
           "name": "Gender",
           "type": "Personal",
           "category": "Demographics",
           "details": "Gender reference data remains unchanged from previous academic year"
         },
         {
+          "id": "country",
           "name": "Country",
           "type": "Geographic",
           "category": "Location",
           "details": "Country codes and definitions remain unchanged from previous academic year"
         },
         {
+          "id": "funding-source",
           "name": "Funding Source",
           "type": "Financial",
           "category": "Funding",
           "details": "Funding source codes remain unchanged from previous academic year"
         },
         {
+          "id": "academic-level",
           "name": "Academic Level",
           "type": "Academic",
           "category": "Course",

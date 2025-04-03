@@ -114,14 +114,14 @@ const isValidYear = (year, validYears) => {
 router.get('/', async (req, res) => {
   try {
     const data = await getReleaseData();
-    // If no year selected, redirect to latest year with summary view
+    // If no year selected, redirect to latest year with list view
     if (!req.query.year) {
-      return res.redirect(`/release-notes?year=${data.academicYears[0]}&view=summary`);
+      return res.redirect(`/release-notes?year=${data.academicYears[0]}&view=list`);
     }
 
     // Validate view type and year
-    const validViews = ['summary', 'timeline', 'list'];
-    const view = validViews.includes(req.query.view) ? req.query.view : 'summary';
+    const validViews = ['list', 'summary', 'timeline'];
+    const view = validViews.includes(req.query.view) ? req.query.view : 'list';
     const selectedYear = isValidYear(req.query.year, data.academicYears) ? req.query.year : data.academicYears[0];
 
     // Get timeline data if needed

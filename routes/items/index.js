@@ -116,8 +116,9 @@ router.get('/', (req, res) => {
 
 // Item values route
 router.get('/:id/values', (req, res) => {
-  const currentYear = getCurrentAcademicYear(req, false);
-  const item = data.items.find(item => item.id === req.params.id);
+  try {
+    const currentYear = getCurrentAcademicYear(req, false);
+    const item = data.items.find(item => item.id === req.params.id);
   if (!item) {
     return res.status(404).render('error', {
       title: 'Not Found',
@@ -143,6 +144,47 @@ router.get('/:id/values', (req, res) => {
       .replace(/^[0-9]/, 'N$&'); // Prefix with 'N' if starts with number
   };
 
+  // Generate HESA link based on item ID
+  const getHesaLink = (itemId) => {
+    const hesaLinks = {
+      'sex': 'https://www.hesa.ac.uk/collection/c24053/e/SEXID',
+      'region': 'https://www.hesa.ac.uk/collection/c24053/e/DOMICILE',
+      'nationality': 'https://www.hesa.ac.uk/collection/c24053/e/NATION',
+      'ethnicity': 'https://www.hesa.ac.uk/collection/c24053/e/ETHNIC',
+      'disabilities': 'https://www.hesa.ac.uk/collection/c24053/e/DISABLE',
+      'course-level': 'https://www.hesa.ac.uk/collection/c24053/e/COURSEAIM',
+      'degree-subjects': 'https://www.hesa.ac.uk/collection/c24053/e/SBJCA',
+      'course-education-phase': 'https://www.hesa.ac.uk/collection/c24053/e/ITTPHASE'
+    };
+    
+    return hesaLinks[itemId] || null;
+  };
+  
+  // Get HESA name if available
+  const getHesaName = (item) => {
+    try {
+      // If hesaName is already defined in the item, use it
+      if (item && item.hesaName) {
+        return item.hesaName;
+      }
+      
+      // Otherwise, extract it from the HESA link if available
+      if (item && item.id) {
+        const hesaLink = getHesaLink(item.id);
+        if (hesaLink) {
+          // Extract the last part of the URL after the last slash and 'e/'
+          const match = hesaLink.match(/\/e\/([^/]+)$/);
+          return match ? match[1] : null;
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error in getHesaName:', error);
+      return null;
+    }
+  };
+
   res.render('modules/items/details', {
     title: `${item.name} - ${currentYear.name}`,
     serviceName: 'Reference Data Management',
@@ -152,10 +194,19 @@ router.get('/:id/values', (req, res) => {
       ...item,
       academicYear: currentYear.name,
       csvName: formatName(item.name),
-      apiName: formatName(item.name)
+      apiName: formatName(item.name),
+      hesaLink: getHesaLink(item.id),
+      hesaName: getHesaName(item)
     },
     values
   });
+  } catch (error) {
+    console.error('Error in values route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An error occurred while processing your request.'
+    });
+  }
 });
 
 // Item history route

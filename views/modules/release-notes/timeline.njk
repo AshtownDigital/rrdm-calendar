@@ -2,7 +2,7 @@
 {% from "../release-notes/navigation-tabs/index.njk" import twoTierTabs %}
 
 {% block pageTitle %}
-  {% if selectedYear %}{{ selectedYear }} {% endif %}Timeline - {{ serviceName }}
+  Register Initial Teacher Trainees {% if selectedYear %}{{ selectedYear }} academic year{% endif %} reference data - {{ serviceName }}
 {% endblock %}
 
 {% block stylesheets %}
@@ -13,7 +13,7 @@
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
-    <h1 class="govuk-heading-xl">Timeline{% if selectedYear %} - {{ selectedYear }}{% endif %}</h1>
+    <h1 class="govuk-heading-xl">Register Initial Teacher Trainees {% if selectedYear %}{{ selectedYear }} academic year{% endif %} reference data</h1>
     
     {# Skip link for keyboard navigation #}
     <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
@@ -23,7 +23,7 @@
 
     <div class="govuk-tabs__panel" id="tab-timeline">
       <div id="main-content" class="govuk-!-margin-bottom-6" tabindex="-1">
-        <h2 class="govuk-heading-l">Release Timeline for {{ selectedYear }}</h2>
+        <h2 class="govuk-heading-l">Reference data release timeline for {{ selectedYear }} academic year</h2>
         
         {# Release Notes Timeline #}
         <ol class="app-timeline">
@@ -42,8 +42,7 @@
           {% endfor %}
         </ol>
 
-        <h2 class="govuk-heading-l govuk-!-margin-top-6">Reference Data Update Process for {{ selectedYear }}</h2>
-        <p class="govuk-body">The following timeline shows the standard process for updating reference data for each academic year.</p>
+        <p class="govuk-body govuk-!-margin-top-6">The following timeline shows the standard process for updating reference data for each academic year.</p>
         
         <ol class="app-timeline">
           {% for event in timeline.timeline %}

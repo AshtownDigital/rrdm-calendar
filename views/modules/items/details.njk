@@ -103,8 +103,8 @@
             <dd class="govuk-summary-list__value">{{ item.apiName }}</dd>
           </div>
           <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">HESA Code</dt>
-            <dd class="govuk-summary-list__value">{{ item.hesaCode if item.hesaCode else 'N/A' }}</dd>
+            <dt class="govuk-summary-list__key">Hesa Data Item Name</dt>
+            <dd class="govuk-summary-list__value">{% if item.hesaName %}{{ item.hesaName }}{% elif item.hesaCode %}{{ item.hesaCode }}{% else %}N/A{% endif %}</dd>
           </div>
         </dl>
       </div>
@@ -124,12 +124,16 @@
             <dd class="govuk-summary-list__value">{{ 'Yes' if item.required else 'No' }}</dd>
           </div>
           <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Minimum Length</dt>
+            <dt class="govuk-summary-list__key">Field Length</dt>
             <dd class="govuk-summary-list__value">{{ item.minLength if item.minLength else 'N/A' }}</dd>
           </div>
           <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Maximum Length</dt>
-            <dd class="govuk-summary-list__value">{{ item.maxLength if item.maxLength else 'N/A' }}</dd>
+            <dt class="govuk-summary-list__key">Minimum occurrences</dt>
+            <dd class="govuk-summary-list__value">{{ item.minOccurrences if item.minOccurrences else 'N/A' }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Maximum occurrences</dt>
+            <dd class="govuk-summary-list__value">{{ item.maxOccurrences if item.maxOccurrences else 'N/A' }}</dd>
           </div>
           <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">Validation Pattern</dt>
@@ -144,19 +148,28 @@
     </div>
 
     <!-- Storage & Security Section -->
+  </div>
+</div>
+
+<!-- HESA Reference Data Link Section -->
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
     <div class="govuk-summary-card govuk-!-margin-top-6">
       <div class="govuk-summary-card__title-wrapper">
         <h2 class="govuk-summary-card__title">
-          Storage & Security
+          HESA Reference Data Link
         </h2>
       </div>
       <div class="govuk-summary-card__content">
-        <dl class="govuk-summary-list govuk-!-margin-bottom-0">
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Database Column Name</dt>
-            <dd class="govuk-summary-list__value">{{ item.dbColumnName if item.dbColumnName else item.apiName }}</dd>
-          </div>
-        </dl>
+        <p class="govuk-body">
+          {% if item.hesaLink %}
+            <a href="{{ item.hesaLink }}" class="govuk-link" target="_blank" rel="noopener noreferrer">
+              {{ item.hesaLink }}
+            </a>
+          {% else %}
+            <span class="govuk-hint">HESA Reference data not applicable</span>
+          {% endif %}
+        </p>
       </div>
     </div>
   </div>
@@ -176,11 +189,8 @@
         <caption class="govuk-table__caption govuk-table__caption--m">{{ item.name }} Values</caption>
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">HESA Code</th>
+            <th scope="col" class="govuk-table__header">Code</th>
             <th scope="col" class="govuk-table__header">Name</th>
-            <th scope="col" class="govuk-table__header">Status</th>
-            <th scope="col" class="govuk-table__header">Change Type</th>
-            <th scope="col" class="govuk-table__header">Change Summary</th>
           </tr>
         </thead>
         <tbody class="govuk-table__body">
@@ -188,25 +198,6 @@
           <tr class="govuk-table__row">
             <td class="govuk-table__cell">{{ value.id }}</td>
             <td class="govuk-table__cell">{{ value.name }}</td>
-            <td class="govuk-table__cell">
-              {{ value.status | title }}
-            </td>
-            <td class="govuk-table__cell">
-              {% if value.changeType === 'new' or value.changeType === 'New' %}
-                <strong class="govuk-tag govuk-tag--blue">{{ value.changeType | title }}</strong>
-              {% elif value.changeType === 'no change' or value.changeType === 'No Change' %}
-                <strong class="govuk-tag govuk-tag--grey">{{ value.changeType | title }}</strong>
-              {% elif value.changeType === 'updated' or value.changeType === 'Updated' %}
-                <strong class="govuk-tag govuk-tag--yellow">{{ value.changeType | title }}</strong>
-              {% elif value.changeType === 'removed' or value.changeType === 'Removed' %}
-                <strong class="govuk-tag govuk-tag--red">{{ value.changeType | title }}</strong>
-              {% elif value.changeType === 'delayed' or value.changeType === 'Delayed' %}
-                <strong class="govuk-tag govuk-tag--orange">{{ value.changeType | title }}</strong>
-              {% else %}
-                <strong class="govuk-tag">{{ value.changeType | title }}</strong>
-              {% endif %}
-            </td>
-            <td class="govuk-table__cell">{{ value.changeSummary if value.changeSummary else "" }}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -214,6 +205,41 @@
     {% else %}
       <p class="govuk-body">No values found for this reference data item.</p>
     {% endif %}
+    
+    <h3 class="govuk-heading-m govuk-!-margin-top-6">Validation Rules</h3>
+    <div class="govuk-summary-card">
+      <div class="govuk-summary-card__content">
+        <table class="govuk-table">
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">Rule Type</th>
+              <th scope="col" class="govuk-table__header">Description</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% if item.validationRules and item.validationRules.length > 0 %}
+              {% for rule in item.validationRules %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">{{ rule.type }}</td>
+                <td class="govuk-table__cell">{{ rule.description }}</td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell" colspan="2">No specific validation rules defined for this item.</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <h3 class="govuk-heading-m govuk-!-margin-top-6">Notes</h3>
+    <div class="govuk-summary-card">
+      <div class="govuk-summary-card__content">
+        <p class="govuk-body">{{ item.notes if item.notes else 'No additional notes available for this reference data item.' }}</p>
+      </div>
+    </div>
   </div>
 </div>
 

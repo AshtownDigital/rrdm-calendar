@@ -2,7 +2,7 @@
 {% from "../release-notes/navigation-tabs/index.njk" import twoTierTabs %}
 
 {% block pageTitle %}
-  {% if selectedYear %}{{ selectedYear }} {% endif %}Change Summary - {{ serviceName }}
+  Register Initial Teacher Trainees {% if selectedYear %}{{ selectedYear }} academic year{% endif %} reference data - {{ serviceName }}
 {% endblock %}
 
 {% block stylesheets %}
@@ -13,7 +13,7 @@
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
-    <h1 class="govuk-heading-xl">Change Summary{% if selectedYear %} - {{ selectedYear }}{% endif %}</h1>
+    <h1 class="govuk-heading-xl">Register Initial Teacher Trainees {% if selectedYear %}{{ selectedYear }} academic year{% endif %} reference data</h1>
     
     {# Skip link for keyboard navigation #}
     <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
@@ -23,7 +23,7 @@
 
     <div class="govuk-tabs__panel" id="tab-summary">
       <div id="main-content" tabindex="-1">
-        <h2 class="govuk-heading-l">Summary of Changes for {{ selectedYear }}</h2>
+        <h2 class="govuk-heading-l">Reference data change summary for {{ selectedYear }} academic year</h2>
         
         <div class="govuk-grid-row">
           <div class="govuk-grid-column-one-quarter">
@@ -87,7 +87,21 @@
               <ul class="govuk-list">
                 {% for item in releaseNotes.changes.new.items %}
                   <li class="govuk-!-margin-bottom-4">
-                    <strong class="govuk-!-font-weight-bold">{{ item.name }}</strong> {% if item.type and item.category %}({{ item.type }} - {{ item.category }}){% endif %}
+                    <strong class="govuk-!-font-weight-bold">
+                      {% if item.name == "Sex" %}
+                        <a href="/items/sex/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% elif item.name == "Region" %}
+                        <a href="/items/region/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% elif item.name == "Ethnicity" %}
+                        <a href="/items/ethnicity/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% elif item.name == "Nationality" %}
+                        <a href="/items/nationality/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% elif item.name == "Disability Status" %}
+                        <a href="/items/disability-status/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% else %}
+                        <a href="/items/{{ item.name | lower | replace(' ', '-') }}/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% endif %}
+                    </strong>
                     {% if item.values and item.values.length > 0 %}
                       <div class="govuk-!-margin-left-4">
                         <p class="govuk-body govuk-!-margin-bottom-1">New Values:</p>
@@ -112,7 +126,21 @@
               <ul class="govuk-list">
                 {% for item in releaseNotes.changes.new.values %}
                   <li class="govuk-!-margin-bottom-4">
-                    <strong class="govuk-!-font-weight-bold">{{ item.itemName }}</strong> {% if item.type and item.category %}({{ item.type }} - {{ item.category }}){% endif %}
+                    <strong class="govuk-!-font-weight-bold">
+                      {% if item.itemName == "Sex" %}
+                        <a href="/items/sex/values?academic-year=2025-2026" class="govuk-link">{{ item.itemName }}</a>
+                      {% elif item.itemName == "Region" %}
+                        <a href="/items/region/values?academic-year=2025-2026" class="govuk-link">{{ item.itemName }}</a>
+                      {% elif item.itemName == "Ethnicity" %}
+                        <a href="/items/ethnicity/values?academic-year=2025-2026" class="govuk-link">{{ item.itemName }}</a>
+                      {% elif item.itemName == "Nationality" %}
+                        <a href="/items/nationality/values?academic-year=2025-2026" class="govuk-link">{{ item.itemName }}</a>
+                      {% elif item.itemName == "Disability Status" %}
+                        <a href="/items/disability-status/values?academic-year=2025-2026" class="govuk-link">{{ item.itemName }}</a>
+                      {% else %}
+                        <a href="/items/{{ item.itemName | lower | replace(' ', '-') }}/values?academic-year=2025-2026" class="govuk-link">{{ item.itemName }}</a>
+                      {% endif %}
+                    </strong>
                     {% if item.newValues and item.newValues.length > 0 %}
                       <div class="govuk-!-margin-left-4">
                         <p class="govuk-body govuk-!-margin-bottom-1">New Value(s):</p>
@@ -140,7 +168,21 @@
               <ul class="govuk-list">
                 {% for item in releaseNotes.changes.updated %}
                   <li class="govuk-!-margin-bottom-4">
-                    <strong class="govuk-!-font-weight-bold">{{ item.name }}</strong> {% if item.type and item.category %}({{ item.type }} - {{ item.category }}){% endif %}
+                    <strong class="govuk-!-font-weight-bold">
+                      {% if item.name == "Sex" %}
+                        <a href="/items/sex/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% elif item.name == "Region" %}
+                        <a href="/items/region/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% elif item.name == "Ethnicity" %}
+                        <a href="/items/ethnicity/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% elif item.name == "Nationality" %}
+                        <a href="/items/nationality/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% elif item.name == "Disability Status" %}
+                        <a href="/items/disability-status/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% else %}
+                        <a href="/items/{{ item.name | lower | replace(' ', '-') }}/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% endif %}
+                    </strong>
                     <div class="govuk-!-margin-left-4">
                       <p class="govuk-body">{{ item.changeSummary }}</p>
                       <p class="govuk-body govuk-!-font-size-16">{{ item.details }}</p>
@@ -162,7 +204,21 @@
               <ul class="govuk-list">
                 {% for item in releaseNotes.changes.removed %}
                   <li class="govuk-!-margin-bottom-4">
-                    <strong class="govuk-!-font-weight-bold">{{ item.name }}</strong> {% if item.type and item.category %}({{ item.type }} - {{ item.category }}){% endif %}
+                    <strong class="govuk-!-font-weight-bold">
+                      {% if item.name == "Sex" %}
+                        <a href="/items/sex/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% elif item.name == "Region" %}
+                        <a href="/items/region/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% elif item.name == "Ethnicity" %}
+                        <a href="/items/ethnicity/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% elif item.name == "Nationality" %}
+                        <a href="/items/nationality/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% elif item.name == "Disability Status" %}
+                        <a href="/items/disability-status/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% else %}
+                        <a href="/items/{{ item.name | lower | replace(' ', '-') }}/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% endif %}
+                    </strong>
                     <div class="govuk-!-margin-left-4">
                       <p class="govuk-body">{{ item.changeSummary }}</p>
                       <p class="govuk-body govuk-!-font-size-16">{{ item.details }}</p>
@@ -184,7 +240,21 @@
               <ul class="govuk-list">
                 {% for item in releaseNotes.changes.noChange %}
                   <li class="govuk-!-margin-bottom-2">
-                    <strong class="govuk-!-font-weight-bold">{{ item.name }}</strong> {% if item.type and item.category %}({{ item.type }} - {{ item.category }}){% endif %}
+                    <strong class="govuk-!-font-weight-bold">
+                      {% if item.name == "Sex" %}
+                        <a href="/items/sex/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% elif item.name == "Region" %}
+                        <a href="/items/region/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% elif item.name == "Ethnicity" %}
+                        <a href="/items/ethnicity/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% elif item.name == "Nationality" %}
+                        <a href="/items/nationality/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% elif item.name == "Disability Status" %}
+                        <a href="/items/disability-status/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% else %}
+                        <a href="/items/{{ item.name | lower | replace(' ', '-') }}/values?academic-year=2025-2026" class="govuk-link">{{ item.name }}</a>
+                      {% endif %}
+                    </strong>
                   </li>
                 {% endfor %}
               </ul>
