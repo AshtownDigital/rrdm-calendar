@@ -12,6 +12,9 @@ const getStatusHtml = (status) => {
 
 // Dashboard route
 router.get('/', (req, res) => {
+  // Set custom navigation for dashboard page only
+  res.locals.navigation = 'partials/dashboard-navigation.njk';
+  
   const items = itemsData.items;
   const activeItems = items.filter(item => item.status === 'Active');
   const updatedItems = items.filter(item => item.status === 'Updated');
@@ -30,6 +33,9 @@ router.get('/', (req, res) => {
     `
   }));
 
+  // Add custom CSS for dashboard navigation
+  res.locals.customCss = '<link rel="stylesheet" href="/stylesheets/dashboard-nav.css">';
+  
   res.render('modules/dashboard/index', {
     items: dashboardItems,
     activeCount: activeItems.length,

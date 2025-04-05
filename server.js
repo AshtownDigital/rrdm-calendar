@@ -53,7 +53,17 @@ app.locals.header = 'partials/header.njk';
 app.locals.navigation = 'partials/navigation.njk';
 app.locals.footer = 'partials/footer.njk';
 
+// Middleware to set navigation for each request
+app.use((req, res, next) => {
+  // Default navigation
+  if (!res.locals.navigation) {
+    res.locals.navigation = 'partials/navigation.njk';
+  }
+  next();
+});
+
 // Import route modules
+const homeRouter = require('./routes/home/index');
 const dashboardRouter = require('./routes/dashboard/index');
 const itemsRouter = require('./routes/items/index');
 const valuesRouter = require('./routes/values/index');
@@ -64,6 +74,7 @@ const restorePointsRouter = require('./routes/restore-points');
 const apiRouter = require('./api');
 
 // Use route modules
+app.use('/home', homeRouter);
 app.use('/dashboard', dashboardRouter);
 app.use('/items', itemsRouter);
 app.use('/values', valuesRouter);
@@ -73,9 +84,9 @@ app.use('/restore-points', restorePointsRouter);
 // Use API routes for Vercel serverless optimization
 app.use('/api', apiRouter);
 
-// Redirect root to dashboard
+// Redirect root to home
 app.get('/', (req, res) => {
-  res.redirect('/dashboard');
+  res.redirect('/home');
 });
 
 // Error handling middleware

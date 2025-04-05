@@ -19,6 +19,12 @@
   <link rel="stylesheet" href="/stylesheets/release-notes.css">
   <!-- Custom Tag Styles -->
   <link rel="stylesheet" href="/stylesheets/custom-tags.css">
+  <!-- Home Page Styles -->
+  <link rel="stylesheet" href="/stylesheets/home.css">
+  <!-- Custom Page-Specific CSS -->
+  {% if customCss %}
+    {{ customCss | safe }}
+  {% endif %}
 </head>
 <body class="govuk-template__body">
 
@@ -34,7 +40,7 @@
   {% include "partials/header.njk" %}
 
   <!-- Include Navigation -->
-  {% include "partials/navigation.njk" %}
+  {% include navigation %}
 
   <div class="govuk-width-container">
       <main class="govuk-main-wrapper" id="main-content">

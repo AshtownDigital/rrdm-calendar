@@ -1,0 +1,70 @@
+{% extends "layouts/base.njk" %}
+
+{% block title %}Home | Register Team Internal Services{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Register Team Internal Services</h1>
+    <p class="govuk-body-l">Select a service to continue</p>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <!-- Panel 1: Register Reference Data Management -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card">
+      <h2 class="govuk-heading-m">Register Reference Data Management</h2>
+      <p class="govuk-body">Manage and maintain reference data for registration systems.</p>
+      <a href="/dashboard" class="govuk-button">Access service</a>
+    </div>
+  </div>
+  
+  <!-- Panel 2 -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card">
+      <h2 class="govuk-heading-m">Data Validation</h2>
+      <p class="govuk-body">Validate and verify data quality across systems.</p>
+      <a href="#" class="govuk-button">Access service</a>
+    </div>
+  </div>
+  
+  <!-- Panel 3 -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card">
+      <h2 class="govuk-heading-m">Release Management</h2>
+      <p class="govuk-body">Schedule and track data releases across environments.</p>
+      <a href="/release-notes" class="govuk-button">Access service</a>
+    </div>
+  </div>
+</div>
+
+<div class="govuk-grid-row govuk-!-margin-top-6">
+  <!-- Panel 4 -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card">
+      <h2 class="govuk-heading-m">Data Dictionary</h2>
+      <p class="govuk-body">Browse and search the complete data dictionary.</p>
+      <a href="#" class="govuk-button">Access service</a>
+    </div>
+  </div>
+  
+  <!-- Panel 5 -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card">
+      <h2 class="govuk-heading-m">System Administration</h2>
+      <p class="govuk-body">Manage system settings and user permissions.</p>
+      <a href="#" class="govuk-button">Access service</a>
+    </div>
+  </div>
+  
+  <!-- Panel 6 -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card">
+      <h2 class="govuk-heading-m">Reporting</h2>
+      <p class="govuk-body">Generate reports and analytics on reference data usage.</p>
+      <a href="#" class="govuk-button">Access service</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
