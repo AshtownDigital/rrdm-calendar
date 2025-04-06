@@ -1,4 +1,4 @@
-{% extends "../../../layouts/base.njk" %}
+{% extends "layouts/base-no-header.njk" %}
 
 {% block pageTitle %}
   Dashboard - {{ serviceName }}
@@ -7,9 +7,19 @@
 {% block stylesheets %}
   <link href="/stylesheets/govuk-frontend.min.css" rel="stylesheet">
   <link href="/stylesheets/release-notes.css" rel="stylesheet">
+  <link href="/stylesheets/ref-data-nav.css" rel="stylesheet">
+{% endblock %}
+
+{% block header %}
+  {% include "partials/ref-data/header.njk" %}
+{% endblock %}
+
+{% block navigation %}
+  {% include "partials/ref-data/navigation.njk" %}
 {% endblock %}
 
 {% block content %}
+
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
     <h1 class="govuk-heading-xl">Reference Data Management Dashboard</h1>

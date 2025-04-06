@@ -1,4 +1,4 @@
-{% extends "layouts/base.njk" %}
+{% extends "layouts/base-no-header.njk" %}
 {% from "modules/ref-data/release-notes/navigation-tabs/index.njk" import academicYearTabs, viewTypeTabs %}
 
 {% block pageTitle %}
@@ -8,6 +8,15 @@
 {% block stylesheets %}
   <link href="/stylesheets/govuk-frontend.min.css" rel="stylesheet">
   <link href="/stylesheets/release-notes.css" rel="stylesheet">
+  <link href="/stylesheets/ref-data-nav.css" rel="stylesheet">
+{% endblock %}
+
+{% block header %}
+  {% include "partials/ref-data/header.njk" %}
+{% endblock %}
+
+{% block navigation %}
+  {% include "partials/ref-data/navigation.njk" %}
 {% endblock %}
 
 {% block content %}

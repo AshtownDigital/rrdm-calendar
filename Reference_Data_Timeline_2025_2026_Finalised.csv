@@ -1,0 +1,12 @@
+Phase,Start Date,End Date,Responsible Team,Purpose,Analysis & Considerations
+1. Submission Window Opens,2 September 2024,15 April 2025,Academic Registry,Collect proposed changes to reference data from stakeholders.,Launch collection form or CSV templates; log all metadata; track early trends in requests.
+2. Collation & Prioritisation,16 April 2025,30 April 2025,Data Governance Analysts,"Group similar submissions, flag duplicates, and categorize requests.","Align with high-impact policy areas; assess volume per category (e.g., training routes, disability)."
+3. Technical and Business Impact Analysis,1 May 2025,7 May 2025,Data Analysts + Governance Team,Assess system-level impact and business logic implications.,"Check cross-references, model risks, dependencies, and data structure integrity."
+4. Internal Analysis Playback,8 May 2025,15 May 2025,Reference Data Governance Committee,Present internal review outcomes to governance and align on decisions.,Score requests; include RAG status; log comments and reviewer decisions.
+5. Stakeholder Consultation,16 May 2025,31 May 2025,Submitters & Quality Assurance,"Notify submitters of outcomes, gather refinements.","Email confirmation, status updates; allow feedback on review outcomes and summaries."
+6. Drafting of Final Data,1 June 2025,7 June 2025,Reference Data Editors,Prepare final version of the data for publication and approval.,"Normalize value formats, apply version control, and define tags (New, Updated, Removed)."
+7. Final Approval,8 June 2025,15 June 2025,Academic Registrar,Approve the entire dataset for implementation.,Double-check audit trail and decision rationale; sign-off logged in audit logs.
+8. Implementation,16 June 2025,15 July 2025,DevOps / IT Implementation,Deploy approved reference data into the live system.,"Validate production environment, schema validation, and UI rendering."
+9. Implementation Validation and Testing,16 July 2025,20 July 2025,QA Team + Leads,Final check to confirm the correct visibility and accuracy.,"Include data tagging and rendering checks (inactive tags, filters, academic year views)."
+10. Go Live,1 August 2025,,System Administrator,"Reference data becomes available across all channels (UI, API, CSV).",Monitor for anomalies; track API usage and CSV downloads.
+11. Post-Implementation Review,2 August 2025,15 August 2025,Governance & Strategy,Review process success and data quality.,Log feedback; analyze rejected values; capture lessons learned for next year.

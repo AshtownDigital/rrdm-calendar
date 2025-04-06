@@ -81,7 +81,12 @@ app.use('/home', homeRouter);
 app.use('/ref-data', refDataRouter);
 
 // Legacy routes - these will be removed after migration is complete
-app.use('/dashboard', dashboardRouter);
+// Redirect /dashboard to /ref-data/dashboard
+app.get('/dashboard', (req, res) => {
+  res.redirect('/ref-data/dashboard');
+});
+
+// Keep these routes for backward compatibility
 app.use('/items', itemsRouter);
 app.use('/values', valuesRouter);
 app.use('/release-notes', releaseNotesRouter);

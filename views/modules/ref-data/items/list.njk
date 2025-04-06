@@ -1,4 +1,17 @@
-{% extends "layouts/base.njk" %}
+{% extends "layouts/base-no-header.njk" %}
+
+{% block stylesheets %}
+  <link href="/stylesheets/govuk-frontend.min.css" rel="stylesheet">
+  <link href="/stylesheets/ref-data-nav.css" rel="stylesheet">
+{% endblock %}
+
+{% block header %}
+  {% include "partials/ref-data/header.njk" %}
+{% endblock %}
+
+{% block navigation %}
+  {% include "partials/ref-data/navigation.njk" %}
+{% endblock %}
 
 {% block content %}
 <h1 class="govuk-heading-xl">Reference Data Directory {% if currentYear.id !== 'all' %}for {{ currentYear.name }}{% endif %}</h1>

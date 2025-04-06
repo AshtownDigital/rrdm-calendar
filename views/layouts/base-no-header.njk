@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" class="govuk-template">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Reference Data and Release Notes | GOV.UK{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0c0c">
+
+  <!-- Favicon & GOV.UK Icons -->
+  <link rel="icon" sizes="48x48" href="/assets/images/favicon.ico">
+  <link rel="icon" sizes="any" href="/assets/images/favicon.svg" type="image/svg+xml">
+  <link rel="mask-icon" href="/assets/images/govuk-icon-mask.svg" color="#0b0c0c">
+  <link rel="apple-touch-icon" href="/assets/images/govuk-icon-180.png">
+  <link rel="manifest" href="/assets/manifest.json">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="/stylesheets/govuk-frontend.min.css">
+  
+  <!-- Default Stylesheets - Can be overridden -->
+  {% block default_stylesheets %}
+    <link rel="stylesheet" href="/stylesheets/release-notes.css">
+    <link rel="stylesheet" href="/stylesheets/custom-tags.css">
+    <link rel="stylesheet" href="/stylesheets/home.css">
+  {% endblock %}
+  
+  <!-- Custom CSS from route -->
+  {% if customCss %}
+    {{ customCss | safe }}
+  {% endif %}
+  
+  <!-- Page-specific stylesheets -->
+  {% block stylesheets %}{% endblock %}
+</head>
+<body class="govuk-template__body">
+
+  <!-- Skip link for accessibility -->
+  <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
+
+  <!-- Enable JavaScript Features -->
+  <script>
+      document.body.className = document.body.className + ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');
+  </script>
+
+  <!-- Page Header Section -->
+  {% block header %}{% endblock %}
+
+  <!-- Navigation Section -->
+  {% block navigation %}{% endblock %}
+
+  <!-- Main Content -->
+  <div class="govuk-width-container">
+    <main class="govuk-main-wrapper" id="main-content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- Footer Section -->
+  {% block footer %}
+    {% include "partials/footer.njk" %}
+  {% endblock %}
+
+  <!-- Core JavaScript -->
+  <script type="module" src="/scripts/govuk-frontend.min.js"></script>
+  <script type="module">
+    import { initAll } from '/scripts/govuk-frontend.min.js';
+    initAll();
+  </script>
+  
+  <!-- Default Scripts - Can be overridden -->
+  {% block default_scripts %}{% endblock %}
+  
+  <!-- Page-specific scripts -->
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const itemsData = require('../../../data/items.json');
+const path = require('path');
+const fs = require('fs').promises;
 
 // Helper function to get item status HTML
 const getStatusHtml = (status) => {
@@ -10,10 +12,46 @@ const getStatusHtml = (status) => {
   return `<span class="status-tag status-tag--${className}">${status}</span>`;
 };
 
+// Get academic years from release notes data
+const getAcademicYears = async () => {
+  try {
+    const releaseNotesDir = path.join(__dirname, '../../../data/release-notes');
+    const alternateDir = path.join(__dirname, '../../../data/release_notes');
+    let files = [];
+    
+    // Try both directory paths
+    try {
+      files = await fs.readdir(releaseNotesDir);
+    } catch (err) {
+      try {
+        files = await fs.readdir(alternateDir);
+      } catch (innerErr) {
+        console.error('Error reading release notes directories:', innerErr);
+        return [];
+      }
+    }
+    
+    // Get all academic years from filenames
+    const academicYears = files
+      .filter(file => file.match(/^\d{4}[-_]\d{4}\.json$/))
+      .map(file => file.replace(/[-_]/, '/').replace('.json', ''))
+      .sort((a, b) => b.localeCompare(a)); // Sort descending
+    
+    return academicYears;
+  } catch (err) {
+    console.error('Error getting academic years:', err);
+    return [];
+  }
+};
+
 // Dashboard route
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   // Set custom navigation for dashboard page only
   res.locals.navigation = 'partials/ref-data-navigation.njk';
+  
+  // Get academic years for navigation
+  const academicYears = await getAcademicYears();
+  const selectedYear = req.query.year || (academicYears.length > 0 ? academicYears[0] : '');
   
   const items = itemsData.items;
   const activeItems = items.filter(item => item.status === 'Active');
@@ -40,7 +78,12 @@ router.get('/', (req, res) => {
     items: dashboardItems,
     activeCount: activeItems.length,
     updatedCount: updatedItems.length,
-    removedCount: removedItems.length
+    removedCount: removedItems.length,
+    academicYears: academicYears,
+    selectedYear: selectedYear,
+    latestYear: academicYears.length > 0 ? academicYears[0] : '',
+    latestVersion: '1.0',
+    serviceName: 'Reference Data Management'
   });
 });
 

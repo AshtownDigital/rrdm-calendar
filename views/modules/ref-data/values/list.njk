@@ -1,4 +1,4 @@
-{% extends "layouts/base.njk" %}
+{% extends "layouts/base-no-header.njk" %}
 
 {% block head %}
   {{ super() }}
@@ -74,6 +74,19 @@
       font-weight: 600;
     }
   </style>
+{% endblock %}
+
+{% block stylesheets %}
+  <link href="/stylesheets/govuk-frontend.min.css" rel="stylesheet">
+  <link href="/stylesheets/ref-data-nav.css" rel="stylesheet">
+{% endblock %}
+
+{% block header %}
+  {% include "partials/ref-data/header.njk" %}
+{% endblock %}
+
+{% block navigation %}
+  {% include "partials/ref-data/navigation.njk" %}
 {% endblock %}
 
 {% block content %}

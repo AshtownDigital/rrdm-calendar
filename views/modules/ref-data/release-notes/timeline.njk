@@ -8,12 +8,59 @@
 {% block stylesheets %}
   <link href="/stylesheets/govuk-frontend.min.css" rel="stylesheet">
   <link href="/stylesheets/release-notes.css" rel="stylesheet">
+  <style>
+    /* Custom styling for timeline icons */
+    .app-timeline-event.green-icon::before {
+      background-color: #00703c !important; /* Green color for Go Live */
+    }
+    
+    /* Timeline styling */
+    .app-timeline {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    
+    .app-timeline:before {
+      background-color: #1d70b8;
+      content: "";
+      height: 100%;
+      left: 0;
+      position: absolute;
+      top: 12px;
+      width: 3px;
+    }
+    
+    .app-timeline-event {
+      margin-bottom: 20px;
+      padding-left: 20px;
+      position: relative;
+    }
+    
+    .app-timeline-event::before {
+      content: "";
+      position: absolute;
+      left: -8px;
+      top: 15px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #1d70b8;
+      border: 4px solid #ffffff;
+      box-shadow: 0 0 0 1px #b1b4b6;
+    }
+    
+    .phase-tag--blue { color: #1d70b8; }
+    .phase-tag--green { color: #00703c; }
+    .phase-tag--purple { color: #4c2c92; }
+    
+
+  </style>
 {% endblock %}
 
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
-    <h1 class="govuk-heading-xl">Register Initial Teacher Trainees {% if selectedYear %}{{ selectedYear }} academic year{% endif %} reference data</h1>
+    <h1 class="govuk-heading-xl">Register Initial Teacher Trainees 2025/2026 academic year reference data</h1>
     
     {# Skip link for keyboard navigation #}
     <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
@@ -24,67 +71,52 @@
 
     <div class="govuk-tabs__panel" id="tab-timeline">
       <div id="main-content" class="govuk-!-margin-bottom-6" tabindex="-1">
-        <h2 class="govuk-heading-l">Reference data release timeline for {{ selectedYear }} academic year</h2>
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-two-thirds">
+            <h2 class="govuk-heading-l">Reference data release timeline for 2025/2026 academic year</h2>
+            <p class="govuk-body">The timeline below shows the standard process for updating reference data for the {{ selectedYear }} academic year.</p>
+          </div>
+        </div>
         
-        {# Release Notes Timeline #}
-        <ol class="app-timeline">
-          {% for event in releaseNotes.timeline %}
-            <li class="app-timeline-event">
-              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ event.date | date("D MMMM YYYY") }}</h3>
-              <p class="govuk-body">{{ event.description }}</p>
-              {% if event.changes %}
-                <ul class="govuk-list govuk-list--bullet">
-                  {% for change in event.changes %}
-                    <li>{{ change }}</li>
-                  {% endfor %}
-                </ul>
-              {% endif %}
-            </li>
-          {% endfor %}
-        </ol>
-
-        <p class="govuk-body govuk-!-margin-top-6">The following timeline shows the standard process for updating reference data for each academic year.</p>
+        <div class="govuk-inset-text">
+          <p>This timeline covers the entire reference data update cycle from initial submission to post-implementation review.</p>
+        </div>
         
-        <ol class="app-timeline">
-          {% for event in timeline.timeline %}
-            <li class="app-timeline-event">
-              <span class="govuk-tag govuk-tag--{{ event.tag }}">Phase {{ loop.index }}</span>
-              <h3 class="govuk-heading-s govuk-!-margin-bottom-1 govuk-!-margin-top-2">{{ event.description }}</h3>
-              <div class="govuk-summary-list">
-                <div class="govuk-summary-list__row">
-                  <dt class="govuk-summary-list__key">Timeline</dt>
-                  <dd class="govuk-summary-list__value">
-                    {{ event.date | date("D MMMM YYYY") }}{% if event.endDate %} - {{ event.endDate | date("D MMMM YYYY") }}{% endif %}
-                  </dd>
-                </div>
-                <div class="govuk-summary-list__row">
-                  <dt class="govuk-summary-list__key">Activity</dt>
-                  <dd class="govuk-summary-list__value">{{ event.activity }}</dd>
-                </div>
-                <div class="govuk-summary-list__row">
-                  <dt class="govuk-summary-list__key">Deadline</dt>
-                  <dd class="govuk-summary-list__value">{{ event.deadline }}</dd>
-                </div>
-              </div>
-            </li>
-          {% endfor %}
-        </ol>
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-full">
+            <ol class="app-timeline">
+              {% for event in timeline.timeline %}
+                <li class="app-timeline-event{% if event.description == "10. Go Live" %} green-icon{% endif %}">
+                  <h3 class="govuk-heading-s govuk-!-margin-bottom-1 govuk-!-margin-top-2">
+                    {{ event.description }}
+                  </h3>
+                  
+                  <div class="govuk-summary-list">
+                    <div class="govuk-summary-list__row">
+                      <dt class="govuk-summary-list__key">Timeline</dt>
+                      <dd class="govuk-summary-list__value">
+                        {{ event.date | date("D MMMM YYYY") }}{% if event.endDate %} - {{ event.endDate | date("D MMMM YYYY") }}{% endif %}
+                      </dd>
+                    </div>
+                    <div class="govuk-summary-list__row">
+                      <dt class="govuk-summary-list__key">Activity</dt>
+                      <dd class="govuk-summary-list__value">{{ event.activity }}</dd>
+                    </div>
+                    <div class="govuk-summary-list__row">
+                      <dt class="govuk-summary-list__key">Deadline</dt>
+                      <dd class="govuk-summary-list__value">{{ event.deadline }}</dd>
+                    </div>
+                  </div>
+                </li>
+              {% endfor %}
+            </ol>
+          </div>
+        </div>
       </div>
 
 
       
-      {# Action Buttons #}
-      <div class="govuk-button-group govuk-!-margin-top-6">
-        <a href="/ref-data" class="govuk-button govuk-button--secondary">
-          <span aria-hidden="true">&larr; </span>Back to Dashboard
-        </a>
-        <a href="/ref-data/release-notes?year={{ selectedYear }}&view=list" class="govuk-button">
-          View Full List
-        </a>
-        <a href="/ref-data/release-notes?year={{ selectedYear }}&view=summary" class="govuk-button govuk-button--secondary">
-          View Change Summary
-        </a>
-      </div>
+
     </div>
   </div>
 </div>
