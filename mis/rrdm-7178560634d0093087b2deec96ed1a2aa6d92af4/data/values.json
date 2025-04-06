@@ -1,0 +1,198 @@
+{
+  "gender-identity": {
+    "values": [
+      {
+        "id": "cisgender",
+        "name": "Cisgender",
+        "status": "Active",
+        "changeType": "New",
+        "history": [
+          {
+            "academicYear": "2025/26",
+            "status": "Active",
+            "changeType": "New",
+            "summary": "Added to capture gender identity information",
+            "lastUpdated": "2025-03-11"
+          }
+        ]
+      },
+      {
+        "id": "transgender",
+        "name": "Transgender",
+        "status": "Active",
+        "changeType": "New",
+        "history": [
+          {
+            "academicYear": "2025/26",
+            "status": "Active",
+            "changeType": "New",
+            "summary": "Added to capture gender identity information",
+            "lastUpdated": "2025-03-11"
+          }
+        ]
+      }
+    ]
+  },
+  "preferred-pronouns": {
+    "values": [
+      {
+        "id": "he-him",
+        "name": "He/Him",
+        "status": "Active",
+        "changeType": "New",
+        "history": [
+          {
+            "academicYear": "2025/26",
+            "status": "Active",
+            "changeType": "New",
+            "summary": "Added to support inclusive data collection",
+            "lastUpdated": "2025-03-11"
+          }
+        ]
+      },
+      {
+        "id": "she-her",
+        "name": "She/Her",
+        "status": "Active",
+        "changeType": "New",
+        "history": [
+          {
+            "academicYear": "2025/26",
+            "status": "Active",
+            "changeType": "New",
+            "summary": "Added to support inclusive data collection",
+            "lastUpdated": "2025-03-11"
+          }
+        ]
+      },
+      {
+        "id": "they-them",
+        "name": "They/Them",
+        "status": "Active",
+        "changeType": "New",
+        "history": [
+          {
+            "academicYear": "2025/26",
+            "status": "Active",
+            "changeType": "New",
+            "summary": "Added to support inclusive data collection",
+            "lastUpdated": "2025-03-11"
+          }
+        ]
+      }
+    ]
+  },
+  "sex": {
+    "values": [
+      {
+        "id": "male",
+        "name": "Male",
+        "status": "Active",
+        "changeType": "No Change",
+        "history": [
+          {
+            "academicYear": "2025/26",
+            "status": "Active",
+            "changeType": "No Change",
+            "summary": "No updates made",
+            "lastUpdated": "2025-09-01"
+          }
+        ]
+      },
+      {
+        "id": "female",
+        "name": "Female",
+        "status": "Active",
+        "changeType": "No Change",
+        "history": [
+          {
+            "academicYear": "2025/26",
+            "status": "Active",
+            "changeType": "No Change",
+            "summary": "No updates made",
+            "lastUpdated": "2025-09-01"
+          }
+        ]
+      },
+      {
+        "id": "intersex",
+        "name": "Intersex",
+        "status": "Updated",
+        "changeType": "Updated",
+        "history": [
+          {
+            "academicYear": "2025/26",
+            "status": "Updated",
+            "changeType": "Updated",
+            "summary": "Definition refined for clarity",
+            "lastUpdated": "2025-02-15"
+          }
+        ]
+      }
+    ]
+  },
+  "training-routes": {
+    "values": [
+      {
+        "id": "provider-led-pg",
+        "name": "Provider-Led Postgraduate",
+        "status": "Active",
+        "changeType": "No Change",
+        "history": [
+          {
+            "academicYear": "2025/26",
+            "status": "Active",
+            "changeType": "No Change",
+            "summary": "No updates made",
+            "lastUpdated": "2025-09-01"
+          }
+        ]
+      },
+      {
+        "id": "school-direct-fee",
+        "name": "School Direct Tuition Fee",
+        "status": "Active",
+        "changeType": "No Change",
+        "history": [
+          {
+            "academicYear": "2025/26",
+            "status": "Active",
+            "changeType": "No Change",
+            "summary": "No updates made",
+            "lastUpdated": "2025-09-01"
+          }
+        ]
+      },
+      {
+        "id": "school-direct-salaried",
+        "name": "School Direct Salaried",
+        "status": "Active",
+        "changeType": "Updated",
+        "history": [
+          {
+            "academicYear": "2025/26",
+            "status": "Active",
+            "changeType": "Updated",
+            "summary": "Updated eligibility criteria",
+            "lastUpdated": "2024-02-15"
+          }
+        ]
+      },
+      {
+        "id": "international-qts",
+        "name": "International QTS",
+        "status": "Active",
+        "changeType": "New",
+        "history": [
+          {
+            "academicYear": "2025/26",
+            "status": "Active",
+            "changeType": "New",
+            "summary": "Added new route for international QTS",
+            "lastUpdated": "2024-02-15"
+          }
+        ]
+      }
+    ]
+  }
+}

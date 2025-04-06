@@ -64,8 +64,11 @@ app.use((req, res, next) => {
 
 // Import route modules
 const homeRouter = require('./routes/home/index');
+const refDataRouter = require('./routes/ref-data/index');
+
+// Legacy routes - these will be removed after migration is complete
 const dashboardRouter = require('./routes/dashboard/index');
-const itemsRouter = require('./routes/items/index');
+const itemsRouter = require('./routes/items');
 const valuesRouter = require('./routes/values/index');
 const releaseNotesRouter = require('./routes/release-notes/index');
 const restorePointsRouter = require('./routes/restore-points');
@@ -75,6 +78,9 @@ const apiRouter = require('./api');
 
 // Use route modules
 app.use('/home', homeRouter);
+app.use('/ref-data', refDataRouter);
+
+// Legacy routes - these will be removed after migration is complete
 app.use('/dashboard', dashboardRouter);
 app.use('/items', itemsRouter);
 app.use('/values', valuesRouter);

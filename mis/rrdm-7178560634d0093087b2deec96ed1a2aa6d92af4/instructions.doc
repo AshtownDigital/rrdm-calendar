@@ -1,0 +1,252 @@
+📌 Full Requirements & Mockups for Reference Data Management System
+This document outlines the full development requirements for the frontend-only Reference Data Management System, using the GOV.UK Frontend Design System.
+It includes functional requirements, navigation, text-based UI mockups, installation/setup instructions, separation of concerns, a modularized approach, and module-based folder structuring.
+
+🏗️ 1. System Overview
+✅ Key Features
+Dashboard for managing reference data items
+Reference Data Items View (list of all items)
+Reference Data Values View (values associated with an item)
+History Tracking (view changes across academic years)
+Active Data Overview (filtered by academic year)
+Release Notes Page (summarizing all changes)
+Navigation Component with Search
+Sorting, filtering, and export options
+Separation of Concerns for maintainability
+Modularized structure for reusability and scalability
+Each module has its own sub-folder for maintainability
+Do not use emojis
+✅ Technology Stack
+Frontend Framework: GOV.UK Frontend (HTML, Nunjucks)
+Templating Engine: Nunjucks (for reusable UI components)
+Static Data Handling: JSON files
+Server: Express.js (to serve static pages)
+Styling: GOV.UK Design System
+Hosting: GitHub Pages / GOV.UK PaaS / Static Hosting
+
+
+📂 2. Folder Structure
+The project is modularized, with each module having its own sub-folder for better maintainability.
+
+bash
+Copy
+Edit
+/reference-data-management/
+│── /public/                  # Static assets (CSS, JS, images)
+│   │── /styles/              # GOV.UK Frontend styles
+│   │── /scripts/             # JavaScript files
+│   │── /assets/              # Fonts, images, manifest
+│── /views/                   # GOV.UK Nunjucks templates
+│   │── /layouts/             # Base templates (layout, structure)
+│   │── /partials/            # Reusable UI components (header, navigation, footer)
+│   │── /modules/             # Modules for each feature
+│   │   │── /dashboard/       # Dashboard module
+│   │   │   │── dashboard.njk # Dashboard view
+│   │   │── /items/           # Reference Data Items module
+│   │   │   │── list.njk      # List of items
+│   │   │   │── details.njk   # Item details page
+│   │   │── /values/          # Reference Data Values module
+│   │   │   │── list.njk      # List of values for an item
+│   │   │   │── history.njk   # History of a value
+│   │   │── /release-notes/   # Release Notes module
+│   │   │   │── list.njk      # Summary of changes per academic year
+│── /data/                    # Static JSON files for reference data
+│   │── items.json            # List of items
+│   │── values.json           # List of values per item
+│   │── release-notes.json    # Release notes per academic year
+│── /routes/                  # Express route handlers
+│   │── /dashboard/           # Dashboard routes
+│   │   │── index.js          # Handles dashboard route logic
+│   │── /items/               # Items module routes
+│   │   │── index.js          # Handles items listing
+│   │── /values/              # Values module routes
+│   │   │── index.js          # Handles values listing
+│   │── /release-notes/       # Release notes module routes
+│   │   │── index.js          # Handles release notes
+│── /server.js                # Express server to serve static files
+│── package.json              # Dependencies
+│── README.md                 # Documentation
+📍 3. Example Mockups
+Here are example UI mockups for each key page of the system.
+
+📍 Dashboard View
+📌 Navigation Path: /dashboard
+
+pgsql
+Copy
+Edit
++--------------------------------------------------------------------------------------------------+
+| 🏛️ Reference Data Management Dashboard                                                         |
++--------------------------------------------------------------------------------------------------+
+| 📂 Reference Data Items                                                                        |
+|----------------------------------------------------------------------------------------------|
+| Item Name                | Status      | Change Type  | Last Updated  | Actions             |
+|--------------------------|------------|-------------|--------------|---------------------|
+| Sex                      | 🟢 Active  | No Change   | 01 Sep 2025  | [ View Details ]   |
+| Training Routes          | 🟢 Active  | Updated     | 15 Feb 2024  | [ View Details ]   |
+| Disability Status        | 🔴 Inactive | Removed     | 05 Dec 2023  | [ View Details ]   |
++--------------------------------------------------------------------------------------------------+
+| 🔍 [ Search Reference Data ]      📥 [ Export Data ]      📊 [ Reports & Analytics ]         |
++--------------------------------------------------------------------------------------------------+
+📍 Reference Data Items View
+📌 Navigation Path: /items
+
+pgsql
+Copy
+Edit
++--------------------------------------------------------------------------------------------------+
+| 🏛️ Reference Data Items                                                                        |
++--------------------------------------------------------------------------------------------------+
+| 📅 Academic Year: 2025/26                                                                        |
++--------------------------------------------------------------------------------------------------+
+| Item Name                 | Status      | Change Type  | Actions                                |
+|---------------------------|------------|-------------|----------------------------------------|
+| Sex                       | 🟢 Active  | No Change   | [ View Values ]  [ View History ]     |
+| Training Routes           | 🟢 Active  | Updated     | [ View Values ]  [ View History ]     |
+| Disability Status         | 🔴 Inactive | Removed     | [ View Values ]  [ View History ]     |
++--------------------------------------------------------------------------------------------------+
+| 🔙 [ Back to Dashboard ]                                                                       |
++--------------------------------------------------------------------------------------------------+
+📍 Active Reference Data Items & Values
+📌 Navigation Path: /items/active/{year}
+
+pgsql
+Copy
+Edit
++--------------------------------------------------------------------------------------------------+
+| 🏛️ Active Reference Data Items & Values                                                         |
++--------------------------------------------------------------------------------------------------+
+| 📅 Academic Year: 2025/26                                                                        |
++--------------------------------------------------------------------------------------------------+
+| **Sex**                                                                                         |
+| - Male (🟢 Active | No Change)                                                                 |
+| - Female (🟢 Active | No Change)                                                               |
+| - Intersex (🟡 Updated | Updated)                                                              |
+| - Not Provided (🔴 Removed | Removed)                                                          |
++--------------------------------------------------------------------------------------------------+
+| **Training Routes**                                                                             |
+| - Provider-Led Postgraduate (🟢 Active | No Change)                                            |
+| - School Direct Tuition Fee (🟢 Active | No Change)                                            |
+| - School Direct Salaried (🟢 Active | No Change)                                               |
+| - International QTS (🟢 Active | New)                                                          |
++--------------------------------------------------------------------------------------------------+
+| 🔙 [ Back to Dashboard ]  🔗 [ View Release Notes for 2025/26 ]                                  |
++--------------------------------------------------------------------------------------------------+
+📂 4. Features & Enhancements
+✅ GOV.UK Frontend components (without macros)
+✅ Static JSON data (no database required)
+✅ Dropdown for selecting academic years
+✅ Search bar added to navigation
+✅ Fully accessible (ARIA compliance)
+✅ Mobile responsive (GOV.UK layout grid)
+✅ Now includes Status & Change Type in all index tables
+✅ Full installation & setup instructions for GOV.UK Frontend
+✅ Explicit rule: NO use of GOV.UK macros
+✅ Separation of Concerns for clear architecture
+✅ Fully modularized structure with sub-folders per module
+
+📍 4. Installing & Setting Up GOV.UK Frontend
+✅ Install GOV.UK Frontend
+Run the following command to install the GOV.UK Frontend package:
+
+bash
+Copy
+Edit
+npm install govuk-frontend --save
+Once the installation finishes, the govuk-frontend package will be in your node_modules folder.
+
+✅ Get the CSS, Assets, and JavaScript Working
+1️⃣ Get the CSS Working
+Copy the CSS file from GOV.UK Frontend to your project:
+
+bash
+Copy
+Edit
+cp node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.css public/styles/
+Then, add the CSS file reference in your page layout:
+
+html
+Copy
+Edit
+<head>
+  <link rel="stylesheet" href="/styles/govuk-frontend.min.css">
+</head>
+2️⃣ Get the JavaScript Working
+Enable JavaScript in Your Pages
+Add this script to the <body> section of your page template:
+html
+Copy
+Edit
+<script>
+  document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');
+</script>
+Copy the JavaScript File
+bash
+Copy
+Edit
+cp node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.js public/scripts/
+Import the JavaScript & Initialize Components
+Add this before the closing </body> tag:
+html
+Copy
+Edit
+<body class="govuk-template__body">
+  <script type="module" src="/scripts/govuk-frontend.min.js"></script>
+  <script type="module">
+    import { initAll } from '/scripts/govuk-frontend.min.js'
+    initAll()
+  </script>
+</body>
+📂 5. Features & Enhancements
+✅ GOV.UK Frontend components (without macros)
+✅ Static JSON data (no database required)
+✅ Dropdown for selecting academic years
+✅ Search bar added to navigation
+✅ Fully accessible (ARIA compliance)
+✅ Mobile responsive (GOV.UK layout grid)
+✅ Now includes Status & Change Type in all index tables
+✅ Full installation & setup instructions for GOV.UK Frontend
+✅ Explicit rule: NO use of GOV.UK macros
+✅ Separation of Concerns for clear architecture
+✅ Modularized structure for scalability
+
+
+
+📂 2. Development Guidelines
+❌ Do Not Use GOV.UK Macros
+All components should be written using raw HTML rather than relying on GOV.UK Macros. This ensures that the application remains:
+✅ Easier to debug and customize
+✅ Independent of Nunjucks macros
+✅ More maintainable in the long run
+
+🔹 Example:
+Instead of using the GOV.UK Macro for buttons:
+
+njk
+Copy
+Edit
+{{ govukButton({
+  text: "Submit",
+  href: "/submit"
+}) }}
+Use plain HTML:
+
+html
+Copy
+Edit
+<a href="/submit" class="govuk-button">Submit</a>
+
+
+
+
+tags schema	Tag
+govuk-tag--grey	Inactive
+govuk-tag--green	New or No Change
+govuk-tag--turquoise	Active
+govuk-tag--blue	Pending
+govuk-tag--light-blue	In progress
+govuk-tag--purple	Updated
+govuk-tag--pink	Sent
+govuk-tag--red	Rejected
+govuk-tag--orange	Removed
+govuk-tag--yellow	Delayed

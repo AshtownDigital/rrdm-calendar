@@ -1,0 +1,21 @@
+{
+  "name": "reference-data-management",
+  "version": "1.0.0",
+  "description": "Reference Data Management System using GOV.UK Frontend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon --watch '**/*.js' --watch '**/*.njk' --watch '**/*.json' --watch '**/*.md' server.js",
+    "build": "mkdir -p public/stylesheets public/scripts public/assets && cp -R node_modules/govuk-frontend/dist/govuk/assets public/ && cp node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.css public/stylesheets/ && cp node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.css.map public/stylesheets/ && cp node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.js public/scripts/",
+    "vercel-build": "npm run build"
+  },
+  "dependencies": {
+    "date-fns": "^4.1.0",
+    "express": "^4.21.2",
+    "govuk-frontend": "^5.9.0",
+    "nunjucks": "^3.2.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

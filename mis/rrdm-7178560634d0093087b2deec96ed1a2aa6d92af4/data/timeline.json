@@ -1,0 +1,57 @@
+{
+  "timeline": [
+    {
+      "date": "2025-03-01",
+      "endDate": "2025-04-15",
+      "description": "Data Collection Phase",
+      "activity": "Collect proposed updates from academic bodies.",
+      "responsible": "Academic Registry",
+      "deadline": "April 15",
+      "tag": "blue"
+    },
+    {
+      "date": "2025-04-16",
+      "endDate": "2025-05-31",
+      "description": "Review Phase",
+      "activity": "Review proposed updates and conduct stakeholder consultation.",
+      "responsible": "Reference Data Governance Committee",
+      "deadline": "May 31",
+      "tag": "blue"
+    },
+    {
+      "date": "2025-06-01",
+      "endDate": "2025-06-15",
+      "description": "Approval Phase",
+      "activity": "Approve final updates and log them into the system.",
+      "responsible": "Academic Registrar",
+      "deadline": "June 15",
+      "tag": "blue"
+    },
+    {
+      "date": "2025-06-16",
+      "endDate": "2025-07-15",
+      "description": "Implementation Phase",
+      "activity": "Implement changes and update the reference data tables.",
+      "responsible": "IT/Data Management Team",
+      "deadline": "July 15",
+      "tag": "blue"
+    },
+    {
+      "date": "2025-08-01",
+      "description": "Release Phase",
+      "activity": "New reference data goes live.",
+      "responsible": "System Administrator",
+      "deadline": "August 1",
+      "tag": "green"
+    },
+    {
+      "date": "2025-08-02",
+      "endDate": "2025-08-15",
+      "description": "Post-Implementation Review",
+      "activity": "Conduct a post-implementation review.",
+      "responsible": "Academic Quality Assurance Team",
+      "deadline": "August 15",
+      "tag": "purple"
+    }
+  ]
+}

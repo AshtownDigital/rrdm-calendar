@@ -1,0 +1,431 @@
+/* Release Notes Specific Styles */
+
+/* Improved navigation structure */
+/* Primary navigation (academic year) */
+.govuk-tabs__list {
+  margin-bottom: 0 !important;
+  border-bottom: 2px solid #1d70b8 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+}
+
+.govuk-tabs__list-item {
+  margin-right: 5px !important;
+  border-radius: 5px 5px 0 0 !important;
+  border: 1px solid #b1b4b6 !important;
+  border-bottom: none !important;
+}
+
+/* Secondary navigation (view types) */
+.govuk-tabs__panel {
+  padding: 0 !important;
+  margin-top: 0 !important;
+  border: none !important;
+  background-color: #f3f2f1 !important;
+}
+
+.govuk-tabs__panel .govuk-tabs__list {
+  background-color: #f3f2f1 !important;
+  border-bottom: 1px solid #b1b4b6 !important;
+  padding: 0 15px !important;
+}
+
+.govuk-tabs__panel .govuk-tabs__list-item {
+  margin-right: 5px !important;
+  margin-bottom: 0 !important;
+  border: none !important;
+  border-bottom: 4px solid transparent !important;
+}
+
+/* Content panel */
+.govuk-tabs__panel .govuk-tabs__panel {
+  background-color: white !important;
+  padding: 30px !important;
+  border: 1px solid #b1b4b6 !important;
+  border-top: none !important;
+}
+
+/* Primary navigation (academic year) selected tab styling */
+.govuk-tabs__list-item--selected {
+  background-color: #1d70b8 !important;
+  border: 1px solid #1d70b8 !important;
+  border-bottom: none !important;
+}
+
+.govuk-tabs__list-item--selected .govuk-tabs__tab {
+  color: white !important;
+  font-weight: bold !important;
+}
+
+/* Secondary navigation (view types) selected tab styling */
+.govuk-tabs__panel .govuk-tabs__list-item--selected {
+  border-bottom: 4px solid #1d70b8 !important;
+  background-color: transparent !important;
+}
+
+.govuk-tabs__panel .govuk-tabs__list-item--selected .govuk-tabs__tab {
+  color: #1d70b8 !important;
+  font-weight: bold !important;
+  background-color: transparent !important;
+}
+
+/* Hover effects for tabs */
+.govuk-tabs__list-item:hover {
+  background-color: #f8f8f8 !important;
+}
+
+.govuk-tabs__list-item--selected:hover {
+  /* Keep the same background as the selected state */
+  background-color: #1d70b8 !important;
+}
+
+.govuk-tabs__panel .govuk-tabs__list-item:hover {
+  border-bottom: 4px solid #b1b4b6 !important;
+  background-color: transparent !important;
+}
+
+.govuk-tabs__panel .govuk-tabs__list-item--selected:hover {
+  border-bottom: 4px solid #1d70b8 !important;
+  background-color: transparent !important;
+}
+
+/* Style for the selected academic year display */
+.selected-year-display {
+  background-color: #f3f2f1;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  font-weight: bold;
+  border-left: 4px solid #1d70b8;
+  color: #1d70b8;
+}
+
+/* Remove only the top margin from the second level tabs list */
+.govuk-tabs__panel .govuk-tabs__list {
+  margin-top: 0 !important;
+}
+
+/* Skip Link - Accessibility */
+.govuk-skip-link {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  -webkit-clip-path: inset(50%);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.govuk-skip-link:active,
+.govuk-skip-link:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  -webkit-clip-path: none;
+  clip-path: none;
+  white-space: inherit;
+}
+
+/* Tab Navigation */
+.govuk-tabs__panel {
+  border: 1px solid #b1b4b6;
+  border-top: 0;
+  padding: 30px;
+}
+
+/* Academic Year Navigation */
+[aria-label="Academic Year Selection"] .govuk-tabs__list {
+  border-bottom: 4px solid #1d70b8;
+  margin-bottom: 30px;
+}
+
+[aria-label="Academic Year Selection"] .govuk-tabs__list-item {
+  margin-bottom: -4px;
+  padding: 15px 25px;
+  background: #f3f2f1;
+}
+
+[aria-label="Academic Year Selection"] .govuk-tabs__list-item--selected {
+  background: #1d70b8;
+  border: none;
+  color: #ffffff;
+}
+
+[aria-label="Academic Year Selection"] .govuk-tabs__tab {
+  text-decoration: none;
+  color: #1d70b8;
+}
+
+[aria-label="Academic Year Selection"] .govuk-tabs__list-item--selected .govuk-tabs__tab {
+  color: #ffffff;
+}
+
+[aria-label="Academic Year Selection"] .govuk-tabs__tab:focus {
+  outline: 3px solid #ffdd00;
+  outline-offset: 0;
+  background-color: #ffdd00;
+}
+
+/* Content Sections */
+.app-section {
+  padding: 2rem;
+  margin-bottom: 2.5rem;
+  border: 1px solid #b1b4b6;
+  background: #ffffff;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.app-section h3 {
+  margin-top: 0;
+  color: #0b0c0c;
+}
+
+.app-section--new {
+  border-left: 4px solid #1d70b8; /* GOV.UK Blue */
+  background-color: #f0f4f5;
+}
+
+.app-section--updated {
+  border-left: 4px solid #b1b4b6; /* GOV.UK Grey */
+  background-color: #f3f2f1;
+}
+
+.app-section--removed {
+  border-left: 4px solid #d4351c; /* GOV.UK Red */
+  background-color: #fff1f0;
+}
+
+.app-section--no-change {
+  border-left: 4px solid #626a6e; /* GOV.UK Dark Grey */
+  background-color: #f8f8f8;
+}
+
+/* Summary Cards */
+.summary-card {
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #b1b4b6;
+  background: #ffffff;
+  border-radius: 5px;
+  text-align: center;
+  height: 100%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.summary-card h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.summary-card--new {
+  border-top: 4px solid #1d70b8; /* GOV.UK Blue */
+}
+
+.summary-card--updated {
+  border-top: 4px solid #b1b4b6; /* GOV.UK Grey */
+}
+
+.summary-card--removed {
+  border-top: 4px solid #d4351c; /* GOV.UK Red */
+}
+
+.summary-card--unchanged {
+  border-top: 4px solid #626a6e; /* GOV.UK Dark Grey */
+}
+
+/* Timeline Styles */
+.app-timeline {
+  padding-left: 0;
+  margin-bottom: 2rem;
+  list-style: none;
+}
+
+.app-timeline-event {
+  position: relative;
+  padding-left: 25px;
+  margin-bottom: 2rem;
+  border-left: 4px solid #1d70b8;
+  padding: 1.5rem 1.5rem 1rem;
+  background-color: #f8f8f8;
+  border-radius: 0 5px 5px 0;
+}
+
+.app-timeline-event::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 1.25rem;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #1d70b8;
+  border: 4px solid #ffffff;
+  box-shadow: 0 0 0 1px #b1b4b6;
+}
+
+/* Timeline tag colors */
+.govuk-tag--blue {
+  background-color: #1d70b8;
+}
+
+.govuk-tag--green {
+  background-color: #00703c;
+}
+
+.govuk-tag--purple {
+  background-color: #4c2c92;
+}
+
+/* Summary Card */
+.govuk-summary-card {
+  border: 1px solid #b1b4b6;
+  margin-bottom: 2rem;
+}
+
+.govuk-summary-card__title-wrapper {
+  background: #f3f2f1;
+  padding: 1.5rem;
+  border-bottom: 1px solid #b1b4b6;
+}
+
+.govuk-summary-card__content {
+  padding: 1.5rem;
+}
+
+/* Summary List */
+.govuk-summary-list {
+  margin-bottom: 0;
+  font-family: "GDS Transport", arial, sans-serif;
+}
+
+.govuk-summary-list__row {
+  display: flex;
+  border-bottom: 1px solid #b1b4b6;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+}
+
+.govuk-summary-list__row:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.govuk-summary-list__key {
+  width: 30%;
+  font-weight: 700;
+  color: #0b0c0c;
+}
+
+.govuk-summary-list__value {
+  width: 70%;
+}
+
+/* Button Groups */
+.govuk-button-group {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+/* List Styles */
+.govuk-list--bullet {
+  list-style-type: disc;
+  padding-left: 20px;
+  margin-left: 1rem;
+}
+
+.govuk-list--bullet > li {
+  margin-bottom: 0.75rem;
+}
+
+/* Spacing Utilities */
+.govuk-\!-margin-left-4 {
+  margin-left: 1rem !important;
+}
+
+.govuk-\!-margin-bottom-4 {
+  margin-bottom: 1rem !important;
+}
+
+.govuk-\!-margin-bottom-1 {
+  margin-bottom: 0.25rem !important;
+}
+
+.govuk-\!-margin-bottom-6 {
+  margin-bottom: 2rem !important;
+}
+
+.govuk-\!-margin-top-6 {
+  margin-top: 2rem !important;
+}
+
+/* Typography */
+.govuk-caption-m {
+  color: #626a6e;
+  font-size: 1rem;
+  line-height: 1.25;
+  display: block;
+  margin-bottom: 0.5rem;
+  font-family: "GDS Transport", arial, sans-serif;
+}
+
+/* Focus States */
+*:focus {
+  outline: 3px solid #ffdd00;
+  outline-offset: 0;
+}
+
+/* Responsive Styles */
+@media screen and (min-width: 641px) {
+  [aria-label="Academic Year Selection"] .govuk-tabs__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .govuk-tabs__panel {
+    margin-top: 20px;
+  }
+
+  .app-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .govuk-summary-list__row {
+    display: grid;
+    grid-template-columns: 30% 70%;
+    gap: 1rem;
+  }
+
+  .govuk-button-group {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .govuk-tabs__title {
+    display: none;
+  }
+  
+  .govuk-tabs__panel {
+    border: none;
+    padding: 0;
+  }
+  
+  .app-section {
+    break-inside: avoid;
+    border: none;
+    padding: 0;
+  }
+}

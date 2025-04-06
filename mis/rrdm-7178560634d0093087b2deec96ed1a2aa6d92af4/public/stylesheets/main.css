@@ -1,0 +1,165 @@
+/* Custom styles for Reference Data Management System */
+
+/* Status tags */
+.status-tag {
+    display: inline-block;
+    padding: 5px 8px;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 14px;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    border-radius: 3px;
+    margin: 0 2px;
+}
+
+.status-tag--active {
+    background: #00703c;
+    color: #ffffff;
+}
+
+.status-tag--updated {
+    background: #1d70b8;
+    color: #ffffff;
+}
+
+.status-tag--removed {
+    background: #d4351c;
+    color: #ffffff;
+}
+
+/* Table enhancements */
+.data-table {
+    margin-bottom: 30px;
+}
+
+.data-table__header {
+    background: #f3f2f1;
+}
+
+.data-table__cell--actions {
+    white-space: nowrap;
+}
+
+/* Academic year selector */
+.year-selector {
+    max-width: 200px;
+    margin-bottom: 30px;
+}
+
+/* Search box */
+.search-box {
+    max-width: 400px;
+    margin-bottom: 30px;
+}
+
+.search-box__input {
+    width: 100%;
+}
+
+/* Button group */
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+@media (max-width: 640px) {
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .button-group .govuk-button {
+        margin-bottom: 10px;
+    }
+}
+
+/* Release notes */
+.release-notes__section {
+    margin-bottom: 30px;
+}
+
+.release-notes__meta {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #b1b4b6;
+}
+
+/* Dashboard summary */
+.dashboard-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.dashboard-summary__card {
+    padding: 20px;
+    background: #f3f2f1;
+    border-left: 4px solid #1d70b8;
+}
+
+.dashboard-summary__title {
+    margin: 0 0 10px 0;
+    font-size: 19px;
+}
+
+.dashboard-summary__count {
+    font-size: 36px;
+    font-weight: bold;
+    color: #1d70b8;
+}
+
+/* Filter panel */
+.filter-panel {
+    padding: 20px;
+    background: #f3f2f1;
+    margin-bottom: 30px;
+}
+
+.filter-panel__title {
+    margin-top: 0;
+}
+
+/* Pagination */
+.pagination {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.pagination__list {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    list-style: none;
+    padding: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .dashboard-summary {
+        grid-template-columns: 1fr;
+    }
+    
+    .data-table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+/* Print styles */
+@media print {
+    .govuk-header,
+    .govuk-footer,
+    .button-group,
+    .filter-panel {
+        display: none;
+    }
+    
+    .govuk-width-container {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+    }
+}

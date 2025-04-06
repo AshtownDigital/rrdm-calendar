@@ -1,0 +1,205 @@
+# Reference Data Management System (RRDM)
+# Release Notes Module Requirements - Structured Format
+
+**Document Version:** 6.0  
+**Date:** March 31, 2025  
+**Author:** Cascade AI
+
+---
+
+## Table of Contents
+
+1. [Academic Year Navigation](#academic-year-navigation)
+2. [View Type Navigation](#view-type-navigation)
+3. [Reference Data Items List](#reference-data-items-list)
+4. [Item Details Page](#item-details-page)
+5. [Release Notes Summary View](#release-notes-summary-view)
+6. [Release Notes Timeline View](#release-notes-timeline-view)
+
+---
+
+<div style="page-break-after: always;"></div>
+
+## Academic Year Navigation
+
+### Description
+The Academic Year Navigation module provides users with an intuitive interface for navigating between different academic years within the Release Notes system. This feature enables users to select specific academic years to view reference data changes, maintaining context across different views and supporting direct linking through URL parameters.
+
+### User Story
+**As a** user of the Release Notes module  
+**I want to** navigate between different academic years  
+**So that** I can view reference data changes specific to my selected academic year
+
+### Acceptance Criteria
+- A horizontal tab navigation bar is displayed at the top of the Release Notes page
+- Each tab represents a different academic year (e.g., 2023/24, 2024/25, 2025/26)
+- Tabs are arranged in chronological order, with the most recent academic year on the right
+- An "All" tab option is available to view changes across all academic years
+- The currently selected academic year is visually highlighted
+- The URL parameter "year" updates to reflect the selected academic year
+- The view type is maintained when switching between academic years
+
+### Technical Requirements
+- Implement tabs using the GOV.UK Design System tab component
+- Configure URL parameter "year" to follow the format YYYY/YYYY (e.g., 2025/2026)
+- Update URL parameters without requiring a full page reload
+- Ensure all tabs are keyboard accessible with appropriate ARIA attributes
+- Filter displayed reference data items based on the selected academic year
+
+<div style="page-break-after: always;"></div>
+
+## View Type Navigation
+
+### Description
+The View Type Navigation module allows users to switch between different visualization formats of release notes data. This feature provides three distinct views (List, Timeline, and Summary) to help users analyze reference data changes in the most appropriate format for their current task, maintaining academic year context while changing views.
+
+### User Story
+**As a** user of the Release Notes module  
+**I want to** switch between different visualization types (List, Timeline, Summary)  
+**So that** I can analyze reference data changes in the format most suitable for my current needs
+
+### Acceptance Criteria
+- A horizontal tab navigation bar for view types is displayed below the academic year navigation
+- Three distinct view types are available: "List", "Timeline", and "Summary"
+- The currently selected view type is visually highlighted
+- The URL parameter "view" updates to reflect the selected view type
+- The academic year selection is maintained when switching between view types
+- The system defaults to the "list" view when no view parameter is provided
+- The main content area updates to display the appropriate view type when a tab is selected
+
+### Technical Requirements
+- Implement tabs using the GOV.UK Design System tab component
+- Configure URL parameter "view" to accept values "list", "timeline", or "summary"
+- Update URL parameters without requiring a full page reload
+- Ensure all tabs are keyboard accessible with appropriate ARIA attributes
+- Implement smooth transitions between different view types
+
+<div style="page-break-after: always;"></div>
+
+## Reference Data Items List
+
+### Description
+The Reference Data Items List module displays a comprehensive list of all reference data items for a selected academic year in a tabular format. This feature helps users quickly identify items and their status, providing navigation to detailed information about specific items through clickable links.
+
+### User Story
+**As a** user of the Release Notes module  
+**I want to** see a comprehensive list of reference data items for the selected academic year  
+**So that** I can quickly identify items and access detailed information
+
+### Acceptance Criteria
+- Reference data items are displayed in a tabular format for the selected academic year
+- The table includes columns for Item Name, Status, Change Type, and Last Updated Date
+- Items are displayed in alphabetical order by default
+- The table supports sorting by different columns
+- Item names are clickable links to their respective detail pages
+- The URL for item detail pages follows the format "/items/{item-id}/values?academic-year={year-id}"
+- Each item's change type is visually indicated with appropriate tags or icons
+- New items are indicated with a green tag or icon labeled "New"
+- Updated items are indicated with an amber/orange tag or icon labeled "Updated"
+- Unchanged items have no special indicator
+- A search/filter functionality allows users to find specific items quickly
+- Pagination is implemented for large lists of items
+- An appropriate message is displayed when no items are available for the selected academic year
+
+### Technical Requirements
+- Retrieve item data from the appropriate backend API endpoints
+- Implement a responsive table using the GOV.UK Design System table component
+- Create clickable links that maintain the academic year context
+- Implement visual indicators that follow accessibility guidelines for color contrast
+- Implement sorting functionality for table columns
+- Implement search/filter functionality for the table
+- Implement pagination for large datasets
+- Implement empty state handling with appropriate messaging
+- Ensure the table is responsive and adapts to different screen sizes
+
+<div style="page-break-after: always;"></div>
+
+## Item Details Page
+
+### Description
+The Item Details Page module provides comprehensive information about a specific reference data item, including its properties, data type, format, validation rules, and all associated values for the selected academic year. This feature enables users to understand the detailed characteristics of an item and access its history across academic years.
+
+### User Story
+**As a** user of the Release Notes module  
+**I want to** view comprehensive information about a specific reference data item  
+**So that** I can understand its properties, data type, format, validation rules, and associated values
+
+### Acceptance Criteria
+- The page displays general properties of the item (name, academic year, status, description, change type, last updated date)
+- The page displays data type and format information (data type, format, CSV name, API name, HESA name/code)
+- The page displays validation rules (required status, minimum/maximum length, validation pattern, validation notes)
+- The page displays storage and security information (database column name)
+- A HESA reference data link is provided where applicable
+- A table displays all values associated with the item for the selected academic year
+- The table includes columns for Value ID, Value name, Description, Status, Change type, and Last updated date
+- The table can be sorted by different columns
+- A message is displayed when no values are available
+- Links to view the history of the item across academic years are provided
+- A back link to return to the reference data items list is provided
+
+### Technical Requirements
+- Retrieve detailed item information from backend API endpoints
+- Implement sections using GOV.UK Design System summary cards
+- Implement the values table using the GOV.UK Design System table component
+- Implement sorting functionality for the table columns
+- Create links to the item history page
+- Implement a back link that returns to the correct reference data items list
+
+<div style="page-break-after: always;"></div>
+
+## Release Notes Summary View
+
+### Description
+The Release Notes Summary View module displays summary statistics and high-level information about changes to reference data items for a selected academic year. This feature helps users quickly understand the scope and impact of changes through visual representations and provides links to more detailed views for specific change types.
+
+### User Story
+**As a** user of the Release Notes module  
+**I want to** see summary statistics and high-level information about changes  
+**So that** I can quickly understand the scope and impact of changes
+
+### Acceptance Criteria
+- Summary statistics are displayed for the selected academic year, including:
+  * Total number of reference data items
+  * Number of new items
+  * Number of updated items
+  * Number of unchanged items
+  * Number of removed items
+- Visual representations (percentages or charts) show the distribution of changes
+- Summary sections are provided for each change type (new, updated, removed)
+- Each section includes item counts and brief descriptions of significant changes
+- Each section includes links to view all items of that change type
+- Clicking on a link to view all items of a specific change type navigates to the List view filtered to show only items of that change type
+
+### Technical Requirements
+- Calculate summary statistics from the reference data items
+- Implement visual representations using appropriate charting libraries
+- Create summary sections using GOV.UK Design System summary cards
+- Implement links that navigate to filtered List views
+
+<div style="page-break-after: always;"></div>
+
+## Release Notes Timeline View
+
+### Description
+The Release Notes Timeline View module provides a chronological visualization of changes to reference data items for a specific academic year. This feature helps users understand when changes were made and their sequence, grouping changes by time period and offering expandable entries for more detailed information.
+
+### User Story
+**As a** user of the Release Notes module  
+**I want to** see a chronological visualization of changes  
+**So that** I can understand when changes were made and their sequence
+
+### Acceptance Criteria
+- A chronological timeline of changes is displayed for the selected academic year
+- Changes are grouped by month or quarter with clear visual separation
+- Each timeline entry includes date/time period, number of items changed, types of changes, and a brief summary
+- Timeline entries can be expanded to show more detailed information
+- A vertical timeline layout with appropriate visual indicators is used
+- The timeline is easy to scan and understand
+- Different types of changes have distinct visual indicators
+
+### Technical Requirements
+- Retrieve chronological data about changes from backend API endpoints
+- Implement grouping logic to organize changes by time period
+- Create expand/collapse functionality for timeline entries
+- Implement a vertical timeline layout with appropriate styling
+- Use visual indicators that follow accessibility guidelines for color contrast

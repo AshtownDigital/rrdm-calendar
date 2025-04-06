@@ -1,0 +1,445 @@
+# Reference Data Management System (RRDM)
+## Requirements Document
+
+**Document Version:** 1.0  
+**Date:** March 19, 2025  
+**Author:** Cascade AI  
+
+---
+
+## 1. Introduction
+
+### 1.1 Purpose
+This document outlines the detailed requirements for the Reference Data Management System (RRDM), a web-based application designed to manage reference data using the GOV.UK Frontend Design System. The system provides a user-friendly interface for viewing, managing, and tracking changes to reference data items across academic years.
+
+### 1.2 Scope
+The RRDM system encompasses the management of reference data items such as regions, sex, nationality, ethnicity, disabilities, and course-related information. It includes functionality for viewing, filtering, and tracking changes to these data items across different academic years.
+
+### 1.3 Definitions, Acronyms, and Abbreviations
+- **RRDM**: Reference Data Management System
+- **Reference Data**: Standardized data used for categorization and classification
+- **GOV.UK Frontend**: Design system for UK government services
+- **Academic Year**: The period used for data organization (e.g., 2025/26)
+- **Item**: A category of reference data (e.g., Region, Sex, Nationality)
+- **Value**: A specific entry within a reference data item (e.g., "North East" within the Region item)
+
+---
+
+## 2. System Overview
+
+### 2.1 System Description
+The Reference Data Management System is a frontend application built with Express.js and Nunjucks templating engine. It uses the GOV.UK Frontend Design System for UI components and styling. The system stores reference data in JSON files and provides a web interface for viewing and managing this data.
+
+### 2.2 System Architecture
+The system follows a modular architecture with the following components:
+- **Frontend**: GOV.UK Frontend Design System (HTML, CSS, JavaScript)
+- **Server**: Express.js
+- **Templating**: Nunjucks
+- **Data Storage**: JSON files
+- **API**: RESTful API endpoints for data access
+
+### 2.3 User Roles
+- **Data Administrators**: Users who manage reference data
+- **Data Consumers**: Users who view and use reference data
+
+---
+
+## 3. Module Requirements
+
+### 3.1 Dashboard Module
+
+#### 3.1.1 Purpose
+The Dashboard module provides an overview of all reference data items in the system, showing their status, change type, and last update date.
+
+#### 3.1.2 Functional Requirements
+1. **Dashboard Overview**
+   - Display a summary of all reference data items
+   - Show counts of active, updated, and removed items
+   - Provide quick access to item details and history
+
+2. **Item Status Display**
+   - Display item status with appropriate visual indicators (Active, Updated, Removed)
+   - Show change type for each item
+   - Display last updated date for each item
+
+3. **Navigation**
+   - Provide links to view item values and history
+   - Include navigation to other system modules
+
+#### 3.1.3 User Interface Requirements
+1. Display a table of all reference data items with the following columns:
+   - Item Name
+   - Status (with color-coded indicators)
+   - Change Type
+   - Last Updated
+   - Actions (View Values, History)
+
+2. Include summary statistics at the top of the dashboard:
+   - Total number of active items
+   - Total number of updated items
+   - Total number of removed items
+
+#### 3.1.4 Data Requirements
+- Access to the complete list of reference data items
+- Status information for each item
+- Change type information for each item
+- Last updated date for each item
+
+---
+
+### 3.2 Items Module
+
+#### 3.2.1 Purpose
+The Items module allows users to view and manage reference data items, including their values and history across academic years.
+
+#### 3.2.2 Functional Requirements
+1. **Items List View**
+   - Display all reference data items
+   - Filter items by academic year
+   - Show item status, change type, and last update date
+   - Provide access to item values and history
+
+2. **Item Values View**
+   - Display all values for a specific reference data item
+   - Show value status, change type, and description
+   - Provide access to value history
+
+3. **Item History View**
+   - Display the history of changes for a reference data item across academic years
+   - Show status, change type, and summary for each academic year
+
+4. **Academic Year Filtering**
+   - Allow filtering of items by academic year
+   - Display "All" academic years option
+   - Default to the most recent academic year when appropriate
+
+#### 3.2.3 User Interface Requirements
+1. Items List View:
+   - Table with columns: Name, Status, Item Source, Change Type, Academic Year, Last Updated, Actions
+   - Academic year dropdown filter
+   - Links to view values and history
+
+2. Item Values View:
+   - Item details section with name, description, and metadata
+   - Table of values with columns: ID, Name, Description, Status, Change Type, Change Summary, Actions
+   - Academic year dropdown filter
+   - Export options (CSV, API)
+
+3. Item History View:
+   - Item details section
+   - Timeline of changes across academic years
+   - Details of status, change type, and summary for each academic year
+
+#### 3.2.4 Data Requirements
+- Complete list of reference data items
+- Values associated with each item
+- History of changes for each item across academic years
+- Academic year information
+
+---
+
+### 3.3 Values Module
+
+#### 3.3.1 Purpose
+The Values module allows users to view and manage individual reference data values across all items, providing a comprehensive view of all values in the system.
+
+#### 3.3.2 Functional Requirements
+1. **Values List View**
+   - Display all reference data values across all items
+   - Filter values by academic year
+   - Show value status, change type, and associated item
+   - Provide access to value history
+
+2. **Value History View**
+   - Display the history of changes for a specific value across academic years
+   - Show status, change type, and summary for each academic year
+
+3. **Specific Value Type Views**
+   - Provide specialized views for certain value types (e.g., Sex)
+   - Display value-specific information and metadata
+
+#### 3.3.3 User Interface Requirements
+1. Values List View:
+   - Table with columns: Value Name, Reference Data Item, Status, Change Type, Academic Year, Last Updated, Actions
+   - Academic year dropdown filter
+   - Links to view value history
+
+2. Value History View:
+   - Value details section with name, description, and metadata
+   - Timeline of changes across academic years
+   - Details of status, change type, and summary for each academic year
+
+3. Specific Value Type Views (e.g., Sex):
+   - Value type-specific layout and information
+   - Academic year dropdown filter
+   - Table of values with relevant columns
+
+#### 3.3.4 Data Requirements
+- Complete list of reference data values across all items
+- Association between values and their parent items
+- History of changes for each value across academic years
+- Academic year information
+
+---
+
+### 3.4 Release Notes Module
+
+#### 3.4.1 Purpose
+The Release Notes module provides a comprehensive view of changes made to reference data items and values across academic years, organized by release.
+
+#### 3.4.2 Functional Requirements
+1. **Release Notes Summary View**
+   - Display a summary of changes for each academic year
+   - Categorize changes by type (New, Updated, Removed, No Change)
+   - Show detailed information for each change
+
+2. **Release Notes Timeline View**
+   - Display a timeline of releases and changes
+   - Show chronological progression of changes
+
+3. **Release Notes List View**
+   - Display a detailed list of all changes in a specific release
+   - Categorize by item and change type
+
+4. **Academic Year Filtering**
+   - Allow filtering of release notes by academic year
+   - Display changes specific to the selected academic year
+
+#### 3.4.3 User Interface Requirements
+1. Release Notes Summary View:
+   - Summary section with key statistics
+   - Categorized sections for new, updated, removed, and unchanged items
+   - Detailed information for each change
+
+2. Release Notes Timeline View:
+   - Visual timeline representation of releases
+   - Chronological display of changes
+   - Interactive elements to view details
+
+3. Release Notes List View:
+   - Table of changes with relevant columns
+   - Categorization by item and change type
+   - Detailed information for each change
+
+#### 3.4.4 Data Requirements
+- Release notes data for each academic year
+- Timeline data for chronological display
+- Detailed change information for each item and value
+- Academic year information
+
+---
+
+### 3.5 Restore Points Module
+
+#### 3.5.1 Purpose
+The Restore Points module allows administrators to create snapshots of the reference data at specific points in time and restore the system to those states if needed.
+
+#### 3.5.2 Functional Requirements
+1. **Restore Points List View**
+   - Display all available restore points
+   - Show timestamp, description, academic year, and type for each restore point
+   - Provide options to create new restore points and restore from existing ones
+
+2. **Create Restore Point**
+   - Allow creation of new restore points with description, academic year, and type
+   - Save a snapshot of the current reference data state
+
+3. **Restore from Restore Point**
+   - Allow restoration of the system to a previous state
+   - Confirm restoration action before proceeding
+
+#### 3.5.3 User Interface Requirements
+1. Restore Points List View:
+   - Table with columns: ID, Timestamp, Description, Academic Year, Type, User, Actions
+   - Form to create new restore points
+   - Confirmation dialog for restoration
+
+2. Create Restore Point Form:
+   - Fields for description, academic year, and type
+   - Submit button to create the restore point
+
+3. Restore Confirmation:
+   - Warning about data loss
+   - Confirmation button to proceed with restoration
+
+#### 3.5.4 Data Requirements
+- Metadata for each restore point (timestamp, description, academic year, type, user)
+- Backup of reference data files for each restore point
+- Academic year information
+
+---
+
+### 3.6 API Module
+
+#### 3.6.1 Purpose
+The API module provides programmatic access to reference data through RESTful endpoints, allowing integration with other systems.
+
+#### 3.6.2 Functional Requirements
+1. **Items API**
+   - Provide endpoints to retrieve all items
+   - Allow filtering by academic year
+   - Provide endpoint to retrieve a specific item by ID
+
+2. **Values API**
+   - Provide endpoints to retrieve all values
+   - Allow filtering by item and academic year
+   - Provide endpoint to retrieve a specific value by ID
+
+3. **Release Notes API**
+   - Provide endpoints to retrieve release notes
+   - Allow filtering by academic year
+
+4. **Dashboard API**
+   - Provide endpoints to retrieve dashboard data
+   - Include summary statistics and item information
+
+#### 3.6.3 Interface Requirements
+1. RESTful API endpoints:
+   - GET /api/items - Retrieve all items
+   - GET /api/items/:id - Retrieve a specific item
+   - GET /api/values - Retrieve all values
+   - GET /api/values/:itemId/:id - Retrieve a specific value
+   - GET /api/release-notes - Retrieve release notes
+   - GET /api/dashboard - Retrieve dashboard data
+
+2. Query parameters:
+   - academicYear - Filter by academic year
+   - status - Filter by status
+   - changeType - Filter by change type
+
+3. Response format:
+   - JSON format for all responses
+   - Consistent structure across endpoints
+   - Appropriate HTTP status codes
+
+#### 3.6.4 Data Requirements
+- Access to all reference data items and values
+- Access to release notes data
+- Academic year information
+
+---
+
+## 4. Non-Functional Requirements
+
+### 4.1 Performance Requirements
+1. Page load time should not exceed 2 seconds for any page
+2. API responses should be returned within 1 second
+3. The system should handle at least 100 concurrent users
+
+### 4.2 Security Requirements
+1. All data should be read-only for regular users
+2. Administrative functions should be protected by authentication
+3. API access should be controlled through appropriate mechanisms
+
+### 4.3 Usability Requirements
+1. The system should follow GOV.UK Design System guidelines for consistency
+2. The interface should be responsive and work on mobile devices
+3. All features should be accessible according to WCAG 2.1 AA standards
+
+### 4.4 Reliability Requirements
+1. The system should be available 99.9% of the time during working hours
+2. Backup mechanisms should be in place to prevent data loss
+3. Restore points should be created regularly to allow recovery from errors
+
+### 4.5 Compatibility Requirements
+1. The system should work on all major browsers (Chrome, Firefox, Safari, Edge)
+2. The system should be responsive and work on various screen sizes
+3. The system should be compatible with screen readers and assistive technologies
+
+---
+
+## 5. System Interfaces
+
+### 5.1 User Interfaces
+1. Dashboard interface
+2. Items list and detail interfaces
+3. Values list and detail interfaces
+4. Release notes interfaces
+5. Restore points interface
+
+### 5.2 Software Interfaces
+1. Express.js server
+2. Nunjucks templating engine
+3. GOV.UK Frontend Design System
+4. JSON data storage
+
+### 5.3 Communication Interfaces
+1. HTTP/HTTPS for web access
+2. RESTful API for programmatic access
+
+---
+
+## 6. Data Requirements
+
+### 6.1 Data Entities
+1. Reference Data Items
+2. Reference Data Values
+3. Academic Years
+4. Release Notes
+5. Restore Points
+
+### 6.2 Data Models
+1. Item Model:
+   - id: Unique identifier
+   - name: Display name
+   - description: Detailed description
+   - status: Current status (Active, Updated, Removed)
+   - itemSource: Source of the item
+   - changeType: Type of change
+   - lastUpdated: Date of last update
+   - values: Array of associated values
+   - history: Array of historical changes
+
+2. Value Model:
+   - id: Unique identifier
+   - name: Display name
+   - description: Detailed description
+   - status: Current status
+   - changeType: Type of change
+   - changeSummary: Summary of changes
+   - history: Array of historical changes
+
+3. Academic Year Model:
+   - id: Unique identifier
+   - name: Display name
+
+4. Release Notes Model:
+   - academicYear: Associated academic year
+   - changes: Object containing categorized changes
+   - releaseDate: Date of release
+
+5. Restore Point Model:
+   - id: Unique identifier
+   - timestamp: Creation time
+   - description: User-provided description
+   - academicYear: Associated academic year
+   - type: Type of restore point
+   - user: User who created the restore point
+
+### 6.3 Data Storage
+All data is stored in JSON files within the data directory:
+- items.json: Reference data items and their metadata
+- values.json: Reference data values and their metadata
+- release-notes/*.json: Release notes for each academic year
+- restore-points/*.json: Restore point metadata and backups
+
+---
+
+## 7. Appendices
+
+### 7.1 Glossary
+- **Reference Data**: Standardized data used for categorization and classification
+- **Item**: A category of reference data (e.g., Region, Sex, Nationality)
+- **Value**: A specific entry within a reference data item
+- **Academic Year**: The period used for data organization (e.g., 2025/26)
+- **Change Type**: The type of change made to an item or value (New, Updated, Removed, No Change)
+- **Restore Point**: A snapshot of the reference data at a specific point in time
+
+### 7.2 References
+1. GOV.UK Design System: https://design-system.service.gov.uk/
+2. Express.js Documentation: https://expressjs.com/
+3. Nunjucks Documentation: https://mozilla.github.io/nunjucks/
+
+---
+
+**End of Document**

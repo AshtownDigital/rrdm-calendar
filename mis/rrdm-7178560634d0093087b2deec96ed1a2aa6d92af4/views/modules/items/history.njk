@@ -1,0 +1,86 @@
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+<div class="govuk-breadcrumbs">
+  <ol class="govuk-breadcrumbs__list">
+    <li class="govuk-breadcrumbs__list-item">
+      <a class="govuk-breadcrumbs__link" href="/">Home</a>
+    </li>
+    <li class="govuk-breadcrumbs__list-item">
+      <a class="govuk-breadcrumbs__link" href="/items">Reference Data Directory</a>
+    </li>
+    <li class="govuk-breadcrumbs__list-item">
+      <a class="govuk-breadcrumbs__link" href="/items/{{ item.id }}/values">{{ item.name }}</a>
+    </li>
+    <li class="govuk-breadcrumbs__list-item">
+      History
+    </li>
+  </ol>
+</div>
+
+<h1 class="govuk-heading-xl">{{ item.name }} History</h1>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--m">{{ item.name }} History</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Academic Year</th>
+          <th scope="col" class="govuk-table__header">Status</th>
+          <th scope="col" class="govuk-table__header">Change Type</th>
+          <th scope="col" class="govuk-table__header">Last Updated</th>
+          <th scope="col" class="govuk-table__header">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for entry in history %}
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">{{ entry.academicYear }}</td>
+          <td class="govuk-table__cell">
+            {% if entry.status === 'active' or entry.status === 'Active' %}
+              <strong class="govuk-tag govuk-tag--green">Active</strong>
+            {% elif entry.status === 'inactive' or entry.status === 'Inactive' %}
+              <strong class="govuk-tag govuk-tag--grey">Inactive</strong>
+            {% elif entry.status === 'pending' or entry.status === 'Pending' %}
+              <strong class="govuk-tag govuk-tag--blue">Pending</strong>
+            {% elif entry.status === 'in progress' or entry.status === 'In progress' %}
+              <strong class="govuk-tag govuk-tag--blue">In progress</strong>
+            {% elif entry.status === 'rejected' or entry.status === 'Rejected' %}
+              <strong class="govuk-tag govuk-tag--red">Rejected</strong>
+            {% else %}
+              <strong class="govuk-tag">{{ entry.status | title }}</strong>
+            {% endif %}
+          </td>
+          <td class="govuk-table__cell">
+            {% if entry.changeType === 'new' or entry.changeType === 'New' %}
+              <strong class="govuk-tag govuk-tag--blue">{{ entry.changeType | title }}</strong>
+            {% elif entry.changeType === 'no change' or entry.changeType === 'No Change' %}
+              <strong class="govuk-tag govuk-tag--grey">{{ entry.changeType | title }}</strong>
+            {% elif entry.changeType === 'updated' or entry.changeType === 'Updated' %}
+              <strong class="govuk-tag govuk-tag--purple">{{ entry.changeType | title }}</strong>
+            {% elif entry.changeType === 'removed' or entry.changeType === 'Removed' %}
+              <strong class="govuk-tag govuk-tag--red">{{ entry.changeType | title }}</strong>
+            {% elif entry.changeType === 'delayed' or entry.changeType === 'Delayed' %}
+              <strong class="govuk-tag govuk-tag--yellow">{{ entry.changeType | title }}</strong>
+            {% else %}
+              <strong class="govuk-tag">{{ entry.changeType | title }}</strong>
+            {% endif %}
+          </td>
+          <td class="govuk-table__cell">{{ entry.lastUpdated | date }}</td>
+          <td class="govuk-table__cell">
+            <a href="/items/{{ item.id }}/values?academic-year={{ entry.academicYearId }}" class="govuk-link">View</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="govuk-button-group">
+      <a href="/items/{{ item.id }}/values" class="govuk-button">Back to Values</a>
+      <a href="/items" class="govuk-button govuk-button--secondary">All Items</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

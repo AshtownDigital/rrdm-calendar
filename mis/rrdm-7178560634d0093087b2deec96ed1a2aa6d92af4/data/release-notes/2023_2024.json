@@ -1,0 +1,121 @@
+{
+  "academicYear": "2023/2024",
+  "version": "1.3.0",
+  "releaseDate": "2023-09-01",
+  "approvedBy": "HESA Data Management Team",
+  "changes": {
+    "new": {
+      "items": [
+        {
+          "name": "Subject Specialisms",
+          "hesaCode": "SBJSPC",
+          "values": [
+            {
+              "name": "Computer Science",
+              "code": "CMPSC",
+              "description": "Teaching specialization in Computer Science and Programming"
+            },
+            {
+              "name": "Digital Technology",
+              "code": "DGTCH",
+              "description": "Teaching specialization in Digital Technology and ICT"
+            },
+            {
+              "name": "Chemistry",
+              "code": "CHEM",
+              "description": "Teaching specialization in Chemistry and Chemical Sciences"
+            },
+            {
+              "name": "Biology",
+              "code": "BIOL",
+              "description": "Teaching specialization in Biology and Life Sciences"
+            }
+          ]
+        },
+        {
+          "name": "Teaching Status",
+          "hesaCode": "TCHSTS",
+          "values": [
+            {
+              "name": "Newly Qualified Teacher",
+              "code": "NQT",
+              "description": "Teacher who has completed initial training and is in their first year"
+            },
+            {
+              "name": "Experienced Teacher",
+              "code": "EXPT",
+              "description": "Teacher with more than one year of qualified teaching experience"
+            },
+            {
+              "name": "Senior Teacher",
+              "code": "SNRT",
+              "description": "Teacher with leadership responsibilities"
+            }
+          ]
+        }
+      ]
+    },
+    "updated": [
+      {
+        "name": "Training Route",
+        "hesaCode": "TRNRT",
+        "changeSummary": "Added new training routes for digital skills",
+        "details": "Introduced specialized routes for computing and digital technology teaching",
+        "values": [
+          {
+            "name": "School Direct",
+            "code": "SCDR",
+            "description": "School-led teacher training route"
+          },
+          {
+            "name": "PGCE",
+            "code": "PGCE",
+            "description": "Postgraduate Certificate in Education route"
+          },
+          {
+            "name": "Assessment Only",
+            "code": "ASMT",
+            "description": "Route for experienced teachers to gain QTS without training"
+          }
+        ]
+      },
+      {
+        "name": "Qualification Aim",
+        "hesaCode": "QUAIM",
+        "changeSummary": "Added professional qualifications",
+        "details": "Introduced new qualification types for professional development",
+        "values": [
+          {
+            "name": "Qualified Teacher Status",
+            "code": "QTS",
+            "description": "Standard qualification for teaching in state schools"
+          },
+          {
+            "name": "National Professional Qualification",
+            "code": "NPQ",
+            "description": "Suite of qualifications for education leadership"
+          }
+        ]
+      }
+    ],
+    "removed": [],
+    "noChange": [
+      {
+        "name": "Mode of Study",
+        "hesaCode": "MDSTY",
+        "values": [
+          {
+            "name": "Full-time",
+            "code": "FLTM",
+            "description": "Student is studying on a full-time basis"
+          },
+          {
+            "name": "Part-time",
+            "code": "PRTM",
+            "description": "Student is studying on a part-time basis"
+          }
+        ]
+      }
+    ]
+  }
+}

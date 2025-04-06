@@ -1,0 +1,87 @@
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+<h1 class="govuk-heading-xl">Reference Data Directory {% if currentYear.id !== 'all' %}for {{ currentYear.name }}{% endif %}</h1>
+
+<form class="govuk-form-group" id="year-filter-form" method="get" action="/items">
+  <div class="govuk-form-group">
+    <label class="govuk-label" for="academic-year">
+      <strong>Filter by Academic Year</strong>
+    </label>
+    <select class="govuk-select" id="academic-year" name="academic-year" onchange="this.form.submit()">
+      {% for year in academicYears %}
+        <option value="{{ year.id }}" {% if year.id === currentYear.id %}selected{% endif %}>
+          {% if year.id === 'all' %}All academic years{% else %}{{ year.name }}{% endif %}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+</form>
+
+<script>
+  document.getElementById('academic-year').addEventListener('change', function() {
+    document.getElementById('year-filter-form').submit();
+  });
+</script>
+
+<table class="govuk-table data-table">
+  <thead class="govuk-table__head data-table__header">
+    <tr class="govuk-table__row">
+      <th scope="col" class="govuk-table__header">Item Name</th>
+      <th scope="col" class="govuk-table__header">Status</th>
+      <th scope="col" class="govuk-table__header">Change Type</th>
+      <th scope="col" class="govuk-table__header">Academic Year</th>
+      <th scope="col" class="govuk-table__header">Item Source</th>
+      <th scope="col" class="govuk-table__header">Last Updated</th>
+      <th scope="col" class="govuk-table__header">Actions</th>
+    </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+    {% for item in items %}
+    <tr class="govuk-table__row">
+      <td class="govuk-table__cell">
+        <a href="/items/{{ item.id }}/values" class="govuk-link govuk-link--no-visited-state">{{ item.name }}</a>
+      </td>
+      <td class="govuk-table__cell">
+        {{ item.status }}
+      </td>
+      <td class="govuk-table__cell">
+        {% if item.changeType == 'New' %}
+          <strong class="govuk-tag">{{ item.changeType }}</strong>
+        {% elif item.changeType == 'No Change' %}
+          <strong class="govuk-tag govuk-tag--grey">{{ item.changeType }}</strong>
+        {% elif item.changeType == 'Updated' %}
+          <strong class="govuk-tag govuk-tag--yellow">{{ item.changeType }}</strong>
+        {% elif item.changeType == 'Removed' %}
+          <strong class="govuk-tag govuk-tag--red">{{ item.changeType }}</strong>
+        {% elif item.changeType == 'Delayed' %}
+          <strong class="govuk-tag govuk-tag--orange">{{ item.changeType }}</strong>
+        {% else %}
+          <strong class="govuk-tag">{{ item.changeType }}</strong>
+        {% endif %}
+      </td>
+      <td class="govuk-table__cell">{{ item.academicYear }}</td>
+      <td class="govuk-table__cell">
+        {{ item.itemSource | default('Data Gem') }}
+      </td>
+      <td class="govuk-table__cell">{{ item.lastUpdated | date("D MMMM YYYY") }}</td>
+      <td class="govuk-table__cell">{{ item.actions | safe }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="button-group">
+  <a href="/dashboard" class="govuk-button">Back to Dashboard</a>
+</div>
+
+<script>
+  document.getElementById('academic-year').addEventListener('change', function() {
+    const url = new URL(window.location);
+    url.searchParams.set('academic-year', this.value);
+    window.location = url;
+  });
+
+
+</script>
+{% endblock %}

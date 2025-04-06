@@ -1,0 +1,644 @@
+# Release Notes Page Requirements
+**Document Version:** 2.0  
+**Date:** March 30, 2025  
+**Author:** Cascade AI  
+
+## 1. Introduction
+
+### Description
+The Release Notes feature in the Reference Data Management System (RRDM) displays changes to reference data items across academic years, providing users with a comprehensive view of what has changed between releases. This document covers the Release Notes List View page (`/release-notes?year=2025/2026&view=list`) and all subsequent pages that are linked from this view, including item detail pages and other release notes views.
+
+## 2. Release Notes List View (`/release-notes?year=2025/2026&view=list`)
+
+### Description
+The Release Notes List View provides a comprehensive list of all reference data items for a specific academic year, categorized by their change type (new, updated, unchanged). This view allows users to navigate between different academic years and view types, providing a flexible way to explore reference data changes.
+
+### Implementation Requirements
+
+**Academic Year Navigation:**
+- Implement tabs for navigating between different academic years (e.g., 2023/24, 2024/25, 2025/26)
+- Configure the URL parameter `year` to control which academic year is displayed
+- Ensure the currently selected academic year is visually highlighted
+- Include an "All" option if applicable
+
+**View Type Navigation:**
+- Implement tabs for different view types (e.g., "List", "Timeline", "Summary")
+- Configure the URL parameter `view` to control which view type is displayed
+- Ensure the currently selected view type is visually highlighted
+
+**Reference Data Items List:**
+- Implement a list display of all reference data items for the selected academic year
+- Group items by change type (new, updated, unchanged) with appropriate headings
+- Make item names clickable links to their respective detail pages
+- Include a visual indicator of change type where appropriate
+- Implement a message for when no items are available for the selected academic year
+
+**User Interface:**
+- Implement the interface using GOV.UK Design System patterns and components
+- Create a responsive layout that works on mobile, tablet, and desktop devices
+- Position navigation tabs below the page title
+- Use GOV.UK bullet list component for the reference data items list
+- Ensure consistent spacing between items and groups
+
+**Accessibility:**
+- Implement skip links for keyboard navigation
+- Ensure all interactive elements are keyboard accessible
+- Add appropriate ARIA attributes for screen readers
+- Maintain proper heading hierarchy
+
+### Acceptance Criteria
+
+**Academic Year Navigation:**
+- Users can successfully navigate between different academic years using the tabs
+- The currently selected academic year is clearly highlighted
+- The URL updates correctly when switching between academic years
+- All academic years display their respective data correctly
+
+**View Type Navigation:**
+- Users can successfully switch between different view types using the tabs
+- The currently selected view type is clearly highlighted
+- The URL updates correctly when switching between view types
+- All view types display their respective data correctly
+
+**Reference Data Items List:**
+- All reference data items for the selected academic year are displayed correctly
+- Items are properly grouped by change type (new, updated, unchanged)
+- Item names are clickable and navigate to the correct detail pages
+- An appropriate message is displayed when no items are available
+
+**User Interface:**
+- The interface follows GOV.UK Design System patterns and components
+- The layout is responsive and works correctly on mobile, tablet, and desktop devices
+- The page title is prominently displayed at the top
+- Navigation tabs are positioned below the page title
+- The reference data items list is displayed in the main content area
+
+**Accessibility:**
+- Skip links function correctly for keyboard navigation
+- All interactive elements can be accessed and operated using a keyboard
+- Screen readers correctly interpret the page structure and content
+- The heading hierarchy is logical and consistent
+
+### Dependencies
+
+- Complete list of reference data items for each academic year
+- Change type information for each item (new, updated, unchanged)
+- Links to item detail pages for each item
+- Academic year information
+- GOV.UK Design System components
+- Backend API endpoints for retrieving reference data items
+
+## 3. Item Details Page (`/items/{item-id}/values?academic-year={year-id}`)
+
+### Description
+The Item Details page displays comprehensive information about a specific reference data item, including its general properties, data type and format, validation rules, and all associated values for the selected academic year. This page allows users to view detailed information about an item and its values, as well as access the item's history across academic years.
+
+### Implementation Requirements
+
+**Item Information Display:**
+- Implement sections to display general properties of the item (name, academic year, status, description, change type, last updated date)
+- Implement sections to display data type and format information (data type, format, CSV name, API name, HESA name/code)
+- Implement sections to display validation rules (required status, minimum/maximum length, validation pattern, validation notes)
+- Implement sections to display storage and security information (database column name)
+- Add HESA reference data link where applicable
+
+**Reference Data Values Display:**
+- Implement a table to display all values associated with the item for the selected academic year
+- Include columns for Value ID, Value name, Description, Status, Change type, and Last updated date
+- Implement sorting functionality for the values table
+- Add a message for when no values are available
+
+**Item History Access:**
+- Implement links to view the history of the item across academic years
+- Place history links in multiple locations for easy access
+
+**Navigation:**
+- Implement a back link to return to the reference data items list
+- Add skip links for keyboard navigation
+
+**User Interface:**
+- Implement the interface using GOV.UK Design System patterns and components
+- Create a responsive layout that works on mobile, tablet, and desktop devices
+- Use GOV.UK summary cards to organize different sections of information
+- Use GOV.UK table component for the values table
+- Implement pagination for the values table if needed
+
+### Acceptance Criteria
+
+**Item Information Display:**
+- All item properties are correctly displayed in their respective sections
+- Information is organized in a clear, logical manner
+- Status and change type indicators are visually distinct
+- HESA reference data link works correctly where applicable
+
+**Reference Data Values Display:**
+- All values associated with the item for the selected academic year are correctly displayed
+- Table columns are properly labeled and formatted
+- Sorting functionality works correctly for all columns
+- An appropriate message is displayed when no values are available
+
+**Item History Access:**
+- History links are clearly visible and accessible
+- History links navigate to the correct item history page
+
+**Navigation:**
+- Back link returns users to the correct reference data items list
+- Skip links function correctly for keyboard navigation
+
+**User Interface:**
+- The interface follows GOV.UK Design System patterns and components
+- The layout is responsive and works correctly on mobile, tablet, and desktop devices
+- The item name and academic year are prominently displayed at the top
+- Summary cards effectively organize different sections of information
+- The values table is positioned below the item information sections
+- Table pagination works correctly if implemented
+
+### Dependencies
+
+- Detailed information about the specific reference data item
+- All values associated with the item for the selected academic year
+- History of changes for the item across academic years
+- Academic year information
+- GOV.UK Design System components
+- Backend API endpoints for retrieving item details and values
+
+## 4. Item History Page (`/items/{item-id}/history`)
+
+### Description
+The Item History page displays the history of changes for a specific reference data item across all academic years, providing users with a chronological view of how the item has evolved over time. This page helps users understand the progression of changes to an item and when those changes occurred.
+
+### Implementation Requirements
+
+**Item Information Display:**
+- Implement a section to display basic information about the item (name, current status, current description)
+- Ensure this information is clearly separated from the history timeline
+
+**History Timeline Display:**
+- Implement a chronological timeline of changes to the item
+- For each academic year entry, include academic year, status, change type, change summary, and last updated date
+- Order timeline entries from newest to oldest
+- Implement a clear visual distinction between different academic years
+
+**Navigation:**
+- Implement a back link to return to the item details page
+- Add skip links for keyboard navigation
+
+**User Interface:**
+- Implement the interface using GOV.UK Design System patterns and components
+- Create a responsive layout that works on mobile, tablet, and desktop devices
+- Use a timeline-style layout for the history entries
+- Implement appropriate styling for status and change type indicators
+
+### Acceptance Criteria
+
+**Item Information Display:**
+- Basic item information (name, current status, current description) is correctly displayed
+- Information is clearly separated from the history timeline
+- Status indicators are visually distinct
+
+**History Timeline Display:**
+- All academic year entries are displayed in chronological order (newest to oldest)
+- Each entry correctly shows academic year, status, change type, change summary, and last updated date
+- Different academic years are visually distinct
+- Timeline is easy to scan and understand
+
+**Navigation:**
+- Back link returns users to the correct item details page
+- Skip links function correctly for keyboard navigation
+
+**User Interface:**
+- The interface follows GOV.UK Design System patterns and components
+- The layout is responsive and works correctly on mobile, tablet, and desktop devices
+- The item name is prominently displayed at the top
+- Timeline-style layout effectively communicates the chronological nature of the changes
+- Status and change type indicators are visually distinct
+
+### Dependencies
+
+- History of changes for the item across all academic years
+- Current item information (name, status, description)
+- GOV.UK Design System components
+- Backend API endpoints for retrieving item history
+
+
+## 5. Release Notes Timeline View (`/release-notes?year=2025/2026&view=timeline`)
+
+### Description
+The Release Notes Timeline View provides a chronological visualization of changes to reference data items for a specific academic year, allowing users to see when changes were made. This view helps users understand the timing and sequence of changes to reference data.
+
+### Implementation Requirements
+
+**Academic Year Navigation:**
+- Implement the same academic year navigation as in the List View
+- Ensure consistency in behavior and appearance across views
+
+**View Type Navigation:**
+- Implement the same view type navigation as in the List View
+- Ensure the Timeline view is properly highlighted when active
+
+**Timeline Display:**
+- Implement a chronological timeline of changes for the selected academic year
+- Group changes by month or quarter with clear visual separation
+- For each timeline entry, include date/time period, number of items changed, types of changes, and a brief summary
+- Implement expand/collapse functionality for timeline entries to show more details
+- Use a vertical timeline layout with appropriate visual indicators
+
+**User Interface:**
+- Implement the interface using GOV.UK Design System patterns and components
+- Create a responsive layout that works on mobile, tablet, and desktop devices
+- Use cards or panels for each timeline entry with consistent spacing
+- Apply appropriate styling for different change types
+
+**Accessibility:**
+- Implement skip links for keyboard navigation
+- Ensure all interactive elements are keyboard accessible
+- Add appropriate ARIA attributes for screen readers
+- Maintain proper heading hierarchy
+
+### Acceptance Criteria
+
+**Academic Year Navigation:**
+- Users can successfully navigate between different academic years
+- The currently selected academic year is clearly highlighted
+- The URL updates correctly when switching between academic years
+
+**View Type Navigation:**
+- Users can successfully switch between different view types
+- The Timeline view is clearly highlighted when active
+- The URL updates correctly when switching to the Timeline view
+
+**Timeline Display:**
+- Changes are displayed in chronological order with clear date/time period indicators
+- Changes are properly grouped by month or quarter
+- Each timeline entry correctly shows the number of items changed and types of changes
+- Expanding timeline entries reveals more detailed information
+- The timeline is easy to scan and understand
+
+**User Interface:**
+- The interface follows GOV.UK Design System patterns and components
+- The layout is responsive and works correctly on mobile, tablet, and desktop devices
+- Timeline entries have consistent styling and spacing
+- Different change types have distinct visual indicators
+
+**Accessibility:**
+- Skip links function correctly for keyboard navigation
+- All interactive elements can be accessed and operated using a keyboard
+- Screen readers correctly interpret the timeline structure and content
+- The heading hierarchy is logical and consistent
+
+### Dependencies
+
+- Chronological data about changes to reference data items
+- Dates or time periods for changes
+- Types of changes for each time period
+- Academic year information
+- GOV.UK Design System components
+- Backend API endpoints for retrieving timeline data
+
+## 6. Release Notes Summary View (`/release-notes?year=2025/2026&view=summary`)
+
+### Description
+The Release Notes Summary View provides a high-level overview of changes to reference data items for a specific academic year, summarizing the number and types of changes. This view helps users quickly understand the scope and impact of changes without needing to review individual items.
+
+### Implementation Requirements
+
+**Academic Year Navigation:**
+- Implement the same academic year navigation as in the List View
+- Ensure consistency in behavior and appearance across views
+
+**View Type Navigation:**
+- Implement the same view type navigation as in the List View
+- Ensure the Summary view is properly highlighted when active
+
+**Summary Statistics Display:**
+- Implement summary statistics for the selected academic year, including:
+  - Total number of reference data items
+  - Number of new items
+  - Number of updated items
+  - Number of unchanged items
+  - Number of removed items
+- Implement visual representations (percentages or charts) to show the distribution of changes
+- Use GOV.UK panel or summary card components for displaying statistics
+
+**Change Type Summaries:**
+- Implement summary sections for each change type (new, updated, removed)
+- Include item counts, brief descriptions of significant changes, and links to view all items of each type
+- Use GOV.UK summary cards with appropriate headings for each change type
+
+**User Interface:**
+- Implement the interface using GOV.UK Design System patterns and components
+- Create a responsive layout that works on mobile, tablet, and desktop devices
+- Position summary statistics at the top of the main content area
+- Position change type summaries below the statistics with consistent spacing
+
+**Accessibility:**
+- Implement skip links for keyboard navigation
+- Ensure all interactive elements are keyboard accessible
+- Add appropriate ARIA attributes for screen readers
+- Maintain proper heading hierarchy
+
+### Acceptance Criteria
+
+**Academic Year Navigation:**
+- Users can successfully navigate between different academic years
+- The currently selected academic year is clearly highlighted
+- The URL updates correctly when switching between academic years
+
+**View Type Navigation:**
+- Users can successfully switch between different view types
+- The Summary view is clearly highlighted when active
+- The URL updates correctly when switching to the Summary view
+
+**Summary Statistics Display:**
+- All statistics are accurately calculated and displayed
+- Visual representations correctly reflect the underlying data
+- Statistics are presented in a clear, easy-to-read format
+- Visual indicators appropriately distinguish between different change types
+
+**Change Type Summaries:**
+- Each change type summary correctly displays the number of items
+- Brief descriptions effectively summarize significant changes
+- Links to view all items of each change type work correctly
+- Summaries are visually distinct and well-organized
+
+**User Interface:**
+- The interface follows GOV.UK Design System patterns and components
+- The layout is responsive and works correctly on mobile, tablet, and desktop devices
+- Summary statistics are prominently displayed at the top of the content area
+- Change type summaries are clearly organized below the statistics
+
+**Accessibility:**
+- Skip links function correctly for keyboard navigation
+- All interactive elements can be accessed and operated using a keyboard
+- Screen readers correctly interpret the page structure and content
+- The heading hierarchy is logical and consistent
+
+### Dependencies
+
+- Summary statistics for reference data items in the selected academic year
+- Counts of items by change type
+- Brief descriptions of significant changes
+- Academic year information
+- GOV.UK Design System components
+- Backend API endpoints for retrieving summary data
+
+## 7. Non-Functional Requirements
+
+### Description
+Non-functional requirements define the quality attributes and operational constraints of the Release Notes feature. These requirements ensure the system is performant, accessible, compatible with various browsers, and secure.
+
+### Implementation Requirements
+
+**Performance:**
+- Implement optimized page loading to ensure pages load within 2 seconds under normal network conditions
+- Optimize UI interactions to be responsive with minimal lag
+- Design the system architecture to handle at least 100 concurrent users
+- Implement appropriate caching strategies for frequently accessed data
+
+**Accessibility:**
+- Implement all pages in compliance with WCAG 2.1 AA standards
+- Ensure the system is fully usable with keyboard navigation only
+- Make the system compatible with common screen readers
+- Implement color schemes that meet accessibility contrast standards
+
+**Browser Compatibility:**
+- Implement cross-browser compatibility for the latest versions of Google Chrome, Mozilla Firefox, Microsoft Edge, and Safari
+- Create responsive layouts that work on mobile devices with various screen sizes
+- Test and optimize for touch interfaces on mobile devices
+
+**Security:**
+- Implement HTTPS for all pages
+- Integrate with the existing authentication and authorization system
+- Implement protections against common web vulnerabilities (XSS, CSRF, etc.)
+- Ensure secure handling of any sensitive data
+
+### Acceptance Criteria
+
+**Performance:**
+- Pages load within 2 seconds under normal network conditions (measured using standard performance testing tools)
+- UI interactions respond within 300ms
+- System maintains performance with 100 concurrent users in load testing
+- No significant performance degradation over time
+
+**Accessibility:**
+- Automated accessibility testing tools report no WCAG 2.1 AA violations
+- Users can navigate and operate all functionality using only a keyboard
+- Screen reader testing confirms all content is properly announced
+- All text elements have a minimum contrast ratio of 4.5:1
+
+**Browser Compatibility:**
+- All functionality works correctly on the latest versions of Google Chrome, Mozilla Firefox, Microsoft Edge, and Safari
+- Pages display correctly and are fully functional on mobile devices with screen widths from 320px to 1920px
+- Touch targets are appropriately sized for mobile use
+
+**Security:**
+- All pages are served over HTTPS with valid certificates
+- Authentication and authorization correctly restrict access to authorized users only
+- Security scanning tools report no critical or high vulnerabilities
+- Data validation is implemented for all user inputs
+
+### Dependencies
+
+- GOV.UK Design System components with accessibility features
+- HTTPS certificates and configuration
+- Authentication and authorization system
+- Performance and security testing tools
+
+## 8. Future Enhancements
+
+### Description
+Future enhancements outline potential improvements and additional features that could be added to the Release Notes functionality in future iterations. These enhancements would provide additional value to users but are not required for the initial implementation.
+
+### Implementation Requirements
+
+**Search Functionality:**
+- Design and implement search capability to find specific reference data items or values
+- Create filters to allow users to narrow down search results by various criteria
+- Develop advanced search options for power users
+
+**Export Functionality:**
+- Implement functionality to export release notes in various formats (PDF, CSV, JSON)
+- Develop API endpoints for programmatic access to release notes data
+- Ensure exported data maintains proper formatting and structure
+
+**Comparison View:**
+- Design and implement a side-by-side comparison view for reference data items across academic years
+- Create visual highlighting to show differences between versions
+- Enable users to select which academic years to compare
+
+**Notification System:**
+- Develop a notification system to alert users about new releases or changes
+- Implement subscription functionality for users to receive updates about specific reference data items
+- Create preference settings for notification frequency and delivery method
+
+### Acceptance Criteria
+
+**Search Functionality:**
+- Users can search for specific reference data items or values using keywords
+- Search results are relevant and sorted by relevance
+- Filters effectively narrow down search results
+- Advanced search options provide additional precision
+
+**Export Functionality:**
+- Users can successfully export release notes in all supported formats
+- Exported data is complete and properly formatted
+- API endpoints return data in the expected format and structure
+- Large exports are handled efficiently
+
+**Comparison View:**
+- Users can select two or more academic years to compare
+- Differences between versions are clearly highlighted
+- The comparison view is easy to understand and navigate
+- Users can easily identify what has changed between versions
+
+**Notification System:**
+- Users receive timely notifications about relevant changes
+- Subscription management is intuitive and effective
+- Notification preferences are properly saved and applied
+- Notifications contain useful, actionable information
+
+### Dependencies
+
+- Search indexing technology
+- PDF, CSV, and JSON generation libraries
+- API framework for programmatic access
+- Notification delivery system
+- User preference storage system
+
+## 9. UX Requirements for Release Notes Pages
+
+### Description
+UX requirements define the user experience aspects of the Release Notes pages, focusing on navigation, content presentation, interactive elements, responsive design, and user feedback. These requirements ensure the system is intuitive, easy to use, and provides a consistent experience across different devices and platforms.
+
+### Implementation Requirements
+
+**Navigation and Wayfinding:**
+- Implement a tab-based navigation system for switching between academic years
+- Implement secondary tab navigation for switching between different views (List, Summary, Timeline)
+- Create breadcrumb navigation to show the user's current location and path
+- Ensure all navigation elements are consistent across pages
+- Implement URL parameters that reflect the current view and academic year
+
+**Content Presentation:**
+- Design list view to present reference data items in a clear, scannable format with proper grouping
+- Design summary view with visual hierarchy and color coding for different change types
+- Implement timeline view with clear chronological indicators and visual progression
+- Ensure consistent styling and spacing across all content presentations
+- Use appropriate visual indicators for different types of content and changes
+
+**Interactive Elements:**
+- Implement clearly identifiable hyperlinks with consistent styling
+- Create expandable sections for complex content using the GOV.UK accordion component
+- Develop filter and sorting functionality for reference data items where appropriate
+- Ensure all interactive elements have appropriate hover and focus states
+- Implement consistent behavior for all interactive elements
+
+**Responsive Design:**
+- Create layouts that adapt to mobile, tablet, and desktop screen sizes
+- Ensure touch targets are appropriately sized for mobile devices
+- Implement responsive navigation that works well on all screen sizes
+- Design table layouts that reflow or allow horizontal scrolling on small screens
+- Maintain readable font sizes across all devices
+
+**Performance and Feedback:**
+- Implement loading indicators and skeleton screens for content that takes time to load
+- Create clear error states with helpful recovery options
+- Design success feedback for completed actions
+- Ensure smooth page transitions and visual continuity
+- Implement client-side validation to prevent common errors
+
+### Acceptance Criteria
+
+**Navigation and Wayfinding:**
+- Academic year tabs display all available years with the current selection visually highlighted
+- View type tabs allow switching between views while maintaining the selected academic year
+- Breadcrumb trail accurately shows the navigation path with the current page indicated
+- All navigation elements are keyboard accessible with visible focus states
+- URL parameters correctly reflect the current view and academic year for sharing/bookmarking
+
+**Content Presentation:**
+- List view displays items grouped by category with clear headings and consistent spacing
+- Summary view shows change types with appropriate color coding and visual separation
+- Timeline view presents chronological information with clear date indicators and visual progression
+- Empty states display appropriate messages with helpful suggestions
+- All content is presented with proper semantic markup and visual hierarchy
+
+**Interactive Elements:**
+- All hyperlinks are clearly identifiable with consistent styling and descriptive text
+- Expandable sections can be opened and closed with keyboard access
+- Filters and sorting controls update content immediately with clear indication of applied filters
+- All interactive elements have distinct hover and focus states
+- Complex interactions provide appropriate feedback to users
+
+**Responsive Design:**
+- Content reflows appropriately on small screens without horizontal scrolling (except for tables)
+- Touch targets are at least 44x44px on mobile devices
+- Navigation adapts to different screen sizes while remaining usable
+- Tables reflow or allow horizontal scrolling on small screens
+- Font sizes remain readable (minimum 16px for body text) on all devices
+
+**Performance and Feedback:**
+- Loading indicators appear during content fetching operations
+- Error messages clearly explain issues with recovery suggestions
+- Success messages confirm completed actions with clear, dismissible notifications
+- Page transitions are smooth with minimal perceived delay
+- Form validation prevents errors before submission with clear error indicators
+
+### Dependencies
+
+- GOV.UK Design System components and patterns
+- Responsive design framework
+- Client-side validation library
+- Loading indicator components
+- User feedback notification system
+
+
+- Focus states are clearly visible with high contrast
+- Skip links allow users to bypass repetitive navigation
+- No keyboard traps exist in any view
+- Keyboard shortcuts are provided for common actions with clear documentation
+
+#### 9.6.3 Color and Typography
+**Requirement:** Text must be readable and color must not be the only means of conveying information.
+
+**Acceptance Criteria:**
+- Text has a minimum contrast ratio of 4.5:1 against its background
+- Large text (18pt or 14pt bold) has a minimum contrast ratio of 3:1
+- Information conveyed by color is also conveyed by text or icons
+- Typography uses the GOV.UK font stack
+- Line height is at least 1.5 times the font size for body text
+- Text can be resized up to 200% without loss of functionality
+
+## 10. Item Detail Page UX Requirements
+
+### 10.1 Context Preservation
+**Requirement:** Users must maintain context when navigating from release notes to item details.
+
+**Acceptance Criteria:**
+- The academic year context is preserved in the URL parameter
+- The item detail page loads with the correct academic year selected
+- A back link allows users to return to the previous release notes view
+- The page title includes both the item name and academic year
+- Breadcrumb navigation shows the path from release notes to the current item
+
+### 10.2 Item Information Display
+**Requirement:** Item details must be presented in a clear, structured format.
+
+**Acceptance Criteria:**
+- The item name is displayed as the main heading (H1)
+- Item metadata (type, category) is displayed in a summary section
+- Metadata uses the GOV.UK summary list component
+- Changes specific to the selected academic year are highlighted
+- Historical information is clearly separated from current information
+
+### 10.3 Value Listing
+**Requirement:** Item values must be displayed in a clear, scannable format.
+
+**Acceptance Criteria:**
+- Values are displayed in a table format with consistent columns
+- Table headers are sticky on long lists
+- Each value shows its name, code (if applicable), and description
+- New values are highlighted with a "New" tag
+- Updated values show both old and new information with change highlighting
+- Pagination is implemented for items with many values
+- Sorting and filtering options are available for the values table
