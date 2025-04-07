@@ -32,6 +32,8 @@
 /* Table enhancements */
 .data-table {
     margin-bottom: 30px;
+    width: 100%;
+    table-layout: fixed;
 }
 
 .data-table__header {
@@ -39,6 +41,13 @@
 }
 
 .data-table__cell--actions {
+    white-space: nowrap;
+}
+
+/* Ensure the actions column has enough width */
+.govuk-table__header:last-child,
+.govuk-table__cell:last-child {
+    width: 120px;
     white-space: nowrap;
 }
 
@@ -146,6 +155,18 @@
         display: block;
         overflow-x: auto;
     }
+}
+
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    flex-direction: row;
+    white-space: nowrap;
+}
+
+.action-buttons .govuk-button--secondary {
+    min-width: auto;
+    white-space: nowrap;
 }
 
 /* Print styles */

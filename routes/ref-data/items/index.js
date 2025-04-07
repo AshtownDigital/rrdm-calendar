@@ -78,7 +78,7 @@ router.get('/', (req, res) => {
             academicYear: historyEntry.academicYear,
             lastUpdated: historyEntry.lastUpdated || item.lastUpdated,
             summary: historyEntry.summary || 'No changes',
-            actions: `<a href="/ref-data/items/${item.id}/history" class="govuk-link">History</a>`
+            actions: `<a href="/ref-data/items/${item.id}/values" class="govuk-link">Edit</a> | <a href="/ref-data/items/${item.id}/history" class="govuk-link">History</a>`
           });
         }
       });
@@ -101,7 +101,7 @@ router.get('/', (req, res) => {
         academicYear: currentYear.name,
         lastUpdated: item.lastUpdated,
         summary: currentYearHistory ? currentYearHistory.summary : 'No changes',
-        actions: `<a href="/ref-data/items/${item.id}/history" class="govuk-link">History</a>`
+        actions: `<a href="/ref-data/items/${item.id}/values" class="govuk-link">Edit</a> | <a href="/ref-data/items/${item.id}/history" class="govuk-link">History</a>`
       };
     });
   }
@@ -117,7 +117,23 @@ router.get('/', (req, res) => {
 // Item values route
 router.get('/:id/values', (req, res) => {
   try {
-    const currentYear = getCurrentAcademicYear(req, false);
+    // Check if a specific academic year was requested
+    let currentYear;
+    if (req.query['academic-year']) {
+      // Find the academic year by ID
+      const yearId = req.query['academic-year'];
+      const specificYear = data.academicYears.find(year => year.id === yearId);
+      if (specificYear) {
+        currentYear = specificYear;
+      } else {
+        // If not found, fall back to the default behavior
+        currentYear = getCurrentAcademicYear(req, false);
+      }
+    } else {
+      // No specific year requested, use the default
+      currentYear = getCurrentAcademicYear(req, false);
+    }
+    
     const item = data.items.find(item => item.id === req.params.id);
   if (!item) {
     return res.status(404).render('error', {
@@ -211,6 +227,8 @@ router.get('/:id/values', (req, res) => {
 
 // Item history route
 router.get('/:id/history', (req, res) => {
+  // Get all academic years, not just the current one
+  const allYears = data.academicYears.filter(year => year.id !== 'all');
   const currentYear = getCurrentAcademicYear(req, false);
   const item = data.items.find(item => item.id === req.params.id);
   if (!item) {
@@ -228,6 +246,54 @@ router.get('/:id/history', (req, res) => {
       .replace(/^[0-9]/, 'N$&'); // Prefix with 'N' if starts with number
   };
 
+  // Ensure we have history entries for all academic years
+  let fullHistory = [];
+  
+  // Get all actual academic years (excluding 'all')
+  const actualYears = data.academicYears.filter(year => year.id !== 'all');
+  
+  // Create a map of existing entries by academic year for quick lookup
+  const existingEntriesByYear = {};
+  item.history.forEach(entry => {
+    existingEntriesByYear[entry.academicYear] = entry;
+  });
+  
+  // Create entries for all academic years
+  actualYears.forEach(year => {
+    // Check if we have an existing entry for this year
+    if (existingEntriesByYear[year.name]) {
+      // Use the existing entry
+      const entry = existingEntriesByYear[year.name];
+      fullHistory.push({
+        ...entry,
+        status: entry.status || 'Active',
+        changeType: entry.changeType || 'No Change',
+        lastUpdated: entry.lastUpdated || item.lastUpdated,
+        academicYear: year.name,
+        academicYearId: year.id,
+        summary: entry.summary || 'No changes'
+      });
+    } else {
+      // Create a new entry for this year
+      fullHistory.push({
+        status: 'Active',
+        changeType: 'No Change',
+        lastUpdated: item.lastUpdated,
+        academicYear: year.name,
+        academicYearId: year.id,
+        summary: 'No changes'
+      });
+    }
+  });
+  
+  // Sort the history by academic year (most recent first)
+  fullHistory.sort((a, b) => {
+    // Extract the start year from academic year format (e.g., "2025/26" -> 2025)
+    const yearA = parseInt(a.academicYear.split('/')[0]);
+    const yearB = parseInt(b.academicYear.split('/')[0]);
+    return yearB - yearA; // Sort descending (most recent first)
+  });
+  
   res.render('modules/ref-data/items/history', {
     title: `${item.name} History`,
     serviceName: 'Reference Data Management',
@@ -239,19 +305,39 @@ router.get('/:id/history', (req, res) => {
       csvName: formatName(item.name),
       apiName: formatName(item.name)
     },
-    history: item.history.map(entry => {
-      // Find the academic year ID that matches the entry's academic year name
-      const academicYearObj = data.academicYears.find(year => year.name === entry.academicYear);
-      const academicYearId = academicYearObj ? academicYearObj.id : '';
-      
-      return {
-        ...entry,
-        status: entry.status,
-        lastUpdated: entry.lastUpdated || item.lastUpdated,
-        academicYearId: academicYearId
-      };
-    })
+    history: fullHistory
   });
+});
+
+// Add reference data item form route
+router.get('/add', (req, res) => {
+  // Generate the next 6 academic years starting from the current year (2025)
+  const currentYear = 2025;
+  const futureAcademicYears = [];
+  
+  for (let i = 0; i < 6; i++) {
+    const startYear = currentYear + i;
+    const endYear = startYear + 1;
+    const shortEndYear = endYear.toString().slice(-2);
+    
+    futureAcademicYears.push({
+      id: `${startYear}-${shortEndYear}`,
+      name: `${startYear}/${shortEndYear}`
+    });
+  }
+  
+  res.render('modules/ref-data/items/add', {
+    title: 'Add Reference Data Item',
+    serviceName: 'Reference Data Management',
+    academicYears: futureAcademicYears
+  });
+});
+
+// Process add reference data item form submission
+router.post('/add', (req, res) => {
+  // In a real application, this would save the data
+  // For now, just redirect back to the items list with a success message
+  res.redirect('/ref-data/items');
 });
 
 module.exports = router;

@@ -20,6 +20,8 @@
 
 <h1 class="govuk-heading-xl">{{ item.name }} History</h1>
 
+
+
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
     
@@ -40,17 +42,17 @@
           <td class="govuk-table__cell">{{ entry.academicYear }}</td>
           <td class="govuk-table__cell">
             {% if entry.status === 'active' or entry.status === 'Active' %}
-              <strong class="govuk-tag govuk-tag--green">Active</strong>
+              Active
             {% elif entry.status === 'inactive' or entry.status === 'Inactive' %}
-              <strong class="govuk-tag govuk-tag--grey">Inactive</strong>
+              Inactive
             {% elif entry.status === 'pending' or entry.status === 'Pending' %}
-              <strong class="govuk-tag govuk-tag--blue">Pending</strong>
+              Pending
             {% elif entry.status === 'in progress' or entry.status === 'In progress' %}
-              <strong class="govuk-tag govuk-tag--blue">In progress</strong>
+              In progress
             {% elif entry.status === 'rejected' or entry.status === 'Rejected' %}
-              <strong class="govuk-tag govuk-tag--red">Rejected</strong>
+              Rejected
             {% else %}
-              <strong class="govuk-tag">{{ entry.status | title }}</strong>
+              {{ entry.status | title }}
             {% endif %}
           </td>
           <td class="govuk-table__cell">
@@ -70,7 +72,7 @@
           </td>
           <td class="govuk-table__cell">{{ entry.lastUpdated | date }}</td>
           <td class="govuk-table__cell">
-            <a href="/items/{{ item.id }}/values?academic-year={{ entry.academicYearId }}" class="govuk-link">View</a>
+            <a href="/ref-data/items/{{ item.id }}/values?academic-year={{ entry.academicYearId }}" class="govuk-link">View</a>
           </td>
         </tr>
         {% endfor %}

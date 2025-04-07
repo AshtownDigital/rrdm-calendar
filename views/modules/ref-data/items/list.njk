@@ -16,6 +16,10 @@
 {% block content %}
 <h1 class="govuk-heading-xl">Reference Data Directory {% if currentYear.id !== 'all' %}for {{ currentYear.name }}{% endif %}</h1>
 
+<div class="govuk-button-group govuk-!-margin-bottom-6">
+  <a href="/ref-data/items/add" class="govuk-button">Add Reference Data Item</a>
+</div>
+
 <form class="govuk-form-group" id="year-filter-form" method="get" action="/items">
   <div class="govuk-form-group">
     <label class="govuk-label" for="academic-year">
