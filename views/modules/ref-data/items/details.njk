@@ -38,6 +38,10 @@
             <dd class="govuk-summary-list__value">{{ item.name }}</dd>
           </div>
           <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Item Source</dt>
+            <dd class="govuk-summary-list__value">{{ item.itemSource | default('Data Gem') }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">Academic Year</dt>
             <dd class="govuk-summary-list__value">{{ item.academicYear }}</dd>
           </div>

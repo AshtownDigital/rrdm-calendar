@@ -34,6 +34,7 @@
     margin-bottom: 30px;
     width: 100%;
     table-layout: fixed;
+    min-width: 900px;
 }
 
 .data-table__header {
@@ -47,8 +48,9 @@
 /* Ensure the actions column has enough width */
 .govuk-table__header:last-child,
 .govuk-table__cell:last-child {
-    width: 120px;
+    width: 170px;
     white-space: nowrap;
+    text-align: right;
 }
 
 /* Academic year selector */
@@ -167,6 +169,16 @@
 .action-buttons .govuk-button--secondary {
     min-width: auto;
     white-space: nowrap;
+}
+
+/* Action links in table */
+.govuk-table__cell a.govuk-link {
+    white-space: nowrap;
+    display: inline-block;
+}
+
+.govuk-table__cell:last-child {
+    padding-right: 15px;
 }
 
 /* Print styles */

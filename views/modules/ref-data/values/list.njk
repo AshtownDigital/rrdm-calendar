@@ -1,81 +1,5 @@
 {% extends "layouts/base-no-header.njk" %}
 
-{% block head %}
-  {{ super() }}
-  <style>
-    /* General styles */
-    .govuk-heading-xl {
-      margin-bottom: 30px;
-    }
-    
-    /* Summary list styles */
-    .govuk-summary-list__key {
-      font-weight: bold !important;
-      font-size: 1.1rem;
-      padding-right: 1rem;
-    }
-    
-    .govuk-summary-list__value {
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-    }
-    
-    .govuk-summary-list__row:last-child {
-      margin-bottom: 0;
-    }
-    
-    /* Table styles */
-    .govuk-table {
-      margin-top: 30px;
-      border: 1px solid #b1b4b6;
-    }
-    
-    .govuk-table__header {
-      background-color: #f3f2f1;
-      font-weight: bold;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-      white-space: normal;
-      padding: 15px 10px;
-    }
-    
-    .govuk-table__cell {
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-      white-space: normal;
-      border-bottom: 1px solid #b1b4b6;
-    }
-    
-    .govuk-table__row:hover {
-      background-color: #f8f8f8;
-    }
-    
-    /* Component styles */
-    .item-metadata {
-      background-color: #f8f8f8;
-      padding: 20px;
-      margin-bottom: 30px;
-      border-left: 5px solid #1d70b8;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    
-    /* Filter styles */
-    .filter-section {
-      background-color: #f8f8f8;
-      padding: 20px;
-      margin-bottom: 30px;
-      border-left: 5px solid #1d70b8;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    
-    /* Tag styles */
-    .govuk-tag {
-      text-transform: none;
-      font-weight: 600;
-    }
-  </style>
-{% endblock %}
-
 {% block stylesheets %}
   <link href="/stylesheets/govuk-frontend.min.css" rel="stylesheet">
   <link href="/stylesheets/ref-data-nav.css" rel="stylesheet">
@@ -90,93 +14,102 @@
 {% endblock %}
 
 {% block content %}
-<div class="govuk-grid-row">
-  <div class="govuk-grid-column-full">
-    <h1 class="govuk-heading-xl">{{ item.name }} Values</h1>
-    <div class="govuk-body">
-      <span class="govuk-!-margin-right-4">
-        {% if item.status === 'Active' %}
-          <strong class="govuk-tag govuk-tag--green">{{ item.status }}</strong>
-        {% elif item.status === 'Inactive' %}
-          <strong class="govuk-tag govuk-tag--red">{{ item.status }}</strong>
-        {% else %}
-          <strong class="govuk-tag govuk-tag--grey">{{ item.status }}</strong>
-        {% endif %}
-      </span>
-      <span class="govuk-!-margin-right-4">
-        {% if item.changeType === 'New' %}
-          <strong class="govuk-tag">{{ item.changeType }}</strong>
-        {% elif item.changeType === 'No Change' %}
-          <strong class="govuk-tag govuk-tag--grey">{{ item.changeType }}</strong>
-        {% elif item.changeType === 'Updated' %}
-          <strong class="govuk-tag govuk-tag--yellow">{{ item.changeType }}</strong>
-        {% else %}
-          <strong class="govuk-tag">{{ item.changeType }}</strong>
-        {% endif %}
-      </span>
-      <span>Last updated: {{ item.lastUpdated | date("D MMMM YYYY") }}</span>
-    </div>
-  </div>
+<h1 class="govuk-heading-xl">{{ item.name }} Values {% if currentYear.id !== 'all' %}for {{ currentYear.name }}{% endif %}</h1>
+
+<div class="govuk-button-group govuk-!-margin-bottom-6">
+  <a href="/ref-data/values/{{ item.id }}/add" class="govuk-button">Add Value</a>
 </div>
 
-<div class="govuk-grid-row">
-  <div class="govuk-grid-column-full">
-    <h2 class="govuk-heading-l">Values</h2>
-    <table class="govuk-table data-table">
-      <thead class="govuk-table__head data-table__header">
-        <tr class="govuk-table__row">
-          <th class="govuk-table__header" style="width: 8%">Hesa Code</th>
-          <th class="govuk-table__header" style="width: 12%">Value Name</th>
-          <th class="govuk-table__header" style="width: 30%">Description</th>
-          <th class="govuk-table__header" style="width: 10%">Academic Year</th>
-          <th class="govuk-table__header" style="width: 8%">Status</th>
-          <th class="govuk-table__header" style="width: 10%">Change Type</th>
-          <th class="govuk-table__header" style="width: 15%">Change Summary</th>
-          <th class="govuk-table__header" style="width: 7%">Actions</th>
-        </tr>
-      </thead>
-      <tbody class="govuk-table__body">
-        {% if values.length === 0 %}
-        <tr class="govuk-table__row">
-          <td class="govuk-table__cell" colspan="8" style="text-align: center; padding: 30px;">No values found for this item.</td>
-        </tr>
-        {% else %}
-        {% for value in values %}
-        <tr class="govuk-table__row">
-          <td class="govuk-table__cell" style="word-break: break-word; padding: 15px 10px; vertical-align: middle;">{{ value.id }}</td>
-          <td class="govuk-table__cell" style="word-break: break-word; padding: 15px 10px; vertical-align: middle; font-weight: bold;">
-            <a href="/values/{{ item.id }}/{{ value.id }}/history" class="govuk-link govuk-link--no-visited-state">{{ value.name }}</a>
-          </td>
-          <td class="govuk-table__cell" style="word-break: break-word; padding: 15px 10px; vertical-align: middle;">{{ value.description }}</td>
-          <td class="govuk-table__cell" style="word-break: break-word; padding: 15px 10px; vertical-align: middle;">{{ item.academicYear }}</td>
-          <td class="govuk-table__cell" style="word-break: break-word; padding: 15px 10px; vertical-align: middle;">
-            {% if value.status === 'active' %}
-              <strong class="govuk-tag govuk-tag--green">Active</strong>
-            {% elif value.status === 'inactive' %}
-              <strong class="govuk-tag govuk-tag--red">Inactive</strong>
-            {% else %}
-              <strong class="govuk-tag govuk-tag--grey">{{ value.status | title }}</strong>
-            {% endif %}
-          </td>
-          <td class="govuk-table__cell" style="word-break: break-word; padding: 15px 10px; vertical-align: middle;">
-            <strong class="govuk-tag govuk-tag--purple">{{ value.changeType | title }}</strong>
-          </td>
-          <td class="govuk-table__cell" style="word-break: break-word; padding: 15px 10px; vertical-align: middle;">{{ value.changeSummary }}</td>
-          <td class="govuk-table__cell data-table__cell--actions" style="word-break: break-word; padding: 15px 10px; vertical-align: middle;">{{ value.actions | safe }}</td>
-        </tr>
-        {% endfor %}
-        {% endif %}
-      </tbody>
-    </table>
+<form class="govuk-form-group" id="year-filter-form" method="get" action="/ref-data/values">
+  <div class="govuk-form-group">
+    <label class="govuk-label" for="academic-year">
+      <strong>Filter by Academic Year</strong>
+    </label>
+    <select class="govuk-select" id="academic-year" name="academic-year" onchange="this.form.submit()">
+      {% for year in academicYears %}
+        <option value="{{ year.id }}" {% if year.id === currentYear.id %}selected{% endif %}>
+          {% if year.id === 'all' %}All academic years{% else %}{{ year.name }}{% endif %}
+        </option>
+      {% endfor %}
+    </select>
   </div>
+</form>
+
+<script>
+  document.getElementById('academic-year').addEventListener('change', function() {
+    document.getElementById('year-filter-form').submit();
+  });
+</script>
+
+<table class="govuk-table data-table">
+  <thead class="govuk-table__head data-table__header">
+    <tr class="govuk-table__row">
+      <th scope="col" class="govuk-table__header">Hesa Code</th>
+      <th scope="col" class="govuk-table__header">Value Name</th>
+      <th scope="col" class="govuk-table__header">Description</th>
+      <th scope="col" class="govuk-table__header">Academic Year</th>
+      <th scope="col" class="govuk-table__header">Status</th>
+      <th scope="col" class="govuk-table__header">Change Type</th>
+      <th scope="col" class="govuk-table__header">Change Summary</th>
+      <th scope="col" class="govuk-table__header">Actions</th>
+    </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+    {% if values.length === 0 %}
+    <tr class="govuk-table__row">
+      <td class="govuk-table__cell" colspan="8">No values found for this item.</td>
+    </tr>
+    {% else %}
+    {% for value in values %}
+    <tr class="govuk-table__row">
+      <td class="govuk-table__cell">{{ value.id }}</td>
+      <td class="govuk-table__cell">
+        <a href="/values/{{ item.id }}/{{ value.id }}/history" class="govuk-link govuk-link--no-visited-state">{{ value.name }}</a>
+      </td>
+      <td class="govuk-table__cell">{{ value.description }}</td>
+      <td class="govuk-table__cell">{{ item.academicYear }}</td>
+      <td class="govuk-table__cell">
+        {% if value.status === 'active' %}
+          {{ value.status | title }}
+        {% elif value.status === 'inactive' %}
+          {{ value.status | title }}
+        {% else %}
+          {{ value.status | title }}
+        {% endif %}
+      </td>
+      <td class="govuk-table__cell">
+        {% if value.changeType == 'New' %}
+          <strong class="govuk-tag">{{ value.changeType }}</strong>
+        {% elif value.changeType == 'No Change' %}
+          <strong class="govuk-tag govuk-tag--grey">{{ value.changeType }}</strong>
+        {% elif value.changeType == 'Updated' %}
+          <strong class="govuk-tag govuk-tag--yellow">{{ value.changeType }}</strong>
+        {% elif value.changeType == 'Removed' %}
+          <strong class="govuk-tag govuk-tag--red">{{ value.changeType }}</strong>
+        {% elif value.changeType == 'Delayed' %}
+          <strong class="govuk-tag govuk-tag--orange">{{ value.changeType }}</strong>
+        {% else %}
+          <strong class="govuk-tag">{{ value.changeType }}</strong>
+        {% endif %}
+      </td>
+      <td class="govuk-table__cell">{{ value.changeSummary }}</td>
+      <td class="govuk-table__cell">{{ value.actions | safe }}</td>
+    </tr>
+    {% endfor %}
+    {% endif %}
+  </tbody>
+</table>
+
+<div class="button-group">
+  <a href="/ref-data/items" class="govuk-button">Back to Items List</a>
+  <a href="/ref-data/items/{{ item.id }}/history" class="govuk-button govuk-button--secondary">View Item History</a>
 </div>
 
-<div class="govuk-grid-row">
-  <div class="govuk-grid-column-full">
-    <div class="govuk-button-group" style="margin-top: 40px; margin-bottom: 40px;">
-      <a href="/items" class="govuk-button">Back to Items List</a>
-      <a href="/items/{{ item.id }}/history" class="govuk-button govuk-button--secondary">View Item History</a>
-    </div>
-  </div>
-</div>
+<script>
+  document.getElementById('academic-year').addEventListener('change', function() {
+    const url = new URL(window.location);
+    url.searchParams.set('academic-year', this.value);
+    window.location = url;
+  });
+</script>
 {% endblock %}
