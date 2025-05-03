@@ -1,7 +1,7 @@
 <header class="govuk-header" data-module="govuk-header">
   <div class="govuk-header__container govuk-width-container">
     <div class="govuk-header__logo">
-      <a href="#" class="govuk-header__link govuk-header__link--homepage">
+      <a href="/" class="govuk-header__link govuk-header__link--homepage">
         <svg
           focusable="false"
           role="img"
@@ -16,5 +16,21 @@
         </svg>
       </a>
     </div>
+    
+    {% if user %}
+    <div class="govuk-header__content">
+      <div class="govuk-header__account-link" style="text-align: right; padding-right: 15px;">
+        <span class="govuk-body-s govuk-!-margin-right-2" style="color: white;">
+          <strong>{{ user.name }}</strong>
+          {% if user.role === 'admin' %}
+            <span class="govuk-tag govuk-tag--blue govuk-!-margin-left-1">Admin</span>
+          {% else %}
+            <span class="govuk-tag govuk-tag--green govuk-!-margin-left-1">Business</span>
+          {% endif %}
+        </span>
+        <a href="/access/logout" class="govuk-header__link"><strong>Sign out</strong></a>
+      </div>
+    </div>
+    {% endif %}
   </div>
 </header>

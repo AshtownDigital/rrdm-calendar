@@ -1,0 +1,31 @@
+{
+  "users": [
+    {
+      "id": "admin-001",
+      "email": "admin@example.com",
+      "password": "$2a$10$XFE0rDoJcQ.zfcjA2EzaDu.22YpzXYvBF8GwqQfXHiCc4MqPP0oFi",
+      "name": "System Administrator",
+      "role": "admin",
+      "createdAt": "2025-05-03T00:00:00.000Z",
+      "lastLogin": null
+    },
+    {
+      "id": "user-001",
+      "email": "user@example.com",
+      "password": "$2a$10$XFE0rDoJcQ.zfcjA2EzaDu.22YpzXYvBF8GwqQfXHiCc4MqPP0oFi",
+      "name": "Business User",
+      "role": "business",
+      "createdAt": "2025-05-03T00:00:00.000Z",
+      "lastLogin": null
+    },
+    {
+      "id": "admin-002",
+      "email": "admin@email.com",
+      "password": "$2b$10$wVj6eWk4C1l2ieH797japeCwmMG.oNQzpT3MQSjWVfcFNNbGJDe26",
+      "name": "Admin User",
+      "role": "admin",
+      "createdAt": "2025-05-03T21:45:00.871Z",
+      "lastLogin": "2025-05-03T23:12:20.000Z"
+    }
+  ]
+}

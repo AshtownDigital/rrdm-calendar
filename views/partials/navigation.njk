@@ -26,6 +26,13 @@
               Reference Data - Public facing
             </a>
           </li>
+          {% if user and user.role === 'admin' %}
+          <li class="govuk-service-navigation__item">
+            <a class="govuk-service-navigation__link" href="/access/manage">
+              Access Management
+            </a>
+          </li>
+          {% endif %}
         </ul>
       </nav>
     </div>

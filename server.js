@@ -3,12 +3,38 @@ const path = require('path');
 const fs = require('fs');
 const nunjucks = require('nunjucks');
 const dateFilter = require('nunjucks-date-filter');
+const session = require('express-session');
+const passport = require('passport');
+const flash = require('connect-flash');
 
 const app = express();
 
 // Add body parser middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Express session middleware
+app.use(session({
+  secret: 'rrdm-secret-key',
+  resave: false,          // Don't save session if unmodified
+  saveUninitialized: false, // Don't create session until something stored
+  rolling: true,         // Reset cookie expiration on each response
+  cookie: { 
+    maxAge: 604800000,    // 7 days in milliseconds
+    secure: false,        // Set to true in production with HTTPS
+    httpOnly: true        // Prevents client-side JS from reading the cookie
+  }
+}));
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Connect flash middleware
+app.use(flash());
+
+// Configure Passport
+require('./config/passport')(passport);
 
 // Set up static file serving with cache control for better performance
 app.use(express.static(path.join(__dirname, 'public'), {
@@ -72,6 +98,10 @@ app.use((req, res, next) => {
   if (!res.locals.navigation) {
     res.locals.navigation = 'partials/navigation.njk';
   }
+  
+  // Make user available to all templates
+  res.locals.user = req.user || null;
+  
   next();
 });
 
@@ -80,6 +110,7 @@ const homeRouter = require('./routes/home/index');
 const refDataRouter = require('./routes/ref-data/index');
 const fundingRouter = require('./routes/funding/index');
 const bcrRouter = require('./routes/bcr/index');
+const accessRouter = require('./routes/access/index');
 
 // Legacy routes - these will be removed after migration is complete
 const dashboardRouter = require('./routes/dashboard/index');
@@ -91,30 +122,40 @@ const restorePointsRouter = require('./routes/restore-points');
 // Import API routes for Vercel serverless optimization
 const apiRouter = require('./api');
 
-// Use route modules
-app.use('/home', homeRouter);
-app.use('/ref-data', refDataRouter);
-app.use('/funding', fundingRouter);
-app.use('/bcr', bcrRouter);
+// Import auth middleware
+const { ensureAuthenticated } = require('./middleware/auth');
+
+// Access routes (no authentication required)
+app.use('/access', accessRouter);
+
+// Protected routes (authentication required)
+app.use('/home', ensureAuthenticated, homeRouter);
+app.use('/ref-data', ensureAuthenticated, refDataRouter);
+app.use('/funding', ensureAuthenticated, fundingRouter);
+app.use('/bcr', ensureAuthenticated, bcrRouter);
 
 // Legacy routes - these will be removed after migration is complete
 // Redirect /dashboard to /ref-data/dashboard
-app.get('/dashboard', (req, res) => {
+app.get('/dashboard', ensureAuthenticated, (req, res) => {
   res.redirect('/ref-data/dashboard');
 });
 
 // Keep these routes for backward compatibility
-app.use('/items', itemsRouter);
-app.use('/values', valuesRouter);
-app.use('/release-notes', releaseNotesRouter);
-app.use('/restore-points', restorePointsRouter);
+app.use('/items', ensureAuthenticated, itemsRouter);
+app.use('/values', ensureAuthenticated, valuesRouter);
+app.use('/release-notes', ensureAuthenticated, releaseNotesRouter);
+app.use('/restore-points', ensureAuthenticated, restorePointsRouter);
 
 // Use API routes for Vercel serverless optimization
-app.use('/api', apiRouter);
+app.use('/api', ensureAuthenticated, apiRouter);
 
 // Redirect root to home
 app.get('/', (req, res) => {
-  res.redirect('/home');
+  if (req.isAuthenticated()) {
+    res.redirect('/home');
+  } else {
+    res.redirect('/access/login');
+  }
 });
 
 // Error handling middleware

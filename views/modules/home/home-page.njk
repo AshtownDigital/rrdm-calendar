@@ -55,7 +55,7 @@
               </a>
             </li>
             <li class="govuk-service-navigation__item">
-              <a class="govuk-service-navigation__link" href="#">
+              <a class="govuk-service-navigation__link" href="/access/logout">
                 Sign Out
               </a>
             </li>
@@ -116,9 +116,13 @@
         <!-- Panel 5 -->
         <div class="govuk-grid-column-one-third">
           <div class="app-card">
-            <h2 class="govuk-heading-m">BCR Management</h2>
-            <p class="govuk-body">Manage and track business change requests.</p>
-            <a href="/bcr" class="govuk-button">Access service</a>
+            <h2 class="govuk-heading-m">Access Management</h2>
+            <p class="govuk-body">Manage user accounts and permissions.</p>
+            {% if user and user.role === 'admin' %}
+              <a href="/access/manage" class="govuk-button">Access service</a>
+            {% else %}
+              <a href="#" class="govuk-button govuk-button--disabled" aria-disabled="true">Admin only</a>
+            {% endif %}
           </div>
         </div>
         
