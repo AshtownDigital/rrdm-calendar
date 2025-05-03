@@ -1,0 +1,182 @@
+{
+  "phases": [
+    {
+      "id": 1,
+      "name": "Submission Window Opens - Received",
+      "description": "Initial submission of BCR request",
+      "allowedActions": ["Accept", "Return to Submitter"],
+      "nextPhase": 2
+    },
+    {
+      "id": 2,
+      "name": "Collation & Prioritisation - BCR Prioritised",
+      "description": "Group, merge, categorize, and assign priority to BCRs",
+      "allowedActions": ["Categorize", "Merge", "Assign Priority", "Return to Submitter", "Move to Next Phase"],
+      "nextPhase": 3
+    },
+    {
+      "id": 3,
+      "name": "Technical and Business Impact Analysis - Impact Assessed",
+      "description": "Assess technical and business impact of the BCR",
+      "allowedActions": ["Assign Reviewer", "Record Findings", "Return to Submitter", "Move to Next Phase"],
+      "nextPhase": 4
+    },
+    {
+      "id": 4,
+      "name": "Internal Analysis Playback - Internal Analysis Playback Completed",
+      "description": "Internal review of analysis findings",
+      "allowedActions": ["Score BCR", "Recommend Decision", "Return to Submitter", "Move to Next Phase"],
+      "nextPhase": 5
+    },
+    {
+      "id": 5,
+      "name": "Stakeholder Consultation - Stakeholders Consulted",
+      "description": "Gather feedback from stakeholders",
+      "allowedActions": ["Send for Feedback", "Record Feedback", "Move to Next Phase"],
+      "nextPhase": 6
+    },
+    {
+      "id": 6,
+      "name": "Drafting of Final Requirements - Requirements Documented",
+      "description": "Define implementation requirements",
+      "allowedActions": ["Define Implementation Notes", "Move to Next Phase"],
+      "nextPhase": 7
+    },
+    {
+      "id": 7,
+      "name": "Final Approval - Requirements Approved",
+      "description": "Final decision on BCR approval",
+      "allowedActions": ["Approve", "Reject"],
+      "nextPhase": 8
+    },
+    {
+      "id": 8,
+      "name": "Implementation - Implemented",
+      "description": "Implementation of approved BCR",
+      "allowedActions": ["Mark as Implemented", "Move to Next Phase"],
+      "nextPhase": 9
+    },
+    {
+      "id": 9,
+      "name": "Validation - Change Validated and Tested",
+      "description": "Testing and validation of implementation",
+      "allowedActions": ["Add Testing Notes", "Move to Next Phase"],
+      "nextPhase": 10
+    },
+    {
+      "id": 10,
+      "name": "Go Live - Change Live",
+      "description": "BCR changes deployed to production",
+      "allowedActions": ["Confirm Go Live Status", "Move to Next Phase"],
+      "nextPhase": 11
+    },
+    {
+      "id": 11,
+      "name": "Post-Implementation Review - Post Implementation Review Done",
+      "description": "Review of implementation and lessons learned",
+      "allowedActions": ["Capture Feedback", "Record Lessons Learned", "Close BCR"],
+      "nextPhase": 12
+    },
+    {
+      "id": 12,
+      "name": "BCR Closure - BCR Closed",
+      "description": "Final closure of the BCR and archiving",
+      "allowedActions": ["Archive BCR"],
+      "nextPhase": null
+    }
+  ],
+  "statuses": [
+    {
+      "id": "submission_received",
+      "name": "Submission Received",
+      "phase": 1
+    },
+    {
+      "id": "collation_categorisation",
+      "name": "Collation and Categorisation",
+      "phase": 2
+    },
+    {
+      "id": "technical_business_review",
+      "name": "Technical and Business Impact Review",
+      "phase": 3
+    },
+    {
+      "id": "internal_governance_review",
+      "name": "Internal Governance Review",
+      "phase": 4
+    },
+    {
+      "id": "stakeholder_feedback",
+      "name": "Stakeholder Feedback",
+      "phase": 5
+    },
+    {
+      "id": "draft_implementation",
+      "name": "Draft Implementation Planning",
+      "phase": 6
+    },
+    {
+      "id": "final_approval",
+      "name": "Final Approval",
+      "phase": 7
+    },
+    {
+      "id": "implementation",
+      "name": "Implementation",
+      "phase": 8
+    },
+    {
+      "id": "testing",
+      "name": "Testing",
+      "phase": 9
+    },
+    {
+      "id": "go_live",
+      "name": "Go Live",
+      "phase": 10
+    },
+    {
+      "id": "post_implementation_review",
+      "name": "Post-Implementation Review",
+      "phase": 11
+    },
+    {
+      "id": "completed",
+      "name": "Completed",
+      "phase": null
+    },
+    {
+      "id": "rejected",
+      "name": "Rejected",
+      "phase": null
+    },
+    {
+      "id": "bcr_closed",
+      "name": "BCR Closed",
+      "phase": 12
+    }
+  ],
+  "impactAreas": [
+    "Backend",
+    "Frontend",
+    "API",
+    "CSV",
+    "Reference Data",
+    "Documentation",
+    "Policy",
+    "Funding"
+  ],
+  "urgencyLevels": [
+    "Low",
+    "Medium",
+    "High",
+    "Critical"
+  ],
+  "roles": [
+    "Submitter",
+    "Reviewer",
+    "Governance Lead",
+    "Administrator"
+  ]
+}

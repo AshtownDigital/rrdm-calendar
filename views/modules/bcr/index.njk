@@ -1,0 +1,144 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}BCR Management | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">Business Change Request (BCR) Management</h1>
+      
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+          <p class="govuk-body-l">
+            Manage and track business change requests through the entire lifecycle from submission to implementation.
+          </p>
+        </div>
+      </div>
+
+
+
+      <!-- Dashboard Cards -->
+      <div class="govuk-grid-row">
+        <!-- Card 1: Active BCRs -->
+        <div class="govuk-grid-column-one-third">
+          <div class="app-card">
+            <h2 class="govuk-heading-m">Active BCRs</h2>
+            <p class="govuk-body">View and manage all active BCR submissions.</p>
+            <a href="/bcr/submissions" class="govuk-button">View submissions</a>
+          </div>
+        </div>
+        
+        <!-- Card 2: Submit New BCR -->
+        <div class="govuk-grid-column-one-third">
+          <div class="app-card">
+            <h2 class="govuk-heading-m">Submit New BCR</h2>
+            <p class="govuk-body">Create a new Business Change Request.</p>
+            <a href="/bcr/submit" class="govuk-button">Create BCR</a>
+          </div>
+        </div>
+        
+        <!-- Card 3: Workflow Management -->
+        <div class="govuk-grid-column-one-third">
+          <div class="app-card">
+            <h2 class="govuk-heading-m">Workflow Management</h2>
+            <p class="govuk-body">View and manage the BCR workflow process.</p>
+            <a href="/bcr/workflow" class="govuk-button">View workflow</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- BCR Process Overview -->
+      <div class="govuk-grid-row govuk-!-margin-top-9">
+        <div class="govuk-grid-column-full">
+          <h2 class="govuk-heading-l">BCR Process Overview</h2>
+          
+          <div class="govuk-tabs" data-module="govuk-tabs">
+            <h2 class="govuk-tabs__title">BCR Process Phases</h2>
+            <ul class="govuk-tabs__list">
+              <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+                <a class="govuk-tabs__tab" href="#submission">
+                  Submission
+                </a>
+              </li>
+              <li class="govuk-tabs__list-item">
+                <a class="govuk-tabs__tab" href="#review">
+                  Review
+                </a>
+              </li>
+              <li class="govuk-tabs__list-item">
+                <a class="govuk-tabs__tab" href="#approval">
+                  Approval
+                </a>
+              </li>
+              <li class="govuk-tabs__list-item">
+                <a class="govuk-tabs__tab" href="#implementation">
+                  Implementation
+                </a>
+              </li>
+            </ul>
+            
+            <div class="govuk-tabs__panel" id="submission">
+              <h3 class="govuk-heading-m">Phase 1-2: Submission and Collation</h3>
+              <p class="govuk-body">
+                The BCR process begins with the submission of a change request through the structured form. 
+                All submissions are then collated, categorized, and prioritized for further review.
+              </p>
+              <ul class="govuk-list govuk-list--bullet">
+                <li>Submit new BCR with all required information</li>
+                <li>BCR is assigned a unique reference ID</li>
+                <li>Initial categorization and prioritization</li>
+                <li>Grouping of related BCRs if applicable</li>
+              </ul>
+            </div>
+            
+            <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="review">
+              <h3 class="govuk-heading-m">Phase 3-5: Review and Analysis</h3>
+              <p class="govuk-body">
+                Each BCR undergoes thorough technical and business impact analysis. The findings are reviewed internally
+                and stakeholder feedback is gathered when necessary.
+              </p>
+              <ul class="govuk-list govuk-list--bullet">
+                <li>Technical impact assessment</li>
+                <li>Business impact assessment</li>
+                <li>Internal governance review</li>
+                <li>Stakeholder consultation</li>
+                <li>BCR scoring and recommendation</li>
+              </ul>
+            </div>
+            
+            <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="approval">
+              <h3 class="govuk-heading-m">Phase 6-7: Planning and Approval</h3>
+              <p class="govuk-body">
+                Based on the review findings, implementation requirements are drafted and the BCR is submitted for final approval.
+              </p>
+              <ul class="govuk-list govuk-list--bullet">
+                <li>Drafting of implementation requirements</li>
+                <li>Resource planning</li>
+                <li>Final governance review</li>
+                <li>Approval or rejection decision</li>
+              </ul>
+            </div>
+            
+            <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="implementation">
+              <h3 class="govuk-heading-m">Phase 8-11: Implementation and Review</h3>
+              <p class="govuk-body">
+                Approved BCRs move to implementation, testing, and go-live phases, followed by a post-implementation review.
+              </p>
+              <ul class="govuk-list govuk-list--bullet">
+                <li>Implementation of approved changes</li>
+                <li>Testing and validation</li>
+                <li>Go-live deployment</li>
+                <li>Post-implementation review</li>
+                <li>Lessons learned documentation</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

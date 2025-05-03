@@ -1,0 +1,341 @@
+[
+  {
+    "id": "1",
+    "name": "Medicine & Dentistry",
+    "code": "A",
+    "category": "Medicine & Health"
+  },
+  {
+    "id": "2",
+    "name": "Medicine",
+    "code": "A1",
+    "category": "Medicine & Health",
+    "parent_code": "A"
+  },
+  {
+    "id": "3",
+    "name": "Dentistry",
+    "code": "A2",
+    "category": "Medicine & Health",
+    "parent_code": "A"
+  },
+  {
+    "id": "4",
+    "name": "Subjects allied to Medicine",
+    "code": "B",
+    "category": "Medicine & Health"
+  },
+  {
+    "id": "5",
+    "name": "Nursing",
+    "code": "B7",
+    "category": "Medicine & Health",
+    "parent_code": "B"
+  },
+  {
+    "id": "6",
+    "name": "Pharmacy",
+    "code": "B2",
+    "category": "Medicine & Health",
+    "parent_code": "B"
+  },
+  {
+    "id": "7",
+    "name": "Biological Sciences",
+    "code": "C",
+    "category": "Sciences"
+  },
+  {
+    "id": "8",
+    "name": "Biology",
+    "code": "C1",
+    "category": "Sciences",
+    "parent_code": "C"
+  },
+  {
+    "id": "9",
+    "name": "Zoology",
+    "code": "C3",
+    "category": "Sciences",
+    "parent_code": "C"
+  },
+  {
+    "id": "10",
+    "name": "Genetics",
+    "code": "C4",
+    "category": "Sciences",
+    "parent_code": "C"
+  },
+  {
+    "id": "11",
+    "name": "Microbiology",
+    "code": "C5",
+    "category": "Sciences",
+    "parent_code": "C"
+  },
+  {
+    "id": "12",
+    "name": "Sports Science",
+    "code": "C6",
+    "category": "Sciences",
+    "parent_code": "C"
+  },
+  {
+    "id": "13",
+    "name": "Psychology",
+    "code": "C8",
+    "category": "Sciences",
+    "parent_code": "C"
+  },
+  {
+    "id": "14",
+    "name": "Veterinary Sciences",
+    "code": "D",
+    "category": "Sciences"
+  },
+  {
+    "id": "15",
+    "name": "Veterinary Medicine",
+    "code": "D1",
+    "category": "Sciences",
+    "parent_code": "D"
+  },
+  {
+    "id": "16",
+    "name": "Agriculture & related subjects",
+    "code": "D0",
+    "category": "Sciences",
+    "parent_code": "D"
+  },
+  {
+    "id": "17",
+    "name": "Physical Sciences",
+    "code": "F",
+    "category": "Sciences"
+  },
+  {
+    "id": "18",
+    "name": "Chemistry",
+    "code": "F1",
+    "category": "Sciences",
+    "parent_code": "F"
+  },
+  {
+    "id": "19",
+    "name": "Physics",
+    "code": "F3",
+    "category": "Sciences",
+    "parent_code": "F"
+  },
+  {
+    "id": "20",
+    "name": "Astronomy",
+    "code": "F5",
+    "category": "Sciences",
+    "parent_code": "F"
+  },
+  {
+    "id": "21",
+    "name": "Geology",
+    "code": "F6",
+    "category": "Sciences",
+    "parent_code": "F"
+  },
+  {
+    "id": "22",
+    "name": "Ocean Sciences",
+    "code": "F7",
+    "category": "Sciences",
+    "parent_code": "F"
+  },
+  {
+    "id": "23",
+    "name": "Mathematical Sciences",
+    "code": "G",
+    "category": "Sciences"
+  },
+  {
+    "id": "24",
+    "name": "Mathematics",
+    "code": "G1",
+    "category": "Sciences",
+    "parent_code": "G"
+  },
+  {
+    "id": "25",
+    "name": "Operational Research",
+    "code": "G2",
+    "category": "Sciences",
+    "parent_code": "G"
+  },
+  {
+    "id": "26",
+    "name": "Statistics",
+    "code": "G3",
+    "category": "Sciences",
+    "parent_code": "G"
+  },
+  {
+    "id": "27",
+    "name": "Computer Science",
+    "code": "I",
+    "category": "Sciences"
+  },
+  {
+    "id": "28",
+    "name": "Computer Science",
+    "code": "I1",
+    "category": "Sciences",
+    "parent_code": "I"
+  },
+  {
+    "id": "29",
+    "name": "Information Systems",
+    "code": "I2",
+    "category": "Sciences",
+    "parent_code": "I"
+  },
+  {
+    "id": "30",
+    "name": "Software Engineering",
+    "code": "I3",
+    "category": "Sciences",
+    "parent_code": "I"
+  },
+  {
+    "id": "31",
+    "name": "Artificial Intelligence",
+    "code": "I4",
+    "category": "Sciences",
+    "parent_code": "I"
+  },
+  {
+    "id": "32",
+    "name": "Engineering & Technology",
+    "code": "H",
+    "category": "Engineering"
+  },
+  {
+    "id": "33",
+    "name": "General Engineering",
+    "code": "H1",
+    "category": "Engineering",
+    "parent_code": "H"
+  },
+  {
+    "id": "34",
+    "name": "Civil Engineering",
+    "code": "H2",
+    "category": "Engineering",
+    "parent_code": "H"
+  },
+  {
+    "id": "35",
+    "name": "Mechanical Engineering",
+    "code": "H3",
+    "category": "Engineering",
+    "parent_code": "H"
+  },
+  {
+    "id": "36",
+    "name": "Aerospace Engineering",
+    "code": "H4",
+    "category": "Engineering",
+    "parent_code": "H"
+  },
+  {
+    "id": "37",
+    "name": "Electronic & Electrical Engineering",
+    "code": "H6",
+    "category": "Engineering",
+    "parent_code": "H"
+  },
+  {
+    "id": "38",
+    "name": "Architecture, Building & Planning",
+    "code": "K",
+    "category": "Engineering"
+  },
+  {
+    "id": "39",
+    "name": "Architecture",
+    "code": "K1",
+    "category": "Engineering",
+    "parent_code": "K"
+  },
+  {
+    "id": "40",
+    "name": "Building",
+    "code": "K2",
+    "category": "Engineering",
+    "parent_code": "K"
+  },
+  {
+    "id": "41",
+    "name": "Planning",
+    "code": "K4",
+    "category": "Engineering",
+    "parent_code": "K"
+  },
+  {
+    "id": "42",
+    "name": "Social Studies",
+    "code": "L",
+    "category": "Social Sciences"
+  },
+  {
+    "id": "43",
+    "name": "Economics",
+    "code": "L1",
+    "category": "Social Sciences",
+    "parent_code": "L"
+  },
+  {
+    "id": "44",
+    "name": "Politics",
+    "code": "L2",
+    "category": "Social Sciences",
+    "parent_code": "L"
+  },
+  {
+    "id": "45",
+    "name": "Sociology",
+    "code": "L3",
+    "category": "Social Sciences",
+    "parent_code": "L"
+  },
+  {
+    "id": "46",
+    "name": "Social Policy",
+    "code": "L4",
+    "category": "Social Sciences",
+    "parent_code": "L"
+  },
+  {
+    "id": "47",
+    "name": "Social Work",
+    "code": "L5",
+    "category": "Social Sciences",
+    "parent_code": "L"
+  },
+  {
+    "id": "48",
+    "name": "Anthropology",
+    "code": "L6",
+    "category": "Social Sciences",
+    "parent_code": "L"
+  },
+  {
+    "id": "49",
+    "name": "Geography",
+    "code": "L7",
+    "category": "Social Sciences",
+    "parent_code": "L"
+  },
+  {
+    "id": "50",
+    "name": "Law",
+    "code": "M",
+    "category": "Social Sciences"
+  }
+]

@@ -1,0 +1,821 @@
+{
+  "subjectRecords": [
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Undergraduate)",
+      "fundingType": "Bursary",
+      "amount": 9000,
+      "allocationSubject": "Mathematics",
+      "courseSubjectSpecialism": "Core Mathematics",
+      "priority": "High",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Undergraduate)",
+      "fundingType": "Bursary",
+      "amount": 9000,
+      "allocationSubject": "Physics",
+      "courseSubjectSpecialism": "Core Physics",
+      "priority": "High",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 29000,
+      "allocationSubject": "Chemistry",
+      "courseSubjectSpecialism": "Chemistry",
+      "priority": "High",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 29000,
+      "allocationSubject": "Computing",
+      "courseSubjectSpecialism": "Computing",
+      "priority": "High",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 29000,
+      "allocationSubject": "Mathematics",
+      "courseSubjectSpecialism": "Advanced Mathematics",
+      "priority": "High",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 29000,
+      "allocationSubject": "Physics",
+      "courseSubjectSpecialism": "Advanced Physics",
+      "priority": "High",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 26000,
+      "allocationSubject": "Ancient Languages",
+      "courseSubjectSpecialism": "Ancient Languages",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 26000,
+      "allocationSubject": "Biology",
+      "courseSubjectSpecialism": "Biology",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 26000,
+      "allocationSubject": "Design and Technology",
+      "courseSubjectSpecialism": "Design and Technology",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 26000,
+      "allocationSubject": "Geography",
+      "courseSubjectSpecialism": "Geography",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 26000,
+      "allocationSubject": "Modern Languages",
+      "courseSubjectSpecialism": "Modern Languages (General)",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 26000,
+      "allocationSubject": "French Language",
+      "courseSubjectSpecialism": "French",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 26000,
+      "allocationSubject": "German Language",
+      "courseSubjectSpecialism": "German",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 26000,
+      "allocationSubject": "Spanish Language",
+      "courseSubjectSpecialism": "Spanish",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 10000,
+      "allocationSubject": "Art and Design",
+      "courseSubjectSpecialism": "Art and Design",
+      "priority": "Low",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 10000,
+      "allocationSubject": "Music",
+      "courseSubjectSpecialism": "Music",
+      "priority": "Low",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 10000,
+      "allocationSubject": "Religious Education",
+      "courseSubjectSpecialism": "Religious Education",
+      "priority": "Low",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 5000,
+      "allocationSubject": "English",
+      "courseSubjectSpecialism": "English Language and Literature",
+      "priority": "Low",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Scholarship",
+      "amount": 31000,
+      "allocationSubject": "Chemistry",
+      "courseSubjectSpecialism": "Chemistry (Advanced)",
+      "priority": "High",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Scholarship",
+      "amount": 31000,
+      "allocationSubject": "Computing",
+      "courseSubjectSpecialism": "Computing (Advanced)",
+      "priority": "High",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Scholarship",
+      "amount": 31000,
+      "allocationSubject": "Mathematics",
+      "courseSubjectSpecialism": "Mathematics (Advanced)",
+      "priority": "High",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Scholarship",
+      "amount": 31000,
+      "allocationSubject": "Physics",
+      "courseSubjectSpecialism": "Physics (Advanced)",
+      "priority": "High",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Scholarship",
+      "amount": 28000,
+      "allocationSubject": "French Language",
+      "courseSubjectSpecialism": "French (Advanced)",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Scholarship",
+      "amount": 28000,
+      "allocationSubject": "German Language",
+      "courseSubjectSpecialism": "German (Advanced)",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Scholarship",
+      "amount": 28000,
+      "allocationSubject": "Spanish Language",
+      "courseSubjectSpecialism": "Spanish (Advanced)",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Early Years (Postgraduate)",
+      "fundingType": "Grant",
+      "amount": 7000,
+      "allocationSubject": "Early Years ITT",
+      "courseSubjectSpecialism": "Early Childhood Education",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Early Years (Salaried)",
+      "fundingType": "Grant",
+      "amount": 14000,
+      "allocationSubject": "Early Years ITT",
+      "courseSubjectSpecialism": "Early Childhood Development",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 28000,
+      "allocationSubject": "Chemistry",
+      "courseSubjectSpecialism": "Secondary Chemistry",
+      "priority": "High",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 28000,
+      "allocationSubject": "Computing",
+      "courseSubjectSpecialism": "Secondary Computing",
+      "priority": "High",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 28000,
+      "allocationSubject": "Mathematics",
+      "courseSubjectSpecialism": "Secondary Mathematics",
+      "priority": "High",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 28000,
+      "allocationSubject": "Physics",
+      "courseSubjectSpecialism": "Secondary Physics",
+      "priority": "High",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 25000,
+      "allocationSubject": "Ancient Languages",
+      "courseSubjectSpecialism": "Secondary Ancient Languages",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 25000,
+      "allocationSubject": "Biology",
+      "courseSubjectSpecialism": "Secondary Biology",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 25000,
+      "allocationSubject": "Design and Technology",
+      "courseSubjectSpecialism": "Secondary Design and Technology",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 25000,
+      "allocationSubject": "Geography",
+      "courseSubjectSpecialism": "Secondary Geography",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 25000,
+      "allocationSubject": "Modern Languages",
+      "courseSubjectSpecialism": "Secondary Modern Languages",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 25000,
+      "allocationSubject": "French Language",
+      "courseSubjectSpecialism": "Secondary French",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 25000,
+      "allocationSubject": "German Language",
+      "courseSubjectSpecialism": "Secondary German",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 25000,
+      "allocationSubject": "Spanish Language",
+      "courseSubjectSpecialism": "Secondary Spanish",
+      "priority": "Medium",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 10000,
+      "allocationSubject": "Art and Design",
+      "courseSubjectSpecialism": "Secondary Art and Design",
+      "priority": "Low",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 10000,
+      "allocationSubject": "English",
+      "courseSubjectSpecialism": "Secondary English",
+      "priority": "Low",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 10000,
+      "allocationSubject": "Music",
+      "courseSubjectSpecialism": "Secondary Music",
+      "priority": "Low",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 10000,
+      "allocationSubject": "Religious Education",
+      "courseSubjectSpecialism": "Secondary Religious Education",
+      "priority": "Low",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    }
+  ]
+}

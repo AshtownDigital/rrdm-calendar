@@ -1,0 +1,237 @@
+{
+  "academicYear": "2025-26",
+  "lastUpdated": "2025-04-22T14:30:00Z",
+  "trainingRoutes": [
+    {
+      "id": 1,
+      "name": "Provider-led (Fee-funded)",
+      "bursaryAmount": 24000,
+      "scholarshipAmount": 26000,
+      "grantAmount": null,
+      "status": "Active",
+      "subjects": [
+        {
+          "id": 1,
+          "name": "Mathematics",
+          "bursaryEligible": true,
+          "scholarshipEligible": true
+        },
+        {
+          "id": 2,
+          "name": "Physics",
+          "bursaryEligible": true,
+          "scholarshipEligible": true
+        },
+        {
+          "id": 3,
+          "name": "Chemistry",
+          "bursaryEligible": true,
+          "scholarshipEligible": true
+        },
+        {
+          "id": 4,
+          "name": "Computing",
+          "bursaryEligible": true,
+          "scholarshipEligible": true
+        },
+        {
+          "id": 5,
+          "name": "Modern Foreign Languages",
+          "bursaryEligible": true,
+          "scholarshipEligible": true
+        },
+        {
+          "id": 6,
+          "name": "Biology",
+          "bursaryEligible": true,
+          "scholarshipEligible": false
+        },
+        {
+          "id": 7,
+          "name": "Design and Technology",
+          "bursaryEligible": true,
+          "scholarshipEligible": false
+        },
+        {
+          "id": 8,
+          "name": "Geography",
+          "bursaryEligible": true,
+          "scholarshipEligible": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Provider-led (Salaried)",
+      "bursaryAmount": null,
+      "scholarshipAmount": null,
+      "grantAmount": 15000,
+      "status": "Active",
+      "subjects": [
+        {
+          "id": 1,
+          "name": "Mathematics",
+          "grantEligible": true
+        },
+        {
+          "id": 2,
+          "name": "Physics",
+          "grantEligible": true
+        },
+        {
+          "id": 3,
+          "name": "Chemistry",
+          "grantEligible": true
+        },
+        {
+          "id": 4,
+          "name": "Computing",
+          "grantEligible": true
+        },
+        {
+          "id": 5,
+          "name": "Modern Foreign Languages",
+          "grantEligible": true
+        },
+        {
+          "id": 6,
+          "name": "Biology",
+          "grantEligible": true
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "School Direct (Fee-funded)",
+      "bursaryAmount": 24000,
+      "scholarshipAmount": 26000,
+      "grantAmount": null,
+      "status": "Active",
+      "subjects": [
+        {
+          "id": 1,
+          "name": "Mathematics",
+          "bursaryEligible": true,
+          "scholarshipEligible": true
+        },
+        {
+          "id": 2,
+          "name": "Physics",
+          "bursaryEligible": true,
+          "scholarshipEligible": true
+        },
+        {
+          "id": 3,
+          "name": "Chemistry",
+          "bursaryEligible": true,
+          "scholarshipEligible": true
+        },
+        {
+          "id": 4,
+          "name": "Computing",
+          "bursaryEligible": true,
+          "scholarshipEligible": true
+        },
+        {
+          "id": 5,
+          "name": "Modern Foreign Languages",
+          "bursaryEligible": true,
+          "scholarshipEligible": true
+        },
+        {
+          "id": 6,
+          "name": "Biology",
+          "bursaryEligible": true,
+          "scholarshipEligible": false
+        },
+        {
+          "id": 7,
+          "name": "Design and Technology",
+          "bursaryEligible": true,
+          "scholarshipEligible": false
+        },
+        {
+          "id": 8,
+          "name": "Geography",
+          "bursaryEligible": true,
+          "scholarshipEligible": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "School Direct (Salaried)",
+      "bursaryAmount": null,
+      "scholarshipAmount": null,
+      "grantAmount": 15000,
+      "status": "Active",
+      "subjects": [
+        {
+          "id": 1,
+          "name": "Mathematics",
+          "grantEligible": true
+        },
+        {
+          "id": 2,
+          "name": "Physics",
+          "grantEligible": true
+        },
+        {
+          "id": 3,
+          "name": "Chemistry",
+          "grantEligible": true
+        },
+        {
+          "id": 4,
+          "name": "Computing",
+          "grantEligible": true
+        },
+        {
+          "id": 5,
+          "name": "Modern Foreign Languages",
+          "grantEligible": true
+        },
+        {
+          "id": 6,
+          "name": "Biology",
+          "grantEligible": true
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Teach First",
+      "bursaryAmount": null,
+      "scholarshipAmount": null,
+      "grantAmount": 15000,
+      "status": "Active",
+      "subjects": [
+        {
+          "id": 1,
+          "name": "Mathematics",
+          "grantEligible": true
+        },
+        {
+          "id": 2,
+          "name": "Physics",
+          "grantEligible": true
+        },
+        {
+          "id": 3,
+          "name": "Chemistry",
+          "grantEligible": true
+        },
+        {
+          "id": 4,
+          "name": "Computing",
+          "grantEligible": true
+        },
+        {
+          "id": 5,
+          "name": "Modern Foreign Languages",
+          "grantEligible": true
+        }
+      ]
+    }
+  ]
+}

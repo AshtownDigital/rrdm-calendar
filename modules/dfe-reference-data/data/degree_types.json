@@ -1,0 +1,122 @@
+[
+  {
+    "id": "1",
+    "name": "Bachelor of Arts",
+    "code": "BA",
+    "level": "Undergraduate"
+  },
+  {
+    "id": "2",
+    "name": "Bachelor of Science",
+    "code": "BSc",
+    "level": "Undergraduate"
+  },
+  {
+    "id": "3",
+    "name": "Bachelor of Engineering",
+    "code": "BEng",
+    "level": "Undergraduate"
+  },
+  {
+    "id": "4",
+    "name": "Bachelor of Laws",
+    "code": "LLB",
+    "level": "Undergraduate"
+  },
+  {
+    "id": "5",
+    "name": "Bachelor of Medicine, Bachelor of Surgery",
+    "code": "MBBS",
+    "level": "Undergraduate"
+  },
+  {
+    "id": "6",
+    "name": "Bachelor of Education",
+    "code": "BEd",
+    "level": "Undergraduate"
+  },
+  {
+    "id": "7",
+    "name": "Master of Arts",
+    "code": "MA",
+    "level": "Postgraduate"
+  },
+  {
+    "id": "8",
+    "name": "Master of Science",
+    "code": "MSc",
+    "level": "Postgraduate"
+  },
+  {
+    "id": "9",
+    "name": "Master of Business Administration",
+    "code": "MBA",
+    "level": "Postgraduate"
+  },
+  {
+    "id": "10",
+    "name": "Master of Engineering",
+    "code": "MEng",
+    "level": "Undergraduate"
+  },
+  {
+    "id": "11",
+    "name": "Master of Laws",
+    "code": "LLM",
+    "level": "Postgraduate"
+  },
+  {
+    "id": "12",
+    "name": "Master of Education",
+    "code": "MEd",
+    "level": "Postgraduate"
+  },
+  {
+    "id": "13",
+    "name": "Master of Research",
+    "code": "MRes",
+    "level": "Postgraduate"
+  },
+  {
+    "id": "14",
+    "name": "Doctor of Philosophy",
+    "code": "PhD",
+    "level": "Doctorate"
+  },
+  {
+    "id": "15",
+    "name": "Doctor of Education",
+    "code": "EdD",
+    "level": "Doctorate"
+  },
+  {
+    "id": "16",
+    "name": "Doctor of Business Administration",
+    "code": "DBA",
+    "level": "Doctorate"
+  },
+  {
+    "id": "17",
+    "name": "Postgraduate Certificate in Education",
+    "code": "PGCE",
+    "level": "Postgraduate"
+  },
+  {
+    "id": "18",
+    "name": "Postgraduate Diploma",
+    "code": "PGDip",
+    "level": "Postgraduate"
+  },
+  {
+    "id": "19",
+    "name": "Foundation Degree",
+    "code": "FdA/FdSc",
+    "level": "Undergraduate"
+  },
+  {
+    "id": "20",
+    "name": "Higher National Diploma",
+    "code": "HND",
+    "level": "Undergraduate"
+  }
+]

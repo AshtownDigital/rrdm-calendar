@@ -268,18 +268,8 @@
   box-shadow: 0 0 0 1px #b1b4b6;
 }
 
-/* Timeline tag colors */
-.govuk-tag--blue {
-  background-color: #1d70b8;
-}
-
-.govuk-tag--green {
-  background-color: #00703c;
-}
-
-.govuk-tag--purple {
-  background-color: #4c2c92;
-}
+/* Timeline tag colors - using tints and shades from GOV.UK Design System */
+/* All tag color styles are now defined in govuk-tags-fix.css for consistency */
 
 /* Summary Card */
 .govuk-summary-card {

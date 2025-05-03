@@ -1,0 +1,330 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}BCR Workflow Management | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">BCR Workflow Management</h1>
+      
+
+
+      <!-- Workflow Overview -->
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+          <h2 class="govuk-heading-l">BCR Process Workflow</h2>
+          <p class="govuk-body">
+            The BCR management process follows a structured workflow with 12 phases from submission to closure.
+            Each phase has specific actions and responsibilities to ensure proper governance and implementation of changes.
+          </p>
+          
+          <!-- Workflow Diagram -->
+          <div class="bcr-workflow-diagram govuk-!-margin-bottom-8 govuk-!-margin-top-6">
+            <div class="bcr-workflow-container">
+              {% for phase in phases %}
+                <div class="bcr-workflow-phase">
+                  <div class="bcr-workflow-phase-box" id="diagram-phase-{{ phase.id }}">
+                    <h3 class="bcr-workflow-phase-title">Phase {{ phase.id }}</h3>
+                    {% set phaseStatus = null %}
+                    {% for status in statuses %}
+                      {% if status.phase === phase.id %}
+                        {% set phaseStatus = status %}
+                      {% endif %}
+                    {% endfor %}
+                    
+                    {% if phaseStatus %}
+                      <p class="bcr-workflow-phase-status">{{ phaseStatus.name }}</p>
+                    {% endif %}
+                  </div>
+                  {% if phase.nextPhase %}
+                    <div class="bcr-workflow-arrow">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 12H19" stroke="#1d70b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 5L19 12L12 19" stroke="#1d70b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workflow Phases -->
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+          <div class="govuk-accordion" data-module="govuk-accordion" id="workflow-phases">
+            {% for phase in phases %}
+              <div class="govuk-accordion__section">
+                <div class="govuk-accordion__section-header">
+                  <h2 class="govuk-accordion__section-heading">
+                    <span class="govuk-accordion__section-button" id="workflow-phases-heading-{{ phase.id }}">
+                      {{ phase.name }}
+                    </span>
+                  </h2>
+                </div>
+                <div id="workflow-phases-content-{{ phase.id }}" class="govuk-accordion__section-content">
+                  <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-two-thirds">
+                      <h3 class="govuk-heading-s">Description</h3>
+                      <p class="govuk-body">{{ phase.description }}</p>
+                      
+                      <h3 class="govuk-heading-s">Status</h3>
+                      {% set phaseStatus = null %}
+                      {% for status in statuses %}
+                        {% if status.phase === phase.id %}
+                          {% set phaseStatus = status %}
+                        {% endif %}
+                      {% endfor %}
+                      
+                      {% if phaseStatus %}
+                        <p class="govuk-body">
+                          <span class="govuk-tag">{{ phaseStatus.name }}</span>
+                        </p>
+                      {% else %}
+                        <p class="govuk-body">No specific status assigned to this phase.</p>
+                      {% endif %}
+                      
+                      <h3 class="govuk-heading-s">Allowed Actions</h3>
+                      <ul class="govuk-list govuk-list--bullet">
+                        {% for action in phase.allowedActions %}
+                          <li>{{ action }}</li>
+                        {% endfor %}
+                      </ul>
+                      
+                      {% if phase.nextPhase %}
+                        <p class="govuk-body">
+                          <strong>Next Phase:</strong> Phase {{ phase.nextPhase }}
+                        </p>
+                      {% else %}
+                        <p class="govuk-body">
+                          <strong>Final Phase</strong>
+                        </p>
+                      {% endif %}
+                    </div>
+                    
+                    <div class="govuk-grid-column-one-third">
+                      <div class="govuk-inset-text">
+                        <h3 class="govuk-heading-s">Phase Guidance</h3>
+                        <p class="govuk-body">
+                          {% if phase.id == 1 %}
+                            Ensure all required information is provided in the submission. Return to submitter if incomplete.
+                          {% elif phase.id == 2 %}
+                            Group related BCRs, categorize by type, and assign priority based on urgency and impact.
+                          {% elif phase.id == 3 %}
+                            Conduct thorough technical and business impact analysis. Assign to appropriate technical reviewers.
+                          {% elif phase.id == 4 %}
+                            Review analysis findings and score the BCR based on impact, cost, and benefits.
+                          {% elif phase.id == 5 %}
+                            Gather feedback from key stakeholders. This phase is optional for low-impact changes.
+                          {% elif phase.id == 6 %}
+                            Define detailed implementation requirements and resource needs.
+                          {% elif phase.id == 7 %}
+                            Make final approval or rejection decision based on all previous analysis.
+                          {% elif phase.id == 8 %}
+                            Implement the approved changes according to the requirements.
+                          {% elif phase.id == 9 %}
+                            Test and validate the implemented changes.
+                          {% elif phase.id == 10 %}
+                            Deploy changes to production and confirm successful implementation.
+                          {% elif phase.id == 11 %}
+                            Review the implementation process and document lessons learned.
+                          {% endif %}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Workflow Diagram -->
+      <div class="govuk-grid-row govuk-!-margin-top-9">
+        <div class="govuk-grid-column-full">
+          <h2 class="govuk-heading-l">BCR Workflow Diagram</h2>
+          
+          <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+              <span class="govuk-warning-text__assistive">Note</span>
+              The workflow diagram below shows the standard progression of a BCR through all phases.
+              Some phases may be expedited or combined for urgent changes.
+            </strong>
+          </div>
+          
+          <div class="bcr-workflow-diagram">
+            <div class="govuk-grid-row">
+              {% for phase in phases %}
+                <div class="govuk-grid-column-one-third govuk-!-margin-bottom-6">
+                  <div class="bcr-workflow-phase">
+                    <div class="bcr-workflow-phase__number">{{ phase.id }}</div>
+                    <h3 class="bcr-workflow-phase__title govuk-heading-s">{{ phase.name }}</h3>
+                    <p class="bcr-workflow-phase__description govuk-body-s">{{ phase.description }}</p>
+                    {% if phase.nextPhase %}
+                      <div class="bcr-workflow-phase__arrow">↓</div>
+                    {% endif %}
+                  </div>
+                </div>
+                {% if loop.index % 3 == 0 and not loop.last %}
+                  </div><div class="govuk-grid-row">
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLA Timeframes -->
+      <div class="govuk-grid-row govuk-!-margin-top-9">
+        <div class="govuk-grid-column-full">
+          <h2 class="govuk-heading-l">SLA Timeframes</h2>
+          
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-table__caption--m">Target timeframes for each phase</caption>
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Phase</th>
+                <th scope="col" class="govuk-table__header">Urgency: Low</th>
+                <th scope="col" class="govuk-table__header">Urgency: Medium</th>
+                <th scope="col" class="govuk-table__header">Urgency: High</th>
+                <th scope="col" class="govuk-table__header">Urgency: Critical</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">Phase 1-2: Submission & Collation</td>
+                <td class="govuk-table__cell">14 days</td>
+                <td class="govuk-table__cell">7 days</td>
+                <td class="govuk-table__cell">3 days</td>
+                <td class="govuk-table__cell">1 day</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">Phase 3-4: Technical & Business Review</td>
+                <td class="govuk-table__cell">21 days</td>
+                <td class="govuk-table__cell">14 days</td>
+                <td class="govuk-table__cell">7 days</td>
+                <td class="govuk-table__cell">2 days</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">Phase 5: Stakeholder Consultation</td>
+                <td class="govuk-table__cell">14 days</td>
+                <td class="govuk-table__cell">7 days</td>
+                <td class="govuk-table__cell">3 days</td>
+                <td class="govuk-table__cell">1 day</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">Phase 6-7: Planning & Approval</td>
+                <td class="govuk-table__cell">14 days</td>
+                <td class="govuk-table__cell">7 days</td>
+                <td class="govuk-table__cell">3 days</td>
+                <td class="govuk-table__cell">1 day</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">Phase 8-10: Implementation & Go-Live</td>
+                <td class="govuk-table__cell">30 days</td>
+                <td class="govuk-table__cell">21 days</td>
+                <td class="govuk-table__cell">14 days</td>
+                <td class="govuk-table__cell">7 days</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">Phase 11: Post-Implementation Review</td>
+                <td class="govuk-table__cell">30 days after go-live</td>
+                <td class="govuk-table__cell">21 days after go-live</td>
+                <td class="govuk-table__cell">14 days after go-live</td>
+                <td class="govuk-table__cell">7 days after go-live</td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <div class="govuk-inset-text">
+            <p class="govuk-body">
+              <strong>Note:</strong> BCRs not moved within the specified timeframes will trigger automatic reminders to the assigned reviewer.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .bcr-workflow-diagram {
+      margin-top: 30px;
+      margin-bottom: 30px;
+    }
+    
+    .bcr-workflow-phase {
+      border: 2px solid #1d70b8;
+      border-radius: 5px;
+      padding: 15px;
+      text-align: center;
+      height: 100%;
+      position: relative;
+    }
+    
+    .bcr-workflow-phase__number {
+      background-color: #1d70b8;
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px auto;
+      font-weight: bold;
+    }
+    
+    .bcr-workflow-phase__title {
+      margin-bottom: 10px;
+    }
+    
+    .bcr-workflow-phase__description {
+      margin-bottom: 25px;
+    }
+    
+    .bcr-workflow-phase__arrow {
+      position: absolute;
+      bottom: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      color: #1d70b8;
+    }
+  </style>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get all workflow phase boxes
+      const phaseBoxes = document.querySelectorAll('.bcr-workflow-phase-box');
+      
+      // Add click event listeners to each phase box
+      phaseBoxes.forEach(box => {
+        box.addEventListener('click', function() {
+          const phaseId = this.id.replace('diagram-phase-', '');
+          const accordionButton = document.querySelector(`#workflow-phases-heading-${phaseId}`);
+          
+          if (accordionButton) {
+            // Scroll to the accordion section
+            accordionButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Click the accordion button to open it if it's not already open
+            setTimeout(() => {
+              const accordionSection = accordionButton.closest('.govuk-accordion__section');
+              if (!accordionSection.classList.contains('govuk-accordion__section--expanded')) {
+                accordionButton.click();
+              }
+            }, 500);
+          }
+        });
+      });
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1",
+    "name": "Female",
+    "code": "F",
+    "description": "Female"
+  },
+  {
+    "id": "2",
+    "name": "Male",
+    "code": "M",
+    "description": "Male"
+  },
+  {
+    "id": "3",
+    "name": "Non-binary",
+    "code": "X",
+    "description": "Non-binary"
+  },
+  {
+    "id": "4",
+    "name": "Other",
+    "code": "O",
+    "description": "Other gender identity"
+  },
+  {
+    "id": "5",
+    "name": "Prefer to self-describe",
+    "code": "S",
+    "description": "Prefer to self-describe"
+  },
+  {
+    "id": "6",
+    "name": "Prefer not to say",
+    "code": "Z",
+    "description": "Prefer not to say"
+  }
+]

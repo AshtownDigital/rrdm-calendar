@@ -28,6 +28,11 @@
   background-color: #f3f2f1;
 }
 
+.app-card--purple {
+  border-color: #4c2c92;
+  background-color: #f3f2f9;
+}
+
 .app-card .govuk-heading-s {
   margin-bottom: 0.5rem;
   color: #0b0c0c;
@@ -97,24 +102,8 @@
   color: #1d70b8;
 }
 
-/* Status tags */
-.govuk-tag {
-  padding: 0.25rem 0.5rem;
-  margin-right: 0.5rem;
-}
-
-.govuk-tag--blue {
-  background-color: #1d70b8;
-}
-
-.govuk-tag--yellow {
-  background-color: #ffdd00;
-  color: #0b0c0c;
-}
-
-.govuk-tag--red {
-  background-color: #d4351c;
-}
+/* Using only official GOV.UK Design System tag components */
+/* No custom CSS for tags - all styling comes from GOV.UK Frontend */
 
 /* Timeline list styles */
 .app-timeline-event {

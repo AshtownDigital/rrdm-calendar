@@ -1,0 +1,81 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}BCR Update Confirmation | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-panel govuk-panel--confirmation">
+        <h1 class="govuk-panel__title">
+          Business Change Request updated
+        </h1>
+        <div class="govuk-panel__body">
+          Reference number<br><strong>{{ bcrId }}</strong>
+        </div>
+      </div>
+
+      <div class="govuk-!-margin-top-8">
+        <h2 class="govuk-heading-m">What happens next</h2>
+        <p class="govuk-body">
+          Your Business Change Request (BCR) has been updated successfully.
+        </p>
+        <p class="govuk-body">
+          The governance team will be notified of these changes.
+        </p>
+        
+        {% if urgency === 'Critical' %}
+          <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+              <span class="govuk-visually-hidden">Warning</span>
+              You have marked this BCR as Critical. Please also contact the governance team directly to ensure prompt attention.
+            </strong>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="govuk-!-margin-top-8">
+        <h2 class="govuk-heading-m">BCR Summary</h2>
+        <dl class="govuk-summary-list">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Reference</dt>
+            <dd class="govuk-summary-list__value">{{ bcrId }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Title</dt>
+            <dd class="govuk-summary-list__value">{{ bcrTitle }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Last updated</dt>
+            <dd class="govuk-summary-list__value">{{ lastUpdated | date("DD MMM YYYY HH:mm") }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Urgency</dt>
+            <dd class="govuk-summary-list__value">
+              {% if urgency === 'Critical' %}
+                <strong class="govuk-tag govuk-tag--red">{{ urgency }}</strong>
+              {% elif urgency === 'High' %}
+                <strong class="govuk-tag govuk-tag--orange">{{ urgency }}</strong>
+              {% elif urgency === 'Medium' %}
+                <strong class="govuk-tag govuk-tag--yellow">{{ urgency }}</strong>
+              {% elif urgency === 'Low' %}
+                <strong class="govuk-tag govuk-tag--green">{{ urgency }}</strong>
+              {% else %}
+                <strong class="govuk-tag govuk-tag--grey">{{ urgency }}</strong>
+              {% endif %}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="govuk-button-group govuk-!-margin-top-6">
+        <a href="/bcr/submissions/{{ bcrId }}" class="govuk-button">View your submission</a>
+        <a href="/bcr" class="govuk-link">Return to BCR Overview</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

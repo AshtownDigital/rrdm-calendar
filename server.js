@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const nunjucks = require('nunjucks');
+const dateFilter = require('nunjucks-date-filter');
 
 const app = express();
 
@@ -39,13 +40,25 @@ env.addFilter('map', (arr, prop) => {
   return arr.map(item => item[prop]);
 });
 
-// Add custom filters
+// Add custom date filter
 env.addFilter('date', (str) => {
   return new Date(str).toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric'
   });
+});
+
+// Add number formatting filter
+env.addFilter('toLocaleString', (num) => {
+  return num.toLocaleString('en-GB');
+});
+
+// Add regex search filter
+env.addFilter('regex_search', (str, pattern) => {
+  if (!str) return null;
+  const regex = new RegExp(pattern);
+  return str.match(regex);
 });
 
 // Add global variables for partials
@@ -65,6 +78,8 @@ app.use((req, res, next) => {
 // Import route modules
 const homeRouter = require('./routes/home/index');
 const refDataRouter = require('./routes/ref-data/index');
+const fundingRouter = require('./routes/funding/index');
+const bcrRouter = require('./routes/bcr/index');
 
 // Legacy routes - these will be removed after migration is complete
 const dashboardRouter = require('./routes/dashboard/index');
@@ -79,6 +94,8 @@ const apiRouter = require('./api');
 // Use route modules
 app.use('/home', homeRouter);
 app.use('/ref-data', refDataRouter);
+app.use('/funding', fundingRouter);
+app.use('/bcr', bcrRouter);
 
 // Legacy routes - these will be removed after migration is complete
 // Redirect /dashboard to /ref-data/dashboard

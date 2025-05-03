@@ -1,0 +1,78 @@
+{% extends "layouts/base.njk" %}
+
+{% block title %}Funding Change Details | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/funding-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Funding Change Details</h1>
+    <p class="govuk-body-l">{{ change.trainingRoute }} - {{ change.academicYear }}</p>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <dl class="govuk-summary-list">
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Academic year</dt>
+        <dd class="govuk-summary-list__value">{{ change.academicYear }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Training route</dt>
+        <dd class="govuk-summary-list__value">{{ change.trainingRoute }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Funding type</dt>
+        <dd class="govuk-summary-list__value">{{ change.fundingType }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Previous amount</dt>
+        <dd class="govuk-summary-list__value">£{{ change.previousAmount | toLocaleString }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">New amount</dt>
+        <dd class="govuk-summary-list__value">£{{ change.newAmount | toLocaleString }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Change</dt>
+        <dd class="govuk-summary-list__value">
+          {% set difference = change.newAmount - change.previousAmount %}
+          {% if difference > 0 %}
+            <span class="govuk-tag govuk-tag--green">+£{{ difference | toLocaleString }}</span>
+          {% elif difference < 0 %}
+            <span class="govuk-tag govuk-tag--red">-£{{ (difference * -1) | toLocaleString }}</span>
+          {% else %}
+            <span class="govuk-tag govuk-tag--grey">No change</span>
+          {% endif %}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Change date</dt>
+        <dd class="govuk-summary-list__value">{{ change.changeDate | date }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Change type</dt>
+        <dd class="govuk-summary-list__value">{{ change.changeType }}</dd>
+      </div>
+      {% if change.notes %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Notes</dt>
+        <dd class="govuk-summary-list__value">{{ change.notes }}</dd>
+      </div>
+      {% endif %}
+    </dl>
+  </div>
+</div>
+
+<div class="govuk-grid-row govuk-!-margin-top-6">
+  <div class="govuk-grid-column-full">
+    <div class="govuk-button-group">
+      <a href="/funding/history" class="govuk-button govuk-button--secondary">Back to funding history</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

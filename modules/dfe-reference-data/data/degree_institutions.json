@@ -1,0 +1,1374 @@
+[
+  {
+    "id": "1",
+    "name": "West Herts College",
+    "code": "GB001",
+    "country": "United Kingdom",
+    "website": "https://westherts.ac.uk"
+  },
+  {
+    "id": "2",
+    "name": "Royal Holloway University of London",
+    "code": "GB002",
+    "country": "United Kingdom",
+    "website": "https://rhul.ac.uk"
+  },
+  {
+    "id": "3",
+    "name": "University of Portsmouth",
+    "code": "GB003",
+    "country": "United Kingdom",
+    "website": "http://www.port.ac.uk/"
+  },
+  {
+    "id": "4",
+    "name": "Futureworks",
+    "code": "GB004",
+    "country": "United Kingdom",
+    "website": "https://futureworks.ac.uk/"
+  },
+  {
+    "id": "5",
+    "name": "University of the Arts London",
+    "code": "GB005",
+    "country": "United Kingdom",
+    "website": "https://www.arts.ac.uk"
+  },
+  {
+    "id": "6",
+    "name": "University of Aberdeen",
+    "code": "GB006",
+    "country": "United Kingdom",
+    "website": "http://www.abdn.ac.uk/"
+  },
+  {
+    "id": "7",
+    "name": "Aberystwyth University",
+    "code": "GB007",
+    "country": "United Kingdom",
+    "website": "https://aber.ac.uk/"
+  },
+  {
+    "id": "8",
+    "name": "University of Abertay Dundee",
+    "code": "GB008",
+    "country": "United Kingdom",
+    "website": "http://www.abertay.ac.uk/"
+  },
+  {
+    "id": "9",
+    "name": "American InterContinental University - London",
+    "code": "GB009",
+    "country": "United Kingdom",
+    "website": "http://www.aiuniv.edu/"
+  },
+  {
+    "id": "10",
+    "name": "Anglia Ruskin University",
+    "code": "GB010",
+    "country": "United Kingdom",
+    "website": "http://www.anglia.ac.uk/"
+  },
+  {
+    "id": "11",
+    "name": "Aston University",
+    "code": "GB011",
+    "country": "United Kingdom",
+    "website": "http://www.aston.ac.uk/"
+  },
+  {
+    "id": "12",
+    "name": "The American University in London",
+    "code": "GB012",
+    "country": "United Kingdom",
+    "website": "http://www.aul.edu/"
+  },
+  {
+    "id": "13",
+    "name": "University of Wales, Bangor",
+    "code": "GB013",
+    "country": "United Kingdom",
+    "website": "http://www.bangor.ac.uk/"
+  },
+  {
+    "id": "14",
+    "name": "University of Bath",
+    "code": "GB014",
+    "country": "United Kingdom",
+    "website": "http://www.bath.ac.uk/"
+  },
+  {
+    "id": "15",
+    "name": "Bath Spa University",
+    "code": "GB015",
+    "country": "United Kingdom",
+    "website": "https://www.bathspa.ac.uk/"
+  },
+  {
+    "id": "16",
+    "name": "Birkbeck College, University of London",
+    "code": "GB016",
+    "country": "United Kingdom",
+    "website": "http://www.bbk.ac.uk/"
+  },
+  {
+    "id": "17",
+    "name": "British College of Osteopathic Medicine",
+    "code": "GB017",
+    "country": "United Kingdom",
+    "website": "http://www.bcom.ac.uk/"
+  },
+  {
+    "id": "18",
+    "name": "Birmingham City University",
+    "code": "GB018",
+    "country": "United Kingdom",
+    "website": "http://www.bcu.ac.uk/"
+  },
+  {
+    "id": "19",
+    "name": "University of Bedfordshire",
+    "code": "GB019",
+    "country": "United Kingdom",
+    "website": "http://www.beds.ac.uk/"
+  },
+  {
+    "id": "20",
+    "name": "University of Birmingham",
+    "code": "GB020",
+    "country": "United Kingdom",
+    "website": "http://www.bham.ac.uk/"
+  },
+  {
+    "id": "21",
+    "name": "University of Bolton",
+    "code": "GB021",
+    "country": "United Kingdom",
+    "website": "http://www.bolton.ac.uk/"
+  },
+  {
+    "id": "22",
+    "name": "Bournemouth University",
+    "code": "GB022",
+    "country": "United Kingdom",
+    "website": "http://www.bournemouth.ac.uk/"
+  },
+  {
+    "id": "23",
+    "name": "University of Bradford",
+    "code": "GB023",
+    "country": "United Kingdom",
+    "website": "http://www.brad.ac.uk/"
+  },
+  {
+    "id": "24",
+    "name": "London School of Jewish Studies",
+    "code": "GB024",
+    "country": "United Kingdom",
+    "website": "http://www.brijnet.org/lsjs/"
+  },
+  {
+    "id": "25",
+    "name": "University of Bristol",
+    "code": "GB025",
+    "country": "United Kingdom",
+    "website": "https://www.bristol.ac.uk/"
+  },
+  {
+    "id": "26",
+    "name": "Oxford Brookes University",
+    "code": "GB026",
+    "country": "United Kingdom",
+    "website": "http://www.brookes.ac.uk/"
+  },
+  {
+    "id": "27",
+    "name": "Brunel University Uxbridge",
+    "code": "GB027",
+    "country": "United Kingdom",
+    "website": "http://www.brunel.ac.uk/"
+  },
+  {
+    "id": "28",
+    "name": "University of Brighton",
+    "code": "GB028",
+    "country": "United Kingdom",
+    "website": "http://www.bton.ac.uk/"
+  },
+  {
+    "id": "29",
+    "name": "University of Buckingham",
+    "code": "GB029",
+    "country": "United Kingdom",
+    "website": "http://www.buck.ac.uk/"
+  },
+  {
+    "id": "30",
+    "name": "Buckinghamshire New University",
+    "code": "GB030",
+    "country": "United Kingdom",
+    "website": "http://www.bucks.ac.uk/"
+  },
+  {
+    "id": "31",
+    "name": "University of Cambridge",
+    "code": "GB031",
+    "country": "United Kingdom",
+    "website": "http://www.cam.ac.uk/"
+  },
+  {
+    "id": "32",
+    "name": "Camberwell College of Arts",
+    "code": "GB032",
+    "country": "United Kingdom",
+    "website": "http://www.camb.linst.ac.uk/"
+  },
+  {
+    "id": "33",
+    "name": "Canterbury Christ Church University",
+    "code": "GB033",
+    "country": "United Kingdom",
+    "website": "http://www.canterbury.ac.uk/"
+  },
+  {
+    "id": "34",
+    "name": "Cardiff University",
+    "code": "GB034",
+    "country": "United Kingdom",
+    "website": "http://www.cardiff.ac.uk/"
+  },
+  {
+    "id": "35",
+    "name": "Chelsea College of Art and Design",
+    "code": "GB035",
+    "country": "United Kingdom",
+    "website": "http://www.chelsea.linst.ac.uk/"
+  },
+  {
+    "id": "36",
+    "name": "University of Chester",
+    "code": "GB036",
+    "country": "United Kingdom",
+    "website": "http://www.chester.ac.uk/"
+  },
+  {
+    "id": "37",
+    "name": "City University",
+    "code": "GB037",
+    "country": "United Kingdom",
+    "website": "http://www.city.ac.uk/"
+  },
+  {
+    "id": "38",
+    "name": "Courtauld Institute of Art, University of London",
+    "code": "GB038",
+    "country": "United Kingdom",
+    "website": "http://www.courtauld.ac.uk/"
+  },
+  {
+    "id": "39",
+    "name": "Coventry University",
+    "code": "GB039",
+    "country": "United Kingdom",
+    "website": "http://www.coventry.ac.uk/"
+  },
+  {
+    "id": "40",
+    "name": "Cranfield University",
+    "code": "GB040",
+    "country": "United Kingdom",
+    "website": "http://www.cranfield.ac.uk/"
+  },
+  {
+    "id": "41",
+    "name": "Central Saint Martins College of Art & Design",
+    "code": "GB041",
+    "country": "United Kingdom",
+    "website": "http://www.csm.linst.ac.uk/"
+  },
+  {
+    "id": "42",
+    "name": "University of Derby",
+    "code": "GB042",
+    "country": "United Kingdom",
+    "website": "http://www.derby.ac.uk/"
+  },
+  {
+    "id": "43",
+    "name": "De Montfort University Leicester",
+    "code": "GB043",
+    "country": "United Kingdom",
+    "website": "http://www.dmu.ac.uk/"
+  },
+  {
+    "id": "44",
+    "name": "University of Dundee",
+    "code": "GB044",
+    "country": "United Kingdom",
+    "website": "http://www.dundee.ac.uk/"
+  },
+  {
+    "id": "45",
+    "name": "University of Durham",
+    "code": "GB045",
+    "country": "United Kingdom",
+    "website": "http://www.dur.ac.uk/"
+  },
+  {
+    "id": "46",
+    "name": "Edge Hill University",
+    "code": "GB046",
+    "country": "United Kingdom",
+    "website": "http://www.edgehill.ac.uk/"
+  },
+  {
+    "id": "47",
+    "name": "University of Edinburgh",
+    "code": "GB047",
+    "country": "United Kingdom",
+    "website": "http://www.ed.ac.uk/"
+  },
+  {
+    "id": "48",
+    "name": "European School of Economics",
+    "code": "GB048",
+    "country": "United Kingdom",
+    "website": "http://www.eselondon.ac.uk/"
+  },
+  {
+    "id": "49",
+    "name": "University of Essex",
+    "code": "GB049",
+    "country": "United Kingdom",
+    "website": "http://www.essex.ac.uk/"
+  },
+  {
+    "id": "50",
+    "name": "University of Exeter",
+    "code": "GB050",
+    "country": "United Kingdom",
+    "website": "http://www.ex.ac.uk/"
+  },
+  {
+    "id": "51",
+    "name": "Falmouth University",
+    "code": "GB051",
+    "country": "United Kingdom",
+    "website": "http://www.falmouth.ac.uk/"
+  },
+  {
+    "id": "52",
+    "name": "Glasgow Caledonian University",
+    "code": "GB052",
+    "country": "United Kingdom",
+    "website": "http://www.gcal.ac.uk/"
+  },
+  {
+    "id": "53",
+    "name": "University of Glasgow",
+    "code": "GB053",
+    "country": "United Kingdom",
+    "website": "http://www.gla.ac.uk/"
+  },
+  {
+    "id": "54",
+    "name": "University of Glamorgan",
+    "code": "GB054",
+    "country": "United Kingdom",
+    "website": "http://www.glam.ac.uk/"
+  },
+  {
+    "id": "55",
+    "name": "University of Gloucestershire",
+    "code": "GB055",
+    "country": "United Kingdom",
+    "website": "http://www.glos.ac.uk/"
+  },
+  {
+    "id": "56",
+    "name": "Goldsmiths College, University of London",
+    "code": "GB056",
+    "country": "United Kingdom",
+    "website": "http://www.gold.ac.uk/"
+  },
+  {
+    "id": "57",
+    "name": "University of Greenwich",
+    "code": "GB057",
+    "country": "United Kingdom",
+    "website": "http://www.gre.ac.uk/"
+  },
+  {
+    "id": "58",
+    "name": "Glasgow School of Art",
+    "code": "GB058",
+    "country": "United Kingdom",
+    "website": "http://www.gsa.ac.uk/"
+  },
+  {
+    "id": "59",
+    "name": "University of Halifax, Birmingham Campus",
+    "code": "GB059",
+    "country": "United Kingdom",
+    "website": "http://www.halifaxuni.ac/"
+  },
+  {
+    "id": "60",
+    "name": "University of Hertfordshire",
+    "code": "GB060",
+    "country": "United Kingdom",
+    "website": "http://www.herts.ac.uk/"
+  },
+  {
+    "id": "61",
+    "name": "Heythrop College, University of London",
+    "code": "GB061",
+    "country": "United Kingdom",
+    "website": "http://www.heythrop.ac.uk/"
+  },
+  {
+    "id": "62",
+    "name": "Liverpool Hope University College",
+    "code": "GB062",
+    "country": "United Kingdom",
+    "website": "http://www.hope.ac.uk/"
+  },
+  {
+    "id": "63",
+    "name": "University of Huddersfield",
+    "code": "GB063",
+    "country": "United Kingdom",
+    "website": "http://www.hud.ac.uk/"
+  },
+  {
+    "id": "64",
+    "name": "University of Hull",
+    "code": "GB064",
+    "country": "United Kingdom",
+    "website": "http://www.hull.ac.uk/"
+  },
+  {
+    "id": "65",
+    "name": "Huron University USA in London",
+    "code": "GB065",
+    "country": "United Kingdom",
+    "website": "http://www.huron.ac.uk/"
+  },
+  {
+    "id": "66",
+    "name": "Heriot-Watt University",
+    "code": "GB066",
+    "country": "United Kingdom",
+    "website": "http://www.hw.ac.uk/"
+  },
+  {
+    "id": "67",
+    "name": "Imperial College London",
+    "code": "GB067",
+    "country": "United Kingdom",
+    "website": "http://www.imperial.ac.uk/"
+  },
+  {
+    "id": "68",
+    "name": "ifs University College",
+    "code": "GB068",
+    "country": "United Kingdom",
+    "website": "http://www.ifslearning.ac.uk/"
+  },
+  {
+    "id": "69",
+    "name": "Institue of Historical Research, University of London",
+    "code": "GB069",
+    "country": "United Kingdom",
+    "website": "http://ihr.sas.ac.uk/"
+  },
+  {
+    "id": "70",
+    "name": "Institute of Education, University of London",
+    "code": "GB070",
+    "country": "United Kingdom",
+    "website": "http://www.ioe.ac.uk/"
+  },
+  {
+    "id": "71",
+    "name": "International Colleges of Islamic Science",
+    "code": "GB071",
+    "country": "United Kingdom",
+    "website": "http://www.islamiccolleges.com/"
+  },
+  {
+    "id": "72",
+    "name": "King's College London, University of London",
+    "code": "GB072",
+    "country": "United Kingdom",
+    "website": "http://www.kcl.ac.uk/"
+  },
+  {
+    "id": "73",
+    "name": "Keele University",
+    "code": "GB073",
+    "country": "United Kingdom",
+    "website": "http://www.keele.ac.uk/"
+  },
+  {
+    "id": "74",
+    "name": "Kingston University",
+    "code": "GB074",
+    "country": "United Kingdom",
+    "website": "http://www.kingston.ac.uk/"
+  },
+  {
+    "id": "75",
+    "name": "International Centre for Isclamic Science",
+    "code": "GB075",
+    "country": "United Kingdom",
+    "website": "http://www.kolieh.com/"
+  },
+  {
+    "id": "76",
+    "name": "University of Wales, Lampeter",
+    "code": "GB076",
+    "country": "United Kingdom",
+    "website": "http://www.lamp.ac.uk/"
+  },
+  {
+    "id": "77",
+    "name": "University of Lancaster",
+    "code": "GB077",
+    "country": "United Kingdom",
+    "website": "http://www.lancs.ac.uk/"
+  },
+  {
+    "id": "78",
+    "name": "Loughborough University",
+    "code": "GB078",
+    "country": "United Kingdom",
+    "website": "http://www.lboro.ac.uk/"
+  },
+  {
+    "id": "79",
+    "name": "London Business School",
+    "code": "GB079",
+    "country": "United Kingdom",
+    "website": "http://www.lbs.lon.ac.uk/"
+  },
+  {
+    "id": "80",
+    "name": "London College of Science & Technology",
+    "code": "GB080",
+    "country": "United Kingdom",
+    "website": "http://www.lcst.ac/"
+  },
+  {
+    "id": "81",
+    "name": "University of Leicester",
+    "code": "GB081",
+    "country": "United Kingdom",
+    "website": "http://www.le.ac.uk/"
+  },
+  {
+    "id": "82",
+    "name": "University of Leeds",
+    "code": "GB082",
+    "country": "United Kingdom",
+    "website": "http://www.leeds.ac.uk/"
+  },
+  {
+    "id": "83",
+    "name": "London Guildhall University",
+    "code": "GB083",
+    "country": "United Kingdom",
+    "website": "http://www.lgu.ac.uk/"
+  },
+  {
+    "id": "84",
+    "name": "London Institute of Management and Technology",
+    "code": "GB084",
+    "country": "United Kingdom",
+    "website": "http://www.limt.co.uk/"
+  },
+  {
+    "id": "85",
+    "name": "University of Lincoln",
+    "code": "GB085",
+    "country": "United Kingdom",
+    "website": "http://www.lincoln.ac.uk/"
+  },
+  {
+    "id": "86",
+    "name": "University of Liverpool",
+    "code": "GB086",
+    "country": "United Kingdom",
+    "website": "http://www.liv.ac.uk/"
+  },
+  {
+    "id": "87",
+    "name": "Liverpool John Moores University",
+    "code": "GB087",
+    "country": "United Kingdom",
+    "website": "https://www.ljmu.ac.uk/"
+  },
+  {
+    "id": "88",
+    "name": "Leeds Beckett University",
+    "code": "GB088",
+    "country": "United Kingdom",
+    "website": "https://www.leedsbeckett.ac.uk/"
+  },
+  {
+    "id": "89",
+    "name": "University of London",
+    "code": "GB089",
+    "country": "United Kingdom",
+    "website": "http://www.lon.ac.uk/"
+  },
+  {
+    "id": "90",
+    "name": "London Metropolitan University",
+    "code": "GB090",
+    "country": "United Kingdom",
+    "website": "http://www.londonmet.ac.uk/"
+  },
+  {
+    "id": "91",
+    "name": "London School of Business & Finance",
+    "code": "GB091",
+    "country": "United Kingdom",
+    "website": "http://www.lsbf.org.uk/"
+  },
+  {
+    "id": "92",
+    "name": "London School of Economics and Political Science, University of London",
+    "code": "GB092",
+    "country": "United Kingdom",
+    "website": "http://www.lse.ac.uk/"
+  },
+  {
+    "id": "93",
+    "name": "London School of Hygiene & Tropical Medicine, University of London",
+    "code": "GB093",
+    "country": "United Kingdom",
+    "website": "http://www.lshtm.ac.uk/"
+  },
+  {
+    "id": "94",
+    "name": "University of Manchester",
+    "code": "GB094",
+    "country": "United Kingdom",
+    "website": "http://www.manchester.ac.uk/"
+  },
+  {
+    "id": "95",
+    "name": "Middlesex University - London",
+    "code": "GB095",
+    "country": "United Kingdom",
+    "website": "https://www.mdx.ac.uk/"
+  },
+  {
+    "id": "96",
+    "name": "Imperial College School of Medicine",
+    "code": "GB096",
+    "country": "United Kingdom",
+    "website": "http://www.med.ic.ac.uk/"
+  },
+  {
+    "id": "97",
+    "name": "The Manchester Metropolitan University",
+    "code": "GB097",
+    "country": "United Kingdom",
+    "website": "http://www.mmu.ac.uk/"
+  },
+  {
+    "id": "98",
+    "name": "Edinburgh Napier University",
+    "code": "GB098",
+    "country": "United Kingdom",
+    "website": "https://www.napier.ac.uk/"
+  },
+  {
+    "id": "99",
+    "name": "Newcastle University",
+    "code": "GB099",
+    "country": "United Kingdom",
+    "website": "https://www.ncl.ac.uk/"
+  },
+  {
+    "id": "100",
+    "name": "University of Wales, Newport",
+    "code": "GB100",
+    "country": "United Kingdom",
+    "website": "http://www.newport.ac.uk/"
+  },
+  {
+    "id": "101",
+    "name": "Newport International University",
+    "code": "GB101",
+    "country": "United Kingdom",
+    "website": "http://www.niu.org.uk/"
+  },
+  {
+    "id": "102",
+    "name": "University of Northampton",
+    "code": "GB102",
+    "country": "United Kingdom",
+    "website": "http://www.northampton.ac.uk/"
+  },
+  {
+    "id": "103",
+    "name": "University of Nottingham",
+    "code": "GB103",
+    "country": "United Kingdom",
+    "website": "http://www.nottingham.ac.uk/"
+  },
+  {
+    "id": "104",
+    "name": "Nottingham Trent University",
+    "code": "GB104",
+    "country": "United Kingdom",
+    "website": "http://www.ntu.ac.uk/"
+  },
+  {
+    "id": "105",
+    "name": "Open University",
+    "code": "GB105",
+    "country": "United Kingdom",
+    "website": "http://www.open.ac.uk/"
+  },
+  {
+    "id": "106",
+    "name": "University of Oxford",
+    "code": "GB106",
+    "country": "United Kingdom",
+    "website": "http://www.ox.ac.uk/"
+  },
+  {
+    "id": "107",
+    "name": "University of Paisley",
+    "code": "GB107",
+    "country": "United Kingdom",
+    "website": "http://www.paisley.ac.uk/"
+  },
+  {
+    "id": "108",
+    "name": "University of Plymouth",
+    "code": "GB108",
+    "country": "United Kingdom",
+    "website": "http://www.plymouth.ac.uk/"
+  },
+  {
+    "id": "109",
+    "name": "Queen Mary, University of London",
+    "code": "GB109",
+    "country": "United Kingdom",
+    "website": "http://www.qmul.ac.uk/"
+  },
+  {
+    "id": "110",
+    "name": "The Queen's University Belfast",
+    "code": "GB110",
+    "country": "United Kingdom",
+    "website": "http://www.qub.ac.uk/"
+  },
+  {
+    "id": "111",
+    "name": "Royal Academy of Music, University of London",
+    "code": "GB111",
+    "country": "United Kingdom",
+    "website": "http://www.ram.ac.uk/"
+  },
+  {
+    "id": "112",
+    "name": "Royal College of Art",
+    "code": "GB112",
+    "country": "United Kingdom",
+    "website": "http://www.rca.ac.uk/"
+  },
+  {
+    "id": "113",
+    "name": "Royal College of Music, University of London",
+    "code": "GB113",
+    "country": "United Kingdom",
+    "website": "http://www.rcm.ac.uk/"
+  },
+  {
+    "id": "114",
+    "name": "University of Reading",
+    "code": "GB114",
+    "country": "United Kingdom",
+    "website": "http://www.rdg.ac.uk/"
+  },
+  {
+    "id": "115",
+    "name": "Royal Free Hospital School of Medicine, University of London",
+    "code": "GB115",
+    "country": "United Kingdom",
+    "website": "http://www.rfhsm.ac.uk/"
+  },
+  {
+    "id": "116",
+    "name": "The Robert Gordon University",
+    "code": "GB116",
+    "country": "United Kingdom",
+    "website": "http://www.rgu.ac.uk/"
+  },
+  {
+    "id": "117",
+    "name": "Royal Holloway and Bedford New College",
+    "code": "GB117",
+    "country": "United Kingdom",
+    "website": "http://www.royalholloway.ac.uk/"
+  },
+  {
+    "id": "118",
+    "name": "Richmond University - The American International University in London",
+    "code": "GB118",
+    "country": "United Kingdom",
+    "website": "http://www.richmond.ac.uk/"
+  },
+  {
+    "id": "119",
+    "name": "Roehampton University of Surrey",
+    "code": "GB119",
+    "country": "United Kingdom",
+    "website": "http://www.roehampton.ac.uk/"
+  },
+  {
+    "id": "120",
+    "name": "University of Salford",
+    "code": "GB120",
+    "country": "United Kingdom",
+    "website": "http://www.salford.ac.uk/"
+  },
+  {
+    "id": "121",
+    "name": "School of Advanced Study, University of London",
+    "code": "GB121",
+    "country": "United Kingdom",
+    "website": "http://www.sas.ac.uk/"
+  },
+  {
+    "id": "122",
+    "name": "South Bank University",
+    "code": "GB122",
+    "country": "United Kingdom",
+    "website": "http://www.sbu.ac.uk/"
+  },
+  {
+    "id": "123",
+    "name": "Schiller International University, London",
+    "code": "GB123",
+    "country": "United Kingdom",
+    "website": "http://www.schillerlondon.ac.uk/"
+  },
+  {
+    "id": "124",
+    "name": "Stratford College London",
+    "code": "GB124",
+    "country": "United Kingdom",
+    "website": "http://www.sclondon.ac/"
+  },
+  {
+    "id": "125",
+    "name": "Saint George's Hospital Medical School, University of London",
+    "code": "GB125",
+    "country": "United Kingdom",
+    "website": "http://www.sghms.ac.uk/"
+  },
+  {
+    "id": "126",
+    "name": "The University of Sheffield",
+    "code": "GB126",
+    "country": "United Kingdom",
+    "website": "https://www.sheffield.ac.uk/"
+  },
+  {
+    "id": "127",
+    "name": "Sheffield Hallam University",
+    "code": "GB127",
+    "country": "United Kingdom",
+    "website": "http://www.shu.ac.uk/"
+  },
+  {
+    "id": "128",
+    "name": "Swansea Metropolitan University",
+    "code": "GB128",
+    "country": "United Kingdom",
+    "website": "http://www.smu.ac.uk/"
+  },
+  {
+    "id": "129",
+    "name": "School of Oriental and African Studies, University of London",
+    "code": "GB129",
+    "country": "United Kingdom",
+    "website": "http://www.soas.ac.uk/"
+  },
+  {
+    "id": "130",
+    "name": "Southampton Solent University",
+    "code": "GB130",
+    "country": "United Kingdom",
+    "website": "http://www.solent.ac.uk/"
+  },
+  {
+    "id": "131",
+    "name": "Sotheby´s Institute of Art - London",
+    "code": "GB131",
+    "country": "United Kingdom",
+    "website": "http://www.sothebysinstitutelondon.com/"
+  },
+  {
+    "id": "132",
+    "name": "University of Southampton",
+    "code": "GB132",
+    "country": "United Kingdom",
+    "website": "http://www.southampton.ac.uk/"
+  },
+  {
+    "id": "133",
+    "name": "School of Slavonic and East European Studies, University of London",
+    "code": "GB133",
+    "country": "United Kingdom",
+    "website": "http://www.ssees.ac.uk/"
+  },
+  {
+    "id": "134",
+    "name": "Staffordshire University",
+    "code": "GB134",
+    "country": "United Kingdom",
+    "website": "http://www.staffs.ac.uk/"
+  },
+  {
+    "id": "135",
+    "name": "University of St. Andrews",
+    "code": "GB135",
+    "country": "United Kingdom",
+    "website": "https://www.st-andrews.ac.uk/"
+  },
+  {
+    "id": "136",
+    "name": "University of Stirling",
+    "code": "GB136",
+    "country": "United Kingdom",
+    "website": "http://www.stir.ac.uk/"
+  },
+  {
+    "id": "137",
+    "name": "St.Patrick's International College, London",
+    "code": "GB137",
+    "country": "United Kingdom",
+    "website": "http://www.st-patricks.ac.uk/"
+  },
+  {
+    "id": "138",
+    "name": "University of Strathclyde",
+    "code": "GB138",
+    "country": "United Kingdom",
+    "website": "http://www.strath.ac.uk/"
+  },
+  {
+    "id": "139",
+    "name": "University of Sunderland",
+    "code": "GB139",
+    "country": "United Kingdom",
+    "website": "http://www.sunderland.ac.uk/"
+  },
+  {
+    "id": "140",
+    "name": "University of Surrey",
+    "code": "GB140",
+    "country": "United Kingdom",
+    "website": "http://www.surrey.ac.uk/"
+  },
+  {
+    "id": "141",
+    "name": "University of Sussex",
+    "code": "GB141",
+    "country": "United Kingdom",
+    "website": "http://www.sussex.ac.uk/"
+  },
+  {
+    "id": "142",
+    "name": "University of Wales, Swansea",
+    "code": "GB142",
+    "country": "United Kingdom",
+    "website": "http://www.swan.ac.uk/"
+  },
+  {
+    "id": "143",
+    "name": "Trinity College of Music",
+    "code": "GB143",
+    "country": "United Kingdom",
+    "website": "http://www.tcm.ac.uk/"
+  },
+  {
+    "id": "144",
+    "name": "University of Teesside",
+    "code": "GB144",
+    "country": "United Kingdom",
+    "website": "http://www.tees.ac.uk/"
+  },
+  {
+    "id": "145",
+    "name": "Trinity College Carmarthen",
+    "code": "GB145",
+    "country": "United Kingdom",
+    "website": "http://www.trinity-cm.ac.uk/"
+  },
+  {
+    "id": "146",
+    "name": "Thames Valley University",
+    "code": "GB146",
+    "country": "United Kingdom",
+    "website": "http://www.tvu.ac.uk/"
+  },
+  {
+    "id": "147",
+    "name": "University College London, University of London",
+    "code": "GB147",
+    "country": "United Kingdom",
+    "website": "http://www.ucl.ac.uk/"
+  },
+  {
+    "id": "148",
+    "name": "University of Central Lancashire",
+    "code": "GB148",
+    "country": "United Kingdom",
+    "website": "http://www.uclan.ac.uk/"
+  },
+  {
+    "id": "149",
+    "name": "University Campus Suffolk",
+    "code": "GB149",
+    "country": "United Kingdom",
+    "website": "http://www.ucs.ac.uk/"
+  },
+  {
+    "id": "150",
+    "name": "University of East Anglia",
+    "code": "GB150",
+    "country": "United Kingdom",
+    "website": "http://www.uea.ac.uk/"
+  },
+  {
+    "id": "151",
+    "name": "University of East London",
+    "code": "GB151",
+    "country": "United Kingdom",
+    "website": "http://www.uel.ac.uk/"
+  },
+  {
+    "id": "152",
+    "name": "University of Kent at Canterbury",
+    "code": "GB152",
+    "country": "United Kingdom",
+    "website": "http://www.ukc.ac.uk/"
+  },
+  {
+    "id": "153",
+    "name": "School of Pharmacy, University of London",
+    "code": "GB153",
+    "country": "United Kingdom",
+    "website": "http://www.ulsop.ac.uk/"
+  },
+  {
+    "id": "154",
+    "name": "United Medical and Dental Schools, University of London",
+    "code": "GB154",
+    "country": "United Kingdom",
+    "website": "http://www.umds.ac.uk/"
+  },
+  {
+    "id": "155",
+    "name": "University of North London",
+    "code": "GB155",
+    "country": "United Kingdom",
+    "website": "http://www.unl.ac.uk/"
+  },
+  {
+    "id": "156",
+    "name": "Northumbria University",
+    "code": "GB156",
+    "country": "United Kingdom",
+    "website": "https://www.northumbria.ac.uk/"
+  },
+  {
+    "id": "157",
+    "name": "University of Wales College of Medicine",
+    "code": "GB157",
+    "country": "United Kingdom",
+    "website": "http://www.uwcm.ac.uk/"
+  },
+  {
+    "id": "158",
+    "name": "University of the West of England, Bristol",
+    "code": "GB158",
+    "country": "United Kingdom",
+    "website": "http://www.uwe.ac.uk/"
+  },
+  {
+    "id": "159",
+    "name": "University of Wales Institute, Cardiff",
+    "code": "GB159",
+    "country": "United Kingdom",
+    "website": "http://www.uwic.ac.uk/"
+  },
+  {
+    "id": "160",
+    "name": "University of Wales",
+    "code": "GB160",
+    "country": "United Kingdom",
+    "website": "http://www.wales.ac.uk/"
+  },
+  {
+    "id": "161",
+    "name": "Warnborough University",
+    "code": "GB161",
+    "country": "United Kingdom",
+    "website": "http://www.warnborough.edu/"
+  },
+  {
+    "id": "162",
+    "name": "University of Warwick",
+    "code": "GB162",
+    "country": "United Kingdom",
+    "website": "http://www.warwick.ac.uk/"
+  },
+  {
+    "id": "163",
+    "name": "University of Westminster",
+    "code": "GB163",
+    "country": "United Kingdom",
+    "website": "http://www.westminster.ac.uk/"
+  },
+  {
+    "id": "164",
+    "name": "William Gilbert College",
+    "code": "GB164",
+    "country": "United Kingdom",
+    "website": "http://www.williamgilbert.co.uk/"
+  },
+  {
+    "id": "165",
+    "name": "Wimbledon School of Art",
+    "code": "GB165",
+    "country": "United Kingdom",
+    "website": "http://www.wimbledon.ac.uk/"
+  },
+  {
+    "id": "166",
+    "name": "University of Wolverhampton",
+    "code": "GB166",
+    "country": "United Kingdom",
+    "website": "http://www.wlv.ac.uk/"
+  },
+  {
+    "id": "167",
+    "name": "University of Worcester",
+    "code": "GB167",
+    "country": "United Kingdom",
+    "website": "http://www.worc.ac.uk/"
+  },
+  {
+    "id": "168",
+    "name": "University of York",
+    "code": "GB168",
+    "country": "United Kingdom",
+    "website": "http://www.york.ac.uk/"
+  },
+  {
+    "id": "169",
+    "name": "Middlesbrough College",
+    "code": "GB169",
+    "country": "United Kingdom",
+    "website": "https://www.mbro.ac.uk/"
+  },
+  {
+    "id": "170",
+    "name": "St Mary's University",
+    "code": "GB170",
+    "country": "United Kingdom",
+    "website": "https://www.stmarys.ac.uk/home.aspx"
+  },
+  {
+    "id": "171",
+    "name": "Leeds Trinity University",
+    "code": "GB171",
+    "country": "United Kingdom",
+    "website": "https://www.leedstrinity.ac.uk/"
+  },
+  {
+    "id": "172",
+    "name": "East Coast College",
+    "code": "GB172",
+    "country": "United Kingdom",
+    "website": "https://www.eastcoast.ac.uk/"
+  },
+  {
+    "id": "173",
+    "name": "Swansea University",
+    "code": "GB173",
+    "country": "United Kingdom",
+    "website": "https://www.swansea.ac.uk/"
+  },
+  {
+    "id": "174",
+    "name": "York St. John University",
+    "code": "GB174",
+    "country": "United Kingdom",
+    "website": "https://www.yorksj.ac.uk/"
+  },
+  {
+    "id": "175",
+    "name": "Cardiff and Vale College",
+    "code": "GB175",
+    "country": "United Kingdom",
+    "website": "https://cavc.ac.uk/"
+  },
+  {
+    "id": "176",
+    "name": "Wakefield College",
+    "code": "GB176",
+    "country": "United Kingdom",
+    "website": "https://wakefield.ac.uk"
+  },
+  {
+    "id": "177",
+    "name": "London Interdisciplinary School",
+    "code": "GB177",
+    "country": "United Kingdom",
+    "website": "https://www.lis.ac.uk/"
+  },
+  {
+    "id": "178",
+    "name": "HULT Business School",
+    "code": "GB178",
+    "country": "United Kingdom",
+    "website": "https://www.hult.edu/campuses/london/postgraduate/"
+  },
+  {
+    "id": "179",
+    "name": "University of Bath",
+    "code": "GB179",
+    "country": "United Kingdom",
+    "website": "https://bath.ac.uk"
+  },
+  {
+    "id": "180",
+    "name": "Ulster University",
+    "code": "GB180",
+    "country": "United Kingdom",
+    "website": "https://www.ulster.ac.uk/"
+  },
+  {
+    "id": "181",
+    "name": "Up Learn Business School",
+    "code": "GB181",
+    "country": "United Kingdom",
+    "website": "https://uplearnbusinessschool.com/"
+  },
+  {
+    "id": "182",
+    "name": "Newcastle College",
+    "code": "GB182",
+    "country": "United Kingdom",
+    "website": "https://www.ncl-coll.ac.uk/"
+  },
+  {
+    "id": "183",
+    "name": "Bridgwater & Taunton College",
+    "code": "GB183",
+    "country": "United Kingdom",
+    "website": "https://www.btc.ac.uk/"
+  },
+  {
+    "id": "184",
+    "name": "Runshaw College",
+    "code": "GB184",
+    "country": "United Kingdom",
+    "website": "https://www.runshaw.ac.uk/"
+  },
+  {
+    "id": "185",
+    "name": "West Suffolk College",
+    "code": "GB185",
+    "country": "United Kingdom",
+    "website": "https://www.wsc.ac.uk/"
+  },
+  {
+    "id": "186",
+    "name": "Harlaxton College",
+    "code": "GB186",
+    "country": "United Kingdom",
+    "website": "https://college.harlaxton.co.uk/"
+  },
+  {
+    "id": "187",
+    "name": "New College Swindon",
+    "code": "GB187",
+    "country": "United Kingdom",
+    "website": "https://www.newcollege.ac.uk/"
+  },
+  {
+    "id": "188",
+    "name": "University of Cumbria",
+    "code": "GB188",
+    "country": "United Kingdom",
+    "website": "https://www.cumbria.ac.uk/"
+  },
+  {
+    "id": "189",
+    "name": "ESCP Business School",
+    "code": "GB189",
+    "country": "United Kingdom",
+    "website": "https://escp.eu/london"
+  },
+  {
+    "id": "190",
+    "name": "London South Bank University",
+    "code": "GB190",
+    "country": "United Kingdom",
+    "website": "https://www.lsbu.ac.uk/"
+  },
+  {
+    "id": "191",
+    "name": "Scotland's Rural College (SRUC)",
+    "code": "GB191",
+    "country": "United Kingdom",
+    "website": "https://www.sruc.ac.uk/"
+  },
+  {
+    "id": "192",
+    "name": "City St George's, University of London",
+    "code": "GB192",
+    "country": "United Kingdom",
+    "website": "https://www.citystgeorges.ac.uk/"
+  },
+  {
+    "id": "193",
+    "name": "City St George's, University of London (II)",
+    "code": "GB193",
+    "country": "United Kingdom",
+    "website": "https://www.citystgeorges.ac.uk/"
+  },
+  {
+    "id": "194",
+    "name": "City St George's, University of London (School of Health and Medical Sciences)",
+    "code": "GB194",
+    "country": "United Kingdom",
+    "website": "https://www.sgul.ac.uk/"
+  },
+  {
+    "id": "195",
+    "name": "Trinity College Bristol",
+    "code": "GB195",
+    "country": "United Kingdom",
+    "website": "https://www.trinitycollegebristol.ac.uk/"
+  },
+  {
+    "id": "196",
+    "name": "Trinity College Bristol",
+    "code": "GB196",
+    "country": "United Kingdom",
+    "website": "https://www.trinitycollegebristol.ac.uk/"
+  }
+]

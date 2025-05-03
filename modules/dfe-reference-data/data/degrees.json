@@ -1,0 +1,72 @@
+[
+  {
+    "id": "1",
+    "name": "BA English Literature",
+    "type_id": "1",
+    "subject_id": "2",
+    "institution_id": "1"
+  },
+  {
+    "id": "2",
+    "name": "BSc Mathematics",
+    "type_id": "2",
+    "subject_id": "24",
+    "institution_id": "2"
+  },
+  {
+    "id": "3",
+    "name": "BSc Computer Science",
+    "type_id": "2",
+    "subject_id": "28",
+    "institution_id": "3"
+  },
+  {
+    "id": "4",
+    "name": "BEng Mechanical Engineering",
+    "type_id": "3",
+    "subject_id": "35",
+    "institution_id": "4"
+  },
+  {
+    "id": "5",
+    "name": "LLB Law",
+    "type_id": "4",
+    "subject_id": "50",
+    "institution_id": "5"
+  },
+  {
+    "id": "6",
+    "name": "MBBS Medicine",
+    "type_id": "5",
+    "subject_id": "2",
+    "institution_id": "1"
+  },
+  {
+    "id": "7",
+    "name": "BEd Education",
+    "type_id": "6",
+    "subject_id": "47",
+    "institution_id": "7"
+  },
+  {
+    "id": "8",
+    "name": "MA English Literature",
+    "type_id": "7",
+    "subject_id": "2",
+    "institution_id": "1"
+  },
+  {
+    "id": "9",
+    "name": "MSc Computer Science",
+    "type_id": "8",
+    "subject_id": "28",
+    "institution_id": "3"
+  },
+  {
+    "id": "10",
+    "name": "MBA Business Administration",
+    "type_id": "9",
+    "subject_id": "43",
+    "institution_id": "5"
+  }
+]

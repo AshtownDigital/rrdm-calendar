@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1",
+    "name": "Heterosexual or Straight",
+    "code": "H",
+    "description": "Heterosexual or Straight"
+  },
+  {
+    "id": "2",
+    "name": "Gay or Lesbian",
+    "code": "G",
+    "description": "Gay or Lesbian"
+  },
+  {
+    "id": "3",
+    "name": "Bisexual",
+    "code": "B",
+    "description": "Bisexual"
+  },
+  {
+    "id": "4",
+    "name": "Pansexual",
+    "code": "P",
+    "description": "Pansexual"
+  },
+  {
+    "id": "5",
+    "name": "Asexual",
+    "code": "A",
+    "description": "Asexual"
+  },
+  {
+    "id": "6",
+    "name": "Other sexual orientation",
+    "code": "O",
+    "description": "Other sexual orientation not listed"
+  },
+  {
+    "id": "7",
+    "name": "Prefer to self-describe",
+    "code": "S",
+    "description": "Prefer to self-describe"
+  },
+  {
+    "id": "8",
+    "name": "Prefer not to say",
+    "code": "Z",
+    "description": "Prefer not to say"
+  }
+]

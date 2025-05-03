@@ -1,0 +1,212 @@
+[
+  {
+    "id": "1",
+    "name": "University of Oxford",
+    "code": "O01",
+    "region": "South East",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "2",
+    "name": "University of Cambridge",
+    "code": "C01",
+    "region": "East of England",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "3",
+    "name": "University College London",
+    "code": "L01",
+    "region": "London",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "4",
+    "name": "King's College London",
+    "code": "K01",
+    "region": "London",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "5",
+    "name": "University of Manchester",
+    "code": "M01",
+    "region": "North West",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "6",
+    "name": "University of Birmingham",
+    "code": "B01",
+    "region": "West Midlands",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "7",
+    "name": "University of Nottingham",
+    "code": "N01",
+    "region": "East Midlands",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "8",
+    "name": "University of Leeds",
+    "code": "L02",
+    "region": "Yorkshire and the Humber",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "9",
+    "name": "University of Sheffield",
+    "code": "S01",
+    "region": "Yorkshire and the Humber",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "10",
+    "name": "University of Bristol",
+    "code": "B02",
+    "region": "South West",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "11",
+    "name": "University of Exeter",
+    "code": "E01",
+    "region": "South West",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "12",
+    "name": "University of York",
+    "code": "Y01",
+    "region": "Yorkshire and the Humber",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "13",
+    "name": "Durham University",
+    "code": "D01",
+    "region": "North East",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "14",
+    "name": "University of Warwick",
+    "code": "W01",
+    "region": "West Midlands",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "15",
+    "name": "Newcastle University",
+    "code": "N02",
+    "region": "North East",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "16",
+    "name": "University of Southampton",
+    "code": "S02",
+    "region": "South East",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "17",
+    "name": "University of Liverpool",
+    "code": "L03",
+    "region": "North West",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "18",
+    "name": "University of Edinburgh",
+    "code": "E02",
+    "region": "Scotland",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "19",
+    "name": "University of Glasgow",
+    "code": "G01",
+    "region": "Scotland",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "20",
+    "name": "Cardiff University",
+    "code": "C02",
+    "region": "Wales",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "21",
+    "name": "Queen's University Belfast",
+    "code": "Q01",
+    "region": "Northern Ireland",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "22",
+    "name": "Bath Spa University",
+    "code": "B03",
+    "region": "South West",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "23",
+    "name": "University of Brighton",
+    "code": "B04",
+    "region": "South East",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "24",
+    "name": "Canterbury Christ Church University",
+    "code": "C03",
+    "region": "South East",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "25",
+    "name": "University of Chester",
+    "code": "C04",
+    "region": "North West",
+    "provider_type": "HEI"
+  },
+  {
+    "id": "26",
+    "name": "Teach First",
+    "code": "T01",
+    "region": "National",
+    "provider_type": "SCITT"
+  },
+  {
+    "id": "27",
+    "name": "ARK Teacher Training",
+    "code": "A01",
+    "region": "London",
+    "provider_type": "SCITT"
+  },
+  {
+    "id": "28",
+    "name": "Harris Initial Teacher Education",
+    "code": "H01",
+    "region": "London",
+    "provider_type": "SCITT"
+  },
+  {
+    "id": "29",
+    "name": "United Teaching National SCITT",
+    "code": "U01",
+    "region": "National",
+    "provider_type": "SCITT"
+  },
+  {
+    "id": "30",
+    "name": "The OAKS (Ormiston and Keele SCITT)",
+    "code": "O02",
+    "region": "West Midlands",
+    "provider_type": "SCITT"
+  }
+]

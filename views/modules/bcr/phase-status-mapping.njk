@@ -1,0 +1,142 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}BCR Phase-Status Mapping | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">BCR Phase-Status Mapping</h1>
+      
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+          <div class="govuk-inset-text">
+            <h2 class="govuk-heading-m">BCR Phase-Status Mapping</h2>
+            <p class="govuk-body">
+              This page shows the mapping between BCR workflow phases and their corresponding statuses. 
+              Each phase in the BCR workflow process has an associated status that indicates the current state of a BCR.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Phase-Status Mapping Table -->
+      <div class="govuk-grid-row govuk-!-margin-top-6">
+        <div class="govuk-grid-column-full">
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-table__caption--m">Phase-Status Mapping</caption>
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Phase ID</th>
+                <th scope="col" class="govuk-table__header">Phase Name</th>
+                <th scope="col" class="govuk-table__header">Status</th>
+                <th scope="col" class="govuk-table__header">Description</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for phase in phases %}
+                <tr class="govuk-table__row">
+                  <td class="govuk-table__cell">{{ phase.id }}</td>
+                  <td class="govuk-table__cell">{{ phase.name }}</td>
+                  <td class="govuk-table__cell">
+                    {% set phaseStatus = null %}
+                    {% for status in statuses %}
+                      {% if status.phase === phase.id %}
+                        {% set phaseStatus = status %}
+                      {% endif %}
+                    {% endfor %}
+                    
+                    {% if phaseStatus %}
+                      {% if phaseStatus.name === "Submission Received" %}
+                        <strong class="govuk-tag govuk-tag--blue">{{ phaseStatus.name }}</strong>
+                      {% elif phaseStatus.name === "Collation and Categorisation" or phaseStatus.name === "BCR Prioritised" %}
+                        <strong class="govuk-tag govuk-tag--purple">{{ phaseStatus.name }}</strong>
+                      {% elif phaseStatus.name === "Technical and Business Impact Review" or phaseStatus.name === "Impact Assessed" %}
+                        <strong class="govuk-tag govuk-tag--yellow">{{ phaseStatus.name }}</strong>
+                      {% elif phaseStatus.name === "Internal Governance Review" or phaseStatus.name === "Internal Analysis Playback Completed" %}
+                        <strong class="govuk-tag govuk-tag--orange">{{ phaseStatus.name }}</strong>
+                      {% elif phaseStatus.name === "Stakeholder Feedback" or phaseStatus.name === "Stakeholders Consulted" %}
+                        <strong class="govuk-tag govuk-tag--pink">{{ phaseStatus.name }}</strong>
+                      {% elif phaseStatus.name === "Draft Implementation Planning" or phaseStatus.name === "Requirements Documented" %}
+                        <strong class="govuk-tag govuk-tag--turquoise">{{ phaseStatus.name }}</strong>
+                      {% elif phaseStatus.name === "Final Approval" or phaseStatus.name === "Requirements Approved" %}
+                        <strong class="govuk-tag govuk-tag--green">{{ phaseStatus.name }}</strong>
+                      {% elif phaseStatus.name === "Implementation" or phaseStatus.name === "Implemented" %}
+                        <strong class="govuk-tag govuk-tag--blue">{{ phaseStatus.name }}</strong>
+                      {% elif phaseStatus.name === "Testing" or phaseStatus.name === "Change Validated and Tested" %}
+                        <strong class="govuk-tag govuk-tag--purple">{{ phaseStatus.name }}</strong>
+                      {% elif phaseStatus.name === "Go Live" or phaseStatus.name === "Change Live" %}
+                        <strong class="govuk-tag govuk-tag--green">{{ phaseStatus.name }}</strong>
+                      {% elif phaseStatus.name === "Post-Implementation Review" or phaseStatus.name === "Post Implementation Review Done" %}
+                        <strong class="govuk-tag govuk-tag--grey">{{ phaseStatus.name }}</strong>
+                      {% elif phaseStatus.name === "BCR Closed" %}
+                        <strong class="govuk-tag govuk-tag--red">{{ phaseStatus.name }}</strong>
+                      {% else %}
+                        <strong class="govuk-tag">{{ phaseStatus.name }}</strong>
+                      {% endif %}
+                    {% else %}
+                      <span class="govuk-hint">No specific status</span>
+                    {% endif %}
+                  </td>
+                  <td class="govuk-table__cell">{{ phase.description }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+
+      
+      <!-- Special Statuses -->
+      <div class="govuk-grid-row govuk-!-margin-top-6">
+        <div class="govuk-grid-column-full">
+          <h2 class="govuk-heading-m">Special Statuses</h2>
+          
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-table__caption--m">Statuses not associated with a specific phase</caption>
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Status ID</th>
+                <th scope="col" class="govuk-table__header">Status Name</th>
+                <th scope="col" class="govuk-table__header">Description</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for status in statuses %}
+                {% if status.phase === null %}
+                  <tr class="govuk-table__row">
+                    <td class="govuk-table__cell">{{ status.id }}</td>
+                    <td class="govuk-table__cell">
+                      {% if status.name === "Rejected" %}
+                        <strong class="govuk-tag govuk-tag--red">{{ status.name }}</strong>
+                      {% elif status.name === "Completed" %}
+                        <strong class="govuk-tag govuk-tag--green">{{ status.name }}</strong>
+                      {% else %}
+                        <strong class="govuk-tag">{{ status.name }}</strong>
+                      {% endif %}
+                    </td>
+                    <td class="govuk-table__cell">
+                      {% if status.name === "Rejected" %}
+                        BCR has been rejected and will not proceed further in the workflow.
+                      {% elif status.name === "Completed" %}
+                        BCR has been successfully completed and closed.
+                      {% else %}
+                        Special status not associated with a specific phase.
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+{% endblock %}

@@ -1,0 +1,68 @@
+[
+  {
+    "id": "1",
+    "name": "No known disability",
+    "code": "A",
+    "description": "No disability has been reported"
+  },
+  {
+    "id": "2",
+    "name": "Specific learning difficulty",
+    "code": "B",
+    "description": "Such as dyslexia, dyspraxia or AD(H)D"
+  },
+  {
+    "id": "3",
+    "name": "Social/communication impairment",
+    "code": "C",
+    "description": "Such as Asperger's syndrome/other autistic spectrum disorder"
+  },
+  {
+    "id": "4",
+    "name": "Long standing illness or health condition",
+    "code": "D",
+    "description": "Such as cancer, HIV, diabetes, chronic heart disease, or epilepsy"
+  },
+  {
+    "id": "5",
+    "name": "Mental health condition",
+    "code": "E",
+    "description": "Such as depression, schizophrenia or anxiety disorder"
+  },
+  {
+    "id": "6",
+    "name": "Physical impairment or mobility issues",
+    "code": "F",
+    "description": "Such as difficulty using arms or using a wheelchair or crutches"
+  },
+  {
+    "id": "7",
+    "name": "Deaf or serious hearing impairment",
+    "code": "G",
+    "description": "Deaf or serious hearing impairment"
+  },
+  {
+    "id": "8",
+    "name": "Blind or serious visual impairment",
+    "code": "H",
+    "description": "Blind or serious visual impairment uncorrected by glasses"
+  },
+  {
+    "id": "9",
+    "name": "Multiple disabilities",
+    "code": "I",
+    "description": "Two or more conditions"
+  },
+  {
+    "id": "10",
+    "name": "Disability, impairment or medical condition not listed above",
+    "code": "J",
+    "description": "A disability, impairment or medical condition that is not listed above"
+  },
+  {
+    "id": "11",
+    "name": "Information refused",
+    "code": "Z",
+    "description": "Information about disability has been refused"
+  }
+]

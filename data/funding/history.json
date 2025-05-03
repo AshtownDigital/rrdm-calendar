@@ -1,0 +1,81 @@
+{
+  "changes": [
+    {
+      "id": 1,
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Fee-funded)",
+      "fundingType": "Bursary",
+      "previousAmount": 22000,
+      "newAmount": 24000,
+      "changeDate": "2025-04-15T10:30:00Z",
+      "changeType": "Increase",
+      "notes": "Increased bursary amount for high-priority subjects to attract more candidates"
+    },
+    {
+      "id": 2,
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Fee-funded)",
+      "fundingType": "Scholarship",
+      "previousAmount": 24000,
+      "newAmount": 26000,
+      "changeDate": "2025-04-15T10:30:00Z",
+      "changeType": "Increase",
+      "notes": "Increased scholarship amount for high-priority subjects to attract more candidates"
+    },
+    {
+      "id": 3,
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "previousAmount": 14000,
+      "newAmount": 15000,
+      "changeDate": "2025-04-15T10:30:00Z",
+      "changeType": "Increase",
+      "notes": "Increased grant amount to support schools with recruitment costs"
+    },
+    {
+      "id": 4,
+      "academicYear": "2024-25",
+      "trainingRoute": "Provider-led (Fee-funded)",
+      "fundingType": "Bursary",
+      "previousAmount": 20000,
+      "newAmount": 22000,
+      "changeDate": "2024-03-10T09:15:00Z",
+      "changeType": "Increase",
+      "notes": "Annual adjustment to bursary amounts"
+    },
+    {
+      "id": 5,
+      "academicYear": "2024-25",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "previousAmount": 12000,
+      "newAmount": 14000,
+      "changeDate": "2024-03-10T09:15:00Z",
+      "changeType": "Increase",
+      "notes": "Annual adjustment to grant amounts"
+    },
+    {
+      "id": 6,
+      "academicYear": "2023-24",
+      "trainingRoute": "Provider-led (Fee-funded)",
+      "fundingType": "Bursary",
+      "previousAmount": 18000,
+      "newAmount": 20000,
+      "changeDate": "2023-03-05T11:45:00Z",
+      "changeType": "Increase",
+      "notes": "Annual adjustment to bursary amounts"
+    },
+    {
+      "id": 7,
+      "academicYear": "2023-24",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "previousAmount": 10000,
+      "newAmount": 12000,
+      "changeDate": "2023-03-05T11:45:00Z",
+      "changeType": "Increase",
+      "notes": "Annual adjustment to grant amounts"
+    }
+  ]
+}

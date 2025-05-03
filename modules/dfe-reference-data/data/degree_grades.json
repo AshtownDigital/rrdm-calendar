@@ -1,0 +1,62 @@
+[
+  {
+    "id": "1",
+    "name": "First-Class Honours (1st)",
+    "code": "1",
+    "sort_order": 1
+  },
+  {
+    "id": "2",
+    "name": "Upper Second-Class Honours (2:1)",
+    "code": "2:1",
+    "sort_order": 2
+  },
+  {
+    "id": "3",
+    "name": "Lower Second-Class Honours (2:2)",
+    "code": "2:2",
+    "sort_order": 3
+  },
+  {
+    "id": "4",
+    "name": "Third-Class Honours (3rd)",
+    "code": "3",
+    "sort_order": 4
+  },
+  {
+    "id": "5",
+    "name": "Ordinary Degree (Pass)",
+    "code": "Pass",
+    "sort_order": 5
+  },
+  {
+    "id": "6",
+    "name": "Distinction",
+    "code": "Dist",
+    "sort_order": 6
+  },
+  {
+    "id": "7",
+    "name": "Merit",
+    "code": "Merit",
+    "sort_order": 7
+  },
+  {
+    "id": "8",
+    "name": "Fail",
+    "code": "Fail",
+    "sort_order": 8
+  },
+  {
+    "id": "9",
+    "name": "Unclassified",
+    "code": "Unclass",
+    "sort_order": 9
+  },
+  {
+    "id": "10",
+    "name": "Not Applicable",
+    "code": "N/A",
+    "sort_order": 10
+  }
+]

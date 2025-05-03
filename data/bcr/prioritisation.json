@@ -1,0 +1,34 @@
+{
+  "prioritisations": [
+    {
+      "bcrId": "BCR-2025-0001",
+      "trelloTicketId": "TRL 2039003",
+      "description": "Update Primary PGCE Funding Allocation",
+      "prioritisationFlag": "Medium",
+      "prioritisationNarrative": "reviewed by all",
+      "currentStatus": "Submission Received"
+    },
+    {
+      "bcrId": "BCR-2025-0002",
+      "trelloTicketId": "TRL-145",
+      "description": "Add New Subject Category for AI Education",
+      "prioritisationFlag": "Medium",
+      "prioritisationNarrative": "This feature will support the new AI curriculum starting in September 2025. It should be implemented by July 2025.",
+      "currentStatus": "Collation and Categorisation"
+    },
+    {
+      "bcrId": "BCR-2025-0003",
+      "trelloTicketId": "TRL-156",
+      "description": "Update Secondary Mathematics Funding Rules",
+      "prioritisationFlag": "Low",
+      "prioritisationNarrative": "Minor adjustment to funding rules for Secondary Mathematics. Can be implemented as part of the regular quarterly update.",
+      "currentStatus": "Submission Received"
+    }
+  ],
+  "prioritisationFlags": [
+    "Critical",
+    "High",
+    "Medium",
+    "Low"
+  ]
+}

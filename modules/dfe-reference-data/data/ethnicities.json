@@ -1,0 +1,122 @@
+[
+  {
+    "id": "1",
+    "name": "White - English/Welsh/Scottish/Northern Irish/British",
+    "code": "A",
+    "category": "White"
+  },
+  {
+    "id": "2",
+    "name": "White - Irish",
+    "code": "B",
+    "category": "White"
+  },
+  {
+    "id": "3",
+    "name": "White - Gypsy or Irish Traveller",
+    "code": "C",
+    "category": "White"
+  },
+  {
+    "id": "4",
+    "name": "White - Any other White background",
+    "code": "D",
+    "category": "White"
+  },
+  {
+    "id": "5",
+    "name": "Mixed/Multiple ethnic groups - White and Black Caribbean",
+    "code": "E",
+    "category": "Mixed/Multiple ethnic groups"
+  },
+  {
+    "id": "6",
+    "name": "Mixed/Multiple ethnic groups - White and Black African",
+    "code": "F",
+    "category": "Mixed/Multiple ethnic groups"
+  },
+  {
+    "id": "7",
+    "name": "Mixed/Multiple ethnic groups - White and Asian",
+    "code": "G",
+    "category": "Mixed/Multiple ethnic groups"
+  },
+  {
+    "id": "8",
+    "name": "Mixed/Multiple ethnic groups - Any other Mixed/Multiple ethnic background",
+    "code": "H",
+    "category": "Mixed/Multiple ethnic groups"
+  },
+  {
+    "id": "9",
+    "name": "Asian/Asian British - Indian",
+    "code": "I",
+    "category": "Asian/Asian British"
+  },
+  {
+    "id": "10",
+    "name": "Asian/Asian British - Pakistani",
+    "code": "J",
+    "category": "Asian/Asian British"
+  },
+  {
+    "id": "11",
+    "name": "Asian/Asian British - Bangladeshi",
+    "code": "K",
+    "category": "Asian/Asian British"
+  },
+  {
+    "id": "12",
+    "name": "Asian/Asian British - Chinese",
+    "code": "L",
+    "category": "Asian/Asian British"
+  },
+  {
+    "id": "13",
+    "name": "Asian/Asian British - Any other Asian background",
+    "code": "M",
+    "category": "Asian/Asian British"
+  },
+  {
+    "id": "14",
+    "name": "Black/African/Caribbean/Black British - African",
+    "code": "N",
+    "category": "Black/African/Caribbean/Black British"
+  },
+  {
+    "id": "15",
+    "name": "Black/African/Caribbean/Black British - Caribbean",
+    "code": "O",
+    "category": "Black/African/Caribbean/Black British"
+  },
+  {
+    "id": "16",
+    "name": "Black/African/Caribbean/Black British - Any other Black/African/Caribbean background",
+    "code": "P",
+    "category": "Black/African/Caribbean/Black British"
+  },
+  {
+    "id": "17",
+    "name": "Other ethnic group - Arab",
+    "code": "Q",
+    "category": "Other ethnic group"
+  },
+  {
+    "id": "18",
+    "name": "Other ethnic group - Any other ethnic group",
+    "code": "R",
+    "category": "Other ethnic group"
+  },
+  {
+    "id": "19",
+    "name": "Not provided",
+    "code": "S",
+    "category": "Not provided"
+  },
+  {
+    "id": "20",
+    "name": "Information refused",
+    "code": "Z",
+    "category": "Not provided"
+  }
+]

@@ -7,6 +7,7 @@ const itemsRouter = require('./items');
 const valuesRouter = require('./values');
 const releaseNotesRouter = require('./release-notes');
 const restorePointsRouter = require('./restore-points');
+const dfeDataRouter = require('./dfe-data');
 
 // Use sub-routes
 router.use('/dashboard', dashboardRouter);
@@ -14,6 +15,7 @@ router.use('/items', itemsRouter);
 router.use('/values', valuesRouter);
 router.use('/release-notes', releaseNotesRouter);
 router.use('/restore-points', restorePointsRouter);
+router.use('/dfe-data', dfeDataRouter);
 
 // Redirect root to dashboard
 router.get('/', (req, res) => {

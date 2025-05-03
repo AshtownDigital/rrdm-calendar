@@ -1,0 +1,300 @@
+[
+  {
+    "id": "1",
+    "name": "Grade 9",
+    "code": "9",
+    "qualification_type": "GCSE",
+    "sort_order": 1,
+    "description": "Highest grade in the new GCSE system"
+  },
+  {
+    "id": "2",
+    "name": "Grade 8",
+    "code": "8",
+    "qualification_type": "GCSE",
+    "sort_order": 2
+  },
+  {
+    "id": "3",
+    "name": "Grade 7",
+    "code": "7",
+    "qualification_type": "GCSE",
+    "sort_order": 3,
+    "description": "Equivalent to grade A in the old system"
+  },
+  {
+    "id": "4",
+    "name": "Grade 6",
+    "code": "6",
+    "qualification_type": "GCSE",
+    "sort_order": 4
+  },
+  {
+    "id": "5",
+    "name": "Grade 5",
+    "code": "5",
+    "qualification_type": "GCSE",
+    "sort_order": 5,
+    "description": "Strong pass"
+  },
+  {
+    "id": "6",
+    "name": "Grade 4",
+    "code": "4",
+    "qualification_type": "GCSE",
+    "sort_order": 6,
+    "description": "Standard pass, equivalent to grade C in the old system"
+  },
+  {
+    "id": "7",
+    "name": "Grade 3",
+    "code": "3",
+    "qualification_type": "GCSE",
+    "sort_order": 7
+  },
+  {
+    "id": "8",
+    "name": "Grade 2",
+    "code": "2",
+    "qualification_type": "GCSE",
+    "sort_order": 8
+  },
+  {
+    "id": "9",
+    "name": "Grade 1",
+    "code": "1",
+    "qualification_type": "GCSE",
+    "sort_order": 9,
+    "description": "Lowest grade in the new GCSE system"
+  },
+  {
+    "id": "10",
+    "name": "U",
+    "code": "U",
+    "qualification_type": "GCSE",
+    "sort_order": 10,
+    "description": "Ungraded"
+  },
+  {
+    "id": "11",
+    "name": "A*",
+    "code": "A*",
+    "qualification_type": "GCSE-old",
+    "sort_order": 1,
+    "description": "Highest grade in the old GCSE system"
+  },
+  {
+    "id": "12",
+    "name": "A",
+    "code": "A",
+    "qualification_type": "GCSE-old",
+    "sort_order": 2
+  },
+  {
+    "id": "13",
+    "name": "B",
+    "code": "B",
+    "qualification_type": "GCSE-old",
+    "sort_order": 3
+  },
+  {
+    "id": "14",
+    "name": "C",
+    "code": "C",
+    "qualification_type": "GCSE-old",
+    "sort_order": 4,
+    "description": "Considered a standard pass"
+  },
+  {
+    "id": "15",
+    "name": "D",
+    "code": "D",
+    "qualification_type": "GCSE-old",
+    "sort_order": 5
+  },
+  {
+    "id": "16",
+    "name": "E",
+    "code": "E",
+    "qualification_type": "GCSE-old",
+    "sort_order": 6
+  },
+  {
+    "id": "17",
+    "name": "F",
+    "code": "F",
+    "qualification_type": "GCSE-old",
+    "sort_order": 7
+  },
+  {
+    "id": "18",
+    "name": "G",
+    "code": "G",
+    "qualification_type": "GCSE-old",
+    "sort_order": 8,
+    "description": "Lowest passing grade in the old GCSE system"
+  },
+  {
+    "id": "19",
+    "name": "U",
+    "code": "U",
+    "qualification_type": "GCSE-old",
+    "sort_order": 9,
+    "description": "Ungraded"
+  },
+  {
+    "id": "20",
+    "name": "A*",
+    "code": "A*",
+    "qualification_type": "A",
+    "sort_order": 1,
+    "description": "Highest grade in A Level"
+  },
+  {
+    "id": "21",
+    "name": "A",
+    "code": "A",
+    "qualification_type": "A",
+    "sort_order": 2
+  },
+  {
+    "id": "22",
+    "name": "B",
+    "code": "B",
+    "qualification_type": "A",
+    "sort_order": 3
+  },
+  {
+    "id": "23",
+    "name": "C",
+    "code": "C",
+    "qualification_type": "A",
+    "sort_order": 4
+  },
+  {
+    "id": "24",
+    "name": "D",
+    "code": "D",
+    "qualification_type": "A",
+    "sort_order": 5
+  },
+  {
+    "id": "25",
+    "name": "E",
+    "code": "E",
+    "qualification_type": "A",
+    "sort_order": 6,
+    "description": "Lowest passing grade in A Level"
+  },
+  {
+    "id": "26",
+    "name": "U",
+    "code": "U",
+    "qualification_type": "A",
+    "sort_order": 7,
+    "description": "Ungraded"
+  },
+  {
+    "id": "27",
+    "name": "Distinction*",
+    "code": "D*",
+    "qualification_type": "BTEC",
+    "sort_order": 1,
+    "description": "Highest BTEC grade"
+  },
+  {
+    "id": "28",
+    "name": "Distinction",
+    "code": "D",
+    "qualification_type": "BTEC",
+    "sort_order": 2
+  },
+  {
+    "id": "29",
+    "name": "Merit",
+    "code": "M",
+    "qualification_type": "BTEC",
+    "sort_order": 3
+  },
+  {
+    "id": "30",
+    "name": "Pass",
+    "code": "P",
+    "qualification_type": "BTEC",
+    "sort_order": 4,
+    "description": "Lowest passing BTEC grade"
+  },
+  {
+    "id": "31",
+    "name": "Fail",
+    "code": "F",
+    "qualification_type": "BTEC",
+    "sort_order": 5
+  },
+  {
+    "id": "32",
+    "name": "First-Class Honours (1st)",
+    "code": "1",
+    "qualification_type": "BACH",
+    "sort_order": 1,
+    "description": "Highest classification for bachelor's degrees"
+  },
+  {
+    "id": "33",
+    "name": "Upper Second-Class Honours (2:1)",
+    "code": "2:1",
+    "qualification_type": "BACH",
+    "sort_order": 2
+  },
+  {
+    "id": "34",
+    "name": "Lower Second-Class Honours (2:2)",
+    "code": "2:2",
+    "qualification_type": "BACH",
+    "sort_order": 3
+  },
+  {
+    "id": "35",
+    "name": "Third-Class Honours (3rd)",
+    "code": "3",
+    "qualification_type": "BACH",
+    "sort_order": 4
+  },
+  {
+    "id": "36",
+    "name": "Ordinary Degree (Pass)",
+    "code": "Pass",
+    "qualification_type": "BACH",
+    "sort_order": 5,
+    "description": "Degree without honours"
+  },
+  {
+    "id": "37",
+    "name": "Distinction",
+    "code": "Dist",
+    "qualification_type": "MAST",
+    "sort_order": 1,
+    "description": "Highest classification for master's degrees"
+  },
+  {
+    "id": "38",
+    "name": "Merit",
+    "code": "Merit",
+    "qualification_type": "MAST",
+    "sort_order": 2
+  },
+  {
+    "id": "39",
+    "name": "Pass",
+    "code": "Pass",
+    "qualification_type": "MAST",
+    "sort_order": 3
+  },
+  {
+    "id": "40",
+    "name": "Fail",
+    "code": "Fail",
+    "qualification_type": "MAST",
+    "sort_order": 4
+  }
+]

@@ -1,0 +1,135 @@
+[
+  {
+    "id": "1",
+    "name": "Medicine and dentistry",
+    "code": "CAH01",
+    "level": 1
+  },
+  {
+    "id": "2",
+    "name": "Medicine and dentistry",
+    "code": "CAH01-01",
+    "level": 2,
+    "parent_code": "CAH01"
+  },
+  {
+    "id": "3",
+    "name": "Subjects allied to medicine",
+    "code": "CAH02",
+    "level": 1
+  },
+  {
+    "id": "4",
+    "name": "Nursing",
+    "code": "CAH02-01",
+    "level": 2,
+    "parent_code": "CAH02"
+  },
+  {
+    "id": "5",
+    "name": "Pharmacology, toxicology and pharmacy",
+    "code": "CAH02-02",
+    "level": 2,
+    "parent_code": "CAH02"
+  },
+  {
+    "id": "6",
+    "name": "Complementary and alternative medicine",
+    "code": "CAH02-03",
+    "level": 2,
+    "parent_code": "CAH02"
+  },
+  {
+    "id": "7",
+    "name": "Biological and sport sciences",
+    "code": "CAH03",
+    "level": 1
+  },
+  {
+    "id": "8",
+    "name": "Biosciences",
+    "code": "CAH03-01",
+    "level": 2,
+    "parent_code": "CAH03"
+  },
+  {
+    "id": "9",
+    "name": "Sport and exercise sciences",
+    "code": "CAH03-02",
+    "level": 2,
+    "parent_code": "CAH03"
+  },
+  {
+    "id": "10",
+    "name": "Psychology",
+    "code": "CAH04",
+    "level": 1
+  },
+  {
+    "id": "11",
+    "name": "Psychology",
+    "code": "CAH04-01",
+    "level": 2,
+    "parent_code": "CAH04"
+  },
+  {
+    "id": "12",
+    "name": "Veterinary sciences",
+    "code": "CAH05",
+    "level": 1
+  },
+  {
+    "id": "13",
+    "name": "Veterinary sciences",
+    "code": "CAH05-01",
+    "level": 2,
+    "parent_code": "CAH05"
+  },
+  {
+    "id": "14",
+    "name": "Agriculture, food and related studies",
+    "code": "CAH06",
+    "level": 1
+  },
+  {
+    "id": "15",
+    "name": "Agriculture, food and related studies",
+    "code": "CAH06-01",
+    "level": 2,
+    "parent_code": "CAH06"
+  },
+  {
+    "id": "16",
+    "name": "Physical sciences",
+    "code": "CAH07",
+    "level": 1
+  },
+  {
+    "id": "17",
+    "name": "Chemistry",
+    "code": "CAH07-01",
+    "level": 2,
+    "parent_code": "CAH07"
+  },
+  {
+    "id": "18",
+    "name": "Physics and astronomy",
+    "code": "CAH07-02",
+    "level": 2,
+    "parent_code": "CAH07"
+  },
+  {
+    "id": "19",
+    "name": "Physical, material and forensic sciences",
+    "code": "CAH07-03",
+    "level": 2,
+    "parent_code": "CAH07"
+  },
+  {
+    "id": "20",
+    "name": "General and others in sciences",
+    "code": "CAH07-04",
+    "level": 2,
+    "parent_code": "CAH07"
+  }
+]

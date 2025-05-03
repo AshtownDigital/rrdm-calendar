@@ -1,0 +1,162 @@
+[
+  {
+    "id": "1",
+    "name": "GCSE",
+    "description": "General Certificate of Secondary Education",
+    "code": "GCSE",
+    "level": "2",
+    "category": "School"
+  },
+  {
+    "id": "2",
+    "name": "AS Level",
+    "description": "Advanced Subsidiary Level",
+    "code": "AS",
+    "level": "3",
+    "category": "School"
+  },
+  {
+    "id": "3",
+    "name": "A Level",
+    "description": "Advanced Level",
+    "code": "A",
+    "level": "3",
+    "category": "School"
+  },
+  {
+    "id": "4",
+    "name": "International Baccalaureate",
+    "description": "International Baccalaureate Diploma",
+    "code": "IB",
+    "level": "3",
+    "category": "School"
+  },
+  {
+    "id": "5",
+    "name": "BTEC First",
+    "description": "BTEC First Certificate/Diploma",
+    "code": "BTEC1",
+    "level": "2",
+    "category": "Vocational"
+  },
+  {
+    "id": "6",
+    "name": "BTEC National",
+    "description": "BTEC National Certificate/Diploma",
+    "code": "BTEC3",
+    "level": "3",
+    "category": "Vocational"
+  },
+  {
+    "id": "7",
+    "name": "NVQ",
+    "description": "National Vocational Qualification",
+    "code": "NVQ",
+    "level": "Various",
+    "category": "Vocational"
+  },
+  {
+    "id": "8",
+    "name": "City & Guilds",
+    "description": "City & Guilds Qualification",
+    "code": "C&G",
+    "level": "Various",
+    "category": "Vocational"
+  },
+  {
+    "id": "9",
+    "name": "T Level",
+    "description": "Technical Level",
+    "code": "TLVL",
+    "level": "3",
+    "category": "Vocational"
+  },
+  {
+    "id": "10",
+    "name": "HNC",
+    "description": "Higher National Certificate",
+    "code": "HNC",
+    "level": "4",
+    "category": "Higher Education"
+  },
+  {
+    "id": "11",
+    "name": "HND",
+    "description": "Higher National Diploma",
+    "code": "HND",
+    "level": "5",
+    "category": "Higher Education"
+  },
+  {
+    "id": "12",
+    "name": "Foundation Degree",
+    "description": "Foundation Degree (FdA, FdSc)",
+    "code": "FD",
+    "level": "5",
+    "category": "Higher Education"
+  },
+  {
+    "id": "13",
+    "name": "Bachelor's Degree",
+    "description": "Bachelor's Degree (BA, BSc, BEng, etc.)",
+    "code": "BACH",
+    "level": "6",
+    "category": "Higher Education"
+  },
+  {
+    "id": "14",
+    "name": "Master's Degree",
+    "description": "Master's Degree (MA, MSc, MEng, etc.)",
+    "code": "MAST",
+    "level": "7",
+    "category": "Higher Education"
+  },
+  {
+    "id": "15",
+    "name": "PGCE",
+    "description": "Postgraduate Certificate in Education",
+    "code": "PGCE",
+    "level": "7",
+    "category": "Higher Education"
+  },
+  {
+    "id": "16",
+    "name": "PhD",
+    "description": "Doctor of Philosophy",
+    "code": "PHD",
+    "level": "8",
+    "category": "Higher Education"
+  },
+  {
+    "id": "17",
+    "name": "QTS",
+    "description": "Qualified Teacher Status",
+    "code": "QTS",
+    "level": "6",
+    "category": "Professional"
+  },
+  {
+    "id": "18",
+    "name": "CPA",
+    "description": "Certified Public Accountant",
+    "code": "CPA",
+    "level": "7",
+    "category": "Professional"
+  },
+  {
+    "id": "19",
+    "name": "ACCA",
+    "description": "Association of Chartered Certified Accountants",
+    "code": "ACCA",
+    "level": "7",
+    "category": "Professional"
+  },
+  {
+    "id": "20",
+    "name": "CIPD",
+    "description": "Chartered Institute of Personnel and Development",
+    "code": "CIPD",
+    "level": "Various",
+    "category": "Professional"
+  }
+]

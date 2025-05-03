@@ -1,18 +1,8 @@
-/* Using only standard GOV.UK Design System tag colors */
-/* No custom colors - the standard GOV.UK Frontend CSS already includes these */
-
-/* Standard GOV.UK tag colors for reference:
-.govuk-tag (default) - #1d70b8 (blue)
-.govuk-tag--grey - #505a5f
-.govuk-tag--green - #00703c
-.govuk-tag--turquoise - #10403B
-.govuk-tag--blue - #1d70b8
-.govuk-tag--purple - #4c2c92
-.govuk-tag--pink - #d53880
-.govuk-tag--red - #d4351c
-.govuk-tag--orange - #f47738
-.govuk-tag--yellow - #ffdd00 (with dark text)
-*/
+/* 
+ * This file contains custom styles for the application
+ * The tag colors are defined in govuk-tags-fix.css
+ * Do not define tag colors here to avoid conflicts
+ */
 
 /* Custom styles for summary lists */
 .govuk-summary-card__content {
