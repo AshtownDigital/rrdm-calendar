@@ -6,7 +6,8 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const userUtils = require('../../utils/user-utils');
-const { ensureAuthenticated, ensureAdmin, forwardAuthenticated } = require('../../middleware/auth');
+const { ensureAuthenticated, ensureAdmin, forwardAuthenticated, checkPermission } = require('../../middleware/auth');
+const adminAuth = require('../../middleware/admin-auth');
 
 // Login page - GET
 router.get('/login', forwardAuthenticated, (req, res) => {
@@ -49,8 +50,10 @@ router.get('/logout', (req, res, next) => {
   });
 });
 
+// No longer need admin login routes as all modules are accessible to admin users once logged in
+
 // User Management (Admin only) - GET
-router.get('/manage', ensureAuthenticated, ensureAdmin, (req, res) => {
+router.get('/manage', ensureAuthenticated, adminAuth, (req, res) => {
   const users = userUtils.getAllUsers().map(user => {
     // Remove password from user object
     const { password, ...userWithoutPassword } = user;
@@ -66,7 +69,7 @@ router.get('/manage', ensureAuthenticated, ensureAdmin, (req, res) => {
 });
 
 // Create User page (Admin only) - GET
-router.get('/create', ensureAuthenticated, ensureAdmin, (req, res) => {
+router.get('/create', ensureAuthenticated, adminAuth, (req, res) => {
   res.render('modules/access/create-user', {
     title: 'Create User | Register Team Internal Services',
     errors: req.flash('error')
@@ -74,7 +77,7 @@ router.get('/create', ensureAuthenticated, ensureAdmin, (req, res) => {
 });
 
 // Create User (Admin only) - POST
-router.post('/create', ensureAuthenticated, ensureAdmin, async (req, res) => {
+router.post('/create', ensureAuthenticated, adminAuth, async (req, res) => {
   try {
     const { email, password, confirmPassword, name, role } = req.body;
     
@@ -115,7 +118,7 @@ router.post('/create', ensureAuthenticated, ensureAdmin, async (req, res) => {
 });
 
 // User Detail page (Admin only) - GET
-router.get('/user/:id', ensureAuthenticated, ensureAdmin, (req, res) => {
+router.get('/user/:id', ensureAuthenticated, adminAuth, (req, res) => {
   try {
     const userId = req.params.id;
     const user = userUtils.findUserById(userId);
@@ -146,7 +149,7 @@ router.get('/user/:id', ensureAuthenticated, ensureAdmin, (req, res) => {
 });
 
 // Edit User page (Admin only) - GET
-router.get('/edit/:id', ensureAuthenticated, ensureAdmin, (req, res) => {
+router.get('/edit/:id', ensureAuthenticated, adminAuth, (req, res) => {
   try {
     const userId = req.params.id;
     const user = userUtils.findUserById(userId);
@@ -171,7 +174,7 @@ router.get('/edit/:id', ensureAuthenticated, ensureAdmin, (req, res) => {
 });
 
 // Edit User (Admin only) - POST
-router.post('/edit/:id', ensureAuthenticated, ensureAdmin, async (req, res) => {
+router.post('/edit/:id', ensureAuthenticated, adminAuth, async (req, res) => {
   try {
     const userId = req.params.id;
     const { name, email, role } = req.body;
@@ -203,7 +206,7 @@ router.post('/edit/:id', ensureAuthenticated, ensureAdmin, async (req, res) => {
 });
 
 // Revoke User Access page (Admin only) - GET
-router.get('/revoke/:id', ensureAuthenticated, ensureAdmin, (req, res) => {
+router.get('/revoke/:id', ensureAuthenticated, adminAuth, (req, res) => {
   try {
     const userId = req.params.id;
     const user = userUtils.findUserById(userId);
@@ -233,7 +236,7 @@ router.get('/revoke/:id', ensureAuthenticated, ensureAdmin, (req, res) => {
 });
 
 // Revoke User Access (Admin only) - POST
-router.post('/revoke/:id', ensureAuthenticated, ensureAdmin, async (req, res) => {
+router.post('/revoke/:id', ensureAuthenticated, adminAuth, async (req, res) => {
   try {
     const userId = req.params.id;
     
@@ -249,7 +252,7 @@ router.post('/revoke/:id', ensureAuthenticated, ensureAdmin, async (req, res) =>
 });
 
 // Restore User Access page (Admin only) - GET
-router.get('/restore/:id', ensureAuthenticated, ensureAdmin, (req, res) => {
+router.get('/restore/:id', ensureAuthenticated, adminAuth, (req, res) => {
   try {
     const userId = req.params.id;
     const user = userUtils.findUserById(userId);
@@ -279,7 +282,7 @@ router.get('/restore/:id', ensureAuthenticated, ensureAdmin, (req, res) => {
 });
 
 // Restore User Access (Admin only) - POST
-router.post('/restore/:id', ensureAuthenticated, ensureAdmin, async (req, res) => {
+router.post('/restore/:id', ensureAuthenticated, adminAuth, async (req, res) => {
   try {
     const userId = req.params.id;
     
@@ -295,7 +298,7 @@ router.post('/restore/:id', ensureAuthenticated, ensureAdmin, async (req, res) =
 });
 
 // Reset User Password page (Admin only) - GET
-router.get('/reset-password/:id', ensureAuthenticated, ensureAdmin, (req, res) => {
+router.get('/reset-password/:id', ensureAuthenticated, adminAuth, (req, res) => {
   try {
     const userId = req.params.id;
     const user = userUtils.findUserById(userId);
@@ -325,7 +328,7 @@ router.get('/reset-password/:id', ensureAuthenticated, ensureAdmin, (req, res) =
 });
 
 // Reset User Password (Admin only) - POST
-router.post('/reset-password/:id', ensureAuthenticated, ensureAdmin, async (req, res) => {
+router.post('/reset-password/:id', ensureAuthenticated, adminAuth, async (req, res) => {
   try {
     const userId = req.params.id;
     const { password, confirmPassword } = req.body;
@@ -364,7 +367,7 @@ router.post('/reset-password/:id', ensureAuthenticated, ensureAdmin, async (req,
 });
 
 // Delete User page (Admin only) - GET
-router.get('/delete/:id', ensureAuthenticated, ensureAdmin, (req, res) => {
+router.get('/delete/:id', ensureAuthenticated, adminAuth, (req, res) => {
   try {
     const userId = req.params.id;
     const user = userUtils.findUserById(userId);
@@ -394,7 +397,7 @@ router.get('/delete/:id', ensureAuthenticated, ensureAdmin, (req, res) => {
 });
 
 // Delete User (Admin only) - POST
-router.post('/delete/:id', ensureAuthenticated, ensureAdmin, async (req, res) => {
+router.post('/delete/:id', ensureAuthenticated, adminAuth, async (req, res) => {
   try {
     const userId = req.params.id;
     const confirmDelete = req.body['confirm-delete'];

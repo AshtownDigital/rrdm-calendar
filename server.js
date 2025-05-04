@@ -123,12 +123,14 @@ const restorePointsRouter = require('./routes/restore-points');
 const apiRouter = require('./api');
 
 // Import auth middleware
-const { ensureAuthenticated } = require('./middleware/auth');
+const { ensureAuthenticated, ensureAdmin, checkPermission } = require('./middleware/auth');
+const adminAuth = require('./middleware/admin-auth');
 
-// Access routes (no authentication required)
+// Access routes - some endpoints don't require authentication (login, logout)
+// but the user management routes are protected by adminAuth middleware in the router
 app.use('/access', accessRouter);
 
-// Protected routes (authentication required)
+// Protected routes - accessible to all authenticated users
 app.use('/home', ensureAuthenticated, homeRouter);
 app.use('/ref-data', ensureAuthenticated, refDataRouter);
 app.use('/funding', ensureAuthenticated, fundingRouter);
