@@ -1,0 +1,72 @@
+{% extends "../../layouts/base.njk" %}
+
+{% block pageTitle %}
+  Home | Register Team Internal Services
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Register Team Internal Services</h1>
+    <p class="govuk-body-l">Select a service to continue</p>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <!-- Panel 1: Register Reference Data Management -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card">
+      <h2 class="govuk-heading-m">Register Reference Data Management</h2>
+      <p class="govuk-body">Manage and maintain reference data for registration systems.</p>
+      <a href="/ref-data/dashboard" class="govuk-button">Access service</a>
+    </div>
+  </div>
+  
+  <!-- Panel 2: BCR Management -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card">
+      <h2 class="govuk-heading-m">Business Change Requests</h2>
+      <p class="govuk-body">Manage and track business change requests.</p>
+      <a href="/bcr" class="govuk-button">Access service</a>
+    </div>
+  </div>
+  
+  <!-- Panel 3: Funding Management -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card">
+      <h2 class="govuk-heading-m">Funding Management</h2>
+      <p class="govuk-body">View and manage funding requirements and history.</p>
+      <a href="/funding" class="govuk-button">Access service</a>
+    </div>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <!-- Panel 4: Dashboard -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card">
+      <h2 class="govuk-heading-m">Reference Data Dashboard</h2>
+      <p class="govuk-body">View the reference data management dashboard.</p>
+      <a href="/dashboard" class="govuk-button">Access dashboard</a>
+    </div>
+  </div>
+  
+  <!-- Panel 5: Release Notes -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card">
+      <h2 class="govuk-heading-m">Release Notes</h2>
+      <p class="govuk-body">View changes across academic years.</p>
+      <a href="/release-notes" class="govuk-button">View release notes</a>
+    </div>
+  </div>
+  
+  <!-- Panel 6: User Management -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card">
+      <h2 class="govuk-heading-m">User Management</h2>
+      <p class="govuk-body">Manage user accounts and permissions.</p>
+      <a href="/access/users" class="govuk-button">Manage users</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -3,9 +3,10 @@ const router = express.Router();
 
 // Home page route
 router.get('/', (req, res) => {
-  // Use the standalone home page template with custom navigation
-  res.render('modules/home/home-page', {
-    user: req.user
+  // Use the home template that extends the base layout
+  res.render('modules/home/home', {
+    user: req.user,
+    serviceName: 'Register Team Internal Services'
   });
 });
 

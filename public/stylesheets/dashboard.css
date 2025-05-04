@@ -1,0 +1,75 @@
+/* Dashboard-specific styles */
+.app-card {
+  border: 1px solid #b1b4b6;
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: #f8f8f8;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-card h2 {
+  margin-top: 0;
+}
+
+.app-card .govuk-button {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+/* Tag styling using the standard GOV.UK Design System colors */
+.govuk-tag {
+  color: #144e81;
+  background-color: #d2e2f1;
+}
+
+.govuk-tag--grey {
+  color: #383f43;
+  background-color: #eeefef;
+}
+
+.govuk-tag--green {
+  color: #005a30;
+  background-color: #cce2d8;
+}
+
+.govuk-tag--turquoise {
+  color: #10403c;
+  background-color: #bfe3e0;
+}
+
+.govuk-tag--blue {
+  color: #144e81;
+  background-color: #d2e2f1;
+}
+
+.govuk-tag--light-blue {
+  color: #144e81;
+  background-color: #f2f6fb;
+}
+
+.govuk-tag--purple {
+  color: #4c2c92;
+  background-color: #e9d4f6;
+}
+
+.govuk-tag--pink {
+  color: #80224d;
+  background-color: #f7d7e6;
+}
+
+.govuk-tag--red {
+  color: #942514;
+  background-color: #f6d7d2;
+}
+
+.govuk-tag--orange {
+  color: #6e3619;
+  background-color: #fcd6c3;
+}
+
+.govuk-tag--yellow {
+  color: #594d00;
+  background-color: #fff7b3;
+}

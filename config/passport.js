@@ -51,8 +51,21 @@ module.exports = function(passport) {
   passport.deserializeUser((id, done) => {
     try {
       const user = userUtils.findUserById(id);
+      if (!user) {
+        // Handle case where user no longer exists
+        console.warn(`User with ID ${id} not found during session deserialization`);
+        return done(null, false);
+      }
+      
+      // Check if user account is active
+      if (user.active === false) {
+        console.warn(`Inactive user with ID ${id} attempted to access the application`);
+        return done(null, false);
+      }
+      
       done(null, user);
     } catch (error) {
+      console.error(`Error deserializing user with ID ${id}:`, error);
       done(error);
     }
   });

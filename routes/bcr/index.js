@@ -214,69 +214,86 @@ router.get('/submit', (req, res) => {
 
 // Process new BCR submission
 router.post('/submit', (req, res) => {
-  const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
-  const configPath = path.join(__dirname, '../../data/bcr/config.json');
-  
-  const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
-  const configData = readJsonFile(configPath) || { phases: [], statuses: [] };
-  
-  // Generate a new BCR ID
-  const bcrId = generateBcrId();
-  
-  // Get the initial status and phase
-  const initialStatus = configData.statuses.find(s => s.phase === 1);
-  const initialPhase = configData.phases.find(p => p.id === 1);
-  
-  // Process impact areas (handle both array and single value)
-  let impactAreas = req.body.impactAreas;
-  if (!Array.isArray(impactAreas)) {
-    impactAreas = impactAreas ? [impactAreas] : [];
-  }
-  
-  // Create new submission object
-  const newSubmission = {
-    id: bcrId,
-    dateSubmitted: new Date().toISOString(),
-    submitter: {
-      name: req.body.submitterName,
-      organisation: req.body.submitterOrganisation,
-      email: req.body.submitterEmail
-    },
-    title: req.body.title,
-    description: req.body.description,
-    justification: req.body.justification,
-    policyLinked: req.body.policyLinked === 'yes',
-    policyDetails: req.body.policyDetails || '',
-    impactAreas: impactAreas,
-    affectedRefDataArea: req.body.affectedRefDataArea || '',
-    technicalDependencies: req.body.technicalDependencies || '',
-    urgency: req.body.urgency,
-    relatedDocuments: req.body.relatedDocuments ? req.body.relatedDocuments.split(',').map(doc => doc.trim()) : [],
-    hasAttachments: req.body.hasAttachments === 'yes',
-    status: initialStatus ? initialStatus.name : 'Submission Received',
-    currentPhase: initialPhase ? initialPhase.name : 'Phase 1: Submission Window Opens',
-    assignedReviewer: '',
-    history: [
-      {
-        date: new Date().toISOString(),
-        action: 'Submission Created',
-        user: req.body.submitterName,
-        notes: 'Initial submission'
-      }
-    ]
-  };
-  
-  // Add to submissions
-  submissionsData.submissions.push(newSubmission);
-  
-  // Save updated submissions data
-  if (writeJsonFile(submissionsPath, submissionsData)) {
-    // Redirect to the confirmation page
-    res.redirect(`/bcr/submission-confirmation/${bcrId}`);
-  } else {
+  try {
+    const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
+    const configPath = path.join(__dirname, '../../data/bcr/config.json');
+    
+    const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
+    const configData = readJsonFile(configPath) || { phases: [], statuses: [] };
+    
+    // Generate a new BCR ID
+    const bcrId = generateBcrId();
+    
+    // Get the initial status and phase
+    const initialStatus = configData.statuses.find(s => s.phase === 1);
+    const initialPhase = configData.phases.find(p => p.id === 1);
+    
+    // Process impact areas (handle both array and single value)
+    let impactAreas = req.body.impactAreas;
+    if (!Array.isArray(impactAreas)) {
+      impactAreas = impactAreas ? [impactAreas] : [];
+    }
+    
+    // Process change types (handle both array and single value)
+    let changeType = req.body.changeType;
+    if (!Array.isArray(changeType)) {
+      changeType = changeType ? [changeType] : [];
+    }
+    
+    // Create new submission object
+    const newSubmission = {
+      id: bcrId,
+      dateSubmitted: new Date().toISOString(),
+      submitter: {
+        name: req.body.submitterName,
+        organisation: req.body.submitterOrganisation,
+        email: req.body.submitterEmail
+      },
+      employmentType: req.body.employmentType || '',
+      title: req.body.description.substring(0, 100), // Use description as title if no separate title field
+      description: req.body.description,
+      justification: req.body.justification,
+      policyLinked: req.body.policyLinked === 'yes',
+      policyDetails: req.body.policyDetails || '',
+      impactAreas: impactAreas,
+      changeType: changeType,
+      affectedRefDataArea: req.body.affectedRefDataArea || '',
+      technicalDependencies: req.body.technicalDependencies || '',
+      urgency: req.body.urgency,
+      relatedDocuments: req.body.relatedDocuments ? req.body.relatedDocuments.split(',').map(doc => doc.trim()) : [],
+      hasAttachments: req.body.hasAttachments === 'yes',
+      status: initialStatus ? initialStatus.name : 'Submission Received',
+      currentPhase: initialPhase ? initialPhase.name : 'Phase 1: Submission Window Opens',
+      currentPhaseId: 1,
+      assignedReviewer: '',
+      history: [
+        {
+          date: new Date().toISOString(),
+          action: 'Submission Created',
+          user: req.body.submitterName,
+          notes: 'Initial submission'
+        }
+      ]
+    };
+    
+    // Add to submissions
+    submissionsData.submissions.push(newSubmission);
+    
+    // Save updated submissions data
+    if (writeJsonFile(submissionsPath, submissionsData)) {
+      // Redirect to the confirmation page
+      res.redirect(`/bcr/submission-confirmation/${bcrId}`);
+    } else {
+      res.status(500).render('error', {
+        title: 'Error',
+        message: 'Failed to save submission'
+      });
+    }
+  } catch (error) {
+    console.error('Error in BCR submission:', error);
     res.status(500).render('error', {
       title: 'Error',
-      message: 'Failed to save submission'
+      message: 'Failed to save submission: ' + error.message
     });
   }
 });
@@ -693,119 +710,163 @@ router.get('/submissions/:id/edit', (req, res) => {
 
 // Process edit BCR submission
 router.post('/submissions/:id/edit', (req, res) => {
-  const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
-  const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
-  
-  const submission = submissionsData.submissions.find(s => s.id === req.params.id);
-  
-  if (!submission) {
-    return res.status(404).render('error', {
-      title: 'Error',
-      message: 'Submission not found'
-    });
-  }
-  
-  // Process impact areas (handle both array and single value)
-  let impactAreas = req.body.impactAreas;
-  if (!Array.isArray(impactAreas)) {
-    impactAreas = impactAreas ? [impactAreas] : [];
-  }
-
-  // Process change types (handle both array and single value)
-  let changeType = req.body.changeType;
-  if (!Array.isArray(changeType)) {
-    changeType = changeType ? [changeType] : [];
-  }
-  
-  // Update submission with form data
-  // Handle both title and description fields
-  if (req.body.title) {
-    submission.title = req.body.title;
-    // If there was no title before but only a description that was used as title,
-    // we need to ensure description is also updated
-    if (!submission.title && submission.description === req.body.title) {
-      submission.description = req.body.description;
+  try {
+    const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
+    const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
+    
+    const submissionIndex = submissionsData.submissions.findIndex(s => s.id === req.params.id);
+    
+    if (submissionIndex === -1) {
+      return res.status(404).render('error', {
+        title: 'Error',
+        message: 'Submission not found'
+      });
     }
-  } else {
-    submission.title = '';
-  }
-  
-  // Always update description
-  submission.description = req.body.description;
-  submission.justification = req.body.justification;
-  submission.impactAreas = impactAreas;
-  submission.changeType = changeType;
-  submission.urgency = req.body.urgency;
-  submission.affectedRefDataArea = req.body.affectedRefDataArea || '';
-  submission.technicalDependencies = req.body.technicalDependencies || '';
-  
-  // Process related documents (convert from newline-separated text to array)
-  submission.relatedDocuments = req.body.relatedDocuments ? 
-    req.body.relatedDocuments.split('\n').map(doc => doc.trim()).filter(doc => doc) : [];
-  
-  // Update submitter information
-  if (!submission.submitter) {
-    submission.submitter = {};
-  }
-  submission.submitter.name = req.body.submitterName;
-  submission.submitter.email = req.body.submitterEmail;
-  submission.submitter.organisation = req.body.submitterOrganisation;
-  submission.employmentType = req.body.employmentType;
-  
-  // Add history entry for the update
-  submission.history.push({
-    date: new Date().toISOString(),
-    action: 'Submission Updated',
-    user: req.body.submitterName,
-    notes: 'BCR details updated'
-  });
-  
-  submission.lastUpdated = new Date().toISOString();
-  
-  // Save updated submissions data
-  if (writeJsonFile(submissionsPath, submissionsData)) {
-    // Redirect to the update confirmation page
-    res.redirect(`/bcr/update-confirmation/${req.params.id}`);
-  } else {
+    
+    const submission = submissionsData.submissions[submissionIndex];
+    
+    // Process impact areas (handle both array and single value)
+    let impactAreas = req.body.impactAreas;
+    if (!Array.isArray(impactAreas)) {
+      impactAreas = impactAreas ? [impactAreas] : [];
+    }
+
+    // Process change types (handle both array and single value)
+    let changeType = req.body.changeType;
+    if (!Array.isArray(changeType)) {
+      changeType = changeType ? [changeType] : [];
+    }
+    
+    // Update submission with form data
+    // Use description as title if no separate title field
+    submission.title = req.body.description.substring(0, 100);
+    
+    // Always update description
+    submission.description = req.body.description;
+    submission.justification = req.body.justification;
+    submission.impactAreas = impactAreas;
+    submission.changeType = changeType;
+    submission.urgency = req.body.urgency;
+    submission.affectedRefDataArea = req.body.affectedRefDataArea || '';
+    submission.technicalDependencies = req.body.technicalDependencies || '';
+    
+    // Process related documents (convert from newline-separated text to array)
+    submission.relatedDocuments = req.body.relatedDocuments ? 
+      req.body.relatedDocuments.split('\n').map(doc => doc.trim()).filter(doc => doc) : [];
+    
+    // Update submitter information
+    if (!submission.submitter) {
+      submission.submitter = {};
+    }
+    submission.submitter.name = req.body.submitterName;
+    submission.submitter.email = req.body.submitterEmail;
+    submission.submitter.organisation = req.body.submitterOrganisation || '';
+    submission.employmentType = req.body.employmentType;
+    
+    // Add history entry for the update
+    if (!submission.history) {
+      submission.history = [];
+    }
+    
+    submission.history.push({
+      date: new Date().toISOString(),
+      action: 'Submission Updated',
+      user: req.body.submitterName,
+      notes: 'BCR details updated'
+    });
+    
+    submission.lastUpdated = new Date().toISOString();
+    
+    // Save updated submissions data
+    if (writeJsonFile(submissionsPath, submissionsData)) {
+      // Redirect to the update confirmation page
+      res.redirect(`/bcr/update-confirmation/${req.params.id}`);
+    } else {
+      res.status(500).render('error', {
+        title: 'Error',
+        message: 'Failed to save submission'
+      });
+    }
+  } catch (error) {
+    console.error('Error in BCR edit submission:', error);
     res.status(500).render('error', {
       title: 'Error',
-      message: 'Failed to save submission'
+      message: 'Failed to save submission: ' + error.message
     });
   }
 });
 
 // Archive a submission (soft delete)
 router.post('/submissions/:id/archive', (req, res) => {
+  try {
+    const id = req.params.id;
+    const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
+    const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
+    
+    const submissionIndex = submissionsData.submissions.findIndex(s => s.id === id);
+    if (submissionIndex === -1) {
+      return res.status(404).render('error', {
+        title: 'Error',
+        message: 'Submission not found'
+      });
+    }
+    
+    const submission = submissionsData.submissions[submissionIndex];
+    
+    // Soft delete by setting archived flag
+    submission.archived = true;
+    submission.archivedDate = new Date().toISOString();
+    
+    // Add to history
+    if (!submission.history) {
+      submission.history = [];
+    }
+    
+    submission.history.push({
+      date: new Date().toISOString(),
+      action: 'Archived',
+      user: req.body.user || 'System',
+      notes: req.body.comment || 'Submission archived'
+    });
+    
+    // Save the updated data
+    if (writeJsonFile(submissionsPath, submissionsData)) {
+      // Redirect to archive confirmation page
+      res.redirect(`/bcr/submissions/${id}/archive-confirmation`);
+    } else {
+      res.status(500).render('error', {
+        title: 'Error',
+        message: 'Failed to archive submission'
+      });
+    }
+  } catch (error) {
+    console.error('Error in BCR archive:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'Failed to archive submission: ' + error.message
+    });
+  }
+});
+
+// Archive confirmation page
+router.get('/submissions/:id/archive-confirmation', (req, res) => {
   const id = req.params.id;
   const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
-  const submissions = readJsonFile(submissionsPath) || [];
+  const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
   
-  const submissionIndex = submissions.findIndex(s => s.id === id);
-  if (submissionIndex === -1) {
-    return res.status(404).send('Submission not found');
+  const submission = submissionsData.submissions.find(s => s.id === id);
+  
+  if (!submission) {
+    return res.status(404).render('error', {
+      title: 'Not Found',
+      message: 'The requested BCR submission could not be found'
+    });
   }
   
-  const submission = submissions[submissionIndex];
-  
-  // Soft delete by setting archived flag
-  submission.archived = true;
-  submission.archivedDate = new Date().toISOString();
-  
-  // Add to history
-  if (!submission.history) {
-    submission.history = [];
-  }
-  
-  submission.history.push({
-    date: new Date().toISOString(),
-    action: 'Archived',
-    user: 'System',
-    notes: 'Submission archived'
+  res.render('modules/bcr/archive-confirmation', {
+    title: 'Archive Confirmation',
+    submission: submission
   });
-  
-  writeJsonFile(submissionsPath, submissions);
-  
-  res.redirect('/bcr/submissions');
 });
 
 // Reset workflow to Submission Received
@@ -1139,12 +1200,15 @@ router.get('/prioritisation/:bcrId/edit', (req, res) => {
 // Save prioritisation (create or update)
 router.post('/prioritisation/save', (req, res) => {
   const prioritisationPath = path.join(__dirname, '../../data/bcr/prioritisation.json');
+  const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
   const prioritisationData = readJsonFile(prioritisationPath) || { prioritisations: [], prioritisationFlags: [] };
+  const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
 
   const { bcrId, trelloTicketId, description, prioritisationFlag, prioritisationNarrative, currentStatus } = req.body;
 
   // Check if this is an update or a new entry
   const existingIndex = prioritisationData.prioritisations.findIndex(p => p.bcrId === bcrId);
+  const isUpdate = existingIndex >= 0;
 
   const prioritisationEntry = {
     bcrId,
@@ -1152,10 +1216,11 @@ router.post('/prioritisation/save', (req, res) => {
     description,
     prioritisationFlag,
     prioritisationNarrative,
-    currentStatus
+    currentStatus,
+    lastUpdated: new Date().toISOString()
   };
 
-  if (existingIndex >= 0) {
+  if (isUpdate) {
     // Update existing entry
     prioritisationData.prioritisations[existingIndex] = prioritisationEntry;
   } else {
@@ -1164,25 +1229,63 @@ router.post('/prioritisation/save', (req, res) => {
   }
 
   // Save the updated data
-  writeJsonFile(prioritisationPath, prioritisationData);
-
-  res.redirect('/bcr/prioritisation');
+  if (writeJsonFile(prioritisationPath, prioritisationData)) {
+    // Find the BCR submission to include in the confirmation
+    const submission = submissionsData.submissions.find(s => s.id === bcrId);
+    const bcrTitle = submission ? submission.title : bcrId;
+    
+    // Redirect to confirmation page with relevant information
+    res.redirect(`/bcr/prioritisation/confirmation?bcrId=${encodeURIComponent(bcrId)}&title=${encodeURIComponent(bcrTitle)}&action=${isUpdate ? 'updated' : 'created'}`);
+  } else {
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'Failed to save prioritisation'
+    });
+  }
 });
 
 // Delete prioritisation
 router.post('/prioritisation/:bcrId/delete', (req, res) => {
   const bcrId = req.params.bcrId;
   const prioritisationPath = path.join(__dirname, '../../data/bcr/prioritisation.json');
+  const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
 
   const prioritisationData = readJsonFile(prioritisationPath) || { prioritisations: [], prioritisationFlags: [] };
+  const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
+
+  // Find the BCR submission to include in the confirmation
+  const submission = submissionsData.submissions.find(s => s.id === bcrId);
+  const bcrTitle = submission ? submission.title : bcrId;
 
   // Filter out the entry to delete
   prioritisationData.prioritisations = prioritisationData.prioritisations.filter(p => p.bcrId !== bcrId);
 
   // Save the updated data
-  writeJsonFile(prioritisationPath, prioritisationData);
+  if (writeJsonFile(prioritisationPath, prioritisationData)) {
+    // Redirect to confirmation page with relevant information
+    res.redirect(`/bcr/prioritisation/confirmation?bcrId=${encodeURIComponent(bcrId)}&title=${encodeURIComponent(bcrTitle)}&action=deleted`);
+  } else {
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'Failed to delete prioritisation'
+    });
+  }
+});
 
-  res.redirect('/bcr/prioritisation');
+// Prioritisation confirmation page
+router.get('/prioritisation/confirmation', (req, res) => {
+  const { bcrId, title, action } = req.query;
+  
+  if (!bcrId || !action) {
+    return res.redirect('/bcr/prioritisation');
+  }
+  
+  res.render('modules/bcr/prioritisation-confirmation', {
+    title: 'Prioritisation Confirmation',
+    bcrId: bcrId,
+    bcrTitle: title || bcrId,
+    action: action
+  });
 });
 
 module.exports = router;
