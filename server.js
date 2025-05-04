@@ -85,20 +85,36 @@ app.use(passport.session());
 // Connect flash middleware
 app.use(flash());
 
-// Simple CSRF token generation for production
-const crypto = require('crypto');
+// CSRF Protection setup
+const { generateToken, doubleCsrf } = require('csrf-csrf');
 
-// Generate a CSRF token for each session
+const csrfProtection = doubleCsrf({
+  getSecret: () => process.env.SESSION_SECRET || 'rrdm-dev-secret-key',
+  cookieName: 'csrf-token',
+  cookieOptions: {
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/'
+  },
+  size: 64,
+  getTokenFromRequest: (req) => req.body._csrf || req.query._csrf || req.headers['csrf-token']
+});
+
+// Apply CSRF middleware to all routes
+app.use(csrfProtection.generateToken);
+
+// Make CSRF token available to templates
 app.use((req, res, next) => {
-  if (!req.session.csrfToken) {
-    // Generate a new token if one doesn't exist
-    req.session.csrfToken = crypto.randomBytes(32).toString('hex');
-  }
-  
-  // Make the token available to templates
-  res.locals.csrfToken = req.session.csrfToken;
-  
-  // Debug logging for CSRF troubleshooting
+  res.locals.csrfToken = req.csrfToken;
+  next();
+});
+
+// Debug logging for CSRF troubleshooting
+app.use((req, res, next) => {
+  console.log('CSRF Token:', req.csrfToken);
+  next();
+});
   if (process.env.NODE_ENV !== 'production') {
     console.log('SESSION ID:', req.sessionID);
     console.log('CSRF token in session:', req.session.csrfToken);
