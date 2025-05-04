@@ -48,6 +48,13 @@ app.use((req, res, next) => {
   // Make the token available to templates
   res.locals.csrfToken = req.session.csrfToken;
   
+  // Debug logging for CSRF troubleshooting
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('SESSION ID:', req.sessionID);
+    console.log('CSRF token in session:', req.session.csrfToken);
+    console.log('CSRF token in body:', req.body._csrf);
+    console.log('Cookies:', req.headers.cookie);
+  }
   // For POST, PUT, DELETE requests, validate the token
   if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
     const bodyToken = req.body._csrf;

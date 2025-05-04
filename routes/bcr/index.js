@@ -208,7 +208,8 @@ router.get('/submit', (req, res) => {
   res.render('modules/bcr/submit', {
     title: 'Submit New BCR',
     impactAreas: configData.impactAreas,
-    urgencyLevels: configData.urgencyLevels
+    urgencyLevels: configData.urgencyLevels,
+    csrfToken: res.locals.csrfToken // Ensure CSRF token is provided
   });
 });
 

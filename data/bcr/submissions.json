@@ -490,6 +490,48 @@
           "notes": "Initial submission"
         }
       ]
+    },
+    {
+      "id": "BCR-2025-0005",
+      "dateSubmitted": "2025-05-04T14:34:39.754Z",
+      "submitter": {
+        "name": "test",
+        "organisation": "",
+        "email": "google@googel.com"
+      },
+      "employmentType": "yes",
+      "title": "were",
+      "description": "were",
+      "justification": "whew",
+      "policyLinked": false,
+      "policyDetails": "",
+      "impactAreas": [],
+      "changeType": [
+        "API",
+        "Frontend UI",
+        "Validation",
+        "Reference Data",
+        "Content and Guidance"
+      ],
+      "affectedRefDataArea": "wow",
+      "technicalDependencies": "were",
+      "urgency": "Medium",
+      "relatedDocuments": [
+        "erere"
+      ],
+      "hasAttachments": false,
+      "status": "Submission Received",
+      "currentPhase": "Submission Window Opens - Received",
+      "currentPhaseId": 1,
+      "assignedReviewer": "",
+      "history": [
+        {
+          "date": "2025-05-04T14:34:39.754Z",
+          "action": "Submission Created",
+          "user": "test",
+          "notes": "Initial submission"
+        }
+      ]
     }
   ]
 }
