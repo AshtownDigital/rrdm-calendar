@@ -1,17 +1,76 @@
-/* Home page card styling */
+/* Home page card styling - matched to dashboard styling */
 .app-card {
+  border: 1px solid #b1b4b6;
   padding: 20px;
   margin-bottom: 20px;
   background-color: #f8f8f8;
-  border: 1px solid #b1b4b6;
   height: 100%;
   display: flex;
   flex-direction: column;
+  /* Keep the colored borders with 5px width */
+  border-left-width: 5px;
 }
 
 .app-card h2 {
   margin-top: 0;
   color: #0b0c0c;
+}
+
+/* Colored headings to match borders */
+.app-card--blue h2 {
+  color: #1d70b8;
+}
+
+.app-card--green h2 {
+  color: #00703c;
+}
+
+.app-card--yellow h2 {
+  color: #594d00;
+}
+
+.app-card--purple h2 {
+  color: #4c2c92;
+}
+
+.app-card--turquoise h2 {
+  color: #10403c;
+}
+
+.app-card--orange h2 {
+  color: #6e3619;
+}
+
+.app-card h2 a {
+  text-decoration: none;
+}
+
+.app-card h2 a:hover {
+  text-decoration: none;
+}
+
+/* Card link styling */
+.app-card-link {
+  text-decoration: none;
+  display: block;
+  color: inherit;
+}
+
+.app-card-link:hover {
+  text-decoration: none;
+}
+
+.app-card-link:focus {
+  outline: 3px solid #ffdd00;
+  outline-offset: 0;
+  text-decoration: none;
+}
+
+.app-card:hover {
+  background-color: #f3f2f1;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: background-color 0.2s, box-shadow 0.2s;
 }
 
 .app-card p {
@@ -20,33 +79,45 @@
 }
 
 .app-card .govuk-button {
+  margin-top: auto;
   align-self: flex-start;
-  margin-bottom: 0;
 }
 
 /* Card variations */
 .app-card--blue {
-  border-left-color: #1d70b8;
+  border-left: 5px solid #1d70b8;
 }
 
 .app-card--green {
-  border-left-color: #00703c;
+  border-left: 5px solid #00703c;
 }
 
 .app-card--grey {
-  border-left-color: #505a5f;
+  border-left: 5px solid #505a5f;
 }
 
 .app-card--yellow {
-  border-left-color: #ffdd00;
+  border-left: 5px solid #ffdd00;
 }
 
 .app-card--red {
-  border-left-color: #d4351c;
+  border-left: 5px solid #d4351c;
 }
 
 .app-card--purple {
-  border-left-color: #4c2c92;
+  border-left: 5px solid #4c2c92;
+}
+
+.app-card--turquoise {
+  border-left: 5px solid #10403c;
+}
+
+.app-card--orange {
+  border-left: 5px solid #6e3619;
+}
+
+.app-card--light-blue {
+  border-left: 5px solid #1d70b8;
 }
 
 /* Standard GOV.UK Design System tag colors */
