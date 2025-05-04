@@ -20,14 +20,66 @@ router.get('/login', forwardAuthenticated, (req, res) => {
 
 // Login - POST
 router.post('/login', (req, res, next) => {
-  passport.authenticate('local', {
-    successRedirect: req.session.returnTo || '/home',
-    failureRedirect: '/access/login',
-    failureFlash: true
+  // Validate input
+  const errors = [];
+  const { email, password } = req.body;
+
+  if (!email) {
+    errors.push({
+      field: 'email',
+      message: 'Please enter your email address'
+    });
+  } else if (!email.includes('@')) {
+    errors.push({
+      field: 'email',
+      message: 'Please enter a valid email address'
+    });
+  }
+
+  if (!password) {
+    errors.push({
+      field: 'password',
+      message: 'Please enter your password'
+    });
+  }
+
+  if (errors.length > 0) {
+    return res.render('modules/access/login', {
+      title: 'Sign in',
+      errors,
+      email
+    });
+  }
+
+  passport.authenticate('local', (err, user, info) => {
+    if (err) {
+      console.error('Authentication error:', err);
+      return next(err);
+    }
+    if (!user) {
+      return res.render('modules/access/login', {
+        title: 'Sign in',
+        errors: [{
+          field: 'password',
+          message: info?.message || 'Invalid email or password'
+        }],
+        email
+      });
+    }
+    req.logIn(user, (err) => {
+      if (err) {
+        console.error('Login error:', err);
+        return next(err);
+      }
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return next(err);
+        }
+        res.redirect('/home');
+      });
+    });
   })(req, res, next);
-  
-  // Clear returnTo from session
-  delete req.session.returnTo;
 });
 
 // Logout - GET

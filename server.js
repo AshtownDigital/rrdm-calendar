@@ -5,31 +5,45 @@ const nunjucks = require('nunjucks');
 const dateFilter = require('nunjucks-date-filter');
 const session = require('express-session');
 const { PrismaClient } = require('@prisma/client');
-const { PrismaSessionStore } = require('@quixo3/prisma-session-store');
+
 const passport = require('passport');
 const flash = require('connect-flash');
-const { doubleCsrf } = require('csrf-csrf');
-
 // Initialize Express
 const app = express();
 
-// Initialize Prisma
-const prisma = new PrismaClient();
+// Initialize Prisma with connection retry logic
+const prisma = new PrismaClient({
+  log: ['query', 'info', 'warn', 'error'],
+  errorFormat: 'pretty',
+});
 
-// Handle Prisma connection
-prisma.$connect()
-  .then(() => {
-    console.log('Successfully connected to database');
-  })
-  .catch((error) => {
-    console.error('Failed to connect to database:', error);
-    process.exit(1);
-  });
+// Function to handle database connection with retries
+async function connectWithRetry(retries = 5, delay = 5000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      await prisma.$connect();
+      console.log('Successfully connected to database');
+      return true;
+    } catch (error) {
+      console.error(`Failed to connect to database (attempt ${i + 1}/${retries}):`, error);
+      if (i < retries - 1) {
+        console.log(`Retrying in ${delay/1000} seconds...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  return false;
+}
 
 // Handle graceful shutdown
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, closing Prisma connection');
-  await prisma.$disconnect();
+  try {
+    await prisma.$disconnect();
+    console.log('Prisma disconnected successfully');
+  } catch (error) {
+    console.error('Error disconnecting from Prisma:', error);
+  }
   process.exit(0);
 });
 
@@ -37,46 +51,23 @@ process.on('SIGTERM', async () => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Cookie parser middleware
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
 // Express session middleware
-// Session middleware with error handling
-const sessionStore = new PrismaSessionStore(
-  prisma,
-  {
-    checkPeriod: 2 * 60 * 1000,  // Remove expired sessions every 2 minutes
-    dbRecordIdIsSessionId: false,
-    dbRecordIdFunction: undefined,
-    enableDebug: true, // Enable debug logging for session store
-  }
-);
-
-// Handle session store errors
-sessionStore.on('error', (error) => {
-  console.error('Session store error:', error);
-});
-
 app.use(session({
-  cookie: {
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true
-  },
   secret: process.env.SESSION_SECRET || 'rrdm-dev-secret-key',
+  name: 'rrdm.sid',
   resave: false,
   saveUninitialized: false,
-  store: sessionStore
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  }
 }));
-
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error('Server error:', err);
-  res.status(500).render('error', {
-    title: 'Error',
-    message: process.env.NODE_ENV === 'production' 
-      ? 'An error occurred. Please try again later.' 
-      : err.message
-  });
-});
 
 // Passport middleware
 app.use(passport.initialize());
@@ -84,67 +75,6 @@ app.use(passport.session());
 
 // Connect flash middleware
 app.use(flash());
-
-// CSRF Protection setup
-const { generateToken, doubleCsrf } = require('csrf-csrf');
-
-const csrfProtection = doubleCsrf({
-  getSecret: () => process.env.SESSION_SECRET || 'rrdm-dev-secret-key',
-  cookieName: 'csrf-token',
-  cookieOptions: {
-    httpOnly: true,
-    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    path: '/'
-  },
-  size: 64,
-  getTokenFromRequest: (req) => req.body._csrf || req.query._csrf || req.headers['csrf-token']
-});
-
-// Apply CSRF middleware to all routes
-app.use(csrfProtection.generateToken);
-
-// Make CSRF token available to templates
-app.use((req, res, next) => {
-  res.locals.csrfToken = req.csrfToken;
-  next();
-});
-
-// Debug logging for CSRF troubleshooting
-app.use((req, res, next) => {
-  console.log('CSRF Token:', req.csrfToken);
-  next();
-});
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('SESSION ID:', req.sessionID);
-    console.log('CSRF token in session:', req.session.csrfToken);
-    console.log('CSRF token in body:', req.body._csrf);
-    console.log('Cookies:', req.headers.cookie);
-  }
-  // For POST, PUT, DELETE requests, validate the token
-  if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
-    const bodyToken = req.body._csrf;
-    const sessionToken = req.session.csrfToken;
-    
-    if (!bodyToken || bodyToken !== sessionToken) {
-      // Invalid token, regenerate the session
-      req.session.regenerate((err) => {
-        if (err) {
-          return next(err);
-        }
-        return res.status(403).render('error', {
-          title: 'Security Error',
-          message: 'Invalid security token. Please try again.',
-          action: '/access/login',
-          actionText: 'Sign in again'
-        });
-      });
-      return;
-    }
-  }
-  
-  next();
-});
 
 // Configure Passport
 require('./config/passport')(passport);
@@ -327,6 +257,7 @@ app.use((err, req, res, next) => {
       
       // Clear the cookies
       res.clearCookie('connect.sid');
+
       
       // Render a security error page
       return res.status(403).render('error', {
@@ -340,8 +271,9 @@ app.use((err, req, res, next) => {
     // Handle other errors
     res.status(500).render('error', {
       title: 'Error',
-      message: 'Something went wrong',
-      error: process.env.NODE_ENV === 'development' ? err : {}
+      message: process.env.NODE_ENV === 'production' ? 'Something went wrong' : err.message,
+      error: process.env.NODE_ENV === 'development' ? err : {},
+      user: req.user
     });
   }
 });

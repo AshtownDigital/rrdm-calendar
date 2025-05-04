@@ -12,7 +12,9 @@
     "db:migrate": "node scripts/run-migrations.js",
     "db:seed": "node scripts/seed-db.js",
     "build": "mkdir -p public/stylesheets public/scripts public/assets && cp -R node_modules/govuk-frontend/dist/govuk/assets public/ && cp node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.css public/stylesheets/ && cp node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.css.map public/stylesheets/ && cp node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.js public/scripts/",
-    "vercel-build": "npm run build && npm run db:migrate"
+    "vercel-build": "npm run build && npm run db:migrate",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@prisma/client": "^6.7.0",
@@ -20,8 +22,7 @@
     "bcryptjs": "^2.4.3",
     "connect-flash": "^0.1.1",
     "connect-pg-simple": "^10.0.0",
-    "csrf-csrf": "^4.0.0",
-    "csurf": "^1.11.0",
+    "connect-session-sequelize": "^7.1.7",
     "date-fns": "^4.1.0",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
@@ -38,7 +39,15 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@vercel/node": "^3.0.15",
+    "jest": "^29.7.0",
     "nodemon": "^3.1.9",
-    "sequelize-cli": "^6.6.2"
+    "sequelize-cli": "^6.6.2",
+    "supertest": "^6.3.4",
+    "typescript": "^5.3.3",
+    "@types/jest": "^29.5.12",
+    "@types/supertest": "^6.0.2",
+    "jest-environment-node": "^29.7.0"
   }
 }

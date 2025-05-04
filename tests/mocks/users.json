@@ -1,0 +1,13 @@
+{
+  "users": [
+    {
+      "id": "user-123456",
+      "email": "test@example.com",
+      "password": "$2a$10$abcdefghijklmnopqrstuvwxyzABCDEF",
+      "name": "Test User",
+      "role": "business",
+      "createdAt": "2025-05-04T21:00:00.000Z",
+      "lastLogin": null
+    }
+  ]
+}

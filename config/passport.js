@@ -20,11 +20,6 @@ module.exports = function(passport) {
             return done(null, false, { message: 'Invalid email or password' });
           }
           
-          // Check if user account is active
-          if (user.active === false) {
-            return done(null, false, { message: 'Your account has been deactivated. Please contact an administrator.' });
-          }
-          
           // Validate password
           const isMatch = await userUtils.validatePassword(password, user.password);
           
@@ -52,20 +47,13 @@ module.exports = function(passport) {
     try {
       const user = userUtils.findUserById(id);
       if (!user) {
-        // Handle case where user no longer exists
-        console.warn(`User with ID ${id} not found during session deserialization`);
         return done(null, false);
       }
       
-      // Check if user account is active
-      if (user.active === false) {
-        console.warn(`Inactive user with ID ${id} attempted to access the application`);
-        return done(null, false);
-      }
-      
-      done(null, user);
+      // Remove sensitive data
+      const { password, ...userWithoutPassword } = user;
+      done(null, userWithoutPassword);
     } catch (error) {
-      console.error(`Error deserializing user with ID ${id}:`, error);
       done(error);
     }
   });
