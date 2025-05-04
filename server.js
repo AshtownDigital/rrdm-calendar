@@ -6,19 +6,54 @@ const dateFilter = require('nunjucks-date-filter');
 const session = require('express-session');
 const { PrismaClient } = require('@prisma/client');
 const { PrismaSessionStore } = require('@quixo3/prisma-session-store');
-
-const prisma = new PrismaClient();
 const passport = require('passport');
 const flash = require('connect-flash');
 const { doubleCsrf } = require('csrf-csrf');
 
+// Initialize Express
 const app = express();
+
+// Initialize Prisma
+const prisma = new PrismaClient();
+
+// Handle Prisma connection
+prisma.$connect()
+  .then(() => {
+    console.log('Successfully connected to database');
+  })
+  .catch((error) => {
+    console.error('Failed to connect to database:', error);
+    process.exit(1);
+  });
+
+// Handle graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, closing Prisma connection');
+  await prisma.$disconnect();
+  process.exit(0);
+});
 
 // Add body parser middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Express session middleware
+// Session middleware with error handling
+const sessionStore = new PrismaSessionStore(
+  prisma,
+  {
+    checkPeriod: 2 * 60 * 1000,  // Remove expired sessions every 2 minutes
+    dbRecordIdIsSessionId: false,
+    dbRecordIdFunction: undefined,
+    enableDebug: true, // Enable debug logging for session store
+  }
+);
+
+// Handle session store errors
+sessionStore.on('error', (error) => {
+  console.error('Session store error:', error);
+});
+
 app.use(session({
   cookie: {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
@@ -29,15 +64,19 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'rrdm-dev-secret-key',
   resave: false,
   saveUninitialized: false,
-  store: new PrismaSessionStore(
-    prisma,
-    {
-      checkPeriod: 2 * 60 * 1000,  // Remove expired sessions every 2 minutes
-      dbRecordIdIsSessionId: false,
-      dbRecordIdFunction: undefined,
-    }
-  )
+  store: sessionStore
 }));
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).render('error', {
+    title: 'Error',
+    message: process.env.NODE_ENV === 'production' 
+      ? 'An error occurred. Please try again later.' 
+      : err.message
+  });
+});
 
 // Passport middleware
 app.use(passport.initialize());
