@@ -4,7 +4,10 @@ const fs = require('fs');
 const nunjucks = require('nunjucks');
 const dateFilter = require('nunjucks-date-filter');
 const session = require('express-session');
-const pgSession = require('connect-pg-simple')(session);
+const { PrismaClient } = require('@prisma/client');
+const { PrismaSessionStore } = require('@quixo3/prisma-session-store');
+
+const prisma = new PrismaClient();
 const passport = require('passport');
 const flash = require('connect-flash');
 const { doubleCsrf } = require('csrf-csrf');
@@ -16,23 +19,24 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Express session middleware
-const pgPool = new (require('pg').Pool)({
-  connectionString: 'postgresql://rrdms_owner:npg_SX2egcHYx0av@ep-summer-dust-a4gwkhb7-pooler.us-east-1.aws.neon.tech/rrdms?sslmode=require'
-});
-
 app.use(session({
-  store: new pgSession({
-    pool: pgPool,
-    tableName: 'session'
-  }),
+  cookie: {
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true
+  },
   secret: process.env.SESSION_SECRET || 'rrdm-dev-secret-key',
   resave: false,
   saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production' // Only true on HTTPS
-  }
+  store: new PrismaSessionStore(
+    prisma,
+    {
+      checkPeriod: 2 * 60 * 1000,  // Remove expired sessions every 2 minutes
+      dbRecordIdIsSessionId: false,
+      dbRecordIdFunction: undefined,
+    }
+  )
 }));
 
 // Passport middleware

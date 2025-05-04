@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Bcrs {
+  id                            String             @id @db.Uuid
+  title                         String             @db.VarChar(255)
+  description                   String
+  status                        enum_Bcrs_status   @default(draft)
+  priority                      enum_Bcrs_priority @default(medium)
+  impact                        String?
+  requestedBy                   String             @db.Uuid
+  assignedTo                    String?            @db.Uuid
+  targetDate                    DateTime?          @db.Timestamptz(6)
+  implementationDate            DateTime?          @db.Timestamptz(6)
+  notes                         String?
+  createdAt                     DateTime           @db.Timestamptz(6)
+  updatedAt                     DateTime           @db.Timestamptz(6)
+  Users_Bcrs_assignedToToUsers  Users?             @relation("Bcrs_assignedToToUsers", fields: [assignedTo], references: [id])
+  Users_Bcrs_requestedByToUsers Users              @relation("Bcrs_requestedByToUsers", fields: [requestedBy], references: [id], onDelete: NoAction)
+
+  @@index([assignedTo], map: "bcrs_assigned_to")
+  @@index([requestedBy], map: "bcrs_requested_by")
+  @@index([status], map: "bcrs_status")
+}
+
+model Fundings {
+  id                                  String    @id @db.Uuid
+  trainingRoute                       String    @db.VarChar(255)
+  academicYear                        String    @db.VarChar(255)
+  fundingAmount                       Decimal   @db.Decimal(10, 2)
+  fundingType                         String    @db.VarChar(255)
+  description                         String?
+  isActive                            Boolean   @default(true)
+  effectiveDate                       DateTime  @db.Timestamptz(6)
+  expiryDate                          DateTime? @db.Timestamptz(6)
+  createdBy                           String    @db.Uuid
+  lastUpdatedBy                       String?   @db.Uuid
+  notes                               String?
+  metadata                            Json?
+  createdAt                           DateTime  @db.Timestamptz(6)
+  updatedAt                           DateTime  @db.Timestamptz(6)
+  Users_Fundings_createdByToUsers     Users     @relation("Fundings_createdByToUsers", fields: [createdBy], references: [id], onDelete: NoAction)
+  Users_Fundings_lastUpdatedByToUsers Users?    @relation("Fundings_lastUpdatedByToUsers", fields: [lastUpdatedBy], references: [id])
+
+  @@index([trainingRoute, academicYear], map: "fundings_training_route_academic_year")
+}
+
+model ReferenceData {
+  id                                       String    @id @db.Uuid
+  name                                     String    @db.VarChar(255)
+  code                                     String    @unique @db.VarChar(255)
+  category                                 String    @db.VarChar(255)
+  description                              String?
+  isActive                                 Boolean   @default(true)
+  validFrom                                DateTime? @db.Timestamptz(6)
+  validTo                                  DateTime? @db.Timestamptz(6)
+  createdBy                                String    @db.Uuid
+  lastUpdatedBy                            String?   @db.Uuid
+  version                                  Int       @default(1)
+  metadata                                 Json?
+  createdAt                                DateTime  @db.Timestamptz(6)
+  updatedAt                                DateTime  @db.Timestamptz(6)
+  Users_ReferenceData_createdByToUsers     Users     @relation("ReferenceData_createdByToUsers", fields: [createdBy], references: [id], onDelete: NoAction)
+  Users_ReferenceData_lastUpdatedByToUsers Users?    @relation("ReferenceData_lastUpdatedByToUsers", fields: [lastUpdatedBy], references: [id])
+
+  @@index([category], map: "reference_data_category")
+  @@index([code], map: "reference_data_code")
+}
+
+model ReleaseNotes {
+  id                                   String                        @id @db.Uuid
+  version                              String                        @db.VarChar(255)
+  title                                String                        @db.VarChar(255)
+  description                          String
+  environment                          enum_ReleaseNotes_environment
+  status                               enum_ReleaseNotes_status      @default(planned)
+  releaseDate                          DateTime                      @db.Timestamptz(6)
+  completedDate                        DateTime?                     @db.Timestamptz(6)
+  createdBy                            String                        @db.Uuid
+  approvedBy                           String?                       @db.Uuid
+  changeLog                            String?
+  impactedSystems                      String[]                      @db.VarChar(255)
+  notes                                String?
+  createdAt                            DateTime                      @db.Timestamptz(6)
+  updatedAt                            DateTime                      @db.Timestamptz(6)
+  Users_ReleaseNotes_approvedByToUsers Users?                        @relation("ReleaseNotes_approvedByToUsers", fields: [approvedBy], references: [id])
+  Users_ReleaseNotes_createdByToUsers  Users                         @relation("ReleaseNotes_createdByToUsers", fields: [createdBy], references: [id], onDelete: NoAction)
+
+  @@index([environment, status], map: "release_notes_environment_status")
+}
+
+model SequelizeMeta {
+  name String @id @db.VarChar(255)
+}
+
+model Users {
+  id                                               String          @id @db.Uuid
+  email                                            String          @unique @db.VarChar(255)
+  password                                         String          @db.VarChar(255)
+  name                                             String          @db.VarChar(255)
+  role                                             enum_Users_role @default(business)
+  active                                           Boolean         @default(true)
+  lastLogin                                        DateTime?       @db.Timestamptz(6)
+  createdAt                                        DateTime        @db.Timestamptz(6)
+  updatedAt                                        DateTime        @db.Timestamptz(6)
+  Bcrs_Bcrs_assignedToToUsers                      Bcrs[]          @relation("Bcrs_assignedToToUsers")
+  Bcrs_Bcrs_requestedByToUsers                     Bcrs[]          @relation("Bcrs_requestedByToUsers")
+  Fundings_Fundings_createdByToUsers               Fundings[]      @relation("Fundings_createdByToUsers")
+  Fundings_Fundings_lastUpdatedByToUsers           Fundings[]      @relation("Fundings_lastUpdatedByToUsers")
+  ReferenceData_ReferenceData_createdByToUsers     ReferenceData[] @relation("ReferenceData_createdByToUsers")
+  ReferenceData_ReferenceData_lastUpdatedByToUsers ReferenceData[] @relation("ReferenceData_lastUpdatedByToUsers")
+  ReleaseNotes_ReleaseNotes_approvedByToUsers      ReleaseNotes[]  @relation("ReleaseNotes_approvedByToUsers")
+  ReleaseNotes_ReleaseNotes_createdByToUsers       ReleaseNotes[]  @relation("ReleaseNotes_createdByToUsers")
+
+  @@index([email], map: "users_email")
+}
+
+enum enum_Bcrs_priority {
+  low
+  medium
+  high
+  critical
+}
+
+enum enum_Bcrs_status {
+  draft
+  submitted
+  under_review
+  approved
+  rejected
+  implemented
+}
+
+enum enum_ReleaseNotes_environment {
+  development
+  test
+  staging
+  production
+}
+
+enum enum_ReleaseNotes_status {
+  planned
+  in_progress
+  completed
+  failed
+  cancelled
+}
+
+enum enum_Users_role {
+  admin
+  business
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
