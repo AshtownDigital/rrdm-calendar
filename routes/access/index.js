@@ -20,28 +20,13 @@ router.get('/login', forwardAuthenticated, (req, res) => {
 
 // Login - POST
 router.post('/login', (req, res, next) => {
-  // Validate input
-  const errors = [];
   const { email, password } = req.body;
+  console.log('Login attempt for:', email);
 
-  if (!email) {
-    errors.push({
-      field: 'email',
-      message: 'Please enter your email address'
-    });
-  } else if (!email.includes('@')) {
-    errors.push({
-      field: 'email',
-      message: 'Please enter a valid email address'
-    });
-  }
-
-  if (!password) {
-    errors.push({
-      field: 'password',
-      message: 'Please enter your password'
-    });
-  }
+  // Basic validation
+  const errors = [];
+  if (!email) errors.push({ field: 'email', message: 'Email is required' });
+  if (!password) errors.push({ field: 'password', message: 'Password is required' });
 
   if (errors.length > 0) {
     return res.render('modules/access/login', {
@@ -51,33 +36,35 @@ router.post('/login', (req, res, next) => {
     });
   }
 
+  // Use passport authenticate directly
   passport.authenticate('local', (err, user, info) => {
     if (err) {
       console.error('Authentication error:', err);
       return next(err);
     }
+
     if (!user) {
       return res.render('modules/access/login', {
         title: 'Sign in',
-        errors: [{
-          field: 'password',
-          message: info?.message || 'Invalid email or password'
-        }],
+        errors: [{ field: 'password', message: info?.message || 'Invalid credentials' }],
         email
       });
     }
+
+    // Log in the user
     req.logIn(user, (err) => {
       if (err) {
         console.error('Login error:', err);
         return next(err);
       }
-      req.session.save((err) => {
-        if (err) {
-          console.error('Session save error:', err);
-          return next(err);
-        }
-        res.redirect('/home');
-      });
+
+      // Update last login time
+      userUtils.updateLastLogin(user.id)
+        .then(() => {
+          console.log('Login successful for:', email);
+          res.redirect('/home');
+        })
+        .catch(next);
     });
   })(req, res, next);
 });

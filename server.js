@@ -4,18 +4,13 @@ const fs = require('fs');
 const nunjucks = require('nunjucks');
 const dateFilter = require('nunjucks-date-filter');
 const session = require('express-session');
-const { PrismaClient } = require('@prisma/client');
+const { PrismaSessionStore } = require('@quixo3/prisma-session-store');
+const { prisma } = require('./config/prisma');
 
 const passport = require('passport');
 const flash = require('connect-flash');
 // Initialize Express
 const app = express();
-
-// Initialize Prisma with connection retry logic
-const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'],
-  errorFormat: 'pretty',
-});
 
 // Function to handle database connection with retries
 async function connectWithRetry(retries = 5, delay = 5000) {
@@ -61,11 +56,19 @@ app.use(session({
   name: 'rrdm.sid',
   resave: false,
   saveUninitialized: false,
+  rolling: true,
+  store: new PrismaSessionStore(prisma, {
+    checkPeriod: 2 * 60 * 1000,  // Clean up expired sessions every 2 minutes
+    dbRecordIdIsSessionId: true, // Use session ID as database record ID
+    ttl: 24 * 60 * 60,  // 24 hours in seconds
+    sessionModelName: 'Session'
+  }),
   cookie: {
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict'
+    sameSite: 'lax',
+    path: '/'
   }
 }));
 
@@ -291,8 +294,16 @@ const PORT = process.env.PORT || 3000;
 // Only start the server when running directly with Node.js
 // This prevents the server from trying to start in Vercel's serverless environment
 if (!process.env.VERCEL && require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  // Connect to database first
+  connectWithRetry().then(connected => {
+    if (!connected) {
+      console.error('Failed to connect to database after retries');
+      process.exit(1);
+    }
+    
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
   });
 }
 
