@@ -13,5 +13,10 @@ module.exports = {
   ],
   clearMocks: true,
   restoreMocks: true,
-  resetMocks: true
+  resetMocks: true,
+  maxWorkers: '50%',
+  maxConcurrency: 5,
+  testTimeout: 5000,
+  detectOpenHandles: true,
+  forceExit: true
 };

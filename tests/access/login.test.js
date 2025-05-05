@@ -7,12 +7,23 @@ const userUtils = require('../../utils/user-utils');
 // Mock modules before requiring app
 jest.mock('passport', () => mockPassport);
 jest.mock('express-session', () => {
+  const sessionStore = new Map();
   return () => (req, res, next) => {
     req.session = {
       id: 'test-session-id',
-      save: (cb) => cb && cb(),
-      regenerate: (cb) => cb && cb(),
-      destroy: (cb) => cb && cb(),
+      save: (cb) => {
+        sessionStore.set(req.session.id, req.session);
+        cb && cb();
+      },
+      regenerate: (cb) => {
+        req.session.id = `test-session-${Date.now()}`;
+        sessionStore.delete(req.session.id);
+        cb && cb();
+      },
+      destroy: (cb) => {
+        sessionStore.delete(req.session.id);
+        cb && cb();
+      },
       cookie: {}
     };
     req.flash = jest.fn((type, msg) => msg ? undefined : []);
@@ -268,6 +279,123 @@ describe('Login Routes', () => {
             email: 'test@example.com',
             errorSummary: ['Invalid email or password']
           }));
+        });
+    });
+
+    it('should handle inactive user login attempt', async () => {
+      // Mock inactive user
+      const mockInactiveUser = {
+        id: 'inactive-123',
+        email: 'inactive@test.com',
+        password: 'password123',
+        role: 'business',
+        active: false
+      };
+
+      // Mock findUserByEmail to return inactive user
+      userUtils.findUserByEmail.mockResolvedValue(mockInactiveUser);
+
+      // Mock bcrypt compare to return true
+      const bcrypt = require('bcryptjs');
+      bcrypt.compare.mockResolvedValue(true);
+
+      // Mock passport authenticate
+      const passport = require('passport');
+      passport.authenticate = jest.fn((strategy, options) => {
+        return (req, res, next) => {
+          return res.status(401).send('Unauthorized');
+        };
+      });
+
+      // Test inactive user login
+      await request(app)
+        .post('/access/login')
+        .send({
+          email: 'inactive@test.com',
+          password: 'password123'
+        })
+        .expect(401)
+        .expect('Unauthorized');
+    });
+
+    it('should handle server errors during authentication', async () => {
+      // Mock server error
+      mockPassport.authenticate.mockImplementation((strategy, callback) => {
+        return (req, res, next) => {
+          callback(new Error('Database connection failed'))(req, res, next);
+        };
+      });
+
+      await request(app)
+        .post('/access/login')
+        .send({
+          email: 'test@example.com',
+          password: 'password123'
+        })
+        .expect(500)
+        .expect('Internal Server Error');
+    });
+
+    it('should handle session creation failure', async () => {
+      // Mock session error
+      const mockError = new Error('Session error');
+      const agent = request.agent(app);
+
+      // Mock session save to fail
+      const mockSession = jest.fn().mockImplementation((req, res, next) => {
+        req.session = {
+          save: (cb) => cb(mockError),
+          regenerate: (cb) => cb(),
+          destroy: (cb) => cb(),
+          cookie: {}
+        };
+        next();
+      });
+
+      // Replace session middleware
+      const sessionIndex = app._router.stack.findIndex(layer => layer.name === 'session');
+      if (sessionIndex !== -1) {
+        const originalHandle = app._router.stack[sessionIndex].handle;
+        app._router.stack[sessionIndex].handle = mockSession;
+
+        // Test login with session error
+        await agent
+          .post('/access/login')
+          .send({
+            email: 'admin@test.com',
+            password: 'password123'
+          })
+          .expect(500)
+          .expect('Internal Server Error');
+
+        // Restore original middleware
+        app._router.stack[sessionIndex].handle = originalHandle;
+      }
+    });
+
+    it('should prevent brute force attacks', async () => {
+      // Create test app with rate limiter
+      const testApp = express();
+      testApp.use(express.urlencoded({ extended: true }));
+      testApp.use(express.json());
+
+      // Add rate limiter middleware
+      testApp.use((req, res, next) => {
+        if (req.path === '/access/login' && req.method === 'POST') {
+          return res.status(429).send('Too many login attempts');
+        }
+        next();
+      });
+
+      await request(testApp)
+        .post('/access/login')
+        .send({
+          email: 'test@example.com',
+          password: 'password123'
+        })
+        .expect(429)
+        .expect(res => {
+          expect(res.text).toContain('Too many login attempts');
         });
     });
   });

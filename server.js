@@ -314,5 +314,5 @@ if (!process.env.VERCEL && require.main === module) {
   });
 }
 
-// Export the Express app for serverless environments
-module.exports = app;
+// Export the Express app and prisma client for testing
+module.exports = { app, prisma };

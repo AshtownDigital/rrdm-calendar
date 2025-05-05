@@ -7,7 +7,6 @@ const router = express.Router();
 const passport = require('passport');
 const userUtils = require('../../utils/user-utils');
 const { ensureAuthenticated, ensureAdmin, forwardAuthenticated, checkPermission } = require('../../middleware/auth');
-const adminAuth = require('../../middleware/admin-auth');
 
 // Login page - GET
 router.get('/login', forwardAuthenticated, (req, res) => {
@@ -19,55 +18,13 @@ router.get('/login', forwardAuthenticated, (req, res) => {
 });
 
 // Login - POST
-router.post('/login', (req, res, next) => {
-  const { email, password } = req.body;
-  console.log('Login attempt for:', email);
-
-  // Basic validation
-  const errors = [];
-  if (!email) errors.push({ field: 'email', message: 'Email is required' });
-  if (!password) errors.push({ field: 'password', message: 'Password is required' });
-
-  if (errors.length > 0) {
-    return res.render('modules/access/login', {
-      title: 'Sign in',
-      errors,
-      email
-    });
-  }
-
-  // Use passport authenticate directly
-  passport.authenticate('local', (err, user, info) => {
-    if (err) {
-      console.error('Authentication error:', err);
-      return next(err);
-    }
-
-    if (!user) {
-      return res.render('modules/access/login', {
-        title: 'Sign in',
-        errors: [{ field: 'password', message: info?.message || 'Invalid credentials' }],
-        email
-      });
-    }
-
-    // Log in the user
-    req.logIn(user, (err) => {
-      if (err) {
-        console.error('Login error:', err);
-        return next(err);
-      }
-
-      // Update last login time
-      userUtils.updateLastLogin(user.id)
-        .then(() => {
-          console.log('Login successful for:', email);
-          res.redirect('/home');
-        })
-        .catch(next);
-    });
-  })(req, res, next);
-});
+router.post('/login',
+  passport.authenticate('local', {
+    successRedirect: '/home',
+    failureRedirect: '/access/login',
+    failureFlash: true
+  })
+);
 
 // Logout - GET
 router.get('/logout', (req, res, next) => {
@@ -92,23 +49,32 @@ router.get('/logout', (req, res, next) => {
 // No longer need admin login routes as all modules are accessible to admin users once logged in
 
 // User Management (Admin only) - GET
-router.get('/manage', ensureAuthenticated, adminAuth, (req, res) => {
-  const users = userUtils.getAllUsers().map(user => {
-    // Remove password from user object
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
-  });
-  
-  res.render('modules/access/manage', {
-    title: 'User Management | Register Team Internal Services',
-    users,
-    errors: req.flash('error'),
-    success: req.flash('success')
-  });
+router.get('/manage', ensureAdmin, async (req, res) => {
+  try {
+    console.log('Fetching users...');
+    const users = await userUtils.getAllUsers();
+    const usersWithoutPasswords = users.map(user => {
+      // Remove password from user object
+      const { password, ...userWithoutPassword } = user;
+      return userWithoutPassword;
+    });
+    
+    res.render('modules/access/manage', {
+      title: 'User Management | Register Team Internal Services',
+      users: usersWithoutPasswords,
+      errors: req.flash('error'),
+      success: req.flash('success')
+    });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    console.error('Error stack:', error.stack);
+    req.flash('error', 'Failed to fetch users');
+    res.redirect('/home');
+  }
 });
 
 // Create User page (Admin only) - GET
-router.get('/create', ensureAuthenticated, adminAuth, (req, res) => {
+router.get('/create', ensureAdmin, (req, res) => {
   res.render('modules/access/create-user', {
     title: 'Create User | Register Team Internal Services',
     errors: req.flash('error')
@@ -116,7 +82,7 @@ router.get('/create', ensureAuthenticated, adminAuth, (req, res) => {
 });
 
 // Create User (Admin only) - POST
-router.post('/create', ensureAuthenticated, adminAuth, async (req, res) => {
+router.post('/create', ensureAdmin, async (req, res) => {
   try {
     const { email, password, confirmPassword, name, role } = req.body;
     
@@ -157,10 +123,13 @@ router.post('/create', ensureAuthenticated, adminAuth, async (req, res) => {
 });
 
 // User Detail page (Admin only) - GET
-router.get('/user/:id', ensureAuthenticated, adminAuth, (req, res) => {
+router.get('/user/:id', ensureAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = userUtils.findUserById(userId);
+    const [user, allUsers] = await Promise.all([
+      userUtils.findUserById(userId),
+      userUtils.getAllUsers()
+    ]);
     
     if (!user) {
       req.flash('error', 'User not found');
@@ -171,8 +140,7 @@ router.get('/user/:id', ensureAuthenticated, adminAuth, (req, res) => {
     const { password, ...userWithoutPassword } = user;
     
     // Find the record number based on the order in the users array
-    const users = userUtils.getAllUsers();
-    const recordNo = users.findIndex(u => u.id === userId) + 1;
+    const recordNo = allUsers.findIndex(u => u.id === userId) + 1;
     
     res.render('modules/access/user-detail', {
       title: 'User Details | Register Team Internal Services',
@@ -182,16 +150,17 @@ router.get('/user/:id', ensureAuthenticated, adminAuth, (req, res) => {
       success: req.flash('success')
     });
   } catch (error) {
-    req.flash('error', error.message);
+    console.error('Error fetching user details:', error);
+    req.flash('error', 'Failed to fetch user details');
     res.redirect('/access/manage');
   }
 });
 
 // Edit User page (Admin only) - GET
-router.get('/edit/:id', ensureAuthenticated, adminAuth, (req, res) => {
+router.get('/edit/:id', ensureAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = userUtils.findUserById(userId);
+    const user = await userUtils.findUserById(userId);
     
     if (!user) {
       req.flash('error', 'User not found');
@@ -213,7 +182,7 @@ router.get('/edit/:id', ensureAuthenticated, adminAuth, (req, res) => {
 });
 
 // Edit User (Admin only) - POST
-router.post('/edit/:id', ensureAuthenticated, adminAuth, async (req, res) => {
+router.post('/edit/:id', ensureAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
     const { name, email, role } = req.body;
@@ -245,10 +214,10 @@ router.post('/edit/:id', ensureAuthenticated, adminAuth, async (req, res) => {
 });
 
 // Revoke User Access page (Admin only) - GET
-router.get('/revoke/:id', ensureAuthenticated, adminAuth, (req, res) => {
+router.get('/revoke/:id', ensureAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = userUtils.findUserById(userId);
+    const user = await userUtils.findUserById(userId);
     
     if (!user) {
       req.flash('error', 'User not found');
@@ -275,7 +244,7 @@ router.get('/revoke/:id', ensureAuthenticated, adminAuth, (req, res) => {
 });
 
 // Revoke User Access (Admin only) - POST
-router.post('/revoke/:id', ensureAuthenticated, adminAuth, async (req, res) => {
+router.post('/revoke/:id', ensureAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
     
@@ -291,10 +260,10 @@ router.post('/revoke/:id', ensureAuthenticated, adminAuth, async (req, res) => {
 });
 
 // Restore User Access page (Admin only) - GET
-router.get('/restore/:id', ensureAuthenticated, adminAuth, (req, res) => {
+router.get('/restore/:id', ensureAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = userUtils.findUserById(userId);
+    const user = await userUtils.findUserById(userId);
     
     if (!user) {
       req.flash('error', 'User not found');
@@ -321,7 +290,7 @@ router.get('/restore/:id', ensureAuthenticated, adminAuth, (req, res) => {
 });
 
 // Restore User Access (Admin only) - POST
-router.post('/restore/:id', ensureAuthenticated, adminAuth, async (req, res) => {
+router.post('/restore/:id', ensureAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
     
@@ -337,10 +306,13 @@ router.post('/restore/:id', ensureAuthenticated, adminAuth, async (req, res) => 
 });
 
 // Reset User Password page (Admin only) - GET
-router.get('/reset-password/:id', ensureAuthenticated, adminAuth, (req, res) => {
+router.get('/reset-password/:id', ensureAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = userUtils.findUserById(userId);
+    const [user, allUsers] = await Promise.all([
+      userUtils.findUserById(userId),
+      userUtils.getAllUsers()
+    ]);
     
     if (!user) {
       req.flash('error', 'User not found');
@@ -351,8 +323,7 @@ router.get('/reset-password/:id', ensureAuthenticated, adminAuth, (req, res) => 
     const { password, ...userWithoutPassword } = user;
     
     // Find the record number based on the order in the users array
-    const users = userUtils.getAllUsers();
-    const recordNo = users.findIndex(u => u.id === userId) + 1;
+    const recordNo = allUsers.findIndex(u => u.id === userId) + 1;
     
     res.render('modules/access/reset-password', {
       title: 'Reset Password | Register Team Internal Services',
@@ -361,13 +332,14 @@ router.get('/reset-password/:id', ensureAuthenticated, adminAuth, (req, res) => 
       errors: req.flash('error')
     });
   } catch (error) {
-    req.flash('error', error.message);
+    console.error('Error fetching user:', error);
+    req.flash('error', 'Failed to fetch user details');
     res.redirect('/access/manage');
   }
 });
 
 // Reset User Password (Admin only) - POST
-router.post('/reset-password/:id', ensureAuthenticated, adminAuth, async (req, res) => {
+router.post('/reset-password/:id', ensureAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
     const { password, confirmPassword } = req.body;
@@ -382,8 +354,8 @@ router.post('/reset-password/:id', ensureAuthenticated, adminAuth, async (req, r
     
     if (Object.keys(errors).length > 0) {
       // Find the record number based on the order in the users array
-      const users = userUtils.getAllUsers();
-      const user = userUtils.findUserById(userId);
+      const users = await userUtils.getAllUsers();
+      const user = await userUtils.findUserById(userId);
       const recordNo = users.findIndex(u => u.id === userId) + 1;
       
       return res.render('modules/access/reset-password', {
@@ -406,10 +378,13 @@ router.post('/reset-password/:id', ensureAuthenticated, adminAuth, async (req, r
 });
 
 // Delete User page (Admin only) - GET
-router.get('/delete/:id', ensureAuthenticated, adminAuth, (req, res) => {
+router.get('/delete/:id', ensureAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = userUtils.findUserById(userId);
+    const [user, allUsers] = await Promise.all([
+      userUtils.findUserById(userId),
+      userUtils.getAllUsers()
+    ]);
     
     if (!user) {
       req.flash('error', 'User not found');
@@ -420,8 +395,7 @@ router.get('/delete/:id', ensureAuthenticated, adminAuth, (req, res) => {
     const { password, ...userWithoutPassword } = user;
     
     // Find the record number based on the order in the users array
-    const users = userUtils.getAllUsers();
-    const recordNo = users.findIndex(u => u.id === userId) + 1;
+    const recordNo = allUsers.findIndex(u => u.id === userId) + 1;
     
     res.render('modules/access/delete-confirm', {
       title: 'Delete User | Register Team Internal Services',
@@ -430,13 +404,14 @@ router.get('/delete/:id', ensureAuthenticated, adminAuth, (req, res) => {
       errors: req.flash('error')
     });
   } catch (error) {
-    req.flash('error', error.message);
+    console.error('Error fetching user:', error);
+    req.flash('error', 'Failed to fetch user details');
     res.redirect('/access/manage');
   }
 });
 
 // Delete User (Admin only) - POST
-router.post('/delete/:id', ensureAuthenticated, adminAuth, async (req, res) => {
+router.post('/delete/:id', ensureAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
     const confirmDelete = req.body['confirm-delete'];

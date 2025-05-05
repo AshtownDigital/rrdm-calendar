@@ -5,35 +5,12 @@
 const bcrypt = require('bcryptjs');
 const { prisma } = require('../config/prisma');
 
-// Track connection status
-let connected = false;
-async function connectWithRetry(retries = 5, delay = 5000) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      await prisma.$connect();
-      connected = true;
-      console.log('Successfully connected to database');
-      return true;
-    } catch (error) {
-      console.error(`Failed to connect to database (attempt ${i + 1}/${retries}):`, error);
-      if (i < retries - 1) {
-        console.log(`Retrying in ${delay/1000} seconds...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
-    }
-  }
-  return false;
-}
 
-// Connect immediately
-connectWithRetry();
 
 // Get all users
 const getAllUsers = async () => {
   try {
-    if (!connected) {
-      await connectWithRetry();
-    }
+
     const users = await prisma.users.findMany();
     return users;
   } catch (error) {
@@ -45,9 +22,7 @@ const getAllUsers = async () => {
 // Find user by email
 const findUserByEmail = async (email) => {
   try {
-    if (!connected) {
-      await connectWithRetry();
-    }
+
     const user = await prisma.users.findUnique({
       where: {
         email: email.toLowerCase()
@@ -63,9 +38,7 @@ const findUserByEmail = async (email) => {
 // Find user by ID
 const findUserById = async (id) => {
   try {
-    if (!connected) {
-      await connectWithRetry();
-    }
+
     const user = await prisma.users.findUnique({
       where: { id }
     });
@@ -79,9 +52,7 @@ const findUserById = async (id) => {
 // Create a new user
 const createUser = async (userData) => {
   try {
-    if (!connected) {
-      await connectWithRetry();
-    }
+
     
     // Check if user with this email already exists
     const existingUser = await findUserByEmail(userData.email);
@@ -116,9 +87,7 @@ const createUser = async (userData) => {
 // Update user's last login time
 const updateLastLogin = async (userId) => {
   try {
-    if (!connected) {
-      await connectWithRetry();
-    }
+
     
     await prisma.users.update({
       where: { id: userId },
@@ -132,9 +101,7 @@ const updateLastLogin = async (userId) => {
 // Update user information
 const updateUser = async (userId, userData) => {
   try {
-    if (!connected) {
-      await connectWithRetry();
-    }
+
     
     // If updating email, check if it's already in use by another user
     if (userData.email) {
@@ -162,9 +129,7 @@ const updateUser = async (userId, userData) => {
 // Update user's password
 const updateUserPassword = async (userId, newPassword) => {
   try {
-    if (!connected) {
-      await connectWithRetry();
-    }
+
     
     // Hash the new password
     const salt = await bcrypt.genSalt(10);
@@ -186,9 +151,7 @@ const updateUserPassword = async (userId, newPassword) => {
 // Delete user (hard delete)
 const deleteUser = async (userId) => {
   try {
-    if (!connected) {
-      await connectWithRetry();
-    }
+
     
     await prisma.users.delete({
       where: { id: userId }
