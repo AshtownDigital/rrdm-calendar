@@ -12,6 +12,11 @@ const flash = require('connect-flash');
 // Initialize Express
 const app = express();
 
+// Trust proxy when running on Vercel
+if (process.env.VERCEL === '1') {
+  app.set('trust proxy', 1);
+}
+
 // Function to handle database connection with retries
 async function connectWithRetry(retries = 5, delay = 5000) {
   for (let i = 0; i < retries; i++) {
@@ -57,6 +62,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   rolling: true,
+  proxy: process.env.VERCEL === '1', // Trust the reverse proxy when on Vercel
   store: new PrismaSessionStore(prisma, {
     checkPeriod: 2 * 60 * 1000,  // Clean up expired sessions every 2 minutes
     dbRecordIdIsSessionId: true, // Use session ID as database record ID
@@ -66,9 +72,10 @@ app.use(session({
   cookie: {
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/'
+    secure: process.env.NODE_ENV === 'production' || process.env.VERCEL === '1',
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    path: '/',
+    domain: process.env.VERCEL_URL ? `.${process.env.VERCEL_URL}` : undefined
   }
 }));
 
