@@ -1,16 +1,18 @@
 /**
  * Unit tests for BCR Config Service
  */
-const { PrismaClient } = require('@prisma/client');
-const bcrConfigService = require('../../services/bcrConfigService');
-
-// Create mock functions
+// Create mock functions first to avoid reference errors
 const mockFindMany = jest.fn();
 const mockFindUnique = jest.fn();
 const mockCreate = jest.fn();
 const mockUpdate = jest.fn();
 const mockDelete = jest.fn();
 const mockDisconnect = jest.fn();
+
+// Import after mock declarations
+const { PrismaClient } = require('@prisma/client');
+// Import the service after mocks are defined
+const bcrConfigService = require('../../services/bcrConfigService');
 
 // Mock the Prisma client
 jest.mock('@prisma/client', () => {
@@ -218,20 +220,25 @@ describe('BCR Config Service', () => {
         { id: '4', type: 'status', name: 'submitted', value: '2', displayOrder: 2 }
       ];
       
-      // Mock the getConfigsByType method
-      jest.spyOn(bcrConfigService, 'getConfigsByType')
-        .mockImplementation((type) => {
-          if (type === 'phase') return Promise.resolve(mockPhases);
-          if (type === 'status') return Promise.resolve(mockStatuses);
-          return Promise.resolve([]);
-        });
+      // Mock findMany to return phases and statuses
+      mockFindMany.mockImplementation((params) => {
+        if (params.where.type === 'phase') return Promise.resolve(mockPhases);
+        if (params.where.type === 'status') return Promise.resolve(mockStatuses);
+        return Promise.resolve([]);
+      });
       
       // Act
       const result = await bcrConfigService.getPhasesWithStatuses();
       
       // Assert
-      expect(bcrConfigService.getConfigsByType).toHaveBeenCalledWith('phase');
-      expect(bcrConfigService.getConfigsByType).toHaveBeenCalledWith('status');
+      expect(mockFindMany).toHaveBeenCalledWith({
+        where: { type: 'phase' },
+        orderBy: { displayOrder: 'asc' }
+      });
+      expect(mockFindMany).toHaveBeenCalledWith({
+        where: { type: 'status' },
+        orderBy: { displayOrder: 'asc' }
+      });
       expect(result).toEqual({
         phases: mockPhases,
         phaseStatusMapping: {

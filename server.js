@@ -299,7 +299,7 @@ app.use((req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 9090;
+const PORT = process.env.PORT || 23456;
 
 // Only start the server when running directly with Node.js
 // This prevents the server from trying to start in Vercel's serverless environment

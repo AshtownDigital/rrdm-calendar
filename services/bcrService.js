@@ -1,9 +1,11 @@
 /**
  * BCR Service
  * Handles all database operations for BCRs using Prisma
+ * Implements caching for frequently accessed data
  */
 const { PrismaClient } = require('@prisma/client');
 const { v4: uuidv4 } = require('uuid');
+const { shortCache, mediumCache } = require('../utils/cache');
 
 // Create a Prisma client instance
 const prisma = new PrismaClient();
@@ -14,6 +16,25 @@ const prisma = new PrismaClient();
  * @returns {Promise<Array>} - Array of BCRs
  */
 const getAllBcrs = async (filters = {}) => {
+  // Only cache when no filters are applied
+  const noFilters = Object.keys(filters).length === 0;
+  
+  if (noFilters) {
+    const cacheKey = 'all_bcrs';
+    return mediumCache.getOrSet(cacheKey, async () => {
+      return prisma.bcrs.findMany({
+        include: {
+          Users_Bcrs_requestedByToUsers: true,
+          Users_Bcrs_assignedToToUsers: true
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+    });
+  }
+  
+  // If filters are applied, perform the query without caching
   const whereConditions = {};
   
   // Apply status filter
@@ -75,31 +96,45 @@ const getAllBcrs = async (filters = {}) => {
  * @returns {Promise<Object>} - BCR object
  */
 const getBcrById = async (idOrNumber) => {
-  // First try to find by bcrNumber
-  let bcr = await prisma.bcrs.findFirst({
-    where: { 
-      bcrNumber: idOrNumber 
-    },
-    include: {
-      Users_Bcrs_requestedByToUsers: true,
-      Users_Bcrs_assignedToToUsers: true
+  // Check if it's a BCR number (format: BCR-YYYY-NNNN)
+  const isBcrNumber = /^BCR-\d{4}-\d{4}$/.test(idOrNumber);
+  
+  // Use different cache keys for ID and BCR number
+  const cacheKey = isBcrNumber 
+    ? `bcr_number_${idOrNumber}` 
+    : `bcr_id_${idOrNumber}`;
+  
+  return shortCache.getOrSet(cacheKey, async () => {
+    // First try to find by bcrNumber
+    let bcr = null;
+    
+    if (isBcrNumber) {
+      bcr = await prisma.bcrs.findFirst({
+        where: { 
+          bcrNumber: idOrNumber 
+        },
+        include: {
+          Users_Bcrs_requestedByToUsers: true,
+          Users_Bcrs_assignedToToUsers: true
+        }
+      });
     }
+    
+    // If not found or not a BCR number, try by id
+    if (!bcr) {
+      bcr = await prisma.bcrs.findUnique({
+        where: { 
+          id: idOrNumber 
+        },
+        include: {
+          Users_Bcrs_requestedByToUsers: true,
+          Users_Bcrs_assignedToToUsers: true
+        }
+      });
+    }
+    
+    return bcr;
   });
-  
-  // If not found, try by id
-  if (!bcr) {
-    bcr = await prisma.bcrs.findUnique({
-      where: { 
-        id: idOrNumber 
-      },
-      include: {
-        Users_Bcrs_requestedByToUsers: true,
-        Users_Bcrs_assignedToToUsers: true
-      }
-    });
-  }
-  
-  return bcr;
 };
 
 /**
@@ -127,6 +162,9 @@ const createBcr = async (bcrData) => {
     }
   });
   
+  // Invalidate caches
+  mediumCache.delete('all_bcrs');
+  
   return newBcr;
 };
 
@@ -137,6 +175,12 @@ const createBcr = async (bcrData) => {
  * @returns {Promise<Object>} - Updated BCR
  */
 const updateBcr = async (id, bcrData) => {
+  // Get the current BCR to get the bcrNumber for cache invalidation
+  const currentBcr = await prisma.bcrs.findUnique({
+    where: { id },
+    select: { bcrNumber: true }
+  });
+  
   const updatedBcr = await prisma.bcrs.update({
     where: { id },
     data: {
@@ -152,6 +196,14 @@ const updateBcr = async (id, bcrData) => {
     }
   });
   
+  // Invalidate caches
+  mediumCache.delete('all_bcrs');
+  shortCache.delete(`bcr_id_${id}`);
+  
+  if (currentBcr && currentBcr.bcrNumber) {
+    shortCache.delete(`bcr_number_${currentBcr.bcrNumber}`);
+  }
+  
   return updatedBcr;
 };
 
@@ -161,9 +213,23 @@ const updateBcr = async (id, bcrData) => {
  * @returns {Promise<Object>} - Deleted BCR
  */
 const deleteBcr = async (id) => {
+  // Get the current BCR to get the bcrNumber for cache invalidation
+  const currentBcr = await prisma.bcrs.findUnique({
+    where: { id },
+    select: { bcrNumber: true }
+  });
+  
   const deletedBcr = await prisma.bcrs.delete({
     where: { id }
   });
+  
+  // Invalidate caches
+  mediumCache.delete('all_bcrs');
+  shortCache.delete(`bcr_id_${id}`);
+  
+  if (currentBcr && currentBcr.bcrNumber) {
+    shortCache.delete(`bcr_number_${currentBcr.bcrNumber}`);
+  }
   
   return deletedBcr;
 };

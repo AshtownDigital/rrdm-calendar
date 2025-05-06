@@ -3,6 +3,7 @@
  */
 const { PrismaClient } = require('@prisma/client');
 const bcrService = require('../../services/bcrService');
+const { shortCache, mediumCache } = require('../../utils/cache');
 
 // Create mock functions
 const mockFindMany = jest.fn();
@@ -26,6 +27,31 @@ jest.mock('@prisma/client', () => {
         delete: mockDelete
       },
       $disconnect: mockDisconnect
+    }))
+  };
+});
+
+// Mock the cache module
+jest.mock('../../utils/cache', () => {
+  const mockGetOrSet = jest.fn();
+  return {
+    shortCache: {
+      get: jest.fn(),
+      set: jest.fn(),
+      delete: jest.fn(),
+      getOrSet: mockGetOrSet
+    },
+    mediumCache: {
+      get: jest.fn(),
+      set: jest.fn(),
+      delete: jest.fn(),
+      getOrSet: mockGetOrSet
+    },
+    Cache: jest.fn().mockImplementation(() => ({
+      get: jest.fn(),
+      set: jest.fn(),
+      delete: jest.fn(),
+      getOrSet: mockGetOrSet
     }))
   };
 });
@@ -54,21 +80,49 @@ describe('BCR Service', () => {
   });
   
   describe('getAllBcrs', () => {
-    it('should return all BCRs when no filters are provided', async () => {
+    it('should use cache when no filters are provided', async () => {
       // Arrange
       const mockBcrs = [
         { id: '1', title: 'BCR 1', status: 'draft' },
         { id: '2', title: 'BCR 2', status: 'submitted' }
       ];
       
+      // Setup the cache mock to execute the fetchFn and return its result
+      mediumCache.getOrSet.mockImplementation((key, fetchFn) => fetchFn());
       mockFindMany.mockResolvedValue(mockBcrs);
       
       // Act
       const result = await bcrService.getAllBcrs();
       
       // Assert
+      expect(mediumCache.getOrSet).toHaveBeenCalledWith('all_bcrs', expect.any(Function));
       expect(mockFindMany).toHaveBeenCalledWith({
-        where: {},
+        include: {
+          Users_Bcrs_requestedByToUsers: true,
+          Users_Bcrs_assignedToToUsers: true
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+      expect(result).toEqual(mockBcrs);
+    });
+    
+    it('should not use cache when filters are provided', async () => {
+      // Arrange
+      const mockBcrs = [
+        { id: '1', title: 'BCR 1', status: 'draft' }
+      ];
+      
+      mockFindMany.mockResolvedValue(mockBcrs);
+      
+      // Act
+      const result = await bcrService.getAllBcrs({ status: 'draft' });
+      
+      // Assert
+      expect(mediumCache.getOrSet).not.toHaveBeenCalled();
+      expect(mockFindMany).toHaveBeenCalledWith({
+        where: { status: 'draft' },
         include: {
           Users_Bcrs_requestedByToUsers: true,
           Users_Bcrs_assignedToToUsers: true
@@ -132,16 +186,19 @@ describe('BCR Service', () => {
   });
   
   describe('getBcrById', () => {
-    it('should find BCR by bcrNumber first', async () => {
+    it('should use cache when finding BCR by bcrNumber', async () => {
       // Arrange
       const mockBcr = { id: '1', bcrNumber: 'BCR-2025-0001', title: 'BCR 1' };
       
+      // Setup the cache mock to execute the fetchFn and return its result
+      shortCache.getOrSet.mockImplementation((key, fetchFn) => fetchFn());
       mockFindFirst.mockResolvedValue(mockBcr);
       
       // Act
       const result = await bcrService.getBcrById('BCR-2025-0001');
       
       // Assert
+      expect(shortCache.getOrSet).toHaveBeenCalledWith('bcr_number_BCR-2025-0001', expect.any(Function));
       expect(mockFindFirst).toHaveBeenCalledWith({
         where: { bcrNumber: 'BCR-2025-0001' },
         include: {
@@ -153,10 +210,12 @@ describe('BCR Service', () => {
       expect(result).toEqual(mockBcr);
     });
     
-    it('should try to find BCR by ID if not found by bcrNumber', async () => {
+    it('should use cache when finding BCR by ID', async () => {
       // Arrange
       const mockBcr = { id: '1', bcrNumber: null, title: 'BCR 1' };
       
+      // Setup the cache mock to execute the fetchFn and return its result
+      shortCache.getOrSet.mockImplementation((key, fetchFn) => fetchFn());
       mockFindFirst.mockResolvedValue(null);
       mockFindUnique.mockResolvedValue(mockBcr);
       
@@ -164,13 +223,7 @@ describe('BCR Service', () => {
       const result = await bcrService.getBcrById('1');
       
       // Assert
-      expect(mockFindFirst).toHaveBeenCalledWith({
-        where: { bcrNumber: '1' },
-        include: {
-          Users_Bcrs_requestedByToUsers: true,
-          Users_Bcrs_assignedToToUsers: true
-        }
-      });
+      expect(shortCache.getOrSet).toHaveBeenCalledWith('bcr_id_1', expect.any(Function));
       expect(mockFindUnique).toHaveBeenCalledWith({
         where: { id: '1' },
         include: {
@@ -183,7 +236,7 @@ describe('BCR Service', () => {
   });
   
   describe('createBcr', () => {
-    it('should create a new BCR with generated bcrNumber', async () => {
+    it('should create a new BCR and invalidate cache', async () => {
       // Arrange
       const mockBcrData = {
         title: 'New BCR',
@@ -222,12 +275,16 @@ describe('BCR Service', () => {
           notes: 'Test notes'
         })
       });
+      
+      // Verify cache invalidation
+      expect(mediumCache.delete).toHaveBeenCalledWith('all_bcrs');
+      
       expect(result).toEqual(mockCreatedBcr);
     });
   });
   
   describe('updateBcr', () => {
-    it('should update an existing BCR', async () => {
+    it('should update an existing BCR and invalidate cache', async () => {
       // Arrange
       const mockBcrId = '1';
       const mockBcrData = {
@@ -246,22 +303,35 @@ describe('BCR Service', () => {
         ...mockBcrData
       };
       
+      // Mock the findUnique call to get the current BCR for cache invalidation
+      mockFindUnique.mockResolvedValueOnce({ bcrNumber: 'BCR-2025-0001' });
       mockUpdate.mockResolvedValue(mockUpdatedBcr);
       
       // Act
       const result = await bcrService.updateBcr(mockBcrId, mockBcrData);
       
       // Assert
+      expect(mockFindUnique).toHaveBeenCalledWith({
+        where: { id: mockBcrId },
+        select: { bcrNumber: true }
+      });
+      
       expect(mockUpdate).toHaveBeenCalledWith({
         where: { id: mockBcrId },
         data: mockBcrData
       });
+      
+      // Verify cache invalidation
+      expect(mediumCache.delete).toHaveBeenCalledWith('all_bcrs');
+      expect(shortCache.delete).toHaveBeenCalledWith(`bcr_id_${mockBcrId}`);
+      expect(shortCache.delete).toHaveBeenCalledWith('bcr_number_BCR-2025-0001');
+      
       expect(result).toEqual(mockUpdatedBcr);
     });
   });
   
   describe('deleteBcr', () => {
-    it('should delete a BCR', async () => {
+    it('should delete a BCR and invalidate cache', async () => {
       // Arrange
       const mockBcrId = '1';
       const mockDeletedBcr = {
@@ -270,15 +340,28 @@ describe('BCR Service', () => {
         title: 'BCR to delete'
       };
       
+      // Mock the findUnique call to get the current BCR for cache invalidation
+      mockFindUnique.mockResolvedValueOnce({ bcrNumber: 'BCR-2025-0001' });
       mockDelete.mockResolvedValue(mockDeletedBcr);
       
       // Act
       const result = await bcrService.deleteBcr(mockBcrId);
       
       // Assert
+      expect(mockFindUnique).toHaveBeenCalledWith({
+        where: { id: mockBcrId },
+        select: { bcrNumber: true }
+      });
+      
       expect(mockDelete).toHaveBeenCalledWith({
         where: { id: mockBcrId }
       });
+      
+      // Verify cache invalidation
+      expect(mediumCache.delete).toHaveBeenCalledWith('all_bcrs');
+      expect(shortCache.delete).toHaveBeenCalledWith(`bcr_id_${mockBcrId}`);
+      expect(shortCache.delete).toHaveBeenCalledWith('bcr_number_BCR-2025-0001');
+      
       expect(result).toEqual(mockDeletedBcr);
     });
   });

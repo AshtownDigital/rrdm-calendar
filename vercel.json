@@ -32,6 +32,7 @@
   "env": {
     "NODE_ENV": "production",
     "VERCEL": "1",
-    "SESSION_PERSISTENCE": "true"
+    "SESSION_PERSISTENCE": "true",
+    "PRISMA_CLIENT_ENGINE_TYPE": "dataproxy"
   }
 }

@@ -3,7 +3,7 @@
  */
 const express = require('express');
 const router = express.Router();
-const { ReferenceData, ReferenceValue } = require('../../models');
+const { prisma } = require('../../config/database');
 const { ensureAuthenticated } = require('../../middleware/auth');
 
 /**
@@ -12,7 +12,7 @@ const { ensureAuthenticated } = require('../../middleware/auth');
  */
 const getItems = async (req, res) => {
   try {
-    const items = await ReferenceData.findAll();
+    const items = await prisma.referenceData.findMany();
     res.status(200).json(items);
   } catch (error) {
     console.error('Error fetching reference data items:', error);
@@ -26,7 +26,9 @@ const getItems = async (req, res) => {
  */
 const getItemById = async (req, res) => {
   try {
-    const item = await ReferenceData.findByPk(req.params.id);
+    const item = await prisma.referenceData.findUnique({
+      where: { id: req.params.id }
+    });
     if (!item) {
       return res.status(404).json({ error: 'Item not found' });
     }
@@ -43,7 +45,7 @@ const getItemById = async (req, res) => {
  */
 const getItemValues = async (req, res) => {
   try {
-    const values = await ReferenceValue.findAll({
+    const values = await prisma.referenceValue.findMany({
       where: { referenceDataId: req.params.id }
     });
     res.status(200).json(values);
