@@ -3,30 +3,31 @@
  */
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
 const { ensureAuthenticated } = require('../../middleware/auth');
+const { FundingHistory } = require('../../models');
+const { Op } = require('sequelize');
 
 /**
  * GET /funding/history
  * Render the funding history page
  */
-const renderHistory = (req, res) => {
+const renderHistory = async (req, res) => {
   try {
-    // Load history data from JSON file
-    const historyPath = path.join(__dirname, '../../data/funding/history.json');
-    let history = [];
-    
-    if (fs.existsSync(historyPath)) {
-      const data = fs.readFileSync(historyPath, 'utf8');
-      history = JSON.parse(data);
-    }
+    // Build query for filtering
+    let historyQuery = {};
     
     // Filter by year if specified
     if (req.query.year) {
       const year = parseInt(req.query.year, 10);
-      history = history.filter(item => item.year === year);
+      historyQuery.year = year;
     }
+    
+    // Get history data from database
+    const history = await FundingHistory.findAll({
+      where: historyQuery,
+      order: [['year', 'DESC'], ['createdAt', 'DESC']],
+      include: [{ association: 'creator', attributes: ['name'] }]
+    });
     
     // Define tag colors based on GOV.UK Design System
     const tagColors = {
@@ -38,7 +39,13 @@ const renderHistory = (req, res) => {
     };
     
     // Get available years for filter
-    const years = [...new Set(history.map(item => item.year))].sort((a, b) => b - a);
+    const yearsResult = await FundingHistory.findAll({
+      attributes: ['year'],
+      group: ['year'],
+      order: [['year', 'DESC']]
+    });
+    
+    const years = yearsResult.map(item => item.year);
     
     res.render('modules/funding/history', {
       title: 'Funding History',
@@ -53,7 +60,8 @@ const renderHistory = (req, res) => {
     res.status(500).render('error', {
       title: 'Error',
       message: 'Failed to load funding history',
-      error
+      error,
+      user: req.user
     });
   }
 };

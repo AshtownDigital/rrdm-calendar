@@ -29,8 +29,13 @@ A frontend application for managing reference data using the GOV.UK Frontend Des
 │       │── /items/          # Reference Data Items module
 │       │── /values/         # Reference Data Values module
 │       │── /release-notes/  # Release Notes module
-│── /data/                   # Static JSON files
+│       │── /bcr/            # Business Change Request module
+│       │── /funding/        # Funding module
+│── /prisma/                 # Prisma schema and migrations
+│   │── schema.prisma       # Database schema definition
+│── /services/               # Service modules for database operations
 │── /routes/                 # Express route handlers
+│── /docs/                   # Documentation
 │── server.js               # Express server
 │── package.json           # Dependencies
 ```
@@ -39,9 +44,11 @@ A frontend application for managing reference data using the GOV.UK Frontend Des
 
 - Frontend Framework: GOV.UK Frontend (HTML, Nunjucks)
 - Templating Engine: Nunjucks
-- Static Data: JSON files
+- Database: Neon PostgreSQL
+- ORM: Prisma
 - Server: Express.js
 - Styling: GOV.UK Design System
+- Deployment: Vercel
 
 ## Setup
 
@@ -50,7 +57,24 @@ A frontend application for managing reference data using the GOV.UK Frontend Des
    npm install
    ```
 
-2. Start the development server:
+2. Set up environment variables:
+   Create a `.env` file with the following variables:
+   ```
+   DATABASE_URL="postgresql://username:password@hostname:port/database"
+   SESSION_SECRET="your-session-secret"
+   ```
+
+3. Run Prisma migrations:
+   ```bash
+   npx prisma migrate dev
+   ```
+
+4. Generate Prisma client:
+   ```bash
+   npx prisma generate
+   ```
+
+5. Start the development server:
    ```bash
    npm run dev
    ```

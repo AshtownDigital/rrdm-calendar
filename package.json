@@ -22,7 +22,6 @@
     "bcryptjs": "^2.4.3",
     "connect-flash": "^0.1.1",
     "connect-pg-simple": "^10.0.0",
-    "connect-session-sequelize": "^7.1.7",
     "cookie-parser": "^1.4.6",
     "date-fns": "^4.1.0",
     "dotenv": "^16.5.0",
@@ -34,9 +33,7 @@
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
     "pg": "^8.15.6",
-    "pg-hstore": "^2.3.4",
     "prisma": "^6.7.0",
-    "sequelize": "^6.37.7",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
@@ -48,9 +45,16 @@
     "jest-environment-node": "^29.7.0",
     "memorystore": "^1.6.7",
     "nodemon": "^3.1.9",
-    "sequelize-cli": "^6.6.2",
-    "sequelize-mock": "^0.10.2",
     "supertest": "^6.3.4",
     "typescript": "^5.3.3"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/tests/**/*.test.js"],
+    "collectCoverage": true,
+    "coverageReporters": ["text", "lcov"],
+    "coverageDirectory": "coverage",
+    "moduleDirectories": ["node_modules", "src"],
+    "testTimeout": 10000
   }
 }

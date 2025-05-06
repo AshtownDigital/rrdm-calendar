@@ -1,0 +1,36 @@
+{
+  "academicYear": "2021/2022",
+  "version": "1.1.0",
+  "releaseDate": "2021-09-01",
+  "approvedBy": "HESA Data Management Team",
+  "changes": {
+    "new": {
+      "items": [
+        {
+          "name": "Training Route",
+          "hesaCode": "TRNRT",
+          "values": [
+            {
+              "name": "School Direct (salaried)",
+              "code": "SDSAL",
+              "description": "School-led training where trainees are employed as unqualified teachers"
+            },
+            {
+              "name": "School Direct (fee-funded)",
+              "code": "SDUNF",
+              "description": "School-led training with university partnership"
+            }
+          ]
+        }
+      ]
+    },
+    "updated": [],
+    "removed": [],
+    "noChange": [
+      {
+        "name": "Mode of Study",
+        "hesaCode": "MDSTY"
+      }
+    ]
+  }
+}

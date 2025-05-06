@@ -1,0 +1,113 @@
+{
+  "timeline": [
+    {
+      "date": "2024-09-02",
+      "endDate": "2025-04-15",
+      "description": "1. Submission Window Opens",
+      "activity": "Collect proposed changes to reference data from stakeholders.",
+      "responsible": "Academic Registry",
+      "deadline": "15 April 2025",
+      "tag": "blue",
+      "considerations": "Launch collection form or CSV templates; log all metadata; track early trends in requests."
+    },
+    {
+      "date": "2025-04-16",
+      "endDate": "2025-04-30",
+      "description": "2. Collation & Prioritisation",
+      "activity": "Group similar submissions, flag duplicates, and categorize requests.",
+      "responsible": "Data Governance Analysts",
+      "deadline": "30 April 2025",
+      "tag": "blue",
+      "considerations": "Align with high-impact policy areas; assess volume per category (e.g., training routes, disability)."
+    },
+    {
+      "date": "2025-05-01",
+      "endDate": "2025-05-07",
+      "description": "3. Technical and Business Impact Analysis",
+      "activity": "Assess system-level impact and business logic implications.",
+      "responsible": "Data Analysts + Governance Team",
+      "deadline": "7 May 2025",
+      "tag": "blue",
+      "considerations": "Check cross-references, model risks, dependencies, and data structure integrity."
+    },
+    {
+      "date": "2025-05-08",
+      "endDate": "2025-05-15",
+      "description": "4. Internal Analysis Playback",
+      "activity": "Present internal review outcomes to governance and align on decisions.",
+      "responsible": "Reference Data Governance Committee",
+      "deadline": "15 May 2025",
+      "tag": "blue",
+      "considerations": "Score requests; include RAG status; log comments and reviewer decisions."
+    },
+    {
+      "date": "2025-05-16",
+      "endDate": "2025-05-31",
+      "description": "5. Stakeholder Consultation",
+      "activity": "Notify submitters of outcomes, gather refinements.",
+      "responsible": "Submitters & Quality Assurance",
+      "deadline": "31 May 2025",
+      "tag": "blue",
+      "considerations": "Email confirmation, status updates; allow feedback on review outcomes and summaries."
+    },
+    {
+      "date": "2025-06-01",
+      "endDate": "2025-06-07",
+      "description": "6. Drafting of Final Data",
+      "activity": "Prepare final version of the data for publication and approval.",
+      "responsible": "Reference Data Editors",
+      "deadline": "7 June 2025",
+      "tag": "blue",
+      "considerations": "Normalize value formats, apply version control, and define tags (New, Updated, Removed)."
+    },
+    {
+      "date": "2025-06-08",
+      "endDate": "2025-06-15",
+      "description": "7. Final Approval",
+      "activity": "Approve the entire dataset for implementation.",
+      "responsible": "Academic Registrar",
+      "deadline": "15 June 2025",
+      "tag": "blue",
+      "considerations": "Double-check audit trail and decision rationale; sign-off logged in audit logs."
+    },
+    {
+      "date": "2025-06-16",
+      "endDate": "2025-07-15",
+      "description": "8. Implementation",
+      "activity": "Deploy approved reference data into the live system.",
+      "responsible": "DevOps / IT Implementation",
+      "deadline": "15 July 2025",
+      "tag": "blue",
+      "considerations": "Validate production environment, schema validation, and UI rendering."
+    },
+    {
+      "date": "2025-07-16",
+      "endDate": "2025-07-20",
+      "description": "9. Implementation Validation and Testing",
+      "activity": "Final check to confirm the correct visibility and accuracy.",
+      "responsible": "QA Team + Leads",
+      "deadline": "20 July 2025",
+      "tag": "blue",
+      "considerations": "Include data tagging and rendering checks (inactive tags, filters, academic year views)."
+    },
+    {
+      "date": "2025-09-01",
+      "description": "10. Go Live",
+      "activity": "Reference data becomes available across all channels (UI, API, CSV).",
+      "responsible": "System Administrator",
+      "deadline": "1 September 2025",
+      "tag": "green",
+      "considerations": "Monitor for anomalies; track API usage and CSV downloads."
+    },
+    {
+      "date": "2025-08-02",
+      "endDate": "2025-08-15",
+      "description": "11. Post-Implementation Review",
+      "activity": "Review process success and data quality.",
+      "responsible": "Governance & Strategy",
+      "deadline": "15 August 2025",
+      "tag": "blue",
+      "considerations": "Log feedback; analyze rejected values; capture lessons learned for next year."
+    }
+  ]
+}

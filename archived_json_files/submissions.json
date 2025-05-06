@@ -1,0 +1,537 @@
+{
+  "submissions": [
+    {
+      "id": "BCR-2025-0001",
+      "dateSubmitted": "2025-04-15T09:30:00Z",
+      "lastUpdated": "2025-05-03T05:10:01.016Z",
+      "submitterName": "Jane Smith",
+      "submitterEmail": "jane.smith@education.gov.uk",
+      "employmentType": "yes",
+      "submitterOrganisation": "Department for Education",
+      "changeType": [
+        "Reference Data",
+        "Frontend UI",
+        "Validation"
+      ],
+      "title": "Update Primary PGCE Funding Allocation",
+      "description": "Update the funding allocation for Primary PGCE courses to reflect new policy changes.",
+      "justification": "Recent policy changes have adjusted the funding allocation for Primary PGCE courses. This change is needed to ensure the system reflects the correct funding amounts.",
+      "policyLinked": true,
+      "policyDetails": "Primary Education Funding Policy 2025/26",
+      "impactAreas": [
+        "Reference Data",
+        "Funding",
+        "Policy"
+      ],
+      "affectedRefDataArea": "Primary Education Funding Tables",
+      "technicalDependencies": "Updates to funding calculation logic may be required",
+      "urgency": "High",
+      "relatedDocuments": [
+        "https://example.gov.uk/policy/primary-funding-2025"
+      ],
+      "hasAttachments": true,
+      "status": "Technical and Business Impact Review",
+      "currentPhase": "Stakeholder Consultation - Stakeholders Consulted",
+      "assignedReviewer": "Fred",
+      "history": [
+        {
+          "date": "2025-04-15T09:30:00Z",
+          "action": "Submission Created",
+          "user": "Jane Smith",
+          "notes": "Initial submission"
+        },
+        {
+          "date": "2025-05-01T18:59:29.439Z",
+          "action": "Status Updated",
+          "user": "name",
+          "notes": "Changed status to Collation and Categorisation"
+        },
+        {
+          "date": "2025-05-01T18:59:29.439Z",
+          "action": "Comment Added",
+          "user": "name",
+          "notes": "Done "
+        },
+        {
+          "date": "2025-05-01T19:55:40.018Z",
+          "action": "Status Updated",
+          "user": "name",
+          "notes": "Changed status to Submission Received"
+        },
+        {
+          "date": "2025-05-01T19:55:40.018Z",
+          "action": "Comment Added",
+          "user": "name",
+          "notes": "restart"
+        },
+        {
+          "date": "2025-05-02T10:17:32.884Z",
+          "action": "Workflow Reset",
+          "user": "Fred",
+          "notes": "reset"
+        },
+        {
+          "date": "2025-05-02T10:23:51.502Z",
+          "action": "Workflow Reset",
+          "user": "TestUser",
+          "notes": "Testing reset functionality"
+        },
+        {
+          "date": "2025-05-02T10:53:55.931Z",
+          "action": "Phases Reset",
+          "user": "System",
+          "notes": "All phases after Phase 2 have been reset to Not Completed"
+        },
+        {
+          "date": "2025-05-02T10:53:55.931Z",
+          "action": "Status Updated",
+          "user": "Fred",
+          "notes": "Changed status to Collation and Categorisation"
+        },
+        {
+          "date": "2025-05-02T10:53:55.931Z",
+          "action": "Comment Added",
+          "user": "Fred",
+          "notes": "Fred"
+        },
+        {
+          "date": "2025-05-02T11:07:58.715Z",
+          "action": "Workflow Reset",
+          "user": "Fred",
+          "notes": "start again"
+        },
+        {
+          "date": "2025-05-02T11:08:05.970Z",
+          "action": "Workflow Reset",
+          "user": "Fred",
+          "notes": "start again"
+        },
+        {
+          "date": "2025-05-03T04:15:53.994Z",
+          "action": "Workflow Reset",
+          "user": "fred",
+          "notes": "start"
+        },
+        {
+          "date": "2025-05-03T04:16:32.549Z",
+          "action": "Phase Updated",
+          "user": "f",
+          "notes": "Updated to Phase 2: Collation & Prioritisation - BCR Prioritised"
+        },
+        {
+          "date": "2025-05-03T04:16:32.549Z",
+          "action": "Status Updated",
+          "user": "f",
+          "notes": "Changed status to Collation and Categorisation"
+        },
+        {
+          "date": "2025-05-03T04:16:32.549Z",
+          "action": "Comment Added",
+          "user": "f",
+          "notes": "done"
+        },
+        {
+          "date": "2025-05-03T04:43:48.614Z",
+          "action": "Phase Updated",
+          "user": "System",
+          "notes": "Updated to Phase 3: Technical and Business Impact Analysis - Impact Assessed"
+        },
+        {
+          "date": "2025-05-03T05:07:19.164Z",
+          "action": "Phase Updated",
+          "user": "Fred",
+          "notes": "Updated to Phase 3: Technical and Business Impact Analysis - Impact Assessed"
+        },
+        {
+          "date": "2025-05-03T05:07:19.164Z",
+          "action": "Phase Advanced",
+          "user": "Fred",
+          "notes": "Automatically advanced to Phase 4: Internal Analysis Playback - Internal Analysis Playback Completed after completing previous phase"
+        },
+        {
+          "date": "2025-05-03T05:07:19.164Z",
+          "action": "Status Updated",
+          "user": "Fred",
+          "notes": "Changed status to Technical and Business Impact Review"
+        },
+        {
+          "date": "2025-05-03T05:07:19.164Z",
+          "action": "Comment Added",
+          "user": "Fred",
+          "notes": "we are done"
+        },
+        {
+          "date": "2025-05-03T05:10:01.016Z",
+          "action": "Phase Updated",
+          "user": "Fred",
+          "notes": "Updated to Phase 4: Internal Analysis Playback - Internal Analysis Playback Completed"
+        },
+        {
+          "date": "2025-05-03T05:10:01.016Z",
+          "action": "Phase Advanced",
+          "user": "Fred",
+          "notes": "Automatically advanced to Phase 5: Stakeholder Consultation - Stakeholders Consulted after completing previous phase"
+        },
+        {
+          "date": "2025-05-03T05:10:01.016Z",
+          "action": "Status Updated",
+          "user": "Fred",
+          "notes": "Changed status to Technical and Business Impact Review"
+        },
+        {
+          "date": "2025-05-03T05:10:01.016Z",
+          "action": "Comment Added",
+          "user": "Fred",
+          "notes": "Done"
+        }
+      ],
+      "workflowHistory": [
+        {
+          "date": "2025-04-15T09:30:00Z",
+          "action": "Submission Received",
+          "user": "Jane Smith",
+          "notes": "Initial submission received"
+        },
+        {
+          "date": "2025-04-16T14:20:00Z",
+          "action": "Initial Review",
+          "user": "Admin Team",
+          "notes": "Submission validated and ready for review"
+        },
+        {
+          "date": "2025-04-17T10:15:00Z",
+          "action": "Assigned for Review",
+          "user": "Michael Brown",
+          "notes": "Assigned to Technical Review Team"
+        },
+        {
+          "date": "2025-05-02T10:17:32.884Z",
+          "action": "Workflow Reset",
+          "user": "Fred",
+          "notes": "reset",
+          "completed": true
+        },
+        {
+          "date": "2025-05-02T10:23:51.502Z",
+          "action": "Workflow Reset",
+          "user": "TestUser",
+          "notes": "Testing reset functionality",
+          "completed": true
+        },
+        {
+          "date": "2025-05-02T10:23:51.502Z",
+          "action": "Status Updated",
+          "user": "TestUser",
+          "notes": "Changed status to Submission Received",
+          "completed": true
+        },
+        {
+          "date": "2025-05-02T10:53:55.931Z",
+          "action": "Status Updated",
+          "user": "Fred",
+          "notes": "Fred",
+          "completed": true
+        },
+        {
+          "date": "2025-05-02T11:07:58.715Z",
+          "action": "Workflow Reset",
+          "user": "Fred",
+          "notes": "start again",
+          "completed": true
+        },
+        {
+          "date": "2025-05-02T11:07:58.715Z",
+          "action": "Status Updated",
+          "user": "Fred",
+          "notes": "Changed status to Submission Received",
+          "completed": true
+        },
+        {
+          "date": "2025-05-02T11:08:05.970Z",
+          "action": "Workflow Reset",
+          "user": "Fred",
+          "notes": "start again",
+          "completed": true
+        },
+        {
+          "date": "2025-05-02T11:08:05.970Z",
+          "action": "Status Updated",
+          "user": "Fred",
+          "notes": "Changed status to Submission Received",
+          "completed": true
+        },
+        {
+          "date": "2025-05-03T04:15:53.994Z",
+          "action": "Workflow Reset",
+          "user": "fred",
+          "notes": "start",
+          "completed": true
+        },
+        {
+          "date": "2025-05-03T04:15:53.994Z",
+          "action": "Status Updated",
+          "user": "fred",
+          "notes": "Changed status to Submission Received",
+          "completed": true
+        },
+        {
+          "date": "2025-05-03T04:16:32.549Z",
+          "action": "Phase Updated",
+          "user": "f",
+          "notes": "Updated to Phase 2: Collation & Prioritisation - BCR Prioritised",
+          "completed": true
+        },
+        {
+          "date": "2025-05-03T05:07:19.164Z",
+          "action": "Phase Updated",
+          "user": "Fred",
+          "notes": "Updated to Phase 3: Technical and Business Impact Analysis - Impact Assessed",
+          "completed": true
+        },
+        {
+          "date": "2025-05-03T05:10:01.016Z",
+          "action": "Phase Updated",
+          "user": "Fred",
+          "notes": "Updated to Phase 4: Internal Analysis Playback - Internal Analysis Playback Completed",
+          "completed": true
+        },
+        {
+          "date": "2025-05-03T05:10:01.016Z",
+          "action": "Phase Updated",
+          "user": "Fred",
+          "notes": "Advanced to Phase 5: Stakeholder Consultation - Stakeholders Consulted",
+          "completed": false
+        }
+      ],
+      "allowedActions": [
+        "Accept",
+        "Return to Submitter"
+      ],
+      "currentPhaseId": 5
+    },
+    {
+      "id": "BCR-2025-0002",
+      "dateSubmitted": "2025-04-18T14:45:00Z",
+      "lastUpdated": "2025-04-20T10:15:00Z",
+      "submitterName": "Mark Johnson",
+      "submitterEmail": "mark.johnson@tta.gov.uk",
+      "employmentType": "no",
+      "submitterOrganisation": "Teacher Training Agency",
+      "changeType": [
+        "API",
+        "Reference Data"
+      ],
+      "title": "Add New Subject Category for AI Education",
+      "description": "Add a new subject category for AI Education to the reference data system.",
+      "justification": "With the increasing importance of AI in education, we need to track and fund AI-specific teacher training programs.",
+      "policyLinked": true,
+      "policyDetails": "Digital Skills Enhancement Initiative 2025",
+      "impactAreas": [
+        "Backend",
+        "Reference Data",
+        "API"
+      ],
+      "affectedRefDataArea": "Subject Categories",
+      "technicalDependencies": "Updates to subject validation logic",
+      "urgency": "Medium",
+      "relatedDocuments": [
+        "https://example.gov.uk/digital-skills-initiative"
+      ],
+      "hasAttachments": false,
+      "status": "Collation and Categorisation",
+      "currentPhase": "Collation & Prioritisation - BCR Prioritised",
+      "assignedReviewer": "Sarah Williams",
+      "history": [
+        {
+          "date": "2025-04-18T14:45:00Z",
+          "action": "Submission Created",
+          "user": "Mark Johnson",
+          "notes": "Initial submission"
+        },
+        {
+          "date": "2025-04-20T10:15:00Z",
+          "action": "Status Updated",
+          "user": "Sarah Williams",
+          "notes": "Moved to Collation and Categorisation phase"
+        }
+      ]
+    },
+    {
+      "id": "BCR-2025-0003",
+      "dateSubmitted": "2025-04-22T11:20:00Z",
+      "lastUpdated": "2025-05-02T10:23:03.187Z",
+      "submitterName": "Robert Chen",
+      "submitterEmail": "robert.chen@epi.org.uk",
+      "employmentType": "other",
+      "submitterOrganisation": "Education Policy Institute",
+      "changeType": [
+        "API",
+        "CSV",
+        "Frontend UI",
+        "Validation",
+        "Reference Data",
+        "Content and Guidance",
+        "Other"
+      ],
+      "title": "Modify CSV Export Format for Funding Data",
+      "description": "Update the CSV export format for funding data to include additional fields.",
+      "justification": "External systems require additional data fields for integration purposes.",
+      "policyLinked": false,
+      "policyDetails": "",
+      "impactAreas": [
+        "Backend",
+        "API",
+        "CSV"
+      ],
+      "affectedRefDataArea": "Funding Data Exports",
+      "technicalDependencies": "Changes to CSV generation logic",
+      "urgency": "Critical",
+      "relatedDocuments": [],
+      "hasAttachments": true,
+      "status": "Submission Received",
+      "currentPhase": "Submission Window Opens - Received",
+      "assignedReviewer": "",
+      "history": [
+        {
+          "date": "2025-04-22T11:20:00Z",
+          "action": "Submission Created",
+          "user": "Robert Chen",
+          "notes": "Initial submission"
+        },
+        {
+          "date": "2025-04-23T09:45:00Z",
+          "action": "Status Updated",
+          "user": "Sarah Williams",
+          "notes": "Moved to Collation and Categorisation phase"
+        },
+        {
+          "date": "2025-04-25T15:30:00Z",
+          "action": "Status Updated",
+          "user": "David Thompson",
+          "notes": "Moved to Technical and Business Impact Review phase"
+        },
+        {
+          "date": "2025-05-01T18:26:42.067Z",
+          "action": "Status Updated",
+          "user": "test",
+          "notes": "Changed status to Completed"
+        },
+        {
+          "date": "2025-05-01T18:26:42.067Z",
+          "action": "Comment Added",
+          "user": "test",
+          "notes": "test"
+        },
+        {
+          "date": "2025-05-01T18:44:23.375Z",
+          "action": "Status Updated",
+          "user": "Me",
+          "notes": "Changed status to Post-Implementation Review"
+        },
+        {
+          "date": "2025-05-01T18:44:23.375Z",
+          "action": "Comment Added",
+          "user": "Me",
+          "notes": "actions were not completed"
+        },
+        {
+          "date": "2025-05-02T10:23:03.187Z",
+          "action": "Workflow Reset",
+          "user": "Fred",
+          "notes": "good good "
+        }
+      ],
+      "currentPhaseId": 1,
+      "workflowHistory": [
+        {
+          "date": "2025-05-02T10:23:03.187Z",
+          "action": "Workflow Reset",
+          "user": "Fred",
+          "notes": "good good ",
+          "completed": true
+        },
+        {
+          "date": "2025-05-02T10:23:03.187Z",
+          "action": "Status Updated",
+          "user": "Fred",
+          "notes": "Changed status to Submission Received",
+          "completed": true
+        }
+      ]
+    },
+    {
+      "id": "BCR-2025-0004",
+      "dateSubmitted": "2025-05-03T06:28:06.070Z",
+      "submitter": {
+        "name": "Fred",
+        "organisation": "",
+        "email": "example@email.com"
+      },
+      "description": "Add TDA route",
+      "justification": "new policy on TDA ",
+      "policyLinked": false,
+      "policyDetails": "",
+      "impactAreas": [],
+      "affectedRefDataArea": "New ref data for TDA",
+      "technicalDependencies": "all",
+      "urgency": "High",
+      "relatedDocuments": [
+        "https://design-system.service.gov.uk/components/tag/"
+      ],
+      "hasAttachments": false,
+      "status": "Submission Received",
+      "currentPhase": "Submission Window Opens - Received",
+      "assignedReviewer": "",
+      "history": [
+        {
+          "date": "2025-05-03T06:28:06.070Z",
+          "action": "Submission Created",
+          "user": "Fred",
+          "notes": "Initial submission"
+        }
+      ]
+    },
+    {
+      "id": "BCR-2025-0005",
+      "dateSubmitted": "2025-05-04T14:34:39.754Z",
+      "submitter": {
+        "name": "test",
+        "organisation": "",
+        "email": "google@googel.com"
+      },
+      "employmentType": "yes",
+      "title": "were",
+      "description": "were",
+      "justification": "whew",
+      "policyLinked": false,
+      "policyDetails": "",
+      "impactAreas": [],
+      "changeType": [
+        "API",
+        "Frontend UI",
+        "Validation",
+        "Reference Data",
+        "Content and Guidance"
+      ],
+      "affectedRefDataArea": "wow",
+      "technicalDependencies": "were",
+      "urgency": "Medium",
+      "relatedDocuments": [
+        "erere"
+      ],
+      "hasAttachments": false,
+      "status": "Submission Received",
+      "currentPhase": "Submission Window Opens - Received",
+      "currentPhaseId": 1,
+      "assignedReviewer": "",
+      "history": [
+        {
+          "date": "2025-05-04T14:34:39.754Z",
+          "action": "Submission Created",
+          "user": "test",
+          "notes": "Initial submission"
+        }
+      ]
+    }
+  ]
+}

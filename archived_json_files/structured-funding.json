@@ -1,0 +1,275 @@
+{
+  "fundingItems": [
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Undergraduate)",
+      "fundingType": "Bursary",
+      "amount": 9000,
+      "allocationSubjects": [
+        "Mathematics",
+        "Physics"
+      ],
+      "courseSubjectSpecialism": "",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 29000,
+      "allocationSubjects": [
+        "Chemistry",
+        "Computing",
+        "Mathematics",
+        "Physics"
+      ],
+      "courseSubjectSpecialism": "",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 26000,
+      "allocationSubjects": [
+        "Ancient Languages",
+        "Biology",
+        "Design and Technology",
+        "Geography",
+        "Modern Languages",
+        "French Language",
+        "German Language",
+        "Spanish Language"
+      ],
+      "courseSubjectSpecialism": "",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 10000,
+      "allocationSubjects": [
+        "Art and Design",
+        "Music",
+        "Religious Education"
+      ],
+      "courseSubjectSpecialism": "",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Bursary",
+      "amount": 5000,
+      "allocationSubjects": [
+        "English"
+      ],
+      "courseSubjectSpecialism": "",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Scholarship",
+      "amount": 31000,
+      "allocationSubjects": [
+        "Chemistry",
+        "Computing",
+        "Mathematics",
+        "Physics"
+      ],
+      "courseSubjectSpecialism": "",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Provider-led (Postgraduate)",
+      "fundingType": "Scholarship",
+      "amount": 28000,
+      "allocationSubjects": [
+        "French Language",
+        "German Language",
+        "Spanish Language"
+      ],
+      "courseSubjectSpecialism": "",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Early Years (Postgraduate)",
+      "fundingType": "Grant",
+      "amount": 7000,
+      "allocationSubjects": [
+        "Early Years ITT"
+      ],
+      "courseSubjectSpecialism": "",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "Early Years (Salaried)",
+      "fundingType": "Grant",
+      "amount": 14000,
+      "allocationSubjects": [
+        "Early Years ITT"
+      ],
+      "courseSubjectSpecialism": "",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 28000,
+      "allocationSubjects": [
+        "Chemistry",
+        "Computing",
+        "Mathematics",
+        "Physics"
+      ],
+      "courseSubjectSpecialism": "",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 25000,
+      "allocationSubjects": [
+        "Ancient Languages",
+        "Biology",
+        "Design and Technology",
+        "Geography",
+        "Modern Languages",
+        "French Language",
+        "German Language",
+        "Spanish Language"
+      ],
+      "courseSubjectSpecialism": "",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    },
+    {
+      "academicYear": "2025-26",
+      "trainingRoute": "School Direct (Salaried)",
+      "fundingType": "Grant",
+      "amount": 10000,
+      "allocationSubjects": [
+        "Art and Design",
+        "English",
+        "Music",
+        "Religious Education"
+      ],
+      "courseSubjectSpecialism": "",
+      "course_study_modes": [
+        "full_time",
+        "part_time"
+      ],
+      "bursary_tiers": [
+        "tier_1"
+      ],
+      "course_education_phases": [
+        "secondary"
+      ]
+    }
+  ]
+}

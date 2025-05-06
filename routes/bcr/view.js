@@ -3,8 +3,9 @@
  */
 const express = require('express');
 const router = express.Router();
-const { BCR } = require('../../models');
 const { ensureAuthenticated } = require('../../middleware/auth');
+const bcrService = require('../../services/bcrService');
+const bcrConfigService = require('../../services/bcrConfigService');
 
 /**
  * GET /bcr/:id
@@ -14,8 +15,8 @@ const viewBCR = async (req, res) => {
   try {
     const { id } = req.params;
     
-    // Find the BCR
-    const bcr = await BCR.findByPk(id);
+    // Find the BCR with associated users using the service
+    const bcr = await bcrService.getBcrById(id);
     
     if (!bcr) {
       return res.status(404).render('error', {
@@ -25,20 +26,27 @@ const viewBCR = async (req, res) => {
       });
     }
     
+    // Get BCR configuration data using the service
+    const statuses = await bcrConfigService.getConfigsByType('status');
+    const phases = await bcrConfigService.getConfigsByType('phase');
+    const impactAreas = await bcrConfigService.getConfigsByType('impactArea');
+    const urgencyLevels = await bcrConfigService.getConfigsByType('urgencyLevel');
+    
     // Define tag colors based on GOV.UK Design System
     const statusColors = {
       'draft': 'govuk-tag govuk-tag--grey',
       'submitted': 'govuk-tag govuk-tag--blue',
-      'in-progress': 'govuk-tag govuk-tag--light-blue',
+      'under_review': 'govuk-tag govuk-tag--light-blue',
       'approved': 'govuk-tag govuk-tag--green',
       'rejected': 'govuk-tag govuk-tag--red',
-      'completed': 'govuk-tag govuk-tag--purple'
+      'implemented': 'govuk-tag govuk-tag--purple'
     };
     
     const priorityColors = {
       'low': 'govuk-tag govuk-tag--grey',
       'medium': 'govuk-tag govuk-tag--blue',
-      'high': 'govuk-tag govuk-tag--red'
+      'high': 'govuk-tag govuk-tag--orange',
+      'critical': 'govuk-tag govuk-tag--red'
     };
     
     res.render('modules/bcr/view', {
@@ -46,6 +54,10 @@ const viewBCR = async (req, res) => {
       bcr,
       statusColors,
       priorityColors,
+      statuses,
+      phases,
+      impactAreas,
+      urgencyLevels,
       user: req.user
     });
   } catch (error) {

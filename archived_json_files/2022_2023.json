@@ -1,0 +1,98 @@
+{
+  "academicYear": "2022/2023",
+  "version": "1.2.0",
+  "releaseDate": "2022-08-30",
+  "approvedBy": "HESA Data Management Team",
+  "changes": {
+    "new": {
+      "items": [
+        {
+          "name": "Qualification Aim",
+          "hesaCode": "QUAIM",
+          "values": [
+            {
+              "name": "Postgraduate Certificate in Education with QTS",
+              "code": "PGCQT",
+              "description": "PGCE course leading to Qualified Teacher Status"
+            },
+            {
+              "name": "Professional Graduate Certificate in Education",
+              "code": "PGCRT",
+              "description": "Professional route to teaching qualification"
+            },
+            {
+              "name": "Higher Education Certificate",
+              "code": "HECP",
+              "description": "Certificate level qualification in higher education"
+            }
+          ]
+        },
+        {
+          "name": "Study Location",
+          "hesaCode": "STDLOC",
+          "values": [
+            {
+              "name": "Main Campus",
+              "code": "MAIN",
+              "description": "Study at institution's main campus location"
+            },
+            {
+              "name": "Partner Institution",
+              "code": "PRTN",
+              "description": "Study at partner institution's facilities"
+            },
+            {
+              "name": "Workplace",
+              "code": "WORK",
+              "description": "Study primarily in workplace setting"
+            }
+          ]
+        }
+      ]
+    },
+    "updated": [
+      {
+        "name": "Mode of Study",
+        "hesaCode": "MDSTY",
+        "changeSummary": "Updated part-time study definitions",
+        "details": "Revised definitions to align with new HESA reporting requirements",
+        "values": [
+          {
+            "name": "Full-time",
+            "code": "FLTM",
+            "description": "Student is studying on a full-time basis"
+          },
+          {
+            "name": "Part-time",
+            "code": "PRTM",
+            "description": "Student is studying on a part-time basis (less than full-time)"
+          },
+          {
+            "name": "Block Release",
+            "code": "BLCK",
+            "description": "Study in concentrated blocks of time"
+          }
+        ]
+      }
+    ],
+    "removed": [],
+    "noChange": [
+      {
+        "name": "Training Route",
+        "hesaCode": "TRNRT",
+        "values": [
+          {
+            "name": "School Direct",
+            "code": "SCDR",
+            "description": "School-led teacher training route"
+          },
+          {
+            "name": "PGCE",
+            "code": "PGCE",
+            "description": "Postgraduate Certificate in Education route"
+          }
+        ]
+      }
+    ]
+  }
+}

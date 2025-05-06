@@ -10,39 +10,28 @@
       "use": "@vercel/static"
     }
   ],
-  "rewrites": [
-    { "source": "/assets/:path*", "destination": "/public/assets/:path*" },
-    { "source": "/scripts/:path*", "destination": "/public/scripts/:path*" },
-    { "source": "/stylesheets/:path*", "destination": "/public/stylesheets/:path*" },
-    { "source": "/(.*)", "destination": "/server.js" }
+  "routes": [
+    { 
+      "src": "/assets/(.*)", 
+      "dest": "/public/assets/$1",
+      "headers": { "Cache-Control": "public, max-age=31536000, immutable" }
+    },
+    { 
+      "src": "/scripts/(.*)", 
+      "dest": "/public/scripts/$1",
+      "headers": { "Cache-Control": "public, max-age=31536000, immutable" }
+    },
+    { 
+      "src": "/stylesheets/(.*)", 
+      "dest": "/public/stylesheets/$1",
+      "headers": { "Cache-Control": "public, max-age=31536000, immutable" }
+    },
+    { "src": "/debug", "dest": "/server.js" },
+    { "src": "/(.*)", "dest": "/server.js" }
   ],
-  "headers": [
-    {
-      "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/stylesheets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/scripts/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    }
-  ]
+  "env": {
+    "NODE_ENV": "production",
+    "VERCEL": "1",
+    "SESSION_PERSISTENCE": "true"
+  }
 }

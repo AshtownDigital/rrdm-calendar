@@ -1,0 +1,116 @@
+{
+  "subjects": [
+    {
+      "id": 1,
+      "name": "Mathematics",
+      "priority": "High",
+      "bursaryEligible": true,
+      "scholarshipEligible": true,
+      "grantEligible": true
+    },
+    {
+      "id": 2,
+      "name": "Physics",
+      "priority": "High",
+      "bursaryEligible": true,
+      "scholarshipEligible": true,
+      "grantEligible": true
+    },
+    {
+      "id": 3,
+      "name": "Chemistry",
+      "priority": "High",
+      "bursaryEligible": true,
+      "scholarshipEligible": true,
+      "grantEligible": true
+    },
+    {
+      "id": 4,
+      "name": "Computing",
+      "priority": "High",
+      "bursaryEligible": true,
+      "scholarshipEligible": true,
+      "grantEligible": true
+    },
+    {
+      "id": 5,
+      "name": "Modern Foreign Languages",
+      "priority": "Medium",
+      "bursaryEligible": true,
+      "scholarshipEligible": false,
+      "grantEligible": true
+    },
+    {
+      "id": 6,
+      "name": "Biology",
+      "priority": "Medium",
+      "bursaryEligible": true,
+      "scholarshipEligible": false,
+      "grantEligible": true
+    },
+    {
+      "id": 7,
+      "name": "Design and Technology",
+      "priority": "Medium",
+      "bursaryEligible": true,
+      "scholarshipEligible": false,
+      "grantEligible": true
+    },
+    {
+      "id": 8,
+      "name": "Geography",
+      "priority": "Medium",
+      "bursaryEligible": true,
+      "scholarshipEligible": false,
+      "grantEligible": true
+    },
+    {
+      "id": 9,
+      "name": "English",
+      "priority": "Low",
+      "bursaryEligible": false,
+      "scholarshipEligible": false,
+      "grantEligible": false
+    },
+    {
+      "id": 10,
+      "name": "Art and Design",
+      "priority": "Low",
+      "bursaryEligible": false,
+      "scholarshipEligible": false,
+      "grantEligible": false
+    },
+    {
+      "id": 11,
+      "name": "History",
+      "priority": "Low",
+      "bursaryEligible": false,
+      "scholarshipEligible": false,
+      "grantEligible": false
+    },
+    {
+      "id": 12,
+      "name": "Music",
+      "priority": "Low",
+      "bursaryEligible": false,
+      "scholarshipEligible": false,
+      "grantEligible": false
+    },
+    {
+      "id": 13,
+      "name": "Physical Education",
+      "priority": "Low",
+      "bursaryEligible": false,
+      "scholarshipEligible": false,
+      "grantEligible": false
+    },
+    {
+      "id": 14,
+      "name": "Religious Education",
+      "priority": "Low",
+      "bursaryEligible": false,
+      "scholarshipEligible": false,
+      "grantEligible": false
+    }
+  ]
+}

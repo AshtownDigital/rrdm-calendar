@@ -1,0 +1,171 @@
+{
+  "2025/2026": {
+    "academicYear": "2025/2026",
+    "version": "1.0.0",
+    "releaseDate": "2025-03-11",
+    "approvedBy": "System Administrator",
+    "changes": {
+      "new": {
+        "items": [
+          {
+            "id": "sex",
+            "name": "Sex",
+            "type": "Personal",
+            "category": "Demographics",
+            "values": [
+              {
+                "name": "Female",
+                "description": "Person identifies as female"
+              },
+              {
+                "name": "Male",
+                "description": "Person identifies as male"
+              },
+              {
+                "name": "Other",
+                "description": "Person identifies in another way"
+              },
+              {
+                "name": "Prefer not to say",
+                "description": "Person prefers not to disclose their sex"
+              },
+              {
+                "name": "Not provided",
+                "description": "No information provided about person's sex"
+              }
+            ]
+          },
+          {
+            "id": "disability-status",
+            "name": "Disability Status",
+            "type": "Personal",
+            "category": "Demographics",
+            "values": [
+              {
+                "name": "No known disability",
+                "description": "Person has no known disability"
+              },
+              {
+                "name": "Specific learning difficulty",
+                "description": "Person has a specific learning difficulty such as dyslexia, dyspraxia or AD(H)D"
+              },
+              {
+                "name": "Physical impairment or mobility issues",
+                "description": "Person has a physical impairment or mobility issues"
+              },
+              {
+                "name": "Mental health condition",
+                "description": "Person has a mental health condition"
+              },
+              {
+                "name": "Prefer not to say",
+                "description": "Person prefers not to disclose their disability status"
+              }
+            ]
+          }
+        ],
+        "values": [
+          {
+            "itemName": "Qualification Type",
+            "type": "Academic",
+            "category": "Qualifications",
+            "newValues": [
+              {
+                "name": "Integrated Master's Degree",
+                "description": "A combined undergraduate and postgraduate degree"
+              },
+              {
+                "name": "Higher Technical Qualification",
+                "description": "A Level 4-5 qualification aligned with employer needs"
+              }
+            ]
+          },
+          {
+            "itemName": "Subject Area",
+            "type": "Academic",
+            "category": "Course",
+            "newValues": [
+              {
+                "name": "Artificial Intelligence",
+                "description": "Study of AI systems and applications"
+              },
+              {
+                "name": "Sustainable Development",
+                "description": "Study of environmental, social, and economic sustainability"
+              }
+            ]
+          }
+        ]
+      },
+      "updated": [
+        {
+          "name": "Ethnicity",
+          "type": "Personal",
+          "category": "Demographics",
+          "changeSummary": "Updated terminology for better inclusivity",
+          "details": "Refined definitions and terminology to align with current best practices in equality monitoring"
+        },
+        {
+          "name": "Course Mode",
+          "type": "Academic",
+          "category": "Course",
+          "changeSummary": "Added clarification to part-time study definitions",
+          "details": "Updated descriptions to include credit-based part-time study patterns"
+        },
+        {
+          "name": "Assessment Method",
+          "type": "Academic",
+          "category": "Assessment",
+          "changeSummary": "Updated to include digital assessment methods",
+          "details": "Added clarification on online and digital assessment formats"
+        }
+      ],
+      "removed": [
+        {
+          "name": "Training Route",
+          "type": "Academic",
+          "category": "Teacher Training",
+          "changeSummary": "All training route values have been removed",
+          "details": "Training route codes discontinued and removed from the system as part of the teacher training framework simplification"
+        },
+        {
+          "name": "Legacy Qualification Codes",
+          "type": "Academic",
+          "category": "Qualifications",
+          "changeSummary": "Pre-2020 qualification codes removed",
+          "details": "Legacy qualification codes no longer in use have been removed from the system"
+        }
+      ],
+      "noChange": [
+        {
+          "id": "gender",
+          "name": "Gender",
+          "type": "Personal",
+          "category": "Demographics",
+          "details": "Gender reference data remains unchanged from previous academic year"
+        },
+        {
+          "id": "country",
+          "name": "Country",
+          "type": "Geographic",
+          "category": "Location",
+          "details": "Country codes and definitions remain unchanged from previous academic year"
+        },
+        {
+          "id": "funding-source",
+          "name": "Funding Source",
+          "type": "Financial",
+          "category": "Funding",
+          "details": "Funding source codes remain unchanged from previous academic year"
+        },
+        {
+          "id": "academic-level",
+          "name": "Academic Level",
+          "type": "Academic",
+          "category": "Course",
+          "details": "Academic level definitions remain unchanged from previous academic year"
+        }
+      ]
+    }
+  }
+}

@@ -5,7 +5,7 @@ const nunjucks = require('nunjucks');
 const dateFilter = require('nunjucks-date-filter');
 const session = require('express-session');
 const { PrismaSessionStore } = require('@quixo3/prisma-session-store');
-const { prisma } = require('./config/prisma');
+const { prisma } = require('./config/database');
 
 const passport = require('passport');
 const flash = require('connect-flash');
@@ -55,27 +55,30 @@ app.use(express.urlencoded({ extended: true }));
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
-// Express session middleware
+// Express session middleware with improved configuration for Vercel
 app.use(session({
   secret: process.env.SESSION_SECRET || 'rrdm-dev-secret-key',
   name: 'rrdm.sid',
-  resave: false,
-  saveUninitialized: false,
+  resave: true, // Changed to true to ensure session is saved on every request
+  saveUninitialized: true, // Changed to true to create session for all visitors
   rolling: true,
-  proxy: process.env.VERCEL === '1', // Trust the reverse proxy when on Vercel
+  proxy: true, // Always trust the proxy in Vercel environment
   store: new PrismaSessionStore(prisma, {
     checkPeriod: 2 * 60 * 1000,  // Clean up expired sessions every 2 minutes
     dbRecordIdIsSessionId: true, // Use session ID as database record ID
     ttl: 24 * 60 * 60,  // 24 hours in seconds
-    sessionModelName: 'Session'
+    sessionModelName: 'Session',
+    autoRemove: 'native', // Use native TTL for session cleanup
+    autoRemoveInterval: 10 // Check expired sessions every 10 minutes
   }),
   cookie: {
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production' || process.env.VERCEL === '1',
-    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    secure: process.env.NODE_ENV === 'production', // Only secure in production
+    sameSite: 'lax', // Changed to lax for better compatibility
     path: '/',
-    domain: process.env.VERCEL_URL ? `.${process.env.VERCEL_URL}` : undefined
+    // Remove domain restriction which can cause issues in serverless
+    domain: undefined
   }
 }));
 
@@ -296,17 +299,22 @@ app.use((req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 9090;
 
 // Only start the server when running directly with Node.js
 // This prevents the server from trying to start in Vercel's serverless environment
 if (!process.env.VERCEL && require.main === module) {
   // Connect to database first
-  connectWithRetry().then(connected => {
+  connectWithRetry().then(async connected => {
     if (!connected) {
       console.error('Failed to connect to database after retries');
       process.exit(1);
     }
+    
+    // With Prisma, schema migrations are handled separately with prisma migrate
+    // No need to sync models at runtime as it's done during deployment
+    console.log('Using Prisma for database schema management');
+    // If needed, you can perform database health checks here
     
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
@@ -316,3 +324,11 @@ if (!process.env.VERCEL && require.main === module) {
 
 // Export the Express app and prisma client for testing
 module.exports = { app, prisma };
+
+// Set environment variables for Vercel deployment
+if (process.env.VERCEL) {
+  process.env.NODE_ENV = 'production';
+}
+
+// Export the Express app for Vercel serverless functions
+module.exports = app;

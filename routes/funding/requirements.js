@@ -3,29 +3,29 @@
  */
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
 const { ensureAuthenticated } = require('../../middleware/auth');
+const { FundingRequirement } = require('../../models');
 
 /**
  * GET /funding/requirements
  * Render the funding requirements page
  */
-const renderRequirements = (req, res) => {
+const renderRequirements = async (req, res) => {
   try {
-    // Load requirements data from JSON file
-    const requirementsPath = path.join(__dirname, '../../data/funding/requirements.json');
-    let requirements = [];
-    
-    if (fs.existsSync(requirementsPath)) {
-      const data = fs.readFileSync(requirementsPath, 'utf8');
-      requirements = JSON.parse(data);
-    }
+    // Load requirements data from database
+    let requirementsQuery = {};
     
     // Filter by route if specified
     if (req.query.route) {
-      requirements = requirements.filter(item => item.route === req.query.route);
+      requirementsQuery.route = req.query.route;
     }
+    
+    // Get requirements from database
+    const requirements = await FundingRequirement.findAll({
+      where: requirementsQuery,
+      order: [['year', 'DESC'], ['route', 'ASC']],
+      include: [{ association: 'creator', attributes: ['name'] }]
+    });
     
     // Define tag colors based on GOV.UK Design System
     const tagColors = {
@@ -37,7 +37,13 @@ const renderRequirements = (req, res) => {
     };
     
     // Get available routes for filter
-    const routes = [...new Set(requirements.map(item => item.route))];
+    const routesResult = await FundingRequirement.findAll({
+      attributes: ['route'],
+      group: ['route'],
+      order: [['route', 'ASC']]
+    });
+    
+    const routes = routesResult.map(item => item.route);
     
     res.render('modules/funding/requirements', {
       title: 'Funding Requirements',
@@ -52,7 +58,8 @@ const renderRequirements = (req, res) => {
     res.status(500).render('error', {
       title: 'Error',
       message: 'Failed to load funding requirements',
-      error
+      error,
+      user: req.user
     });
   }
 };

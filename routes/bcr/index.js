@@ -1,31 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const path = require('path');
-const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
+
+// Import Prisma services
+const bcrService = require('../../services/bcrService');
+const bcrConfigService = require('../../services/bcrConfigService');
 
 // No middleware needed as we're using a custom base layout
-
-// Helper function to read JSON data files
-const readJsonFile = (filePath) => {
-  try {
-    const data = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    console.error(`Error reading file ${filePath}:`, err);
-    return null;
-  }
-};
-
-// Helper function to write JSON data files
-const writeJsonFile = (filePath, data) => {
-  try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-    return true;
-  } catch (err) {
-    console.error(`Error writing file ${filePath}:`, err);
-    return false;
-  }
-};
 
 // Helper function to reset all phases below the current phase
 const resetLowerPhases = (submission, currentPhaseId, phases) => {
@@ -65,734 +46,522 @@ const resetLowerPhases = (submission, currentPhaseId, phases) => {
   });
 };
 
-// Helper function to get the phase ID for a given status name
-const getPhaseIdForStatus = (statusName, phases) => {
-  // This is a simplified implementation - in a real system, you'd look up the status in your config
-  // and get its associated phase ID
-  
-  // Map status names to phase IDs based on the config.json structure
-  const statusToPhaseMap = {
-    'Submission Received': 1,
-    'Collation and Categorisation': 2,
-    'Technical and Business Impact Review': 3,
-    'Internal Governance Review': 4,
-    'Stakeholder Feedback': 5,
-    'Draft Implementation Planning': 6,
-    'Final Approval': 7,
-    'Implementation': 8,
-    'Testing': 9,
-    'Go Live': 10,
-    'Post-Implementation Review': 11,
-    'Completed': 12,
-    'Rejected': null
-  };
-  
-  return statusToPhaseMap[statusName] || null;
+// Helper function to get phase ID for a status
+const getPhaseIdForStatus = async (statusName) => {
+  try {
+    // Find the status in the database using the service
+    const statuses = await bcrConfigService.getConfigsByType('status');
+    const status = statuses.find(s => s.name === statusName);
+    
+    if (status) {
+      return parseInt(status.value, 10);
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error getting phase ID for status:', error);
+    return null;
+  }
 };
 
 // Helper function to generate a new BCR ID
-function generateBcrId() {
-  const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
-  const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
-  
-  const currentYear = new Date().getFullYear();
-  const yearSubmissions = submissionsData.submissions.filter(s => s.id.includes(`BCR-${currentYear}`));
-  
-  let nextNumber = 1;
-  if (yearSubmissions.length > 0) {
-    // Extract the numeric part of the last ID and increment
-    const lastId = yearSubmissions.sort((a, b) => b.id.localeCompare(a.id))[0].id;
-    const lastNumber = parseInt(lastId.split('-')[2], 10);
-    nextNumber = lastNumber + 1;
-  }
-  
-  // Format with leading zeros (4 digits)
-  return `BCR-${currentYear}-${nextNumber.toString().padStart(4, '0')}`;
+async function generateBcrId() {
+  // Use the service to generate a BCR number
+  return await bcrService.generateBcrNumber();
 }
 
 // Main BCR management page
 router.get('/', (req, res) => {
   res.render('modules/bcr/index', {
-    title: 'BCR Management'
+    title: 'BCR Management',
+    user: req.user
   });
 });
 
 // Submissions list view
-router.get('/submissions', (req, res) => {
-  const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
-  const configPath = path.join(__dirname, '../../data/bcr/config.json');
-  
-  const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
-  const configData = readJsonFile(configPath) || { phases: [], statuses: [], impactAreas: [], urgencyLevels: [] };
-  
-  // Get filter parameters from query string
-  const status = req.query.status || 'all';
-  const impactArea = req.query.impactArea || 'all';
-  const submitter = req.query.submitter || 'all';
-  const dfeAffiliation = req.query.dfeAffiliation || 'all';
-  const startDate = req.query.startDate || '';
-  const endDate = req.query.endDate || '';
-  
-  // Apply filters
-  let filteredSubmissions = submissionsData.submissions;
-  
-  if (status !== 'all') {
-    filteredSubmissions = filteredSubmissions.filter(s => s.status === status);
-  }
-  
-  if (impactArea !== 'all') {
-    filteredSubmissions = filteredSubmissions.filter(s => s.impactAreas.includes(impactArea));
-  }
-  
-  if (dfeAffiliation !== 'all') {
-    filteredSubmissions = filteredSubmissions.filter(s => {
-      if (dfeAffiliation === 'internal') {
-        return s.employmentType === 'yes';
-      } else if (dfeAffiliation === 'external') {
-        return s.employmentType === 'no';
-      } else if (dfeAffiliation === 'other') {
-        return s.employmentType !== 'yes' && s.employmentType !== 'no';
-      }
-      return false;
-    });
-  }
-  
-  if (submitter !== 'all') {
-    filteredSubmissions = filteredSubmissions.filter(s => {
-      // Handle both old and new data structure
-      const submitterName = s.submitterName || (s.submitter && s.submitter.name) || 'Unknown';
-      return submitterName === submitter;
-    });
-  }
-  
-  if (startDate) {
-    const startDateObj = new Date(startDate);
-    filteredSubmissions = filteredSubmissions.filter(s => new Date(s.dateSubmitted) >= startDateObj);
-  }
-  
-  if (endDate) {
-    const endDateObj = new Date(endDate);
-    endDateObj.setHours(23, 59, 59, 999); // End of the day
-    filteredSubmissions = filteredSubmissions.filter(s => new Date(s.dateSubmitted) <= endDateObj);
-  }
-  
-  // Extract unique values for filter dropdowns
-  const statuses = configData.statuses.map(s => s.name);
-  const impactAreas = configData.impactAreas;
-  const submitters = [...new Set(submissionsData.submissions.map(s => s.submitterName || (s.submitter && s.submitter.name) || 'Unknown'))];
-  
-  res.render('modules/bcr/submissions', {
-    title: 'BCR Submissions',
-    submissions: filteredSubmissions,
-    filters: {
-      statuses,
-      impactAreas,
-      submitters
-    },
-    selectedFilters: {
+router.get('/submissions', async (req, res) => {
+  try {
+    // Get filter parameters from query string
+    const status = req.query.status || 'all';
+    const impactArea = req.query.impactArea || 'all';
+    const submitter = req.query.submitter || 'all';
+    const startDate = req.query.startDate || '';
+    const endDate = req.query.endDate || '';
+    
+    // Get submissions from database using the service
+    const submissions = await bcrService.getAllBcrs({
       status,
       impactArea,
-      dfeAffiliation,
       submitter,
       startDate,
       endDate
-    }
-  });
+    });
+    
+    // Get configuration data for filters using the service
+    const statuses = await bcrConfigService.getConfigsByType('status');
+    const impactAreas = await bcrConfigService.getConfigsByType('impactArea');
+    
+    // Get unique submitters for filter
+    const allSubmissions = await bcrService.getAllBcrs();
+    const submitters = [...new Set(
+      allSubmissions
+        .filter(s => s.Users_Bcrs_requestedByToUsers)
+        .map(s => s.Users_Bcrs_requestedByToUsers.name)
+    )].sort();
+    
+    // Render the template with data
+    res.render('modules/bcr/submissions', {
+      title: 'BCR Submissions',
+      submissions,
+      filters: {
+        statuses: statuses.map(s => s.name),
+        impactAreas: impactAreas.map(ia => ia.name),
+        submitters
+      },
+      selectedFilters: {
+        status,
+        impactArea,
+        submitter,
+        startDate,
+        endDate
+      },
+      user: req.user
+    });
+  } catch (error) {
+    console.error('Error fetching BCR submissions:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'Failed to load BCR submissions',
+      error,
+      user: req.user
+    });
+  }
 });
 
 // New BCR submission form
-router.get('/submit', (req, res) => {
-  const configPath = path.join(__dirname, '../../data/bcr/config.json');
-  const configData = readJsonFile(configPath) || { impactAreas: [], urgencyLevels: [] };
-  
-  res.render('modules/bcr/submit', {
-    title: 'Submit New BCR',
-    impactAreas: configData.impactAreas,
-    urgencyLevels: configData.urgencyLevels,
-
-  });
+router.get('/submit', async (req, res) => {
+  try {
+    // Get configuration data from database using services
+    const impactAreas = await bcrConfigService.getConfigsByType('impactArea');
+    const urgencyLevels = await bcrConfigService.getConfigsByType('urgencyLevel');
+    
+    res.render('modules/bcr/submit', {
+      title: 'Submit BCR',
+      impactAreas,
+      urgencyLevels,
+      user: req.user
+    });
+  } catch (error) {
+    console.error('Error loading BCR submission form:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'Failed to load BCR submission form',
+      error,
+      user: req.user
+    });
+  }
 });
 
 // Process new BCR submission
-router.post('/submit', (req, res) => {
+router.post('/submit', async (req, res) => {
   try {
-    const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
-    const configPath = path.join(__dirname, '../../data/bcr/config.json');
-    
-    const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
-    const configData = readJsonFile(configPath) || { phases: [], statuses: [] };
-    
-    // Generate a new BCR ID
-    const bcrId = generateBcrId();
-    
-    // Get the initial status and phase
-    const initialStatus = configData.statuses.find(s => s.phase === 1);
-    const initialPhase = configData.phases.find(p => p.id === 1);
-    
     // Process impact areas (handle both array and single value)
     let impactAreas = req.body.impactAreas;
     if (!Array.isArray(impactAreas)) {
       impactAreas = impactAreas ? [impactAreas] : [];
     }
     
-    // Process change types (handle both array and single value)
-    let changeType = req.body.changeType;
-    if (!Array.isArray(changeType)) {
-      changeType = changeType ? [changeType] : [];
-    }
+    // Create impact string from array
+    const impactString = impactAreas.join(', ');
     
-    // Create new submission object
-    const newSubmission = {
-      id: bcrId,
-      dateSubmitted: new Date().toISOString(),
-      submitter: {
-        name: req.body.submitterName,
-        organisation: req.body.submitterOrganisation,
-        email: req.body.submitterEmail
-      },
-      employmentType: req.body.employmentType || '',
-      title: req.body.description.substring(0, 100), // Use description as title if no separate title field
+    // Create BCR data object
+    const bcrData = {
+      title: req.body.title,
       description: req.body.description,
-      justification: req.body.justification,
-      policyLinked: req.body.policyLinked === 'yes',
-      policyDetails: req.body.policyDetails || '',
-      impactAreas: impactAreas,
-      changeType: changeType,
-      affectedRefDataArea: req.body.affectedRefDataArea || '',
-      technicalDependencies: req.body.technicalDependencies || '',
-      urgency: req.body.urgency,
-      relatedDocuments: req.body.relatedDocuments ? req.body.relatedDocuments.split(',').map(doc => doc.trim()) : [],
-      hasAttachments: req.body.hasAttachments === 'yes',
-      status: initialStatus ? initialStatus.name : 'Submission Received',
-      currentPhase: initialPhase ? initialPhase.name : 'Phase 1: Submission Window Opens',
-      currentPhaseId: 1,
-      assignedReviewer: '',
-      history: [
-        {
-          date: new Date().toISOString(),
-          action: 'Submission Created',
-          user: req.body.submitterName,
-          notes: 'Initial submission'
-        }
-      ]
+      status: 'submitted', // Set initial status to submitted
+      priority: req.body.urgency || 'medium', // Map urgency to priority
+      impact: impactString,
+      requestedBy: req.user.id, // Use the logged-in user's ID
+      assignedTo: null,
+      notes: `Justification: ${req.body.justification || ''}
+
+Policy Details: ${req.body.policyDetails || ''}
+
+Technical Dependencies: ${req.body.technicalDependencies || ''}
+
+Submitter Email: ${req.body.submitterEmail || ''}
+
+Submitter Organization: ${req.body.submitterOrganisation || ''}`
     };
     
-    // Add to submissions
-    submissionsData.submissions.push(newSubmission);
+    // Create a new BCR in the database using the service
+    const newBcr = await bcrService.createBcr(bcrData);
     
-    // Save updated submissions data
-    if (writeJsonFile(submissionsPath, submissionsData)) {
-      // Redirect to the confirmation page
-      res.redirect(`/bcr/submission-confirmation/${bcrId}`);
-    } else {
-      res.status(500).render('error', {
-        title: 'Error',
-        message: 'Failed to save submission'
-      });
-    }
+    // Redirect to the confirmation page
+    res.redirect(`/bcr/${newBcr.id}`);
   } catch (error) {
     console.error('Error in BCR submission:', error);
     res.status(500).render('error', {
       title: 'Error',
-      message: 'Failed to save submission: ' + error.message
+      message: 'Failed to save submission: ' + error.message,
+      user: req.user
     });
   }
 });
 
-// BCR submission confirmation page
+// Redirect old submission confirmation URLs to the BCR view page
 router.get('/submission-confirmation/:id', (req, res) => {
-  const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
-  const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
-  
-  const bcrId = req.params.id;
-  const submission = submissionsData.submissions.find(s => s.id === bcrId);
-  
-  if (!submission) {
-    return res.status(404).render('error', {
-      title: 'Not Found',
-      message: 'The requested BCR submission could not be found'
-    });
-  }
-  
-  res.render('modules/bcr/submission-confirmation', {
-    title: 'BCR Submission Confirmation',
-    bcrId: submission.id,
-    bcrTitle: submission.title,
-    submitterName: submission.submitter.name,
-    submitterEmail: submission.submitter.email,
-    urgency: submission.urgency
-  });
+  res.redirect(`/bcr/${req.params.id}`);
 });
 
 // BCR update confirmation page
-router.get('/update-confirmation/:id', (req, res) => {
-  const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
-  const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
-  
-  const bcrId = req.params.id;
-  const submission = submissionsData.submissions.find(s => s.id === bcrId);
-  
-  if (!submission) {
-    return res.status(404).render('error', {
-      title: 'Not Found',
-      message: 'The requested BCR submission could not be found'
+router.get('/update-confirmation/:id', async (req, res) => {
+  try {
+    const bcrId = req.params.id;
+    
+    // Find the BCR in the database using the service
+    const bcr = await bcrService.getBcrById(bcrId);
+    
+    if (!bcr) {
+      return res.status(404).render('error', {
+        title: 'Not Found',
+        message: 'BCR not found',
+        error: { status: 404 },
+        user: req.user
+      });
+    }
+    
+    // Get configuration data using the service
+    const statuses = await bcrConfigService.getConfigsByType('status');
+    
+    res.render('modules/bcr/update-confirmation', {
+      title: 'BCR Updated',
+      bcr,
+      statusColors: {
+        'draft': 'govuk-tag govuk-tag--grey',
+        'submitted': 'govuk-tag govuk-tag--blue',
+        'under_review': 'govuk-tag govuk-tag--light-blue',
+        'approved': 'govuk-tag govuk-tag--green',
+        'rejected': 'govuk-tag govuk-tag--red',
+        'implemented': 'govuk-tag govuk-tag--purple'
+      },
+      statuses,
+      user: req.user
+    });
+  } catch (error) {
+    console.error('Error loading BCR update confirmation:', error);
+    return res.status(500).render('error', {
+      title: 'Error',
+      message: 'Failed to load BCR update confirmation',
+      error,
+      user: req.user
     });
   }
-  
-  res.render('modules/bcr/update-confirmation', {
-    title: 'BCR Update Confirmation',
-    bcrId: submission.id,
-    bcrTitle: submission.title,
-    lastUpdated: submission.lastUpdated || new Date().toISOString(),
-    urgency: submission.urgency
-  });
 });
 
 // View BCR submission details
-router.get('/submissions/:id', (req, res) => {
-  const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
-  const configPath = path.join(__dirname, '../../data/bcr/config.json');
-  const prioritisationPath = path.join(__dirname, '../../data/bcr/prioritisation.json');
-  
-  const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
-  const configData = readJsonFile(configPath) || { phases: [], statuses: [] };
-  const prioritisationData = readJsonFile(prioritisationPath) || { prioritisations: [] };
-  
-  const bcrId = req.params.id;
-  const submission = submissionsData.submissions.find(s => s.id === bcrId);
-  
-  if (!submission) {
-    return res.status(404).render('error', {
-      title: 'Not Found',
-      message: 'The requested BCR submission could not be found'
-    });
-  }
-  
-  // Find the current phase object
-  const currentPhaseId = configData.statuses.find(s => s.name === submission.status)?.phase;
-  const currentPhase = configData.phases.find(p => p.id === currentPhaseId);
-  
-  // Get allowed actions for the current phase
-  const allowedActions = currentPhase ? currentPhase.allowedActions : [];
-  
-  res.render('modules/bcr/submission-detail', {
-    title: `BCR: ${submission.id}`,
-    submission: submission,
-    allowedActions: allowedActions,
-    phases: configData.phases,
-    statuses: configData.statuses,
-    prioritisations: prioritisationData.prioritisations
-  });
-});
-
-// Update BCR submission status
-router.post('/submissions/:id/update', (req, res) => {
-  const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
-  const configPath = path.join(__dirname, '../../data/bcr/config.json');
-  
-  const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
-  const configData = readJsonFile(configPath) || { phases: [], statuses: [] };
-  
-  const bcrId = req.params.id;
-  const submissionIndex = submissionsData.submissions.findIndex(s => s.id === bcrId);
-  
-  if (submissionIndex === -1) {
-    return res.status(404).render('error', {
-      title: 'Not Found',
-      message: 'The requested BCR submission could not be found'
-    });
-  }
-  
-  const submission = submissionsData.submissions[submissionIndex];
-  
-  // Check if a comment is provided - it's required for status updates
-  if (!req.body.comment || req.body.comment.trim() === '') {
-    return res.status(400).render('error', {
-      title: 'Error',
-      message: 'A comment is required when updating the status'
-    });
-  }
-
-  // Track if we need to update the workflow history
-  let workflowUpdated = false;
-  
-  // Update phase if provided
-  if (req.body.phaseId) {
-    const phaseId = parseInt(req.body.phaseId, 10);
-    const phaseObj = configData.phases.find(p => p.id === phaseId);
-    const currentPhaseId = submission.currentPhaseId || 1;
+router.get('/submissions/:id', async (req, res) => {
+  try {
+    const bcrId = req.params.id;
     
-    // Check if the requested phase follows the sequential workflow
-    const isValidPhaseProgression = (
-      // Allow moving to the next phase in sequence
-      phaseId === currentPhaseId + 1 ||
-      // Allow staying in the current phase
-      phaseId === currentPhaseId ||
-      // Allow moving to any previous phase (for corrections)
-      phaseId < currentPhaseId ||
-      // Special case: Allow moving to Rejected phase from any phase
-      phaseId === configData.phases.find(p => p.name.includes('Rejected'))?.id
-    );
+    // Find the BCR in the database with associated users using the service
+    const bcr = await bcrService.getBcrById(bcrId);
     
-    if (!isValidPhaseProgression) {
-      return res.status(400).render('error', {
-        title: 'Invalid Workflow Progression',
-        message: `Cannot skip directly from Phase ${currentPhaseId} to Phase ${phaseId}. You must follow the sequential workflow.`
+    if (!bcr) {
+      return res.status(404).render('error', {
+        title: 'Not Found',
+        message: 'BCR submission not found',
+        error: { status: 404 },
+        user: req.user
       });
     }
     
-    if (phaseObj) {
-      // Update the current phase
-      submission.currentPhase = phaseObj.name;
-      submission.currentPhaseId = phaseId;
-      submission.lastUpdated = new Date().toISOString();
-      workflowUpdated = true;
-      
-      // Find the corresponding status for this phase
-      const phaseStatus = configData.statuses.find(s => s.phase === phaseId);
-      if (phaseStatus) {
-        submission.status = phaseStatus.name;
-      }
-      
-      // Add to history
-      if (!submission.history) {
-        submission.history = [];
-      }
-      submission.history.push({
-        date: new Date().toISOString(),
-        action: 'Phase Updated',
-        user: req.body.user || 'System',
-        notes: `Updated to Phase ${phaseId}: ${phaseObj.name}`
-      });
-      
-      // Mark the phase as completed if checkbox is checked
-      const phaseCompleted = req.body.phaseCompleted === 'true';
-      
-      // Add to workflow history
-      if (!submission.workflowHistory) {
-        submission.workflowHistory = [];
-      }
-      
-      // Find any existing entries for this phase and update them
-      let phaseEntryExists = false;
-      for (let i = 0; i < submission.workflowHistory.length; i++) {
-        const entry = submission.workflowHistory[i];
-        if (entry.action === 'Phase Updated' && entry.notes.includes(`Phase ${phaseId}`)) {
-          entry.date = new Date().toISOString();
-          entry.user = req.body.user || 'System';
-          entry.notes = `Updated to Phase ${phaseId}: ${phaseObj.name}`;
-          entry.completed = phaseCompleted;
-          phaseEntryExists = true;
-          break;
-        }
-      }
-      
-      // If no entry exists for this phase, add a new one
-      if (!phaseEntryExists) {
-        submission.workflowHistory.push({
-          date: new Date().toISOString(),
-          action: 'Phase Updated',
-          user: req.body.user || 'System',
-          notes: `Updated to Phase ${phaseId}: ${phaseObj.name}`,
-          completed: phaseCompleted
-        });
-      }
-      
-      // If phase is marked as completed, automatically advance to the next phase
-      if (phaseCompleted && phaseObj.nextPhase) {
-        const nextPhaseId = phaseObj.nextPhase;
-        const nextPhaseObj = configData.phases.find(p => p.id === nextPhaseId);
-        
-        if (nextPhaseObj) {
-          // Update to the next phase
-          submission.currentPhase = nextPhaseObj.name;
-          submission.currentPhaseId = nextPhaseId;
-          
-          // Find the default status for the next phase
-          const nextPhaseDefaultStatus = configData.statuses.find(s => s.phase === nextPhaseId && s.default === true);
-          if (nextPhaseDefaultStatus) {
-            submission.status = nextPhaseDefaultStatus.name;
-          }
-          
-          // Add to history
-          submission.history.push({
-            date: new Date().toISOString(),
-            action: 'Phase Advanced',
-            user: req.body.user || 'System',
-            notes: `Automatically advanced to Phase ${nextPhaseId}: ${nextPhaseObj.name} after completing previous phase`
-          });
-          
-          // Add to workflow history
-          submission.workflowHistory.push({
-            date: new Date().toISOString(),
-            action: 'Phase Updated',
-            user: req.body.user || 'System',
-            notes: `Advanced to Phase ${nextPhaseId}: ${nextPhaseObj.name}`,
-            completed: false
-          });
-        }
-      }
-    }
-  }
-  
-  // Update status based on the selected phase
-  if (req.body.phaseId) {
-    const phaseId = parseInt(req.body.phaseId, 10);
-    const phaseObj = configData.phases.find(p => p.id === phaseId);
+    // Get configuration data using the services
+    const phases = await bcrConfigService.getConfigsByType('phase');
+    const statuses = await bcrConfigService.getConfigsByType('status');
     
-    if (phaseObj) {
-      // Find the default status for this phase
-      const defaultStatus = configData.statuses.find(s => s.phase === phaseId && s.default === true);
-      const newStatus = defaultStatus ? defaultStatus.name : submission.status;
-      
-      // Special case: Allow skipping to Completed or Rejected status with a comment
-      const isClosingBCR = newStatus === 'Completed' || newStatus === 'Rejected';
-      
-      // Update the status
-      submission.status = newStatus;
-      submission.lastUpdated = new Date().toISOString();
-      
-      // Add closure date for tracking if applicable
-      if (newStatus === 'Completed') {
-        submission.completedDate = new Date().toISOString();
-      } else if (newStatus === 'Rejected') {
-        submission.rejectedDate = new Date().toISOString();
-      }
-      
-      // Add to history
-      if (!submission.history) {
-        submission.history = [];
-      }
-      submission.history.push({
-        date: new Date().toISOString(),
-        action: 'Status Updated',
-        user: req.body.user || 'System',
-        notes: `Changed status to ${newStatus}`
-      });
-
-      // Add to workflow history with the user's comment if not already updated by phase change
-      if (!submission.workflowHistory) {
-        submission.workflowHistory = [];
-      }
-      
-      if (!workflowUpdated) {
-        const phaseCompleted = req.body.phaseCompleted === 'true';
-        submission.workflowHistory.push({
-          date: new Date().toISOString(),
-          action: 'Status Updated',
-          user: req.body.user || 'System',
-          notes: req.body.comment,
-          completed: phaseCompleted
-        });
-      }
-    }
-  }
-  
-  // Update assigned reviewer if provided
-  if (req.body.assignedReviewer !== undefined) {
-    submission.assignedReviewer = req.body.assignedReviewer;
+    // Determine allowed actions based on current status
+    const allowedActions = {
+      canEdit: true, // Allow editing for all statuses for now
+      canUpdateStatus: true // Allow status updates for all statuses for now
+    };
     
-    // Add to history if reviewer changed
-    if (submission.assignedReviewer !== req.body.assignedReviewer) {
-      submission.history.push({
-        date: new Date().toISOString(),
-        action: 'Reviewer Assigned',
-        user: req.body.user || 'System',
-        notes: `Assigned to ${req.body.assignedReviewer}`
-      });
-    }
-  }
-  
-  // Add comment to history if provided
-  if (req.body.comment) {
-    submission.history.push({
-      date: new Date().toISOString(),
-      action: 'Comment Added',
-      user: req.body.user || 'System',
-      notes: req.body.comment
+    res.render('modules/bcr/submission-detail', {
+      title: `BCR: ${bcr.bcrNumber || bcr.id}`,
+      submission: bcr,
+      allowedActions: allowedActions,
+      phases: phases,
+      statuses: statuses,
+      user: req.user
     });
-  }
-  
-  // Save updated submissions data
-  if (writeJsonFile(submissionsPath, submissionsData)) {
-    // Check if this was a phase update
-    if (req.body.phaseId) {
-      // Redirect to confirmation page with relevant information
-      res.redirect(`/bcr/submissions/${bcrId}/phase-update-confirmation?user=${encodeURIComponent(req.body.user || 'System')}&comment=${encodeURIComponent(req.body.comment)}&time=${encodeURIComponent(new Date().toISOString())}`);
-    } else {
-      // Regular redirect for other updates
-      res.redirect(`/bcr/submissions/${bcrId}`);
-    }
-  } else {
+  } catch (error) {
+    console.error('Error viewing BCR submission:', error);
     res.status(500).render('error', {
       title: 'Error',
-      message: 'Failed to update submission'
+      message: 'Failed to load BCR submission',
+      error,
+      user: req.user
     });
+  }
+});
+
+// Update BCR status
+router.post('/update-status/:id', async (req, res) => {
+  try {
+    const bcrId = req.params.id;
+    const { status, phase, comment, assignee } = req.body;
+    
+    // Find the BCR using the service
+    const bcr = await bcrService.getBcrById(bcrId);
+    
+    if (!bcr) {
+      return res.status(404).json({ success: false, message: 'BCR not found' });
+    }
+    
+    // Validate comment
+    if (!comment) {
+      return res.status(400).render('error', {
+        title: 'Error',
+        message: 'A comment is required when updating the status',
+        user: req.user
+      });
+    }
+    
+    // Get configuration data using services
+    const statuses = await bcrConfigService.getConfigsByType('status');
+    
+    // Determine current phase
+    const currentPhaseId = await getPhaseIdForStatus(bcr.status);
+    
+    // Create update data object
+    const updateData = {};
+    
+    // Update status if provided
+    if (status) {
+      updateData.status = status;
+    }
+    
+    // Update phase if provided
+    if (phase) {
+      // Reset lower phases if moving to a higher phase
+      const newPhaseId = parseInt(phase, 10);
+      if (newPhaseId > currentPhaseId) {
+        updateData.phase = newPhaseId;
+      }
+    }
+    
+    // Update notes with the comment
+    const currentNotes = bcr.notes || '';
+    updateData.notes = `${currentNotes}\n\n${new Date().toISOString()} - ${req.user.name}: ${comment}`;
+    
+    // Update the assignee if provided
+    if (assignee) {
+      updateData.assignedTo = assignee;
+    }
+    
+    // Update the BCR using the service
+    await bcrService.updateBcr(bcrId, updateData);
+    
+    // Redirect to confirmation page
+    res.redirect(`/bcr/update-confirmation/${bcrId}`);
+  } catch (error) {
+    console.error('Error updating BCR status:', error);
+    res.status(500).json({ success: false, message: 'Failed to update BCR status' });
   }
 });
 
 // Phase update confirmation page
-router.get('/submissions/:id/phase-update-confirmation', (req, res) => {
-  const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
-  const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
-  
-  const bcrId = req.params.id;
-  const submission = submissionsData.submissions.find(s => s.id === bcrId);
-  
-  if (!submission) {
-    return res.status(404).render('error', {
-      title: 'Not Found',
-      message: 'The requested BCR submission could not be found'
-    });
-  }
-  
-  // Get the query parameters
-  const updatedBy = req.query.user || 'System';
-  const comment = req.query.comment || '';
-  const updateTime = req.query.time || new Date().toISOString();
-  
-  res.render('modules/bcr/phase-update-confirmation', {
-    title: 'Phase Update Confirmation',
-    submission: submission,
-    updatedBy: updatedBy,
-    comment: comment,
-    updateTime: updateTime
-  });
-});
-
-// BCR workflow management page
-router.get('/workflow', (req, res) => {
-  const configPath = path.join(__dirname, '../../data/bcr/config.json');
-  const configData = readJsonFile(configPath) || { phases: [], statuses: [] };
-  
-  res.render('modules/bcr/workflow', {
-    title: 'BCR Workflow Management',
-    phases: configData.phases,
-    statuses: configData.statuses
-  });
-});
-
-// BCR phase-status mapping page
-router.get('/phase-status-mapping', (req, res) => {
-  const configPath = path.join(__dirname, '../../data/bcr/config.json');
-  const configData = readJsonFile(configPath) || { phases: [], statuses: [] };
-  
-  res.render('modules/bcr/phase-status-mapping', {
-    title: 'BCR Phase-Status Mapping',
-    phases: configData.phases,
-    statuses: configData.statuses
-  });
-});
-
-// Edit BCR submission form
-router.get('/submissions/:id/edit', (req, res) => {
-  const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
-  const configPath = path.join(__dirname, '../../data/bcr/config.json');
-  
-  const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
-  const configData = readJsonFile(configPath) || { impactAreas: [], urgencyLevels: [] };
-  
-  const submission = submissionsData.submissions.find(s => s.id === req.params.id);
-  
-  if (!submission) {
-    return res.status(404).render('error', {
-      title: 'Error',
-      message: 'Submission not found'
-    });
-  }
-  
-  res.render('modules/bcr/edit-submission', {
-    title: `Edit BCR: ${submission.id}`,
-    submission: submission,
-    impactAreas: configData.impactAreas,
-    urgencyLevels: configData.urgencyLevels
-  });
-});
-
-// Process edit BCR submission
-router.post('/submissions/:id/edit', (req, res) => {
+router.get('/submissions/:id/phase-update-confirmation', async (req, res) => {
   try {
-    const submissionsPath = path.join(__dirname, '../../data/bcr/submissions.json');
-    const submissionsData = readJsonFile(submissionsPath) || { submissions: [] };
+    const bcrId = req.params.id;
     
-    const submissionIndex = submissionsData.submissions.findIndex(s => s.id === req.params.id);
+    // Find the BCR in the database using the service
+    const bcr = await bcrService.getBcrById(bcrId);
     
-    if (submissionIndex === -1) {
+    if (!bcr) {
       return res.status(404).render('error', {
-        title: 'Error',
-        message: 'Submission not found'
+        title: 'Not Found',
+        message: 'BCR submission could not be found',
+        error: { status: 404 },
+        user: req.user
       });
     }
     
-    const submission = submissionsData.submissions[submissionIndex];
+    // Get query parameters
+    const userName = req.query.user || 'System';
+    const comment = req.query.comment || '';
+    const time = req.query.time || new Date().toISOString();
+    
+    res.render('modules/bcr/phase-update-confirmation', {
+      title: 'Phase Update Confirmation',
+      bcrId: bcr.id,
+      bcrTitle: bcr.title,
+      user: req.user,
+      userName,
+      comment,
+      time
+    });
+  } catch (error) {
+    console.error('Error loading phase update confirmation:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'Failed to load phase update confirmation',
+      error,
+      user: req.user
+    });
+  }
+});
+
+// BCR workflow management page
+router.get('/workflow', async (req, res) => {
+  try {
+    // Get configuration data from database using services
+    const phases = await bcrConfigService.getConfigsByType('phase');
+    const statuses = await bcrConfigService.getConfigsByType('status');
+    
+    res.render('modules/bcr/workflow', {
+      title: 'BCR Workflow Management',
+      phases,
+      statuses,
+      user: req.user
+    });
+  } catch (error) {
+    console.error('Error loading BCR workflow management:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'Failed to load BCR workflow management',
+      error,
+      user: req.user
+    });
+  }
+});
+
+// BCR phase-status mapping page
+router.get('/phase-status-mapping', async (req, res) => {
+  try {
+    // Get configuration data from database using services
+    const phases = await bcrConfigService.getConfigsByType('phase');
+    const statuses = await bcrConfigService.getConfigsByType('status');
+    
+    res.render('modules/bcr/phase-status-mapping', {
+      title: 'BCR Phase-Status Mapping',
+      phases,
+      statuses,
+      user: req.user
+    });
+  } catch (error) {
+    console.error('Error loading BCR phase-status mapping:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'Failed to load BCR phase-status mapping',
+      error,
+      user: req.user
+    });
+  }
+});
+
+// Edit BCR submission form
+router.get('/submissions/:id/edit', async (req, res) => {
+  try {
+    const bcrId = req.params.id;
+    
+    // Find the BCR in the database
+    const bcr = await Bcr.findByPk(bcrId, {
+      include: [
+        { model: User, as: 'requester' },
+        { model: User, as: 'assignee' }
+      ]
+    });
+    
+    if (!bcr) {
+      return res.status(404).render('error', {
+        title: 'Error',
+        message: 'Submission not found',
+        user: req.user
+      });
+    }
+    
+    // Get configuration data
+    const impactAreas = await BcrConfig.findAll({ where: { type: 'impactArea' }, order: [['displayOrder', 'ASC']] });
+    const urgencyLevels = await BcrConfig.findAll({ where: { type: 'urgencyLevel' }, order: [['displayOrder', 'ASC']] });
+    
+    res.render('modules/bcr/edit-submission', {
+      title: `Edit BCR: ${bcr.id}`,
+      submission: bcr,
+      impactAreas: impactAreas.map(ia => ia.name),
+      urgencyLevels: urgencyLevels.map(ul => ul.name),
+      user: req.user
+    });
+  } catch (error) {
+    console.error('Error loading BCR edit form:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'Failed to load BCR edit form',
+      error,
+      user: req.user
+    });
+  }
+});
+
+// Process edit BCR submission
+router.post('/submissions/:id/edit', async (req, res) => {
+  try {
+    const bcrId = req.params.id;
+    
+    // Find the BCR in the database
+    const bcr = await Bcr.findByPk(bcrId);
+    
+    if (!bcr) {
+      return res.status(404).render('error', {
+        title: 'Error',
+        message: 'Submission not found',
+        user: req.user
+      });
+    }
     
     // Process impact areas (handle both array and single value)
     let impactAreas = req.body.impactAreas;
     if (!Array.isArray(impactAreas)) {
       impactAreas = impactAreas ? [impactAreas] : [];
     }
-
-    // Process change types (handle both array and single value)
-    let changeType = req.body.changeType;
-    if (!Array.isArray(changeType)) {
-      changeType = changeType ? [changeType] : [];
+    
+    // Create impact string from array
+    const impactString = impactAreas.join(', ');
+    
+    // Update BCR with form data
+    bcr.title = req.body.title || req.body.description.substring(0, 100); // Use description as title if no separate title field
+    
+    // Update BCR fields
+    bcr.description = req.body.description;
+    bcr.impact = impactString;
+    bcr.priority = req.body.urgency || 'medium'; // Map urgency to priority
+    
+    // Update notes with additional information
+    let additionalNotes = '';
+    if (req.body.justification) additionalNotes += `\nJustification: ${req.body.justification}`;
+    if (req.body.policyDetails) additionalNotes += `\nPolicy Details: ${req.body.policyDetails}`;
+    if (req.body.technicalDependencies) additionalNotes += `\nTechnical Dependencies: ${req.body.technicalDependencies}`;
+    
+    if (additionalNotes) {
+      // Append to existing notes if there are any
+      if (bcr.notes) {
+        bcr.notes += `\n\n${new Date().toISOString()} - Update: ${additionalNotes}`;
+      } else {
+        bcr.notes = additionalNotes;
+      }
     }
     
-    // Update submission with form data
-    // Use description as title if no separate title field
-    submission.title = req.body.description.substring(0, 100);
+    // Save the updated BCR
+    await bcr.save();
     
-    // Always update description
-    submission.description = req.body.description;
-    submission.justification = req.body.justification;
-    submission.impactAreas = impactAreas;
-    submission.changeType = changeType;
-    submission.urgency = req.body.urgency;
-    submission.affectedRefDataArea = req.body.affectedRefDataArea || '';
-    submission.technicalDependencies = req.body.technicalDependencies || '';
-    
-    // Process related documents (convert from newline-separated text to array)
-    submission.relatedDocuments = req.body.relatedDocuments ? 
-      req.body.relatedDocuments.split('\n').map(doc => doc.trim()).filter(doc => doc) : [];
-    
-    // Update submitter information
-    if (!submission.submitter) {
-      submission.submitter = {};
-    }
-    submission.submitter.name = req.body.submitterName;
-    submission.submitter.email = req.body.submitterEmail;
-    submission.submitter.organisation = req.body.submitterOrganisation || '';
-    submission.employmentType = req.body.employmentType;
-    
-    // Add history entry for the update
-    if (!submission.history) {
-      submission.history = [];
-    }
-    
-    submission.history.push({
-      date: new Date().toISOString(),
-      action: 'Submission Updated',
-      user: req.body.submitterName,
-      notes: 'BCR details updated'
-    });
-    
-    submission.lastUpdated = new Date().toISOString();
-    
-    // Save updated submissions data
-    if (writeJsonFile(submissionsPath, submissionsData)) {
-      // Redirect to the update confirmation page
-      res.redirect(`/bcr/update-confirmation/${req.params.id}`);
-    } else {
-      res.status(500).render('error', {
-        title: 'Error',
-        message: 'Failed to save submission'
-      });
-    }
+    // Redirect to the BCR view page
+    res.redirect(`/bcr/submissions/${bcrId}`);
   } catch (error) {
-    console.error('Error in BCR edit submission:', error);
+    console.error('Error updating BCR submission:', error);
     res.status(500).render('error', {
       title: 'Error',
-      message: 'Failed to save submission: ' + error.message
+      message: 'Failed to update submission: ' + error.message,
+      user: req.user
     });
   }
 });

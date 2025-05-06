@@ -3,38 +3,10 @@
  */
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
 const { ensureAuthenticated } = require('../../middleware/auth');
+const fundingService = require('../../services/fundingService');
 
-// Load funding data from JSON files
-const loadFundingRequirements = () => {
-  try {
-    const requirementsPath = path.join(__dirname, '../../data/funding/requirements.json');
-    if (fs.existsSync(requirementsPath)) {
-      const data = fs.readFileSync(requirementsPath, 'utf8');
-      return JSON.parse(data);
-    }
-    return [];
-  } catch (error) {
-    console.error('Error loading funding requirements:', error);
-    return [];
-  }
-};
-
-const loadFundingHistory = () => {
-  try {
-    const historyPath = path.join(__dirname, '../../data/funding/history.json');
-    if (fs.existsSync(historyPath)) {
-      const data = fs.readFileSync(historyPath, 'utf8');
-      return JSON.parse(data);
-    }
-    return [];
-  } catch (error) {
-    console.error('Error loading funding history:', error);
-    return [];
-  }
-};
+// These functions are no longer needed as we're using Prisma services
 
 /**
  * GET /api/funding/requirements
@@ -42,12 +14,17 @@ const loadFundingHistory = () => {
  */
 const getFundingRequirements = async (req, res) => {
   try {
-    let requirements = loadFundingRequirements();
-    
-    // Filter by route if specified
+    // Get requirements from the database using the service
+    // with optional filtering by route
+    const filters = {};
     if (req.query.route) {
-      requirements = requirements.filter(item => item.route === req.query.route);
+      filters.route = req.query.route;
     }
+    if (req.query.year) {
+      filters.year = req.query.year;
+    }
+    
+    const requirements = await fundingService.getAllFundingRequirements(filters);
     
     res.status(200).json(requirements);
   } catch (error) {
@@ -58,17 +35,21 @@ const getFundingRequirements = async (req, res) => {
 
 /**
  * GET /api/funding/history
- * Get funding history data, optionally filtered by year
+ * Get funding history data, optionally filtered by year or route
  */
 const getFundingHistory = async (req, res) => {
   try {
-    let history = loadFundingHistory();
-    
-    // Filter by year if specified
+    // Get history from the database using the service
+    // with optional filtering by year or route
+    const filters = {};
     if (req.query.year) {
-      const year = parseInt(req.query.year, 10);
-      history = history.filter(item => item.year === year);
+      filters.year = req.query.year;
     }
+    if (req.query.route) {
+      filters.route = req.query.route;
+    }
+    
+    const history = await fundingService.getAllFundingHistory(filters);
     
     res.status(200).json(history);
   } catch (error) {

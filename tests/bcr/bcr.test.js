@@ -2,6 +2,70 @@ const request = require('supertest');
 const express = require('express');
 const path = require('path');
 
+// Mock path
+jest.mock('path', () => ({
+  join: jest.fn().mockImplementation((...args) => args.join('/')),
+  resolve: jest.fn().mockImplementation((...args) => args.join('/'))
+}));
+
+// Mock Prisma client
+jest.mock('@prisma/client', () => {
+  return {
+    PrismaClient: jest.fn().mockImplementation(() => ({
+      bcrs: {
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'bcr-123',
+            bcrNumber: 'BCR-2025-0001',
+            title: 'Test BCR',
+            description: 'Test description',
+            status: 'draft',
+            priority: 'medium',
+            createdBy: 'user-123',
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }
+        ]),
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'bcr-123',
+          bcrNumber: 'BCR-2025-0001',
+          title: 'Test BCR',
+          description: 'Test description',
+          status: 'draft',
+          priority: 'medium',
+          createdBy: 'user-123',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }),
+        create: jest.fn().mockResolvedValue({
+          id: 'bcr-123',
+          bcrNumber: 'BCR-2025-0001',
+          title: 'Test BCR',
+          description: 'Test description',
+          status: 'draft',
+          priority: 'medium',
+          createdBy: 'user-123',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }),
+        update: jest.fn().mockResolvedValue({
+          id: 'bcr-123',
+          bcrNumber: 'BCR-2025-0001',
+          title: 'Test BCR',
+          status: 'in-progress'
+        })
+      },
+      bcrConfigs: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: '1', type: 'status', name: 'draft', value: '1', displayOrder: 1 },
+          { id: '2', type: 'status', name: 'submitted', value: '2', displayOrder: 2 }
+        ])
+      },
+      $disconnect: jest.fn()
+    }))
+  };
+});
+
 // Mock the BCR model
 jest.mock('../../models', () => {
   const mockBCR = {

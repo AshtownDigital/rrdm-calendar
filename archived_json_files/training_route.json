@@ -1,0 +1,76 @@
+{
+  "id": "training_route",
+  "name": "Training Route",
+  "hesaName": "Training Route",
+  "description": "The type of initial teacher training route",
+  "type": "Removed",
+  "status": "inactive",
+  "academicYear": "2025/2026",
+  "values": [
+    {
+      "id": "02",
+      "name": "School Direct (tuition fee)",
+      "description": "School Direct training programme (tuition fee)",
+      "status": "inactive",
+      "mappedValue": "school_direct_tuition_fee",
+      "changeType": "removed",
+      "changeSummary": "Reference data value removed"
+    },
+    {
+      "id": "03",
+      "name": "School Direct (salaried)",
+      "description": "School Direct training programme (salaried)",
+      "status": "inactive",
+      "mappedValue": "school_direct_salaried",
+      "changeType": "removed",
+      "changeSummary": "Reference data value removed"
+    },
+    {
+      "id": "09",
+      "name": "Opt-in undergraduate",
+      "description": "Undergraduate initial teacher training programme (opt-in)",
+      "status": "inactive",
+      "mappedValue": "opt_in_undergrad",
+      "changeType": "removed",
+      "changeSummary": "Reference data value removed"
+    },
+    {
+      "id": "10",
+      "name": "Postgraduate Teaching Apprenticeship",
+      "description": "Postgraduate Teaching Apprenticeship programme",
+      "status": "inactive",
+      "mappedValue": "pg_teaching_apprenticeship",
+      "changeType": "removed",
+      "changeSummary": "Reference data value removed"
+    },
+    {
+      "id": "11",
+      "name": "Provider-led (undergraduate)",
+      "description": "Provider-led undergraduate initial teacher training programme",
+      "status": "inactive",
+      "mappedValue": "provider_led_undergrad",
+      "changeType": "removed",
+      "changeSummary": "Reference data value removed"
+    },
+    {
+      "id": "12",
+      "name": "Provider-led (postgraduate)",
+      "description": "Provider-led postgraduate initial teacher training programme",
+      "status": "inactive",
+      "mappedValue": "provider_led_postgrad",
+      "changeType": "removed",
+      "changeSummary": "Reference data value removed"
+    },
+    {
+      "id": "14",
+      "name": "Teacher Degree Apprenticeship",
+      "description": "Teacher Degree Apprenticeship programme",
+      "status": "inactive",
+      "mappedValue": "teacher_degree_apprenticeship",
+      "changeType": "removed",
+      "changeSummary": "Reference data value removed"
+    }
+  ],
+  "lastUpdated": "2025-03-11",
+  "lastUpdatedBy": "System Administrator"
+}
