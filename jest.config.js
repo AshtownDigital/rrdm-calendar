@@ -15,8 +15,10 @@ module.exports = {
   restoreMocks: true,
   resetMocks: true,
   maxWorkers: '50%',
-  maxConcurrency: 5,
-  testTimeout: 5000,
+  maxConcurrency: 1, // Reduce concurrency for integration tests
+  testTimeout: 30000, // Increase timeout for integration tests
   detectOpenHandles: true,
-  forceExit: true
+  forceExit: true,
+  // Add verbose output to help debug test issues
+  verbose: true
 };

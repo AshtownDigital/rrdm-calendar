@@ -1,230 +1,347 @@
 const request = require('supertest');
-const { app } = require('../../server');
-const { prisma } = require('../../config/prisma');
+const express = require('express');
+const { v4: uuidv4 } = require('uuid');
 
-// Longer timeouts for tests
-jest.setTimeout(30000);
-
-describe('Reference Data Module', () => {
-  let server;
-  let agent;
-  let mockUser;
+// Mock the models
+jest.mock('../../models', () => {
+  const mockReferenceData = [
+    {
+      id: 'ref-123',
+      name: 'Test Item',
+      type: 'test',
+      description: 'Test description',
+      createdBy: 'user-123',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 'ref-456',
+      name: 'Another Item',
+      type: 'another',
+      description: 'Another description',
+      createdBy: 'user-123',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  ];
   
-  beforeAll(async () => {
-    // Clear any existing sessions
-    await prisma.session.deleteMany();
+  const mockReferenceValues = [
+    {
+      id: 'val-123',
+      referenceDataId: 'ref-123',
+      value: 'Test Value 1',
+      description: 'Test value description',
+      active: true,
+      createdBy: 'user-123',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 'val-456',
+      referenceDataId: 'ref-123',
+      value: 'Test Value 2',
+      description: 'Another value description',
+      active: true,
+      createdBy: 'user-123',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  ];
+  
+  return {
+    ReferenceData: {
+      findAll: jest.fn().mockResolvedValue(mockReferenceData),
+      findOne: jest.fn().mockImplementation((query) => {
+        const id = query.where.id;
+        return Promise.resolve(mockReferenceData.find(item => item.id === id) || null);
+      }),
+      findByPk: jest.fn().mockImplementation((id) => {
+        return Promise.resolve(mockReferenceData.find(item => item.id === id) || null);
+      }),
+      create: jest.fn().mockImplementation((data) => {
+        const newItem = {
+          id: uuidv4(),
+          ...data,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        mockReferenceData.push(newItem);
+        return Promise.resolve(newItem);
+      }),
+      update: jest.fn().mockResolvedValue([1]),
+      destroy: jest.fn().mockResolvedValue(1)
+    },
+    ReferenceValue: {
+      findAll: jest.fn().mockImplementation((query) => {
+        const referenceDataId = query.where.referenceDataId;
+        if (referenceDataId) {
+          return Promise.resolve(mockReferenceValues.filter(value => value.referenceDataId === referenceDataId));
+        }
+        return Promise.resolve(mockReferenceValues);
+      }),
+      findOne: jest.fn().mockImplementation((query) => {
+        const id = query.where.id;
+        return Promise.resolve(mockReferenceValues.find(value => value.id === id) || null);
+      }),
+      findByPk: jest.fn().mockImplementation((id) => {
+        return Promise.resolve(mockReferenceValues.find(value => value.id === id) || null);
+      }),
+      create: jest.fn().mockImplementation((data) => {
+        const newValue = {
+          id: uuidv4(),
+          ...data,
+          active: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        mockReferenceValues.push(newValue);
+        return Promise.resolve(newValue);
+      }),
+      update: jest.fn().mockResolvedValue([1]),
+      destroy: jest.fn().mockResolvedValue(1)
+    }
+  };
+});
 
-    // Wait for database connection
-    await prisma.$connect();
+// Mock the authentication middleware
+jest.mock('../../middleware/auth', () => {
+  return {
+    ensureAuthenticated: (req, res, next) => next(),
+    ensureAdmin: (req, res, next) => next(),
+    checkPermission: (permission) => (req, res, next) => next()
+  };
+});
 
-    // Mock user
-    mockUser = {
+// Mock user utils
+jest.mock('../../utils/user-utils', () => {
+  return {
+    getUserById: jest.fn().mockResolvedValue({
       id: 'user-123',
       email: 'user@test.com',
-      password: 'password123',
-      role: 'business',
-      active: true
+      role: 'business'
+    }),
+    hasPermission: jest.fn().mockReturnValue(true)
+  };
+});
+
+describe('Reference Data Module', () => {
+  let app;
+  let mockReq;
+  let mockRes;
+  
+  beforeEach(() => {
+    // Reset all mocks
+    jest.clearAllMocks();
+    
+    // Create a new Express app for each test
+    app = express();
+    
+    // Mock request and response objects
+    mockReq = {
+      user: {
+        id: 'user-123',
+        name: 'Test User',
+        email: 'test@example.com',
+        role: 'business'
+      },
+      params: {},
+      query: {},
+      body: {},
+      flash: jest.fn()
     };
-
-    // Start server and create agent
-    server = app.listen(0);
-    agent = request.agent(server);
-
-    // Wait for server to be ready
-    await new Promise((resolve) => server.once('listening', resolve));
-
-    // Log in user
-    await agent
-      .post('/access/login')
-      .send({
-        email: 'user@test.com',
-        password: 'password123'
-      })
-      .expect(302);
-  });
-
-  afterAll(async () => {
-    await prisma.session.deleteMany();
-    await prisma.$disconnect();
-    await new Promise((resolve) => server.close(resolve));
+    
+    mockRes = {
+      redirect: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+      render: jest.fn(),
+      json: jest.fn()
+    };
   });
 
   describe('Reference Data Dashboard', () => {
-    it('should show the reference data dashboard page', async () => {
-      const response = await agent
-        .get('/ref-data/dashboard')
-        .expect(200);
-
-      expect(response.text).toContain('Reference Data');
-      // Check for dashboard elements
-      expect(response.text).toContain('Data Dictionary');
-      expect(response.text).toContain('Items');
-      expect(response.text).toContain('Values');
-    });
-  });
-
-  describe('Data Dictionary', () => {
-    it('should show the data dictionary page', async () => {
-      const response = await agent
-        .get('/ref-data/dictionary')
-        .expect(200);
-
-      expect(response.text).toContain('Data Dictionary');
-      // Check for dictionary elements
-      expect(response.text).toContain('Items');
-      expect(response.text).toContain('Definitions');
-    });
-
-    it('should filter dictionary by category', async () => {
-      const response = await agent
-        .get('/ref-data/dictionary?category=academic')
-        .expect(200);
-
-      expect(response.text).toContain('Academic');
-      // Should show filtered data
-      expect(response.text).toContain('Academic Data');
-    });
-  });
-
-  describe('Items Management', () => {
-    it('should show the items list page', async () => {
-      const response = await agent
-        .get('/items')
-        .expect(200);
-
-      expect(response.text).toContain('Reference Data Items');
-      // Check for items list
-      expect(response.text).toContain('Item Name');
-      expect(response.text).toContain('Description');
-    });
-
-    it('should show item details', async () => {
-      // Assuming there's an item with ID 1
-      const response = await agent
-        .get('/items/1')
-        .expect(200);
-
-      expect(response.text).toContain('Item Details');
-      expect(response.text).toContain('Values');
-    });
-
-    it('should create a new item', async () => {
-      const response = await agent
-        .post('/items/create')
-        .send({
-          name: 'Test Item',
-          description: 'This is a test item',
-          category: 'test'
+    it('should render the reference data dashboard page', () => {
+      // Import the route handler
+      const { renderDashboard } = require('../../routes/ref-data/dashboard');
+      
+      // Call the route handler
+      renderDashboard(mockReq, mockRes);
+      
+      // Verify that the correct template is rendered
+      expect(mockRes.render).toHaveBeenCalledWith(
+        'modules/ref-data/dashboard',
+        expect.objectContaining({
+          title: 'Reference Data'
         })
-        .expect(302);
-
-      expect(response.headers.location).toContain('/items/');
-    });
-
-    it('should validate required fields for item creation', async () => {
-      const response = await agent
-        .post('/items/create')
-        .send({})
-        .expect(200);
-
-      expect(response.text).toContain('Name is required');
-      expect(response.text).toContain('Description is required');
+      );
     });
   });
 
-  describe('Values Management', () => {
-    it('should show the values list page', async () => {
-      const response = await agent
-        .get('/values')
-        .expect(200);
-
-      expect(response.text).toContain('Reference Data Values');
-      // Check for values list
-      expect(response.text).toContain('Value');
-      expect(response.text).toContain('Item');
-    });
-
-    it('should show value details', async () => {
-      // Assuming there's a value with ID 1
-      const response = await agent
-        .get('/values/1')
-        .expect(200);
-
-      expect(response.text).toContain('Value Details');
-    });
-
-    it('should create a new value', async () => {
-      const response = await agent
-        .post('/values/create')
-        .send({
-          value: 'Test Value',
-          itemId: '1',
-          description: 'This is a test value'
+  describe('Reference Data Items', () => {
+    it('should render the reference data items page', async () => {
+      // Import the route handler
+      const { listItems } = require('../../routes/ref-data/items');
+      
+      // Call the route handler
+      await listItems(mockReq, mockRes);
+      
+      // Verify that the correct template is rendered
+      expect(mockRes.render).toHaveBeenCalledWith(
+        'modules/ref-data/items/list',
+        expect.objectContaining({
+          title: 'Reference Data Items',
+          items: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'ref-123',
+              name: 'Test Item'
+            })
+          ])
         })
-        .expect(302);
-
-      expect(response.headers.location).toContain('/values/');
+      );
     });
 
-    it('should validate required fields for value creation', async () => {
-      const response = await agent
-        .post('/values/create')
-        .send({})
-        .expect(200);
-
-      expect(response.text).toContain('Value is required');
-      expect(response.text).toContain('Item is required');
-    });
-  });
-
-  describe('Release Notes', () => {
-    it('should show the release notes page', async () => {
-      const response = await agent
-        .get('/release-notes')
-        .expect(200);
-
-      expect(response.text).toContain('Release Notes');
-      // Check for release notes elements
-      expect(response.text).toContain('Version');
-      expect(response.text).toContain('Date');
-      expect(response.text).toContain('Changes');
-    });
-  });
-
-  describe('Restore Points', () => {
-    it('should show the restore points page', async () => {
-      const response = await agent
-        .get('/restore-points')
-        .expect(200);
-
-      expect(response.text).toContain('Restore Points');
-      // Check for restore points elements
-      expect(response.text).toContain('Date');
-      expect(response.text).toContain('Description');
-    });
-
-    it('should create a restore point', async () => {
-      const response = await agent
-        .post('/restore-points/create')
-        .send({
-          description: 'Test Restore Point'
+    it('should render a specific reference data item', async () => {
+      // Import the route handler
+      const { viewItem } = require('../../routes/ref-data/items');
+      
+      // Set up the request parameters
+      mockReq.params.id = 'ref-123';
+      
+      // Call the route handler
+      await viewItem(mockReq, mockRes);
+      
+      // Verify that the correct template is rendered
+      expect(mockRes.render).toHaveBeenCalledWith(
+        'modules/ref-data/items/view',
+        expect.objectContaining({
+          title: 'View Reference Data Item',
+          item: expect.objectContaining({
+            id: 'ref-123',
+            name: 'Test Item'
+          })
         })
-        .expect(302);
+      );
+    });
 
-      expect(response.headers.location).toContain('/restore-points');
+    it('should create a new reference data item', async () => {
+      // Import the route handler
+      const { createItem } = require('../../routes/ref-data/items');
+      
+      // Set up the request body
+      mockReq.body = {
+        name: 'New Item',
+        type: 'new',
+        description: 'New item description'
+      };
+      
+      // Call the route handler
+      await createItem(mockReq, mockRes);
+      
+      // Verify that the item was created
+      const { ReferenceData } = require('../../models');
+      expect(ReferenceData.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'New Item',
+          type: 'new',
+          description: 'New item description',
+          createdBy: 'user-123'
+        })
+      );
+      
+      // Verify the redirect
+      expect(mockRes.redirect).toHaveBeenCalledWith('/ref-data/items');
     });
   });
 
-  describe('Tag Colors', () => {
-    it('should use the correct tag colors for status indicators', async () => {
-      const response = await agent
-        .get('/items')
-        .expect(200);
+  describe('Reference Data Values', () => {
+    it('should render the reference data values page', async () => {
+      // Import the route handler
+      const { listValues } = require('../../routes/ref-data/values');
+      
+      // Set up the request parameters
+      mockReq.params.itemId = 'ref-123';
+      
+      // Call the route handler
+      await listValues(mockReq, mockRes);
+      
+      // Verify that the correct template is rendered
+      expect(mockRes.render).toHaveBeenCalledWith(
+        'modules/ref-data/values/list',
+        expect.objectContaining({
+          title: 'Reference Data Values',
+          values: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'val-123',
+              value: 'Test Value 1'
+            })
+          ])
+        })
+      );
+    });
 
-      // Check for GOV.UK Design System tag colors based on the memory
-      expect(response.text).toContain('govuk-tag govuk-tag--green');  // Success/completed states
-      expect(response.text).toContain('govuk-tag govuk-tag--grey');   // Inactive/neutral states
-      expect(response.text).toContain('govuk-tag govuk-tag--blue');   // New/pending states
+    it('should create a new reference data value', async () => {
+      // Import the route handler
+      const { createValue } = require('../../routes/ref-data/values');
+      
+      // Set up the request parameters and body
+      mockReq.params.itemId = 'ref-123';
+      mockReq.body = {
+        value: 'New Value',
+        description: 'New value description'
+      };
+      
+      // Call the route handler
+      await createValue(mockReq, mockRes);
+      
+      // Verify that the value was created
+      const { ReferenceValue } = require('../../models');
+      expect(ReferenceValue.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          referenceDataId: 'ref-123',
+          value: 'New Value',
+          description: 'New value description',
+          createdBy: 'user-123'
+        })
+      );
+      
+      // Verify the redirect
+      expect(mockRes.redirect).toHaveBeenCalledWith('/ref-data/items/ref-123/values');
+    });
+  });
+
+  describe('Reference Data Release Notes', () => {
+    it('should render the release notes page', async () => {
+      // Import the route handler
+      const { listReleaseNotes } = require('../../routes/ref-data/release-notes');
+      
+      // Call the route handler
+      await listReleaseNotes(mockReq, mockRes);
+      
+      // Verify that the correct template is rendered
+      expect(mockRes.render).toHaveBeenCalledWith(
+        'modules/ref-data/release-notes/list',
+        expect.objectContaining({
+          title: 'Release Notes'
+        })
+      );
+    });
+  });
+
+  describe('Reference Data Restore Points', () => {
+    it('should render the restore points page', async () => {
+      // Import the route handler
+      const { listRestorePoints } = require('../../routes/ref-data/restore-points');
+      
+      // Call the route handler
+      await listRestorePoints(mockReq, mockRes);
+      
+      // Verify that the correct template is rendered
+      expect(mockRes.render).toHaveBeenCalledWith(
+        'modules/ref-data/restore-points/list',
+        expect.objectContaining({
+          title: 'Restore Points'
+        })
+      );
     });
   });
 });

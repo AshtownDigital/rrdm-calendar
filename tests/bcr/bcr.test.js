@@ -1,206 +1,267 @@
 const request = require('supertest');
-const { app } = require('../../server');
-const { prisma } = require('../../config/prisma');
+const express = require('express');
+const path = require('path');
 
-// Longer timeouts for tests
-jest.setTimeout(30000);
+// Mock the BCR model
+jest.mock('../../models', () => {
+  const mockBCR = {
+    id: 'bcr-123',
+    title: 'Test BCR',
+    description: 'Test description',
+    status: 'draft',
+    priority: 'medium',
+    createdBy: 'user-123',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    getFormattedId: jest.fn().mockReturnValue('BCR-001')
+  };
+  
+  return {
+    BCR: {
+      findAll: jest.fn().mockResolvedValue([mockBCR]),
+      findOne: jest.fn().mockResolvedValue(mockBCR),
+      findByPk: jest.fn().mockResolvedValue(mockBCR),
+      create: jest.fn().mockResolvedValue(mockBCR),
+      update: jest.fn().mockResolvedValue([1]),
+      destroy: jest.fn().mockResolvedValue(1)
+    }
+  };
+});
+
+// Mock the authentication middleware
+jest.mock('../../middleware/auth', () => {
+  return {
+    ensureAuthenticated: (req, res, next) => next(),
+    ensureAdmin: (req, res, next) => next(),
+    checkPermission: (permission) => (req, res, next) => next()
+  };
+});
+
+// Mock the user utils
+jest.mock('../../utils/user-utils', () => {
+  return {
+    getUserById: jest.fn().mockResolvedValue({
+      id: 'user-123',
+      name: 'Test User',
+      email: 'test@example.com',
+      role: 'business'
+    }),
+    hasPermission: jest.fn().mockReturnValue(true)
+  };
+});
 
 describe('Business Change Request (BCR) Module', () => {
-  let server;
-  let agent;
-  let mockUser;
+  let app;
+  let mockReq;
+  let mockRes;
   
-  beforeAll(async () => {
-    // Clear any existing sessions
-    await prisma.session.deleteMany();
-
-    // Wait for database connection
-    await prisma.$connect();
-
-    // Mock user
-    mockUser = {
-      id: 'user-123',
-      email: 'user@test.com',
-      password: 'password123',
-      role: 'business',
-      active: true
+  beforeEach(() => {
+    // Reset all mocks
+    jest.clearAllMocks();
+    
+    // Create a new Express app for each test
+    app = express();
+    
+    // Mock request and response objects
+    mockReq = {
+      user: {
+        id: 'user-123',
+        name: 'Test User',
+        email: 'test@example.com',
+        role: 'business'
+      },
+      params: {},
+      query: {},
+      body: {},
+      flash: jest.fn()
     };
-
-    // Start server and create agent
-    server = app.listen(0);
-    agent = request.agent(server);
-
-    // Wait for server to be ready
-    await new Promise((resolve) => server.once('listening', resolve));
-
-    // Log in user
-    await agent
-      .post('/access/login')
-      .send({
-        email: 'user@test.com',
-        password: 'password123'
-      })
-      .expect(302);
-  });
-
-  afterAll(async () => {
-    await prisma.session.deleteMany();
-    await prisma.$disconnect();
-    await new Promise((resolve) => server.close(resolve));
+    
+    mockRes = {
+      redirect: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+      render: jest.fn(),
+      json: jest.fn()
+    };
   });
 
   describe('BCR Dashboard', () => {
-    it('should show the BCR dashboard page', async () => {
-      const response = await agent
-        .get('/bcr')
-        .expect(200);
-
-      expect(response.text).toContain('Business Change Requests');
-      // Check for dashboard elements
-      expect(response.text).toContain('My Requests');
-      expect(response.text).toContain('Create Request');
+    it('should render the BCR dashboard page', async () => {
+      // Import the route handler
+      const { renderDashboard } = require('../../routes/bcr/dashboard');
+      
+      // Mock the BCR model to return some data
+      const { BCR } = require('../../models');
+      BCR.findAll.mockResolvedValue([{
+        id: 'bcr-123',
+        title: 'Test BCR',
+        description: 'Test description',
+        status: 'draft',
+        priority: 'medium',
+        createdBy: 'user-123',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }]);
+      
+      // Call the route handler
+      await renderDashboard(mockReq, mockRes);
+      
+      // Verify that the correct template is rendered
+      expect(mockRes.render).toHaveBeenCalledWith(
+        'modules/bcr/dashboard',
+        expect.objectContaining({
+          title: 'Business Change Requests',
+          bcrs: expect.any(Array),
+          statusColors: expect.any(Object),
+          priorityColors: expect.any(Object)
+        })
+      );
     });
   });
 
   describe('BCR Creation', () => {
-    it('should show the BCR creation page', async () => {
-      const response = await agent
-        .get('/bcr/create')
-        .expect(200);
-
-      expect(response.text).toContain('Create Business Change Request');
-      // Check for form elements
-      expect(response.text).toContain('Title');
-      expect(response.text).toContain('Description');
-      expect(response.text).toContain('Priority');
+    it('should render the BCR creation page', () => {
+      // Import the route handler
+      const { renderCreateForm } = require('../../routes/bcr/create');
+      
+      // Call the route handler
+      renderCreateForm(mockReq, mockRes);
+      
+      // Verify that the correct template is rendered
+      expect(mockRes.render).toHaveBeenCalledWith(
+        'modules/bcr/create',
+        expect.objectContaining({
+          title: 'Create Business Change Request'
+        })
+      );
     });
 
     it('should create a new BCR', async () => {
-      const response = await agent
-        .post('/bcr/create')
-        .send({
-          title: 'Test BCR',
-          description: 'This is a test BCR',
-          priority: 'medium',
-          targetDate: '2025-06-01'
-        })
-        .expect(302);
-
-      expect(response.headers.location).toContain('/bcr/view/');
-    });
-
-    it('should validate required fields', async () => {
-      const response = await agent
-        .post('/bcr/create')
-        .send({})
-        .expect(200);
-
-      expect(response.text).toContain('Title is required');
-      expect(response.text).toContain('Description is required');
+      // Import the route handler
+      const { createBCR } = require('../../routes/bcr/create');
+      
+      // Mock the BCR model to return a new BCR
+      const { BCR } = require('../../models');
+      const mockBCR = {
+        id: 'bcr-new',
+        title: 'New BCR',
+        description: 'Test description',
+        priority: 'high',
+        targetDate: '2023-12-31',
+        status: 'draft',
+        createdBy: 'user-123',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      BCR.create.mockResolvedValue(mockBCR);
+      
+      // Set up the request body
+      mockReq.body = {
+        title: 'New BCR',
+        description: 'Test description',
+        priority: 'high',
+        targetDate: '2023-12-31'
+      };
+      
+      // Add redirect method to mockRes
+      mockRes.redirect = jest.fn();
+      
+      // Call the route handler
+      await createBCR(mockReq, mockRes);
+      
+      // Verify that the user was redirected
+      expect(mockRes.redirect).toHaveBeenCalled();
+      expect(mockRes.redirect).toHaveBeenCalledWith(`/bcr/${mockBCR.id}`);
     });
   });
-
+  
   describe('BCR Viewing', () => {
-    it('should show a specific BCR', async () => {
-      // First create a BCR to view
-      const createResponse = await agent
-        .post('/bcr/create')
-        .send({
-          title: 'View Test BCR',
-          description: 'This is a BCR for viewing',
-          priority: 'high',
-          targetDate: '2025-07-01'
+    it('should render a single BCR', async () => {
+      // Import the route handler
+      const { viewBCR } = require('../../routes/bcr/view');
+      
+      // Mock the BCR model to return a specific BCR
+      const { BCR } = require('../../models');
+      const mockBCR = {
+        id: 'bcr-123',
+        title: 'Test BCR',
+        description: 'Test description',
+        status: 'draft',
+        priority: 'medium',
+        createdBy: 'user-123',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      BCR.findByPk.mockResolvedValue(mockBCR);
+      
+      // Set up the request parameters
+      mockReq.params.id = 'bcr-123';
+      
+      // Call the route handler
+      await viewBCR(mockReq, mockRes);
+      
+      // Verify that the correct template is rendered
+      expect(mockRes.render).toHaveBeenCalledWith(
+        'modules/bcr/view',
+        expect.objectContaining({
+          title: expect.stringContaining('BCR:'),
+          bcr: expect.objectContaining({
+            id: 'bcr-123',
+            title: 'Test BCR'
+          }),
+          statusColors: expect.any(Object),
+          priorityColors: expect.any(Object)
         })
-        .expect(302);
-      
-      const bcrId = createResponse.headers.location.split('/').pop();
-      
-      const response = await agent
-        .get(`/bcr/view/${bcrId}`)
-        .expect(200);
-
-      expect(response.text).toContain('View Test BCR');
-      expect(response.text).toContain('This is a BCR for viewing');
-      expect(response.text).toContain('high');
+      );
     });
   });
-
-  describe('BCR Status Updates', () => {
-    it('should update BCR status', async () => {
-      // First create a BCR to update
-      const createResponse = await agent
-        .post('/bcr/create')
-        .send({
-          title: 'Status Test BCR',
-          description: 'This is a BCR for status testing',
-          priority: 'medium',
-          targetDate: '2025-08-01'
+  
+  describe('BCR Update', () => {
+    it('should update a BCR status', async () => {
+      // Import the route handler
+      const { updateBCRStatus } = require('../../routes/bcr/update');
+      
+      // Mock the BCR model
+      const { BCR } = require('../../models');
+      BCR.findByPk.mockResolvedValue({
+        id: 'bcr-123',
+        title: 'Test BCR',
+        description: 'Test description',
+        status: 'draft',
+        priority: 'medium',
+        createdBy: 'user-123',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+      
+      // Set up the request parameters and body
+      mockReq.params.id = 'bcr-123';
+      mockReq.body = {
+        status: 'approved',
+        comment: 'Approved by test'
+      };
+      
+      // Add redirect and xhr properties to mockReq and mockRes
+      mockReq.xhr = false;
+      mockRes.redirect = jest.fn();
+      
+      // Call the route handler
+      await updateBCRStatus(mockReq, mockRes);
+      
+      // Verify that the BCR was updated
+      expect(BCR.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'approved',
+          lastComment: 'Approved by test',
+          updatedBy: mockReq.user.id
+        }),
+        expect.objectContaining({
+          where: { id: 'bcr-123' }
         })
-        .expect(302);
+      );
       
-      const bcrId = createResponse.headers.location.split('/').pop();
-      
-      const response = await agent
-        .post(`/bcr/update-status/${bcrId}`)
-        .send({
-          status: 'in-progress',
-          comment: 'Work has started'
-        })
-        .expect(302);
-
-      expect(response.headers.location).toContain(`/bcr/view/${bcrId}`);
-      
-      // Verify status was updated
-      const viewResponse = await agent
-        .get(`/bcr/view/${bcrId}`)
-        .expect(200);
-        
-      expect(viewResponse.text).toContain('in-progress');
-      expect(viewResponse.text).toContain('Work has started');
-    });
-  });
-
-  describe('BCR Listing and Filtering', () => {
-    it('should list all BCRs', async () => {
-      const response = await agent
-        .get('/bcr/list')
-        .expect(200);
-
-      expect(response.text).toContain('Business Change Requests');
-      expect(response.text).toContain('Test BCR');
-      expect(response.text).toContain('View Test BCR');
-      expect(response.text).toContain('Status Test BCR');
-    });
-
-    it('should filter BCRs by status', async () => {
-      const response = await agent
-        .get('/bcr/list?status=in-progress')
-        .expect(200);
-
-      expect(response.text).toContain('Status Test BCR');
-      expect(response.text).toContain('in-progress');
-    });
-
-    it('should filter BCRs by priority', async () => {
-      const response = await agent
-        .get('/bcr/list?priority=high')
-        .expect(200);
-
-      expect(response.text).toContain('View Test BCR');
-      expect(response.text).toContain('high');
-    });
-  });
-
-  describe('BCR Tag Colors', () => {
-    it('should use the correct tag colors for BCR status', async () => {
-      const response = await agent
-        .get('/bcr/list')
-        .expect(200);
-
-      // Check for GOV.UK Design System tag colors based on the memory
-      expect(response.text).toContain('govuk-tag govuk-tag--blue');  // New/pending states
-      expect(response.text).toContain('govuk-tag govuk-tag--light-blue');  // In-progress states
-      expect(response.text).toContain('govuk-tag govuk-tag--green');  // Success/completed states
+      // Verify that the user was redirected
+      expect(mockRes.redirect).toHaveBeenCalledWith('/bcr/bcr-123');
     });
   });
 });

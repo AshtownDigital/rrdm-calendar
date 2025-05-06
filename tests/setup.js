@@ -193,18 +193,34 @@ jest.mock('passport', () => {
       };
     }),
     serializeUser: jest.fn((user, done) => {
-      process.nextTick(() => done(null, user.id));
+      if (typeof done === 'function') {
+        process.nextTick(() => done(null, user.id));
+      }
+      return user.id;
     }),
     deserializeUser: jest.fn((id, done) => {
-      process.nextTick(() => {
+      if (typeof done === 'function') {
+        process.nextTick(() => {
+          if (id === 'admin-123') {
+            done(null, mockAdminUser);
+          } else if (id === 'user-123') {
+            done(null, mockBusinessUser);
+          } else {
+            done(new Error('User not found'));
+          }
+        });
+      } else {
+        // Return the user directly if no callback is provided
         if (id === 'admin-123') {
-          done(null, mockAdminUser);
+          return mockAdminUser;
         } else if (id === 'user-123') {
-          done(null, mockBusinessUser);
+          return mockBusinessUser;
         } else {
-          done(new Error('User not found'));
+          // For integration tests, return null instead of throwing an error
+          // This allows the tests to handle the case where a user is not found
+          return null;
         }
-      });
+      }
     }),
     use: jest.fn()
   };
