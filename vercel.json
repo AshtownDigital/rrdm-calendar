@@ -6,11 +6,20 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/health.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "public/**",
       "use": "@vercel/static"
     }
   ],
   "routes": [
+    {
+      "src": "/_vercel/health",
+      "dest": "/api/health.js",
+      "methods": ["GET"]
+    },
     { 
       "src": "/assets/(.*)", 
       "dest": "/public/assets/$1",
