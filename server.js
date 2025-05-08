@@ -111,6 +111,11 @@ process.on('SIGTERM', async () => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Import and mount the Vercel health check route
+// This must be before any authentication middleware
+const vercelHealthRoute = require('./routes/vercel-health');
+app.use('/_vercel/health', vercelHealthRoute);
+
 // Import and apply middleware conditionally to avoid errors
 // Wrap all middleware in a function to control execution order
 function applyMiddleware() {
@@ -120,6 +125,15 @@ function applyMiddleware() {
       logger.info(`[${req.method}] ${req.path}`);
       next();
     });
+    
+    // Use serverless-optimized rate limiter in Vercel environment
+    try {
+      const { serverlessFallbackLimiter } = require('./middleware/rateLimiter');
+      app.use(serverlessFallbackLimiter);
+      logger.info('Serverless fallback rate limiter applied');
+    } catch (error) {
+      logger.warn('Could not load serverless rate limiter:', error.message);
+    }
   }
 
   // Security middleware
@@ -540,20 +554,12 @@ if (!process.env.VERCEL && require.main === module) {
 module.exports = app;
 
 // Set environment variables for Vercel deployment
+
+
 if (process.env.VERCEL) {
   // Force production environment on Vercel
   process.env.NODE_ENV = process.env.NODE_ENV || 'production';
   logger.info(`Running in Vercel ${process.env.NODE_ENV} environment`);
-  
-  // Add a special route for Vercel health checks
-  app.get('/_vercel/health', (req, res) => {
-    res.status(200).json({
-      status: 'up',
-      environment: process.env.NODE_ENV,
-      region: process.env.VERCEL_REGION || 'unknown',
-      timestamp: new Date().toISOString()
-    });
-  });
   
   // For Vercel, ensure database connection is established
   try {
