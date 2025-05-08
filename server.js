@@ -16,22 +16,41 @@ const flash = require('connect-flash');
 const app = express();
 
 // Initialize logging
-/* Temporarily commented out for initial startup
-const { logger } = require('./services/logger');
+let logger;
+let performanceMiddleware;
+let startMetricsLogging;
 
-// Initialize performance monitoring
-const { performanceMiddleware, startMetricsLogging } = require('./services/monitoring/performanceMonitor');
-
-// Start metrics logging (every 5 minutes)
-startMetricsLogging(300000);
-
-// Log application startup
-logger.info('Application starting', {
-  environment: process.env.NODE_ENV || 'development',
-  port: process.env.PORT || 3000,
-  version: require('./package.json').version
-});
-*/
+try {
+  const loggerModule = require('./services/logger');
+  logger = loggerModule.logger;
+  
+  // Initialize performance monitoring
+  const perfModule = require('./services/monitoring/performanceMonitor');
+  performanceMiddleware = perfModule.performanceMiddleware;
+  startMetricsLogging = perfModule.startMetricsLogging;
+  
+  // Start metrics logging (every 5 minutes)
+  startMetricsLogging(300000);
+  
+  // Log application startup
+  logger.info('Application starting', {
+    environment: process.env.NODE_ENV || 'development',
+    port: process.env.PORT || 3000,
+    version: require('./package.json').version
+  });
+} catch (error) {
+  console.warn('Warning: Could not initialize logging or performance monitoring:', error.message);
+  // Create fallback logger
+  logger = {
+    info: console.log,
+    warn: console.warn,
+    error: console.error,
+    debug: console.debug
+  };
+  // Create dummy performance middleware
+  performanceMiddleware = () => (req, res, next) => next();
+  startMetricsLogging = () => {};
+}
 
 
 // Trust proxy when running on Vercel
@@ -73,30 +92,44 @@ process.on('SIGTERM', async () => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-/* Temporarily commented out for initial startup
-// Import security middleware
-const { securityHeaders, csrfProtection, csrfErrorHandler } = require('./middleware/securityMiddleware');
+// Import and apply middleware conditionally to avoid errors
+try {
+  // Import security middleware
+  const { securityHeaders } = require('./middleware/securityMiddleware');
+  // Apply security headers
+  app.use(securityHeaders());
+  console.log('Security middleware applied');
+} catch (error) {
+  console.warn('Warning: Could not apply security middleware:', error.message);
+}
 
-// Import rate limiting middleware
-const { apiLimiter, authLimiter, generalLimiter } = require('./middleware/rateLimiter');
+try {
+  // Import rate limiting middleware
+  const { apiLimiter, authLimiter, generalLimiter } = require('./middleware/rateLimiter');
+  // Apply rate limiting
+  app.use('/api', apiLimiter);
+  app.use('/auth', authLimiter);
+  app.use(generalLimiter);
+  console.log('Rate limiting middleware applied');
+} catch (error) {
+  console.warn('Warning: Could not apply rate limiting middleware:', error.message);
+}
 
-// Import logging middleware
-const { createLoggingMiddleware, errorLogger } = require('./middleware/loggingMiddleware');
+try {
+  // Import logging middleware
+  const { createLoggingMiddleware } = require('./middleware/loggingMiddleware');
+  // Apply logging middleware
+  app.use(createLoggingMiddleware('combined'));
+  console.log('Logging middleware applied');
+} catch (error) {
+  console.warn('Warning: Could not apply logging middleware:', error.message);
+}
 
-// Apply security headers
-app.use(securityHeaders());
-
-// Apply rate limiting
-app.use('/api', apiLimiter);
-app.use('/auth', authLimiter);
-app.use(generalLimiter);
-
-// Apply logging middleware
-app.use(createLoggingMiddleware('combined'));
-
-// Apply performance monitoring
-app.use(performanceMiddleware());
-*/
+// Apply performance monitoring if available
+if (typeof performanceMiddleware === 'function') {
+  app.use(performanceMiddleware());
+  console.log('Performance monitoring middleware applied');
+}
 
 
 // Cookie parser middleware
@@ -247,7 +280,20 @@ const adminAuth = require('./middleware/admin-auth');
 const tokenRefreshMiddleware = require('./middleware/token-refresh');
 
 // Import centralized error handler middleware
-const errorHandler = require('./middleware/errorHandler');
+let errorHandler;
+try {
+  errorHandler = require('./middleware/errorHandler');
+  console.log('Error handler middleware loaded');
+} catch (error) {
+  console.warn('Warning: Could not load error handler middleware:', error.message);
+  // Create a simple fallback error handler
+  errorHandler = {
+    handleError: (err, req, res, next) => {
+      console.error('Error in fallback handler:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  };
+}
 
 // Access routes - some endpoints don't require authentication (login, logout)
 // but the user management routes are protected by adminAuth middleware in the router
@@ -402,4 +448,18 @@ if (process.env.VERCEL) {
   // Force production environment on Vercel
   process.env.NODE_ENV = 'production';
   console.log('Running in Vercel production environment');
+  
+  // For Vercel, ensure database connection is established
+  try {
+    // Connect to database when running in Vercel
+    connectWithRetry(5, 5000).then(connected => {
+      if (!connected) {
+        console.error('Failed to connect to database in Vercel environment');
+      } else {
+        console.log('Successfully connected to database in Vercel environment');
+      }
+    });
+  } catch (error) {
+    console.error('Error connecting to database in Vercel environment:', error);
+  }
 }
