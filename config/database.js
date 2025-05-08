@@ -25,6 +25,10 @@ function getPrismaClient() {
     // Import PrismaClient dynamically to avoid issues in serverless
     const { PrismaClient } = require('@prisma/client');
     
+    // Log environment info for debugging
+    console.log(`Loading environment from ${process.env.NODE_ENV === 'production' ? '.env.production' : '.env.staging'}`);
+    console.log(`Database connection attempt in ${isServerless ? 'serverless' : 'standard'} mode`);
+    
     // Create Prisma client with appropriate options
     const options = {
       log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
@@ -32,13 +36,20 @@ function getPrismaClient() {
     
     // Add connection pool settings for serverless
     if (isServerless) {
+      // Prisma client requires datasources to be in the format { db: { url: "CONNECTION_STRING" } }
       options.datasources = {
         db: {
-          url: process.env.DATABASE_URL,
-          // Shorter connection timeouts for serverless
-          connectionTimeout: 5, // seconds
-        },
+          url: process.env.DATABASE_URL
+        }
       };
+      
+      // Add connection timeout as a separate option
+      options.connectionTimeout = 5000; // 5 seconds in milliseconds
+    }
+    
+    // Validate DATABASE_URL is set
+    if (!process.env.DATABASE_URL) {
+      throw new Error('DATABASE_URL environment variable is not set');
     }
     
     // Create the client
@@ -49,7 +60,19 @@ function getPrismaClient() {
     
     return prismaInstance;
   } catch (error) {
-    console.error('Failed to create Prisma client:', error);
+    console.error('Failed to create Prisma client:', error.message);
+    console.error('Error details:', {
+      name: error.name,
+      code: error.code,
+      meta: error.meta,
+      stack: error.stack,
+      env: {
+        nodeEnv: process.env.NODE_ENV,
+        vercel: process.env.VERCEL,
+        databaseUrlSet: !!process.env.DATABASE_URL,
+        databaseUrlLength: process.env.DATABASE_URL ? process.env.DATABASE_URL.length : 0
+      }
+    });
     throw error;
   }
 }
