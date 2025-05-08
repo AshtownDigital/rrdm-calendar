@@ -6,7 +6,7 @@
       "use": "@vercel/node"
     },
     {
-      "src": "api/health.js",
+      "src": "api/**/*.js",
       "use": "@vercel/node"
     },
     {
@@ -17,7 +17,7 @@
   "routes": [
     {
       "src": "/_vercel/health",
-      "dest": "/api/health.js",
+      "dest": "/api/_vercel/health.js",
       "methods": ["GET"]
     },
     { 
