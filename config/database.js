@@ -3,7 +3,22 @@
  * Establishes connection to PostgreSQL database using Prisma
  * Optimized for serverless environments with connection pooling
  */
-require('dotenv').config();
+
+// Load environment variables based on NODE_ENV
+const path = require('path');
+const fs = require('fs');
+const dotenv = require('dotenv');
+
+// Determine environment and load appropriate .env file
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const envFile = `.env.${NODE_ENV}`;
+const envPath = path.resolve(process.cwd(), envFile);
+
+// Only load env files in non-serverless environment (Vercel handles this for us)
+if (!process.env.VERCEL && fs.existsSync(envPath)) {
+  console.log(`Loading environment from ${envFile}`);
+  dotenv.config({ path: envPath });
+}
 
 // Detect serverless environment
 const isServerless = process.env.VERCEL === '1';
@@ -22,41 +37,26 @@ function getPrismaClient() {
   }
   
   try {
-    // Import PrismaClient dynamically to avoid issues in serverless
+    // Import PrismaClient dynamically
     const { PrismaClient } = require('@prisma/client');
     
     // Log environment info for debugging
-    console.log(`Loading environment from ${process.env.NODE_ENV === 'production' ? '.env.production' : '.env.staging'}`);
     console.log(`Database connection attempt in ${isServerless ? 'serverless' : 'standard'} mode`);
+    console.log(`NODE_ENV: ${NODE_ENV}, DATABASE_URL set: ${!!process.env.DATABASE_URL}`);
     
-    // Create Prisma client with appropriate options
-    const options = {
-      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-    };
-    
-    // Add connection pool settings for serverless
-    if (isServerless) {
-      // Prisma client requires datasources to be in the format { db: { url: "CONNECTION_STRING" } }
-      options.datasources = {
+    // Create a simple Prisma client with minimal options
+    // This is more reliable in serverless environments
+    prismaInstance = new PrismaClient({
+      log: ['error'],
+      datasources: {
         db: {
           url: process.env.DATABASE_URL
         }
-      };
-      
-      // Add connection timeout as a separate option
-      options.connectionTimeout = 5000; // 5 seconds in milliseconds
-    }
+      }
+    });
     
-    // Validate DATABASE_URL is set
-    if (!process.env.DATABASE_URL) {
-      throw new Error('DATABASE_URL environment variable is not set');
-    }
-    
-    // Create the client
-    prismaInstance = new PrismaClient(options);
-    
-    // Log creation
-    console.log(`Prisma client created in ${isServerless ? 'serverless' : 'standard'} mode`);
+    // Log creation success
+    console.log('Prisma client created successfully');
     
     return prismaInstance;
   } catch (error) {
@@ -65,12 +65,10 @@ function getPrismaClient() {
       name: error.name,
       code: error.code,
       meta: error.meta,
-      stack: error.stack,
       env: {
         nodeEnv: process.env.NODE_ENV,
         vercel: process.env.VERCEL,
-        databaseUrlSet: !!process.env.DATABASE_URL,
-        databaseUrlLength: process.env.DATABASE_URL ? process.env.DATABASE_URL.length : 0
+        databaseUrlSet: !!process.env.DATABASE_URL
       }
     });
     throw error;
