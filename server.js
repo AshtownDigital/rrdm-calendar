@@ -15,41 +15,60 @@ const flash = require('connect-flash');
 // Initialize Express
 const app = express();
 
-// Initialize logging
+// Initialize logging with better error handling for serverless environments
 let logger;
 let performanceMiddleware;
 let startMetricsLogging;
 
-try {
-  const loggerModule = require('./services/logger');
-  logger = loggerModule.logger;
+// Detect serverless environment
+const isServerless = process.env.VERCEL === '1';
+
+// Set up console-based logger as fallback
+const consoleLogger = {
+  info: (...args) => console.log('[INFO]', ...args),
+  warn: (...args) => console.warn('[WARN]', ...args),
+  error: (...args) => console.error('[ERROR]', ...args),
+  debug: (...args) => console.debug('[DEBUG]', ...args)
+};
+
+// Set up dummy performance middleware
+const dummyPerformanceMiddleware = () => (req, res, next) => next();
+const dummyStartMetricsLogging = () => {};
+
+// In serverless, use simplified logging to avoid initialization issues
+if (isServerless) {
+  logger = consoleLogger;
+  performanceMiddleware = dummyPerformanceMiddleware;
+  startMetricsLogging = dummyStartMetricsLogging;
   
-  // Initialize performance monitoring
-  const perfModule = require('./services/monitoring/performanceMonitor');
-  performanceMiddleware = perfModule.performanceMiddleware;
-  startMetricsLogging = perfModule.startMetricsLogging;
-  
-  // Start metrics logging (every 5 minutes)
-  startMetricsLogging(300000);
-  
-  // Log application startup
-  logger.info('Application starting', {
-    environment: process.env.NODE_ENV || 'development',
-    port: process.env.PORT || 3000,
-    version: require('./package.json').version
-  });
-} catch (error) {
-  console.warn('Warning: Could not initialize logging or performance monitoring:', error.message);
-  // Create fallback logger
-  logger = {
-    info: console.log,
-    warn: console.warn,
-    error: console.error,
-    debug: console.debug
-  };
-  // Create dummy performance middleware
-  performanceMiddleware = () => (req, res, next) => next();
-  startMetricsLogging = () => {};
+  logger.info('Serverless environment detected, using simplified logging');
+} else {
+  // In regular environment, try to use full logging
+  try {
+    const loggerModule = require('./services/logger');
+    logger = loggerModule.logger;
+    
+    // Initialize performance monitoring
+    const perfModule = require('./services/monitoring/performanceMonitor');
+    performanceMiddleware = perfModule.performanceMiddleware;
+    startMetricsLogging = perfModule.startMetricsLogging;
+    
+    // Start metrics logging (every 5 minutes)
+    startMetricsLogging(300000);
+    
+    // Log application startup
+    logger.info('Application starting', {
+      environment: process.env.NODE_ENV || 'development',
+      port: process.env.PORT || 3000,
+      version: require('./package.json').version
+    });
+  } catch (error) {
+    console.warn('Warning: Could not initialize logging or performance monitoring:', error.message);
+    // Fall back to console logger
+    logger = consoleLogger;
+    performanceMiddleware = dummyPerformanceMiddleware;
+    startMetricsLogging = dummyStartMetricsLogging;
+  }
 }
 
 
@@ -93,43 +112,82 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Import and apply middleware conditionally to avoid errors
-try {
-  // Import security middleware
-  const { securityHeaders } = require('./middleware/securityMiddleware');
-  // Apply security headers
-  app.use(securityHeaders());
-  console.log('Security middleware applied');
-} catch (error) {
-  console.warn('Warning: Could not apply security middleware:', error.message);
+// Wrap all middleware in a function to control execution order
+function applyMiddleware() {
+  // Create a simple middleware that logs requests in serverless environment
+  if (isServerless) {
+    app.use((req, res, next) => {
+      logger.info(`[${req.method}] ${req.path}`);
+      next();
+    });
+  }
+
+  // Security middleware
+  try {
+    // Import security middleware
+    const { securityHeaders } = require('./middleware/securityMiddleware');
+    // Apply security headers
+    app.use(securityHeaders());
+    logger.info('Security middleware applied');
+  } catch (error) {
+    logger.warn('Could not apply security middleware:', error.message);
+    // Apply basic security headers as fallback
+    app.use((req, res, next) => {
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-XSS-Protection', '1; mode=block');
+      res.setHeader('X-Frame-Options', 'DENY');
+      next();
+    });
+    logger.info('Basic security headers applied as fallback');
+  }
+
+  // Rate limiting middleware - skip in serverless to avoid Redis dependency
+  if (!isServerless) {
+    try {
+      // Import rate limiting middleware
+      const { apiLimiter, authLimiter, generalLimiter } = require('./middleware/rateLimiter');
+      // Apply rate limiting
+      app.use('/api', apiLimiter);
+      app.use('/auth', authLimiter);
+      app.use(generalLimiter);
+      logger.info('Rate limiting middleware applied');
+    } catch (error) {
+      logger.warn('Could not apply rate limiting middleware:', error.message);
+    }
+  } else {
+    logger.info('Rate limiting skipped in serverless environment');
+  }
+
+  // Logging middleware
+  try {
+    // Import logging middleware
+    const { createLoggingMiddleware } = require('./middleware/loggingMiddleware');
+    // Apply logging middleware
+    app.use(createLoggingMiddleware('combined'));
+    logger.info('Logging middleware applied');
+  } catch (error) {
+    logger.warn('Could not apply logging middleware:', error.message);
+    // Apply basic logging middleware as fallback
+    app.use((req, res, next) => {
+      const start = Date.now();
+      res.on('finish', () => {
+        const duration = Date.now() - start;
+        logger.info(`${req.method} ${req.path} ${res.statusCode} ${duration}ms`);
+      });
+      next();
+    });
+    logger.info('Basic logging middleware applied as fallback');
+  }
+
+  // Apply performance monitoring if available
+  if (typeof performanceMiddleware === 'function') {
+    app.use(performanceMiddleware());
+    logger.info('Performance monitoring middleware applied');
+  }
 }
 
-try {
-  // Import rate limiting middleware
-  const { apiLimiter, authLimiter, generalLimiter } = require('./middleware/rateLimiter');
-  // Apply rate limiting
-  app.use('/api', apiLimiter);
-  app.use('/auth', authLimiter);
-  app.use(generalLimiter);
-  console.log('Rate limiting middleware applied');
-} catch (error) {
-  console.warn('Warning: Could not apply rate limiting middleware:', error.message);
-}
-
-try {
-  // Import logging middleware
-  const { createLoggingMiddleware } = require('./middleware/loggingMiddleware');
-  // Apply logging middleware
-  app.use(createLoggingMiddleware('combined'));
-  console.log('Logging middleware applied');
-} catch (error) {
-  console.warn('Warning: Could not apply logging middleware:', error.message);
-}
-
-// Apply performance monitoring if available
-if (typeof performanceMiddleware === 'function') {
-  app.use(performanceMiddleware());
-  console.log('Performance monitoring middleware applied');
-}
+// Apply middleware
+applyMiddleware();
 
 
 // Cookie parser middleware
@@ -283,16 +341,54 @@ const tokenRefreshMiddleware = require('./middleware/token-refresh');
 let errorHandler;
 try {
   errorHandler = require('./middleware/errorHandler');
-  console.log('Error handler middleware loaded');
+  logger.info('Error handler middleware loaded');
 } catch (error) {
-  console.warn('Warning: Could not load error handler middleware:', error.message);
-  // Create a simple fallback error handler
+  logger.warn('Could not load error handler middleware:', error.message);
+  // Create a comprehensive fallback error handler
   errorHandler = {
-    handleError: (err, req, res, next) => {
-      console.error('Error in fallback handler:', err);
-      res.status(500).json({ error: 'Internal Server Error' });
+    ApiError: class ApiError extends Error {
+      constructor(statusCode, message, details = null) {
+        super(message);
+        this.statusCode = statusCode;
+        this.details = details;
+        this.isApiError = true;
+      }
+    },
+    notFound: (req, res, next) => {
+      const error = new Error(`Not Found - ${req.originalUrl}`);
+      error.statusCode = 404;
+      next(error);
+    },
+    apiErrorHandler: (err, req, res, next) => {
+      if (!req.path.startsWith('/api/')) {
+        return next(err);
+      }
+      const statusCode = err.statusCode || 500;
+      const errorResponse = {
+        success: false,
+        error: {
+          message: err.message || 'Server Error',
+          status: statusCode
+        }
+      };
+      logger.error(`API Error: ${err.message}`);
+      return res.status(statusCode).json(errorResponse);
+    },
+    webErrorHandler: (err, req, res, next) => {
+      if (req.path.startsWith('/api/')) {
+        return next(err);
+      }
+      const statusCode = err.statusCode || 500;
+      logger.error(`Web Error: ${err.message}`);
+      res.status(statusCode).render('error', {
+        title: `Error ${statusCode}`,
+        message: err.message || 'An unexpected error occurred',
+        error: process.env.NODE_ENV === 'development' ? err : {},
+        user: req.user
+      });
     }
   };
+  logger.info('Fallback error handler created');
 }
 
 // Access routes - some endpoints don't require authentication (login, logout)
@@ -446,20 +542,44 @@ module.exports = app;
 // Set environment variables for Vercel deployment
 if (process.env.VERCEL) {
   // Force production environment on Vercel
-  process.env.NODE_ENV = 'production';
-  console.log('Running in Vercel production environment');
+  process.env.NODE_ENV = process.env.NODE_ENV || 'production';
+  logger.info(`Running in Vercel ${process.env.NODE_ENV} environment`);
+  
+  // Add a special route for Vercel health checks
+  app.get('/_vercel/health', (req, res) => {
+    res.status(200).json({
+      status: 'up',
+      environment: process.env.NODE_ENV,
+      region: process.env.VERCEL_REGION || 'unknown',
+      timestamp: new Date().toISOString()
+    });
+  });
   
   // For Vercel, ensure database connection is established
   try {
-    // Connect to database when running in Vercel
-    connectWithRetry(5, 5000).then(connected => {
+    // Connect to database when running in Vercel with retries
+    // Use a shorter timeout for serverless functions
+    connectWithRetry(3, 3000).then(connected => {
       if (!connected) {
-        console.error('Failed to connect to database in Vercel environment');
+        logger.error('Failed to connect to database in Vercel environment');
       } else {
-        console.log('Successfully connected to database in Vercel environment');
+        logger.info('Successfully connected to database in Vercel environment');
       }
+    }).catch(error => {
+      logger.error('Database connection promise rejected:', error.message);
     });
   } catch (error) {
-    console.error('Error connecting to database in Vercel environment:', error);
+    logger.error('Error connecting to database in Vercel environment:', error.message);
   }
+  
+  // Add global error handler for unhandled rejections in serverless
+  process.on('unhandledRejection', (reason, promise) => {
+    logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    // In serverless, we don't exit the process
+  });
+  
+  process.on('uncaughtException', (error) => {
+    logger.error('Uncaught Exception:', error);
+    // In serverless, we don't exit the process
+  });
 }
