@@ -1,0 +1,216 @@
+{% extends "layouts/admin.njk" %}
+
+{% block title %}System Health Dashboard{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">System Health Dashboard</h1>
+    
+    <div class="govuk-inset-text">
+      This dashboard provides real-time information about the system's health and performance.
+    </div>
+
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-one-third">
+        <div class="health-card health-card--{{ health.status }}">
+          <h2 class="govuk-heading-m">Overall Status</h2>
+          <p class="govuk-body health-status">{{ health.status | upper }}</p>
+          <p class="govuk-body">Last updated: {{ health.timestamp | date }}</p>
+        </div>
+      </div>
+      
+      <div class="govuk-grid-column-one-third">
+        <div class="health-card health-card--{{ health.components.database.status }}">
+          <h2 class="govuk-heading-m">Database</h2>
+          <p class="govuk-body health-status">{{ health.components.database.status | upper }}</p>
+          <p class="govuk-body">Response time: {{ health.components.database.responseTime }}</p>
+          {% if health.components.database.error %}
+            <div class="govuk-warning-text">
+              <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+              <strong class="govuk-warning-text__text">
+                <span class="govuk-warning-text__assistive">Warning</span>
+                {{ health.components.database.error }}
+              </strong>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <div class="govuk-grid-column-one-third">
+        <div class="health-card health-card--{{ health.components.redis.status }}">
+          <h2 class="govuk-heading-m">Redis</h2>
+          <p class="govuk-body health-status">{{ health.components.redis.status | upper }}</p>
+          {% if health.components.redis.responseTime %}
+            <p class="govuk-body">Response time: {{ health.components.redis.responseTime }}</p>
+          {% endif %}
+          {% if health.components.redis.implementation %}
+            <p class="govuk-body">Implementation: {{ health.components.redis.implementation }}</p>
+          {% endif %}
+          {% if health.components.redis.error %}
+            <div class="govuk-warning-text">
+              <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+              <strong class="govuk-warning-text__text">
+                <span class="govuk-warning-text__assistive">Warning</span>
+                {{ health.components.redis.error }}
+              </strong>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-one-half">
+        <div class="health-card">
+          <h2 class="govuk-heading-m">System Information</h2>
+          <table class="govuk-table">
+            <tbody class="govuk-table__body">
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header">Environment</th>
+                <td class="govuk-table__cell">{{ health.components.system.environment }}</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header">Node.js Version</th>
+                <td class="govuk-table__cell">{{ health.components.system.nodeVersion }}</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header">Uptime</th>
+                <td class="govuk-table__cell">{{ health.components.system.uptime }}</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header">Memory Usage</th>
+                <td class="govuk-table__cell">{{ health.components.system.memoryUsage }}</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header">CPU Usage</th>
+                <td class="govuk-table__cell">{{ health.components.system.cpuUsage }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="govuk-grid-column-one-half">
+        <div class="health-card">
+          <h2 class="govuk-heading-m">Application Information</h2>
+          <table class="govuk-table">
+            <tbody class="govuk-table__body">
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header">Version</th>
+                <td class="govuk-table__cell">{{ health.components.application.version }}</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header">Start Time</th>
+                <td class="govuk-table__cell">{{ health.components.application.startTime | date }}</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header">Request Count</th>
+                <td class="govuk-table__cell">{{ health.components.application.requestCount }}</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header">Error Count</th>
+                <td class="govuk-table__cell">{{ health.components.application.errorCount }}</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header">Average Response Time</th>
+                <td class="govuk-table__cell">{{ health.components.application.avgResponseTime }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        <h2 class="govuk-heading-l">Active Sessions</h2>
+        <table class="govuk-table">
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">Total</th>
+              <th scope="col" class="govuk-table__header">Active Users</th>
+              <th scope="col" class="govuk-table__header">Expiring Soon</th>
+              <th scope="col" class="govuk-table__header">Last Cleanup</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell">{{ sessions.total }}</td>
+              <td class="govuk-table__cell">{{ sessions.activeUsers }}</td>
+              <td class="govuk-table__cell">{{ sessions.expiringSoon }}</td>
+              <td class="govuk-table__cell">{{ sessions.lastCleanup | date }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        <div class="govuk-button-group">
+          <a href="/admin/health-dashboard" class="govuk-button" data-module="govuk-button">
+            Refresh
+          </a>
+          <a href="/admin/health-dashboard?detailed=true" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+            Detailed View
+          </a>
+          <a href="/admin" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+            Back to Admin
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block pageScripts %}
+<script>
+  // Auto-refresh the page every 30 seconds
+  setTimeout(function() {
+    window.location.reload();
+  }, 30000);
+</script>
+{% endblock %}
+
+{% block pageStyles %}
+<style>
+  .health-card {
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #b1b4b6;
+    border-left-width: 5px;
+    border-radius: 4px;
+  }
+  
+  .health-card--up {
+    border-left-color: #00703c;
+  }
+  
+  .health-card--degraded {
+    border-left-color: #f47738;
+  }
+  
+  .health-card--down {
+    border-left-color: #d4351c;
+  }
+  
+  .health-status {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .health-card--up .health-status {
+    color: #00703c;
+  }
+  
+  .health-card--degraded .health-status {
+    color: #f47738;
+  }
+  
+  .health-card--down .health-status {
+    color: #d4351c;
+  }
+</style>
+{% endblock %}

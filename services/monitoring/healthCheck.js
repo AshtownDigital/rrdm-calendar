@@ -4,9 +4,12 @@
  * This service provides health check functionality for the application and its dependencies.
  * It monitors database connectivity, Redis, and other critical services.
  * Optimized for serverless environments with graceful fallbacks.
+ * 
+ * Enhanced with robust Redis management for better reliability and development experience.
  */
 const config = require('../../config/env');
 const os = require('os');
+const { createRedisClient } = require('../../utils/redis-manager');
 
 // Initialize logger with fallback
 let logger;
@@ -111,16 +114,15 @@ async function checkRedis() {
   let redisClient;
   
   try {
-    // Dynamically import Redis to avoid issues in serverless
-    const Redis = require('ioredis');
-    
-    // Create a new Redis client for the health check
-    redisClient = new Redis({
-      host: process.env.REDIS_HOST || config.redis?.host || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || config.redis?.port || '6379', 10),
-      password: process.env.REDIS_PASSWORD || config.redis?.password,
-      connectTimeout: 3000, // 3 seconds timeout for serverless
-      retryStrategy: () => null // Don't retry in health check
+    // Create a Redis client specifically for health checks using the enhanced Redis manager
+    redisClient = createRedisClient({
+      keyPrefix: 'rrdm:health:',
+      connectTimeout: 3000, // 3 seconds timeout for health checks
+      maxRetriesPerRequest: 1, // Only retry once for health checks
+      retryStrategy: (times) => {
+        // Don't retry in health check
+        return null;
+      }
     });
     
     // Execute a simple command to check connectivity
@@ -132,24 +134,36 @@ async function checkRedis() {
     return {
       status: STATUS.UP,
       responseTime: `${responseTime.toFixed(2)}ms`,
-      message: 'Redis connection successful'
+      message: 'Redis connection successful',
+      implementation: redisMock ? 'mock' : 'real'
     };
   } catch (error) {
-    logger.error('Redis health check failed', { error: error.message });
+    logger.error('Redis health check failed', { 
+      service: 'rrdm-app',
+      component: 'health-check',
+      error: error.message 
+    });
     
     // If Redis is not critical, return degraded instead of down
     return {
-      status: redisMock ? STATUS.UP : STATUS.DEGRADED,
+      status: STATUS.DEGRADED,
       error: error.message,
-      message: redisMock ? 'Redis mock available' : 'Redis connection failed but not critical'
+      message: 'Redis connection failed',
+      implementation: redisMock ? 'mock' : 'real'
     };
   } finally {
-    // Close the Redis client
-    if (redisClient) {
+    // Close the Redis client if it was created
+    // Note: The enhanced Redis manager handles connection cleanup automatically
+    // but we'll explicitly quit for health checks to avoid lingering connections
+    if (redisClient && typeof redisClient.quit === 'function') {
       try {
         await redisClient.quit();
       } catch (error) {
-        // Ignore errors during disconnect
+        logger.error('Error closing Redis client', { 
+          service: 'rrdm-app',
+          component: 'health-check',
+          error: error.message 
+        });
       }
     }
   }

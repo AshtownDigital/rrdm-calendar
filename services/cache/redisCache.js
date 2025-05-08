@@ -4,8 +4,11 @@
  * This module provides caching functionality using Redis for improved performance.
  * It caches frequently accessed data to reduce database load and improve response times.
  * Falls back to in-memory cache if Redis is not available or disabled.
+ * 
+ * Enhanced with robust Redis management for better reliability and development experience.
  */
 const config = require('../../config/env');
+const { createRedisClient } = require('../../utils/redis-manager');
 
 // Check if Redis is enabled from environment variables
 const REDIS_ENABLED = process.env.REDIS_ENABLED !== 'false';
@@ -19,8 +22,26 @@ const memoryCacheExpiry = new Map();
 let redisClient;
 let usingRedis = false;
 
+// Set up logging with fallback
+let logger;
+try {
+  const loggerModule = require('../../services/logger');
+  logger = loggerModule.logger;
+} catch (error) {
+  console.warn('Warning: Logger not available in Redis cache, using console fallback');
+  logger = {
+    info: console.log,
+    warn: console.warn,
+    error: console.error,
+    debug: console.debug
+  };
+}
+
 // Log cache mode on startup
-console.log(`Cache mode: ${REDIS_ENABLED ? 'Redis' : (REDIS_MOCK ? 'Redis Mock' : 'In-memory')}`);
+logger.info(`Cache mode: ${REDIS_ENABLED ? 'Redis' : (REDIS_MOCK ? 'Redis Mock' : 'In-memory')}`, {
+  service: 'rrdm-app',
+  component: 'redis-cache'
+});
 
 /**
  * Initialize the Redis connection or mock implementation
@@ -34,11 +55,17 @@ function initializeRedis() {
   // If Redis is disabled, use in-memory cache
   if (!REDIS_ENABLED) {
     if (REDIS_MOCK) {
-      console.log('Using Redis mock implementation');
+      logger.info('Using Redis mock implementation', {
+        service: 'rrdm-app',
+        component: 'redis-cache'
+      });
       // Create a Redis mock with the same interface
       redisClient = createRedisMock();
     } else {
-      console.log('Redis is disabled, using in-memory cache only');
+      logger.info('Redis is disabled, using in-memory cache only', {
+        service: 'rrdm-app',
+        component: 'redis-cache'
+      });
       // Return null to indicate Redis is not available
       return null;
     }
@@ -46,40 +73,32 @@ function initializeRedis() {
   }
 
   try {
-    // Load Redis only if enabled
-    const Redis = require('ioredis');
-    
-    // Get Redis configuration from environment
-    const redisConfig = {
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379', 10),
-      password: process.env.REDIS_PASSWORD || undefined,
-      keyPrefix: 'rrdm:',
+    // Use the enhanced Redis manager to create a client
+    redisClient = createRedisClient({
+      keyPrefix: 'rrdm:cache:',
+      // Cache-specific configuration
+      connectTimeout: 5000,
+      maxRetriesPerRequest: 3,
       retryStrategy: (times) => {
         // Retry connection with exponential backoff
-        const delay = Math.min(times * 50, 2000);
+        const delay = Math.min(times * 100, 3000);
         return delay;
       }
-    };
-
-    // Create Redis client
-    redisClient = new Redis(redisConfig);
+    });
+    
     usingRedis = true;
-
-    // Handle connection events
-    redisClient.on('connect', () => {
-      console.log('Connected to Redis');
-    });
-
-    redisClient.on('error', (err) => {
-      console.error('Redis connection error:', err);
-      usingRedis = false;
-    });
-
+    
     return redisClient;
   } catch (error) {
-    console.error('Failed to initialize Redis:', error.message);
-    console.log('Falling back to in-memory cache');
+    logger.error('Failed to initialize Redis:', {
+      service: 'rrdm-app',
+      component: 'redis-cache',
+      error: error.message
+    });
+    logger.info('Falling back to in-memory cache', {
+      service: 'rrdm-app',
+      component: 'redis-cache'
+    });
     usingRedis = false;
     return null;
   }
@@ -147,10 +166,11 @@ async function get(key) {
   try {
     // If Redis is disabled and not using mock, use in-memory cache directly
     if (!REDIS_ENABLED && !REDIS_MOCK) {
+      // Check if key exists and hasn't expired
       const now = Date.now();
       if (memoryCacheExpiry.has(key) && memoryCacheExpiry.get(key) > now) {
-        const data = memoryCache.get(key);
-        return data ? JSON.parse(data) : null;
+        const cachedData = memoryCache.get(key);
+        return cachedData ? JSON.parse(cachedData) : null;
       } else if (memoryCacheExpiry.has(key)) {
         // Clean up expired key
         memoryCache.delete(key);
@@ -161,12 +181,25 @@ async function get(key) {
     
     // Use Redis or Redis mock
     const client = initializeRedis();
-    if (!client) return null;
+    if (!client) {
+      // Fallback to in-memory if client initialization failed
+      const now = Date.now();
+      if (memoryCacheExpiry.has(key) && memoryCacheExpiry.get(key) > now) {
+        const cachedData = memoryCache.get(key);
+        return cachedData ? JSON.parse(cachedData) : null;
+      }
+      return null;
+    }
     
     const data = await client.get(key);
     return data ? JSON.parse(data) : null;
   } catch (error) {
-    console.error('Cache get error:', error);
+    logger.error('Cache get error:', {
+      service: 'rrdm-app',
+      component: 'redis-cache',
+      key,
+      error: error.message
+    });
     return null;
   }
 }
@@ -201,7 +234,12 @@ async function set(key, data, ttl = 3600) {
     await client.set(key, JSON.stringify(data), 'EX', ttl);
     return true;
   } catch (error) {
-    console.error('Cache set error:', error);
+    logger.error('Cache set error:', {
+      service: 'rrdm-app',
+      component: 'redis-cache',
+      key,
+      error: error.message
+    });
     
     // Fallback to in-memory cache on error
     try {
@@ -210,7 +248,12 @@ async function set(key, data, ttl = 3600) {
       memoryCacheExpiry.set(key, Date.now() + (ttl * 1000));
       return true;
     } catch (fallbackError) {
-      console.error('In-memory cache fallback error:', fallbackError);
+      logger.error('In-memory cache fallback error:', {
+        service: 'rrdm-app',
+        component: 'redis-cache',
+        key,
+        error: fallbackError.message
+      });
       return false;
     }
   }
@@ -242,7 +285,12 @@ async function del(key) {
     await client.del(key);
     return true;
   } catch (error) {
-    console.error('Cache delete error:', error);
+    logger.error('Cache delete error:', {
+      service: 'rrdm-app',
+      component: 'redis-cache',
+      key,
+      error: error.message
+    });
     
     // Try to delete from in-memory cache as fallback
     memoryCache.delete(key);
@@ -273,10 +321,20 @@ async function clear() {
       return true;
     }
     
-    const keys = await client.keys('rrdm:*');
+    const keys = await client.keys('rrdm:cache:*');
     
     if (keys.length > 0) {
-      await client.del(keys);
+      // Delete keys in batches to avoid command overflow
+      const batchSize = 100;
+      for (let i = 0; i < keys.length; i += batchSize) {
+        const batch = keys.slice(i, i + batchSize);
+        await client.del(...batch);
+      }
+      
+      logger.info(`Cleared ${keys.length} cache keys`, {
+        service: 'rrdm-app',
+        component: 'redis-cache'
+      });
     }
     
     // Also clear in-memory cache as a precaution
@@ -285,7 +343,11 @@ async function clear() {
     
     return true;
   } catch (error) {
-    console.error('Cache clear error:', error);
+    logger.error('Cache clear error:', {
+      service: 'rrdm-app',
+      component: 'redis-cache',
+      error: error.message
+    });
     
     // Try to clear in-memory cache as fallback
     memoryCache.clear();
@@ -318,7 +380,12 @@ async function getOrSet(key, fn, ttl = 3600) {
     
     return data;
   } catch (error) {
-    console.error('Redis cache getOrSet error:', error);
+    logger.error('Redis cache getOrSet error:', {
+      service: 'rrdm-app',
+      component: 'redis-cache',
+      key,
+      error: error.message
+    });
     
     // If cache fails, just execute the function
     return fn();
@@ -331,9 +398,22 @@ async function getOrSet(key, fn, ttl = 3600) {
  */
 async function close() {
   if (redisClient && usingRedis) {
-    await redisClient.quit();
-    redisClient = null;
-    usingRedis = false;
+    try {
+      await redisClient.quit();
+      logger.info('Redis connection closed', {
+        service: 'rrdm-app',
+        component: 'redis-cache'
+      });
+    } catch (error) {
+      logger.error('Error closing Redis connection', {
+        service: 'rrdm-app',
+        component: 'redis-cache',
+        error: error.message
+      });
+    } finally {
+      redisClient = null;
+      usingRedis = false;
+    }
   }
   
   // Clear in-memory cache when closing

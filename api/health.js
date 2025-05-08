@@ -1,7 +1,11 @@
 // Simple health check endpoint for Vercel
 // This file is completely standalone and doesn't import any other modules
 
-module.exports = (req, res) => {
+/**
+ * @param {import('http').IncomingMessage} req
+ * @param {import('http').ServerResponse} res
+ */
+export default function handler(req, res) {
   // Set appropriate headers
   res.setHeader('Content-Type', 'application/json');
   
@@ -12,4 +16,4 @@ module.exports = (req, res) => {
     environment: process.env.NODE_ENV || 'unknown',
     region: process.env.VERCEL_REGION || 'unknown'
   });
-};
+}

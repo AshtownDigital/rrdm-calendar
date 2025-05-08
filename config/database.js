@@ -4,21 +4,9 @@
  * Optimized for serverless environments with connection pooling
  */
 
-// Load environment variables based on NODE_ENV
+// Import environment configuration
+const config = require('./env');
 const path = require('path');
-const fs = require('fs');
-const dotenv = require('dotenv');
-
-// Determine environment and load appropriate .env file
-const NODE_ENV = process.env.NODE_ENV || 'development';
-const envFile = `.env.${NODE_ENV}`;
-const envPath = path.resolve(process.cwd(), envFile);
-
-// Only load env files in non-serverless environment (Vercel handles this for us)
-if (!process.env.VERCEL && fs.existsSync(envPath)) {
-  console.log(`Loading environment from ${envFile}`);
-  dotenv.config({ path: envPath });
-}
 
 // Detect serverless environment
 const isServerless = process.env.VERCEL === '1';
@@ -42,18 +30,25 @@ function getPrismaClient() {
     
     // Log environment info for debugging
     console.log(`Database connection attempt in ${isServerless ? 'serverless' : 'standard'} mode`);
-    console.log(`NODE_ENV: ${NODE_ENV}, DATABASE_URL set: ${!!process.env.DATABASE_URL}`);
+    console.log(`NODE_ENV: ${config.env}, DATABASE_URL set: ${!!config.database.url}`);
     
-    // Create a simple Prisma client with minimal options
-    // This is more reliable in serverless environments
-    prismaInstance = new PrismaClient({
-      log: ['error'],
+    // Create Prisma client with appropriate options based on environment
+    const prismaOptions = {
+      log: config.isDev ? ['query', 'error', 'warn'] : ['error'],
       datasources: {
         db: {
-          url: process.env.DATABASE_URL
+          url: config.database.url
         }
       }
-    });
+    };
+    
+    // Add engine type for Vercel deployment if specified
+    if (config.database.engineType === 'dataproxy') {
+      console.log('Using Data Proxy for Prisma client');
+    }
+    
+    // Create the Prisma client instance
+    prismaInstance = new PrismaClient(prismaOptions);
     
     // Log creation success
     console.log('Prisma client created successfully');
@@ -66,9 +61,9 @@ function getPrismaClient() {
       code: error.code,
       meta: error.meta,
       env: {
-        nodeEnv: process.env.NODE_ENV,
+        nodeEnv: config.env,
         vercel: process.env.VERCEL,
-        databaseUrlSet: !!process.env.DATABASE_URL
+        databaseUrlSet: !!config.database.url
       }
     });
     throw error;

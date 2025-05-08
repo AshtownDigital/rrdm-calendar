@@ -3,9 +3,20 @@
  * 
  * This middleware provides caching for API responses to improve performance.
  * It uses Redis for caching and supports different cache durations.
+ * 
+ * Enhanced with robust Redis management for better reliability and development experience.
  */
-const redisCache = require('../services/cache/redisCache');
+const { createRedisClient } = require('../utils/redis-manager');
 const { cacheTTL } = require('../config/redis');
+
+// Initialize Redis client with cache-specific configuration
+const redisClient = createRedisClient({
+  keyPrefix: 'rrdm:cache:',
+  // Longer timeouts for caching operations
+  connectTimeout: 5000,
+  // More retries for caching operations
+  maxRetriesPerRequest: 3
+});
 
 /**
  * Generate a cache key from the request
@@ -43,15 +54,21 @@ function cache(duration = cacheTTL.MEDIUM) {
     const key = generateCacheKey(req);
     
     try {
-      // Try to get cached response
-      const cachedResponse = await redisCache.get(key);
+      // Try to get cached response using the enhanced Redis client
+      const cachedResponseJson = await redisClient.get(key);
       
-      if (cachedResponse) {
-        // Set cache header
-        res.setHeader('X-Cache', 'HIT');
-        
-        // Return cached response
-        return res.status(cachedResponse.status).json(cachedResponse.data);
+      if (cachedResponseJson) {
+        try {
+          const cachedResponse = JSON.parse(cachedResponseJson);
+          // Set cache header
+          res.setHeader('X-Cache', 'HIT');
+          
+          // Return cached response
+          return res.status(cachedResponse.status).json(cachedResponse.data);
+        } catch (parseError) {
+          console.error('Error parsing cached response:', parseError);
+          // Continue as if cache miss
+        }
       }
       
       // Cache miss, continue to handler
@@ -73,8 +90,13 @@ function cache(duration = cacheTTL.MEDIUM) {
         
         // Only cache successful responses
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          redisCache.set(key, responseToCache, duration)
-            .catch(err => console.error('Error caching response:', err));
+          try {
+            // Use the enhanced Redis client with proper error handling
+            redisClient.set(key, JSON.stringify(responseToCache), 'EX', duration)
+              .catch(err => console.error('Error caching response:', err));
+          } catch (cacheError) {
+            console.error('Error caching response:', cacheError);
+          }
         }
         
         // Call original method
@@ -97,15 +119,13 @@ function cache(duration = cacheTTL.MEDIUM) {
 function clearCache(pattern) {
   return async (req, res, next) => {
     try {
-      // Initialize Redis client
-      const client = require('ioredis').getClient();
-      
+      // Use the enhanced Redis client
       // Get keys matching pattern
-      const keys = await client.keys(`rrdm:*${pattern}*`);
+      const keys = await redisClient.keys(`rrdm:cache:*${pattern}*`);
       
       // Delete keys if any found
       if (keys.length > 0) {
-        await client.del(keys);
+        await redisClient.del(...keys);
         console.log(`Cleared ${keys.length} cache keys matching pattern: ${pattern}`);
       }
       

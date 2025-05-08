@@ -12,9 +12,13 @@ const itemsController = require('../../controllers/api/itemsController');
 
 // Import route modules
 const healthRoutes = require('./health');
+const vercelHealthRoutes = require('./vercel-health');
 
 // Health check routes
 router.use('/health', healthRoutes);
+
+// Vercel health check routes (for serverless functions)
+router.use('/_vercel/health', vercelHealthRoutes);
 
 // Simple health check endpoint
 router.get('/status', (req, res) => {

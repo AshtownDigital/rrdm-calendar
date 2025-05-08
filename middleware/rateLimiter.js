@@ -5,8 +5,11 @@
  * It uses Redis to store rate limit information across multiple instances when available,
  * with fallback to memory store for serverless environments.
  * Optimized for Vercel serverless deployment with Neon PostgreSQL.
+ * 
+ * Enhanced with robust Redis management for better reliability and development experience.
  */
 const rateLimit = require('express-rate-limit');
+const { createRedisClient } = require('../utils/redis-manager');
 
 // Import environment configuration
 const config = require('../config/env');
@@ -34,56 +37,87 @@ const isRedisEnabled = process.env.REDIS_ENABLED !== 'false';
 let redisClient = null;
 let redisStore = null;
 
-// Only attempt to use Redis if not in serverless mode or explicitly enabled
-if (!isServerless || (isServerless && isRedisEnabled)) {
+// For simplicity, we'll use the memory store for rate limiting when in development or when Redis is mocked
+// This avoids compatibility issues with the rate-limit-redis package
+const redisMock = process.env.REDIS_MOCK === 'true';
+const isDevEnvironment = process.env.NODE_ENV === 'development';
+
+// Only use real Redis in production and when not mocked
+if (!isServerless && isRedisEnabled && !redisMock && !isDevEnvironment) {
   try {
-    // Dynamically import Redis to avoid issues in environments where it's not available
-    const Redis = require('ioredis');
-    const { redisConfig } = require('../config/redis');
-    
-    // Create a simplified config for rate limiting
-    const rateLimitRedisConfig = {
-      host: process.env.REDIS_HOST || redisConfig?.host || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || redisConfig?.port || '6379', 10),
-      password: process.env.REDIS_PASSWORD || redisConfig?.password,
+    // Create Redis client with rate limiting specific configuration
+    redisClient = createRedisClient({
+      keyPrefix: 'rrdm:ratelimit:',
       // Shorter timeouts for rate limiting
       connectTimeout: 2000,
-      // Don't retry connections for rate limiting
-      retryStrategy: () => null
-    };
-    
-    // Create Redis client
-    redisClient = new Redis(rateLimitRedisConfig);
-    
-    // Set up error handling
-    redisClient.on('error', (err) => {
-      logger.error('Redis rate limiter error', { error: err.message });
-      // Don't crash on Redis errors
+      // Fewer retries for rate limiting
+      maxRetriesPerRequest: 2,
+      // Custom retry strategy for rate limiting
+      retryStrategy: (times) => {
+        // Only retry once with a short delay
+        return times > 1 ? null : 500;
+      }
     });
     
     // Test connection
     redisClient.ping().then(() => {
-      logger.info('Redis connected for rate limiting');
+      logger.info('Redis connected for rate limiting', {
+        service: 'rrdm-app',
+        component: 'rate-limiter'
+      });
       
-      // Only create Redis store if ping succeeds
+      // Only create Redis store if ping succeeds and we're using real Redis
       try {
+        // Only attempt to use RedisStore with real Redis
         const RedisStore = require('rate-limit-redis');
-        redisStore = new RedisStore({
-          // Use sendCommand directly to avoid compatibility issues
-          sendCommand: (...args) => redisClient.call(...args)
+        const IORedis = require('ioredis');
+        
+        // Create a standard IORedis client for rate-limit-redis compatibility
+        const standardRedisClient = new IORedis({
+          host: process.env.REDIS_HOST || 'localhost',
+          port: parseInt(process.env.REDIS_PORT || '6379', 10),
+          password: process.env.REDIS_PASSWORD || undefined,
+          keyPrefix: 'rrdm:ratelimit:',
+          connectTimeout: 2000
         });
-        logger.info('Redis store created for rate limiting');
+        
+        redisStore = new RedisStore({
+          sendCommand: (...args) => standardRedisClient.call(...args)
+        });
+        
+        logger.info('Redis store created for rate limiting', {
+          service: 'rrdm-app',
+          component: 'rate-limiter'
+        });
       } catch (storeError) {
-        logger.error('Failed to create Redis store for rate limiting', { error: storeError.message });
+        logger.error('Failed to create Redis store for rate limiting', { 
+          service: 'rrdm-app',
+          component: 'rate-limiter',
+          error: storeError.message 
+        });
       }
     }).catch(err => {
-      logger.error('Redis ping failed for rate limiting', { error: err.message });
+      logger.error('Redis ping failed for rate limiting', { 
+        service: 'rrdm-app',
+        component: 'rate-limiter',
+        error: err.message 
+      });
     });
   } catch (error) {
-    logger.error('Failed to initialize Redis for rate limiting', { error: error.message });
+    logger.error('Failed to initialize Redis for rate limiting', { 
+      service: 'rrdm-app',
+      component: 'rate-limiter',
+      error: error.message 
+    });
   }
 } else {
-  logger.info('Using memory store for rate limiting in serverless environment');
+  // In development, serverless, or when Redis is mocked, use memory store
+  logger.info('Using memory store for rate limiting', {
+    service: 'rrdm-app',
+    component: 'rate-limiter',
+    environment: process.env.NODE_ENV,
+    redisMock: redisMock ? 'true' : 'false'
+  });
 }
 
 /**

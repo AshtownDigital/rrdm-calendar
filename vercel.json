@@ -42,6 +42,9 @@
     "NODE_ENV": "production",
     "VERCEL": "1",
     "SESSION_PERSISTENCE": "true",
-    "PRISMA_CLIENT_ENGINE_TYPE": "dataproxy"
+    "PRISMA_CLIENT_ENGINE_TYPE": "dataproxy",
+    "REDIS_ENABLED": "true",
+    "REDIS_MOCK": "false",
+    "RATE_LIMIT_ENABLED": "true"
   }
 }

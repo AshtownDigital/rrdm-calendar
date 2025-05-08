@@ -13,7 +13,10 @@ const { logger } = require('../services/logger');
  * @returns {Function} - Express middleware
  */
 function securityHeaders() {
-  return helmet({
+  // Configure Helmet options based on environment
+  const isProd = process.env.NODE_ENV === 'production';
+  
+  const helmetOptions = {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
@@ -24,13 +27,8 @@ function securityHeaders() {
         connectSrc: ["'self'"],
         frameSrc: ["'none'"],
         objectSrc: ["'none'"],
-        upgradeInsecureRequests: []
+        upgradeInsecureRequests: isProd ? [] : null // Only in production
       }
-    },
-    hsts: {
-      maxAge: 31536000, // 1 year in seconds
-      includeSubDomains: true,
-      preload: true
     },
     frameguard: {
       action: 'deny'
@@ -40,7 +38,18 @@ function securityHeaders() {
     referrerPolicy: {
       policy: 'strict-origin-when-cross-origin'
     }
-  });
+  };
+  
+  // Only enable HSTS in production
+  if (isProd) {
+    helmetOptions.hsts = {
+      maxAge: 31536000, // 1 year in seconds
+      includeSubDomains: true,
+      preload: true
+    };
+  }
+  
+  return helmet(helmetOptions);
 }
 
 /**
