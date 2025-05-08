@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    { 
+      "src": "/assets/(.*)", 
+      "dest": "/public/assets/$1",
+      "headers": { "Cache-Control": "public, max-age=604800" }
+    },
+    { 
+      "src": "/scripts/(.*)", 
+      "dest": "/public/scripts/$1",
+      "headers": { "Cache-Control": "public, max-age=604800" }
+    },
+    { 
+      "src": "/stylesheets/(.*)", 
+      "dest": "/public/stylesheets/$1",
+      "headers": { "Cache-Control": "public, max-age=604800" }
+    },
+    { "src": "/debug", "dest": "/server.js" },
+    { "src": "/(.*)", "dest": "/server.js" }
+  ],
+  "env": {
+    "NODE_ENV": "staging",
+    "VERCEL": "1",
+    "SESSION_PERSISTENCE": "true",
+    "PORT": "24680",
+    "SESSION_SECRET": "rrdm-staging-secret-key-3f9a8c2e1d7b6",
+    "DATABASE_URL": "postgresql://neondb_owner:npg_mZbQp7qF9zSN@ep-dawn-band-a5wldje4-pooler.us-east-2.aws.neon.tech/neondb_staging?sslmode=require"
+  }
+}

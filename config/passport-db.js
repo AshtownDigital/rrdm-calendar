@@ -1,9 +1,9 @@
 /**
  * Passport configuration for RRDM application with database integration
- * Sets up local strategy for authentication using PostgreSQL database
+ * Sets up local strategy for authentication using Neon PostgreSQL database via Prisma
  */
 const LocalStrategy = require('passport-local').Strategy;
-const userUtils = require('../utils/db-user-utils');
+const userUtils = require('../utils/prisma-user-utils');
 
 module.exports = function(passport) {
   // Configure local strategy
@@ -26,12 +26,16 @@ module.exports = function(passport) {
           }
           
           // Validate password
-          const isMatch = await user.validatePassword(password);
+          const isMatch = await userUtils.validatePassword(password, user.password);
           
           if (isMatch) {
             // Update last login time
             await userUtils.updateLastLogin(user.id);
-            return done(null, user);
+            
+            // Remove sensitive data
+            const { password: _, ...userWithoutPassword } = user;
+            
+            return done(null, userWithoutPassword);
           } else {
             return done(null, false, { message: 'Invalid email or password' });
           }

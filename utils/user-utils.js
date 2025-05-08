@@ -3,8 +3,10 @@
  * Provides functions to manage users (find, create, update, etc.)
  */
 const bcrypt = require('bcryptjs');
-const { prisma } = require('../config/prisma');
 
+// Use Neon PostgreSQL database
+console.log('User utils using Neon PostgreSQL database');
+const { prisma } = require('../config/database');
 
 
 // Get all users
@@ -22,12 +24,19 @@ const getAllUsers = async () => {
 // Find user by email
 const findUserByEmail = async (email) => {
   try {
-
+    console.log(`Looking for user with email: ${email}`);
+    
     const user = await prisma.users.findUnique({
       where: {
         email: email.toLowerCase()
       }
     });
+    
+    console.log(`User found: ${user ? 'Yes' : 'No'}`);
+    if (user) {
+      console.log(`User details: id=${user.id}, name=${user.name}, role=${user.role}, active=${user.active}`);
+    }
+    
     return user;
   } catch (error) {
     console.error('Error finding user by email:', error);
@@ -165,7 +174,14 @@ const deleteUser = async (userId) => {
 
 // Validate password
 const validatePassword = async (plainPassword, hashedPassword) => {
-  return await bcrypt.compare(plainPassword, hashedPassword);
+  console.log('Validating password...');
+  console.log(`Plain password length: ${plainPassword ? plainPassword.length : 0}`);
+  console.log(`Hashed password: ${hashedPassword ? hashedPassword.substring(0, 10) + '...' : 'null'}`);
+  
+  const isMatch = await bcrypt.compare(plainPassword, hashedPassword);
+  console.log(`Password match: ${isMatch ? 'Yes' : 'No'}`);
+  
+  return isMatch;
 };
 
 module.exports = {

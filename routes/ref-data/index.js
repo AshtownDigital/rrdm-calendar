@@ -1,3 +1,7 @@
+/**
+ * Reference Data Routes
+ * Main entry point for all reference data routes
+ */
 const express = require('express');
 const router = express.Router();
 

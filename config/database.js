@@ -1,7 +1,6 @@
 /**
  * Database configuration for RRDM application
- * Establishes connection to PostgreSQL database using Prisma ORM
- * Optimized for serverless environments and Vercel deployment
+ * Establishes connection to PostgreSQL database using Prisma
  */
 const { PrismaClient } = require('@prisma/client');
 require('dotenv').config();

@@ -1,0 +1,22 @@
+// This is an extension to the existing Prisma schema to add audit trail functionality
+// Add this model to your existing schema.prisma file
+
+// Audit Log model for tracking user actions
+model AuditLog {
+  id          String   @id @default(uuid())
+  timestamp   DateTime @default(now())
+  action      String   // e.g., 'create', 'update', 'delete', 'login', 'logout'
+  userId      String   // ID of the user who performed the action
+  resourceType String  // Type of resource affected (e.g., 'user', 'bcr', 'funding')
+  resourceId  String   // ID of the resource affected
+  details     Json?    // Additional details about the action
+  ipAddress   String?  // IP address of the user
+
+  // Relation to User model
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([timestamp])
+  @@index([userId])
+  @@index([resourceType, resourceId])
+  @@map("audit_logs")
+}

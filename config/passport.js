@@ -1,10 +1,12 @@
 /**
  * Passport configuration for RRDM application
  * Sets up local strategy for authentication
+ * 
+ * NOTE: This file is no longer used. See passport-db.js for the current implementation.
  */
 const LocalStrategy = require('passport-local').Strategy;
 const userUtils = require('../utils/user-utils');
-const { prisma } = require('./prisma');
+const { prisma } = require('./database');
 
 module.exports = function(passport) {
   // Configure local strategy

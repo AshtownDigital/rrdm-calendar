@@ -5,12 +5,34 @@ const nunjucks = require('nunjucks');
 const dateFilter = require('nunjucks-date-filter');
 const session = require('express-session');
 const { PrismaSessionStore } = require('@quixo3/prisma-session-store');
+
+// Load environment configuration
+const config = require('./config/env');
 const { prisma } = require('./config/database');
 
 const passport = require('passport');
 const flash = require('connect-flash');
 // Initialize Express
 const app = express();
+
+// Initialize logging
+/* Temporarily commented out for initial startup
+const { logger } = require('./services/logger');
+
+// Initialize performance monitoring
+const { performanceMiddleware, startMetricsLogging } = require('./services/monitoring/performanceMonitor');
+
+// Start metrics logging (every 5 minutes)
+startMetricsLogging(300000);
+
+// Log application startup
+logger.info('Application starting', {
+  environment: process.env.NODE_ENV || 'development',
+  port: process.env.PORT || 3000,
+  version: require('./package.json').version
+});
+*/
+
 
 // Trust proxy when running on Vercel
 if (process.env.VERCEL === '1') {
@@ -51,13 +73,39 @@ process.on('SIGTERM', async () => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+/* Temporarily commented out for initial startup
+// Import security middleware
+const { securityHeaders, csrfProtection, csrfErrorHandler } = require('./middleware/securityMiddleware');
+
+// Import rate limiting middleware
+const { apiLimiter, authLimiter, generalLimiter } = require('./middleware/rateLimiter');
+
+// Import logging middleware
+const { createLoggingMiddleware, errorLogger } = require('./middleware/loggingMiddleware');
+
+// Apply security headers
+app.use(securityHeaders());
+
+// Apply rate limiting
+app.use('/api', apiLimiter);
+app.use('/auth', authLimiter);
+app.use(generalLimiter);
+
+// Apply logging middleware
+app.use(createLoggingMiddleware('combined'));
+
+// Apply performance monitoring
+app.use(performanceMiddleware());
+*/
+
+
 // Cookie parser middleware
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
-// Express session middleware with improved configuration for Vercel
+// Express session middleware with environment-specific configuration
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'rrdm-dev-secret-key',
+  secret: config.sessionSecret,
   name: 'rrdm.sid',
   resave: true, // Changed to true to ensure session is saved on every request
   saveUninitialized: true, // Changed to true to create session for all visitors
@@ -74,7 +122,7 @@ app.use(session({
   cookie: {
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // Only secure in production
+    secure: config.isProd, // Only secure in production
     sameSite: 'lax', // Changed to lax for better compatibility
     path: '/',
     // Remove domain restriction which can cause issues in serverless
@@ -89,12 +137,13 @@ app.use(passport.session());
 // Connect flash middleware
 app.use(flash());
 
-// Configure Passport
-require('./config/passport')(passport);
+// Configure Passport with Neon PostgreSQL database
+console.log('Using Neon PostgreSQL database passport configuration');
+require('./config/passport-db')(passport);
 
-// Set up static file serving with proper cache control and content types
+// Set up static file serving with environment-specific cache control
 app.use(express.static(path.join(__dirname, 'public'), {
-  maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,
+  maxAge: config.isProd ? '1d' : 0,
   etag: true,
   setHeaders: function (res, path) {
     // Ensure CSS files have the correct content type
@@ -119,9 +168,6 @@ app.get('/stylesheets/:file', (req, res, next) => {
     res.sendFile(filePath);
   });
 });
-
-// Assets are pre-copied during the build process
-// No runtime file operations needed for Vercel's read-only environment
 
 // Set up view engine
 app.set('view engine', 'njk');
@@ -200,6 +246,9 @@ const { ensureAuthenticated, ensureAdmin, checkPermission } = require('./middlew
 const adminAuth = require('./middleware/admin-auth');
 const tokenRefreshMiddleware = require('./middleware/token-refresh');
 
+// Import centralized error handler middleware
+const errorHandler = require('./middleware/errorHandler');
+
 // Access routes - some endpoints don't require authentication (login, logout)
 // but the user management routes are protected by adminAuth middleware in the router
 app.use('/access', accessRouter);
@@ -255,59 +304,82 @@ app.get('/ref-data/dashboard', ensureAuthenticated, (req, res) => {
   res.redirect('/dashboard');
 });
 
-// Error handling middleware
+// Session error handling middleware (specific to session issues)
 app.use((err, req, res, next) => {
-  // Log the error
-  console.error('Server error:', err.stack);
-  
-  // Handle session errors
+  // Handle session errors specifically
   if (err.code === 'ENOENT' || err.message.includes('session')) {
-    // Clear the invalid session
-    req.session.destroy((sessionErr) => {
-      if (sessionErr) {
-        console.error('Error destroying session:', sessionErr);
-      }
-      
-      // Clear the cookies
+    // Clear the invalid session - safely handle the case where session might not exist
+    if (req.session) {
+      req.session.destroy((sessionErr) => {
+        if (sessionErr) {
+          console.error('Error destroying session:', sessionErr);
+        }
+        
+        // Clear the cookies
+        res.clearCookie('connect.sid');
+        
+        // Render a security error page
+        return res.status(403).render('error', {
+          title: 'Security Error',
+          message: 'Your session has expired or is invalid. Please try again.',
+          action: '/access/login',
+          actionText: 'Sign in again'
+        });
+      });
+    } else {
+      // If session doesn't exist, just clear cookies and render error
       res.clearCookie('connect.sid');
-
       
-      // Render a security error page
       return res.status(403).render('error', {
         title: 'Security Error',
         message: 'Your session has expired or is invalid. Please try again.',
         action: '/access/login',
         actionText: 'Sign in again'
       });
-    });
+    }
   } else {
-    // Handle other errors
-    res.status(500).render('error', {
-      title: 'Error',
-      message: process.env.NODE_ENV === 'production' ? 'Something went wrong' : err.message,
-      error: process.env.NODE_ENV === 'development' ? err : {},
-      user: req.user
-    });
+    // Pass other errors to the next error handler
+    next(err);
   }
+});
+
+// Use centralized error handler
+app.use(function(err, req, res, next) {
+  console.error('Error:', err.message);
+  res.status(err.statusCode || 500).render('error', {
+    title: 'Error',
+    message: err.message || 'An unexpected error occurred',
+    error: process.env.NODE_ENV === 'development' ? err : {},
+    user: req.user
+  });
 });
 
 // 404 handling
 app.use((req, res) => {
   res.status(404).render('error', {
-    title: 'Page not found',
-    message: 'If you typed the web address, check it is correct.'
+    title: 'Page Not Found',
+    message: 'The page you are looking for does not exist.',
+    error: {}
   });
 });
 
-const PORT = process.env.PORT || 23456;
+// Get port from environment configuration
+const PORT = config.port;
 
 // Only start the server when running directly with Node.js
 // This prevents the server from trying to start in Vercel's serverless environment
 if (!process.env.VERCEL && require.main === module) {
-  // Connect to database first
-  connectWithRetry().then(async connected => {
+  // Database connection
+  // Use Neon PostgreSQL database connection
+  console.log('Using Neon PostgreSQL database connection');
+  const db = require('./config/database');
+  
+  const { testConnection } = db;
+
+  // Test database connection
+  testConnection().then((connected) => {
     if (!connected) {
-      console.error('Failed to connect to database after retries');
+      console.error('Failed to connect to database after multiple attempts. Exiting...');
       process.exit(1);
     }
     
@@ -322,13 +394,12 @@ if (!process.env.VERCEL && require.main === module) {
   });
 }
 
-// Export the Express app and prisma client for testing
-module.exports = { app, prisma };
+// Export the Express app for Vercel serverless functions
+module.exports = app;
 
 // Set environment variables for Vercel deployment
 if (process.env.VERCEL) {
+  // Force production environment on Vercel
   process.env.NODE_ENV = 'production';
+  console.log('Running in Vercel production environment');
 }
-
-// Export the Express app for Vercel serverless functions
-module.exports = app;

@@ -1,0 +1,20 @@
+{
+  "name": "RRDM API",
+  "version": "1.0.0",
+  "description": "API documentation for the RRDM application",
+  "title": "RRDM API Documentation",
+  "url": "/api",
+  "sampleUrl": "/api",
+  "template": {
+    "withCompare": true,
+    "withGenerator": true
+  },
+  "header": {
+    "title": "Introduction",
+    "filename": "docs/api/header.md"
+  },
+  "footer": {
+    "title": "Additional Information",
+    "filename": "docs/api/footer.md"
+  }
+}
