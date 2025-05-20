@@ -2,11 +2,13 @@
  * Performance Monitoring Service
  * 
  * This service provides performance monitoring for the application.
- * It tracks metrics such as response times, memory usage, and database query times.
+ * It tracks metrics such as response times, memory usage, database query times,
+ * and security configurations such as CSRF protection.
  */
 const { logger } = require('../logger');
 const os = require('os');
 const { PrismaClient } = require('@prisma/client');
+const { testCsrfConfiguration } = require('../../tests/csrf-config.test');
 
 // Initialize Prisma client with query logging
 const prisma = new PrismaClient({
@@ -127,15 +129,58 @@ function resetMetrics() {
 }
 
 /**
+ * Get security configuration metrics
+ * @returns {Object} - Security configuration metrics
+ */
+async function getSecurityMetrics() {
+  // Test CSRF configuration
+  const csrfResult = await testCsrfConfiguration();
+  
+  return {
+    csrf: {
+      status: csrfResult.status,
+      message: csrfResult.message,
+      details: csrfResult.details,
+      timestamp: new Date()
+    }
+  };
+}
+
+// Cache for security metrics to avoid frequent testing
+let securityMetricsCache = null;
+let securityMetricsTimestamp = null;
+
+/**
  * Get all metrics
  * @returns {Object} - All metrics
  */
-function getAllMetrics() {
+async function getAllMetrics() {
+  // Check if we need to refresh security metrics (every 5 minutes)
+  if (!securityMetricsCache || 
+      !securityMetricsTimestamp || 
+      (new Date() - securityMetricsTimestamp) > 5 * 60 * 1000) {
+    try {
+      securityMetricsCache = await getSecurityMetrics();
+      securityMetricsTimestamp = new Date();
+    } catch (error) {
+      logger.error('Error getting security metrics', { error });
+      securityMetricsCache = {
+        csrf: {
+          status: 'error',
+          message: 'Error testing CSRF configuration',
+          details: error.message,
+          timestamp: new Date()
+        }
+      };
+    }
+  }
+  
   return {
     timestamp: new Date(),
     system: getSystemMetrics(),
     application: getApplicationMetrics(),
-    database: getDatabaseMetrics()
+    database: getDatabaseMetrics(),
+    security: securityMetricsCache
   };
 }
 

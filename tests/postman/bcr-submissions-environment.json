@@ -1,0 +1,22 @@
+{
+  "id": "bcr-submissions-env",
+  "name": "BCR Submissions Environment",
+  "values": [
+    {
+      "key": "session_id",
+      "value": "s%3AXkLUQVtUXfBpkWVmxCxPQBDZHnZvdMZx.FvFQpDXGVdP%2FRGCOr7JgQ%2BnZ8sdkuUeRdW%2BnlQHpQDk",
+      "enabled": true
+    },
+    {
+      "key": "bcr_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "critical_bcr_id",
+      "value": "",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

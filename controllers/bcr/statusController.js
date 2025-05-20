@@ -1,9 +1,31 @@
 /**
  * BCR Status Controller
- * Handles BCR status updates and phase transitions
+ * Handles BCR status updates and phase transitions based on BPMN process
  */
 const bcrService = require('../../services/bcrService');
+const workflowPhaseService = require('../../services/workflowPhaseService');
+const bcrWorkflowService = require('../../services/bcrWorkflowService');
 const bcrConfigService = require('../../services/bcrConfigService');
+const { logger } = require('../../utils/logger');
+
+/**
+ * Renders an error response
+ * @param {Object} res - Express response object
+ * @param {Object} options - Error options
+ * @param {number} options.status - HTTP status code
+ * @param {string} options.title - Error title
+ * @param {string} options.message - Error message
+ * @param {Object} options.error - Error object
+ * @param {Object} options.user - User object
+ */
+function renderError(res, { status = 500, title = 'Error', message = 'An error occurred', error = {}, user = null }) {
+  return res.status(status).render('error', {
+    title,
+    message,
+    error: process.env.NODE_ENV === 'development' ? error : {},
+    user
+  });
+}
 
 /**
  * Helper function to reset all phases below the current phase
@@ -11,122 +33,151 @@ const bcrConfigService = require('../../services/bcrConfigService');
  * @param {string} currentPhaseId - Current phase ID
  * @param {Array} phases - Array of phase objects
  */
-const resetLowerPhases = async (submission, currentPhaseId, phases) => {
-  // If there's no workflow history, nothing to reset
-  if (!submission.workflowHistory) {
-    return;
-  }
-  
-  // Get all phase IDs higher than the current phase
+async function resetLowerPhases(submission, currentPhaseId, phases) {
+  if (!submission.workflowHistory) return;
   const higherPhaseIds = phases
     .filter(phase => phase.id > currentPhaseId)
     .map(phase => phase.id);
-  
-  // Mark all workflow history items for higher phases as 'not completed'
-  submission.workflowHistory.forEach(item => {
-    // Try to find which phase this history item belongs to
-    const statusName = item.action.includes('Status Updated') ? 
-      item.notes.replace('Changed status to ', '') : null;
     
+  // Use for...of instead of forEach to properly handle await
+  for (const item of submission.workflowHistory) {
+    const statusName = item.action.includes('Status Updated') ? item.notes.replace('Changed status to ', '') : null;
     if (statusName) {
-      // Find the phase ID for this status
-      const phaseId = getPhaseIdForStatus(statusName, phases);
-      
-      // If this history item is for a higher phase, mark it as not completed
+      const phaseId = await getPhaseIdForStatus(statusName, phases);
       if (phaseId && higherPhaseIds.includes(phaseId)) {
         item.completed = false;
       }
     }
-  });
-  
-  // Add a note about resetting subsequent phases
+  };
   submission.history.push({
     date: new Date().toISOString(),
     action: 'Phases Reset',
     user: 'System',
     notes: `All phases after Phase ${currentPhaseId} have been reset to Not Completed`
   });
-};
+}
 
 /**
  * Helper function to get phase ID for a status
  * @param {string} statusName - Status name
+ * @param {Array} phases - Array of phase objects
  * @returns {string|null} - Phase ID or null if not found
  */
-const getPhaseIdForStatus = async (statusName) => {
+async function getPhaseIdForStatus(statusName, phases) {
   try {
-    // Find the status in the database using the service
-    const statuses = await bcrConfigService.getConfigsByType('status');
+    const statuses = await workflowPhaseService.getAllStatuses();
     const status = statuses.find(s => s.name === statusName);
-    
-    if (status) {
-      return parseInt(status.value, 10);
-    }
-    
-    return null;
+    return status ? status.phaseId : null;
   } catch (error) {
     console.error('Error getting phase ID for status:', error);
     return null;
   }
-};
+}
 
 /**
  * Update BCR status
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * @param {import('express').Request} req - Express request object
+ * @param {import('express').Response} res - Express response object
  */
-const updateStatus = async (req, res) => {
+async function updateStatus(req, res) {
   try {
     const bcrId = req.params.id;
-    const { status, phase, comment, assignee } = req.body;
-    
-    // Find the BCR using the service
+    const { status, phase, comment, assignee, action, decision } = req.body;
     const bcr = await bcrService.getBcrById(bcrId);
     
     if (!bcr) {
-      return res.status(404).json({ success: false, message: 'BCR not found' });
+      return renderError(res, {
+        status: 404,
+        title: 'Not Found',
+        message: 'BCR not found',
+        user: req.user
+      });
     }
     
-    // Prepare update data
-    const updateData = {};
+    // Options for workflow actions
+    const options = {
+      comment: comment,
+      userId: req.user.id,
+      user: req.user.name,
+      assignee: assignee
+    };
     
-    // Update status if provided
-    if (status) {
-      updateData.status = status;
-    }
-    
-    // Update phase if provided
-    if (phase) {
-      // Get all phases to determine if we need to reset lower phases
-      const phases = await bcrConfigService.getConfigsByType('phase');
+    // Handle different workflow actions based on the BPMN process
+    if (action) {
+      switch (action) {
+        case 'transition':
+          // Get available transitions
+          const availableTransitions = await bcrWorkflowService.getAvailableTransitions(bcrId);
+          
+          // Find the selected transition
+          const selectedTransition = availableTransitions.find(t => 
+            t.transitionData.toPhaseId.toString() === phase
+          );
+          
+          if (!selectedTransition) {
+            throw new Error(`Invalid transition to phase ${phase}`);
+          }
+          
+          // Perform the transition
+          await bcrWorkflowService.transitionBcr(bcrId, selectedTransition.transitionData, options);
+          break;
+          
+        case 'complete_phase':
+          // Complete the current phase
+          await bcrWorkflowService.completeCurrentPhase(bcrId, options);
+          break;
+          
+        case 'decision':
+          // Process a decision point
+          const decisionValue = decision === 'true' || decision === true;
+          await bcrWorkflowService.processDecisionPoint(bcrId, phase, decisionValue, options);
+          break;
+          
+        default:
+          // Simple status update
+          const updateData = {};
+          if (status) updateData.status = status;
+          
+          const currentNotes = bcr.notes || '';
+          updateData.notes = `${currentNotes}\n\n${new Date().toISOString()} - ${req.user.name}: ${comment}`;
+          
+          if (assignee) updateData.assignedTo = assignee;
+          
+          await bcrService.updateBcr(bcrId, updateData);
+      }
+    } else {
+      // Handle legacy status updates
+      const updateData = {};
+      if (status) updateData.status = status;
       
-      // Reset lower phases if needed
-      if (bcr.phase && bcr.phase !== phase) {
-        resetLowerPhases(bcr, phase, phases);
+      if (phase) {
+        const phases = await workflowPhaseService.getAllPhases();
+        if (bcr.phase && bcr.phase !== phase) {
+          await resetLowerPhases(bcr, phase, phases);
+        }
+        updateData.currentPhaseId = phase;
       }
       
-      updateData.phase = phase;
+      const currentNotes = bcr.notes || '';
+      updateData.notes = `${currentNotes}\n\n${new Date().toISOString()} - ${req.user.name}: ${comment}`;
+      
+      if (assignee) updateData.assignedTo = assignee;
+      
+      await bcrService.updateBcr(bcrId, updateData);
     }
     
-    // Add comment to notes if provided
-    const currentNotes = bcr.notes || '';
-    updateData.notes = `${currentNotes}\n\n${new Date().toISOString()} - ${req.user.name}: ${comment}`;
-    
-    // Update the assignee if provided
-    if (assignee) {
-      updateData.assignedTo = assignee;
-    }
-    
-    // Update the BCR using the service
-    await bcrService.updateBcr(bcrId, updateData);
-    
-    // Redirect to confirmation page
     res.redirect(`/bcr/update-confirmation/${bcrId}`);
   } catch (error) {
-    console.error('Error updating BCR status:', error);
-    res.status(500).json({ success: false, message: 'Failed to update BCR status' });
+    logger.error('Error updating BCR status:', error);
+    renderError(res, {
+      status: 500,
+      title: 'Error',
+      message: 'Failed to update BCR status',
+      error,
+      user: req.user
+    });
   }
-};
+}
 
 module.exports = {
   updateStatus,

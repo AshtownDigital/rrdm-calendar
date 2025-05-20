@@ -1,0 +1,19 @@
+{
+  "name": "postman",
+  "version": "1.0.0",
+  "description": "This directory contains Postman tests for the BCR submission functionality in the RRDM application.",
+  "main": "bcr-submissions-tests.js",
+  "scripts": {
+    "test": "node run-tests.js",
+    "test:api": "node bcr-api-tests.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.9.0",
+    "newman": "^6.2.1",
+    "node-fetch": "^3.3.2",
+    "uuid": "^11.1.0"
+  }
+}

@@ -1,0 +1,222 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block pageTitle %}
+  BCR Dashboard - RRDM
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Business Change Request Dashboard</h1>
+    <p class="govuk-body-l">Manage and track business change requests</p>
+  </div>
+</div>
+
+<!-- Overview Section -->
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6 govuk-!-margin-bottom-4">Overview</h2>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-one-quarter">
+    <div class="app-card app-card--green">
+      <h2 class="govuk-heading-m">{{ stats.total }}</h2>
+      <p class="govuk-body">Total BCRs</p>
+    </div>
+  </div>
+  <div class="govuk-grid-column-one-quarter">
+    <div class="app-card app-card--blue">
+      <h2 class="govuk-heading-m">{{ stats.pending }}</h2>
+      <p class="govuk-body">Pending</p>
+    </div>
+  </div>
+  <div class="govuk-grid-column-one-quarter">
+    <div class="app-card app-card--turquoise">
+      <h2 class="govuk-heading-m">{{ stats.approved }}</h2>
+      <p class="govuk-body">Approved</p>
+    </div>
+  </div>
+  <div class="govuk-grid-column-one-quarter">
+    <div class="app-card app-card--red">
+      <h2 class="govuk-heading-m">{{ stats.rejected }}</h2>
+      <p class="govuk-body">Rejected</p>
+    </div>
+  </div>
+</div>
+
+<div class="govuk-grid-row govuk-!-margin-top-4">
+  <div class="govuk-grid-column-one-quarter">
+    <div class="app-card app-card--purple">
+      <h2 class="govuk-heading-m">{{ stats.implemented }}</h2>
+      <p class="govuk-body">Implemented</p>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions Section -->
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6 govuk-!-margin-bottom-4">Quick Actions</h2>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-one-third">
+    <a href="/bcr-submission/new" class="app-card-link">
+      <div class="app-card app-card--blue">
+        <h2 class="govuk-heading-m">Create New BCR</h2>
+        <p class="govuk-body">Submit a new business change request.</p>
+      </div>
+    </a>
+  </div>
+  <div class="govuk-grid-column-one-third">
+    <a href="/bcr/submissions" class="app-card-link">
+      <div class="app-card app-card--turquoise">
+        <h2 class="govuk-heading-m">View All BCRs</h2>
+        <p class="govuk-body">Browse and search all business change requests.</p>
+      </div>
+    </a>
+  </div>
+  <div class="govuk-grid-column-one-third">
+    <a href="/bcr/workflow" class="app-card-link">
+      <div class="app-card app-card--purple">
+        <h2 class="govuk-heading-m">View Workflow</h2>
+        <p class="govuk-body">See the BCR workflow process diagram.</p>
+      </div>
+    </a>
+  </div>
+</div>
+
+
+
+<!-- BCRs by Priority Level Section -->
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6 govuk-!-margin-bottom-4">BCRs by Priority Level</h2>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  {% for level in urgencyLevels %}
+    <div class="govuk-grid-column-one-quarter">
+      <div class="app-card
+        {% if level.value === 'low' %}
+          app-card--green
+        {% elif level.value === 'medium' %}
+          app-card--yellow
+        {% elif level.value === 'high' %}
+          app-card--orange
+        {% elif level.value === 'critical' %}
+          app-card--red
+        {% else %}
+          app-card--grey
+        {% endif %}">
+        <h2 class="govuk-heading-m">{{ level.name }}</h2>
+        <p class="govuk-body">{{ bcrsByUrgency[level.value] or 0 }} BCRs</p>
+        <p class="govuk-body">
+          {% if level.value === 'low' %}
+            <strong class="govuk-tag govuk-tag--green">Low Priority</strong>
+          {% elif level.value === 'medium' %}
+            <strong class="govuk-tag govuk-tag--yellow">Medium Priority</strong>
+          {% elif level.value === 'high' %}
+            <strong class="govuk-tag govuk-tag--orange">High Priority</strong>
+          {% elif level.value === 'critical' %}
+            <strong class="govuk-tag govuk-tag--red">Critical Priority</strong>
+          {% else %}
+            <strong class="govuk-tag govuk-tag--grey">{{ level.name }}</strong>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Recent BCRs Section -->
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6 govuk-!-margin-bottom-4">Recent BCRs</h2>
+  </div>
+</div>
+
+{% if recentBcrs and recentBcrs.length > 0 %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-visually-hidden">Recent BCRs</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">BCR Number</th>
+            <th scope="col" class="govuk-table__header">Description</th>
+            <th scope="col" class="govuk-table__header">Requested by</th>
+            <th scope="col" class="govuk-table__header">Status</th>
+            <th scope="col" class="govuk-table__header">Created</th>
+            <th scope="col" class="govuk-table__header">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for bcr in recentBcrs %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell">{{ bcr.bcrNumber }}</td>
+              <td class="govuk-table__cell">{{ bcr.description | truncate(60) }}</td>
+              <td class="govuk-table__cell">
+                {% if bcr.Users_Bcrs_requestedByToUsers %}
+                  {{ bcr.Users_Bcrs_requestedByToUsers.name }}
+                {% else %}
+                  Unknown
+                {% endif %}
+              </td>
+              <td class="govuk-table__cell">
+                {% if bcr.status.includes('in_progress') %}
+                  <strong class="govuk-tag govuk-tag--light-blue">In Progress</strong>
+                {% elif bcr.status.includes('completed') %}
+                  <strong class="govuk-tag govuk-tag--green">Completed</strong>
+                {% elif bcr.status === 'new_submission' %}
+                  <strong class="govuk-tag govuk-tag--blue">New</strong>
+                {% elif bcr.status === 'rejected' %}
+                  <strong class="govuk-tag govuk-tag--red">Rejected</strong>
+                {% elif bcr.status === 'approved' %}
+                  <strong class="govuk-tag govuk-tag--green">Approved</strong>
+                {% elif bcr.status === 'implemented' %}
+                  <strong class="govuk-tag govuk-tag--turquoise">Implemented</strong>
+                {% else %}
+                  <strong class="govuk-tag">{{ bcr.status | replace('_', ' ') | title }}</strong>
+                {% endif %}
+              </td>
+              <td class="govuk-table__cell">{{ bcr.createdAt | date }}</td>
+              <td class="govuk-table__cell">
+                <a href="/bcr/{{ bcr.id }}" class="govuk-link">View</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <p class="govuk-body">No BCRs found.</p>
+    </div>
+  </div>
+{% endif %}
+
+<!-- BCRs by Impact Area Section -->
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6 govuk-!-margin-bottom-4">BCRs by Impact Area</h2>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  {% for area in impactAreas %}
+    <div class="govuk-grid-column-one-third">
+      <div class="app-card app-card--blue">
+        <h2 class="govuk-heading-m">{{ area.name }}</h2>
+        <p class="govuk-body">{{ bcrsByImpactArea[area.value] or 0 }} BCRs affected</p>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

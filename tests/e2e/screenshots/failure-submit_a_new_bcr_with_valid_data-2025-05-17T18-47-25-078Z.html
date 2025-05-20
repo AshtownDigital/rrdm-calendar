@@ -1,0 +1,487 @@
+<!DOCTYPE html><html lang="en" class="govuk-template"><head>
+    <meta charset="utf-8">
+    <title>
+  New BCR Submission - RRDM
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0b0c0c">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <link rel="shortcut icon" sizes="16x16 32x32 48x48" href="/assets/images/favicon.ico" type="image/x-icon">
+    <link rel="mask-icon" href="/assets/images/govuk-mask-icon.svg" color="#0b0c0c">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/govuk-apple-touch-icon-180x180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/assets/images/govuk-apple-touch-icon-167x167.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/assets/images/govuk-apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" href="/assets/images/govuk-apple-touch-icon.png">
+
+    <link href="/assets/css/govuk-frontend.min.css" rel="stylesheet">
+    <link href="/assets/css/application.css" rel="stylesheet">
+
+    
+  </head>
+
+  <body class="govuk-template__body js-enabled">
+    <script>document.body.className = ((document.body.className) ? document.body.className + ' js-enabled' : 'js-enabled');</script>
+
+    <a href="#main-content" class="govuk-skip-link">Skip to main content</a>
+
+    <header class="govuk-header" role="banner" data-module="govuk-header">
+      <div class="govuk-header__container govuk-width-container">
+        <div class="govuk-header__logo">
+          <a href="/" class="govuk-header__link govuk-header__link--homepage">
+            <span class="govuk-header__logotype">
+              <span class="govuk-header__logotype-text">
+                Register Team Internal Services
+              </span>
+            </span>
+          </a>
+        </div>
+        <div class="govuk-header__content">
+          <nav aria-label="Menu" class="govuk-header__navigation">
+            <button type="button" class="govuk-header__menu-button govuk-js-header-toggle" aria-controls="navigation" aria-label="Show or hide menu">Menu</button>
+            <ul id="navigation" class="govuk-header__navigation-list">
+              <li class="govuk-header__navigation-item">
+                <a class="govuk-header__link" href="/">
+                  Home
+                </a>
+              </li>
+              <li class="govuk-header__navigation-item">
+                <a class="govuk-header__link" href="/bcr/dashboard">
+                  BCR Dashboard
+                </a>
+              </li>
+              <li class="govuk-header__navigation-item">
+                <a class="govuk-header__link" href="/bcr-submission/new">
+                  New Submission
+                </a>
+              </li>
+              <li class="govuk-header__navigation-item">
+                <a class="govuk-header__link" href="/impacted-areas">
+                  Impacted Areas
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <div class="govuk-width-container">
+      
+        <div class="govuk-phase-banner">
+          <p class="govuk-phase-banner__content">
+            <strong class="govuk-tag govuk-phase-banner__content__tag">
+              Beta
+            </strong>
+            <span class="govuk-phase-banner__text">
+              This is a new service – your <a class="govuk-link" href="#">feedback</a> will help us to improve it.
+            </span>
+          </p>
+        </div>
+
+        <div class="govuk-breadcrumbs">
+          <ol class="govuk-breadcrumbs__list">
+            <li class="govuk-breadcrumbs__list-item">
+              <a class="govuk-breadcrumbs__link" href="/">Home</a>
+            </li>
+            
+  <li class="govuk-breadcrumbs__list-item">
+    <a class="govuk-breadcrumbs__link" href="/bcr/dashboard">BCR Dashboard</a>
+  </li>
+  <li class="govuk-breadcrumbs__list-item">
+    New Submission
+  </li>
+
+          </ol>
+        </div>
+      
+
+      <main class="govuk-main-wrapper" id="main-content" role="main">
+        
+
+        
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">New BCR Submission</h1>
+      
+      <p class="govuk-body">Use this form to submit a new Business Change Request (BCR). All fields marked with an asterisk (*) are required.</p>
+      
+      <form action="/bcr-submission" method="post" novalidate="">
+        <input type="hidden" name="_csrf" value="" style="">
+        
+        <div class="govuk-form-group ">
+          <label class="govuk-label" for="fullName">
+            Full Name *
+          </label>
+          
+          <input class="govuk-input " id="fullName" name="fullName" type="text" value="" style="">
+        </div>
+        
+        <div class="govuk-form-group ">
+          <label class="govuk-label" for="emailAddress">
+            Email Address *
+          </label>
+          
+          <input class="govuk-input " id="emailAddress" name="emailAddress" type="email" value="" style="">
+        </div>
+        
+        <div class="govuk-form-group ">
+          <label class="govuk-label" for="submissionSource">
+            Submission Source *
+          </label>
+          
+          <select class="govuk-select " id="submissionSource" name="submissionSource">
+            <option value="">Please select</option>
+            
+              <option value="Internal">
+                Internal
+              </option>
+            
+              <option value="External">
+                External
+              </option>
+            
+              <option value="Other">
+                Other
+              </option>
+            
+          </select>
+        </div>
+        
+        <div class="govuk-form-group " id="organisationGroup" style="display: none;">
+          <label class="govuk-label" for="organisation">
+            Organisation
+          </label>
+          <div class="govuk-hint">
+            Required if submission source is 'Other'
+          </div>
+          
+          <input class="govuk-input " id="organisation" name="organisation" type="text" value="" style="">
+        </div>
+        
+        <div class="govuk-form-group ">
+          <label class="govuk-label" for="briefDescription">
+            Brief Description *
+          </label>
+          <div class="govuk-hint">
+            A short title or summary of the change request (max 500 characters)
+          </div>
+          
+          <textarea class="govuk-textarea " id="briefDescription" name="briefDescription" rows="2" maxlength="500" style=""></textarea>
+        </div>
+        
+        <div class="govuk-form-group ">
+          <label class="govuk-label" for="justification">
+            Justification *
+          </label>
+          <div class="govuk-hint">
+            Explain why this change is needed and what benefits it will bring
+          </div>
+          
+          <textarea class="govuk-textarea " id="justification" name="justification" rows="5" style=""></textarea>
+        </div>
+        
+        <div class="govuk-form-group ">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+              Urgency Level *
+            </legend>
+            
+            <div class="govuk-radios">
+              
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="urgencyLevel-Low" name="urgencyLevel" type="radio" value="Low" style="">
+                  <label class="govuk-label govuk-radios__label" for="urgencyLevel-Low">
+                    Low
+                  </label>
+                </div>
+              
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="urgencyLevel-Medium" name="urgencyLevel" type="radio" value="Medium" style="">
+                  <label class="govuk-label govuk-radios__label" for="urgencyLevel-Medium">
+                    Medium
+                  </label>
+                </div>
+              
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="urgencyLevel-High" name="urgencyLevel" type="radio" value="High" style="">
+                  <label class="govuk-label govuk-radios__label" for="urgencyLevel-High">
+                    High
+                  </label>
+                </div>
+              
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="urgencyLevel-Critical" name="urgencyLevel" type="radio" value="Critical" style="">
+                  <label class="govuk-label govuk-radios__label" for="urgencyLevel-Critical">
+                    Critical
+                  </label>
+                </div>
+              
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="urgencyLevel-Unknown" name="urgencyLevel" type="radio" value="Unknown" style="">
+                  <label class="govuk-label govuk-radios__label" for="urgencyLevel-Unknown">
+                    Unknown
+                  </label>
+                </div>
+              
+            </div>
+          </fieldset>
+        </div>
+        
+        <div class="govuk-form-group ">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+              Impacted Areas *
+            </legend>
+            <div class="govuk-hint">
+              Select all areas that will be impacted by this change
+            </div>
+            
+            <div class="govuk-checkboxes">
+              
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="impactAreas-e956e79a-d1f8-43f5-a9d4-ba7a8d14b635" name="impactAreas" type="checkbox" value="e956e79a-d1f8-43f5-a9d4-ba7a8d14b635" style="">
+                  <label class="govuk-label govuk-checkboxes__label" for="impactAreas-e956e79a-d1f8-43f5-a9d4-ba7a8d14b635">
+                    Backend
+                  </label>
+                  
+                </div>
+              
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="impactAreas-a40bebf0-973f-417a-8f0e-98afb492e30d" name="impactAreas" type="checkbox" value="a40bebf0-973f-417a-8f0e-98afb492e30d" style="">
+                  <label class="govuk-label govuk-checkboxes__label" for="impactAreas-a40bebf0-973f-417a-8f0e-98afb492e30d">
+                    Frontend
+                  </label>
+                  
+                </div>
+              
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="impactAreas-265cdec6-a67f-415f-9cd2-e17720ca4e72" name="impactAreas" type="checkbox" value="265cdec6-a67f-415f-9cd2-e17720ca4e72" style="">
+                  <label class="govuk-label govuk-checkboxes__label" for="impactAreas-265cdec6-a67f-415f-9cd2-e17720ca4e72">
+                    API
+                  </label>
+                  
+                </div>
+              
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="impactAreas-ff99f90e-4e87-4b49-b0c1-1938434cb3e1" name="impactAreas" type="checkbox" value="ff99f90e-4e87-4b49-b0c1-1938434cb3e1" style="">
+                  <label class="govuk-label govuk-checkboxes__label" for="impactAreas-ff99f90e-4e87-4b49-b0c1-1938434cb3e1">
+                    CSV
+                  </label>
+                  
+                </div>
+              
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="impactAreas-431a15aa-7b8a-4daf-b5c9-ffe610afe769" name="impactAreas" type="checkbox" value="431a15aa-7b8a-4daf-b5c9-ffe610afe769" style="">
+                  <label class="govuk-label govuk-checkboxes__label" for="impactAreas-431a15aa-7b8a-4daf-b5c9-ffe610afe769">
+                    Reference Data
+                  </label>
+                  
+                </div>
+              
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="impactAreas-5f359377-2f85-4584-bb63-520d7455a9cf" name="impactAreas" type="checkbox" value="5f359377-2f85-4584-bb63-520d7455a9cf" style="">
+                  <label class="govuk-label govuk-checkboxes__label" for="impactAreas-5f359377-2f85-4584-bb63-520d7455a9cf">
+                    Documentation &amp; Guidance
+                  </label>
+                  
+                </div>
+              
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="impactAreas-5736cdd7-f87b-4ef5-a3cb-baaa0d4006cc" name="impactAreas" type="checkbox" value="5736cdd7-f87b-4ef5-a3cb-baaa0d4006cc" style="">
+                  <label class="govuk-label govuk-checkboxes__label" for="impactAreas-5736cdd7-f87b-4ef5-a3cb-baaa0d4006cc">
+                    Policy
+                  </label>
+                  
+                </div>
+              
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="impactAreas-fbb7a6d4-6f1c-4353-9412-b446dea7d851" name="impactAreas" type="checkbox" value="fbb7a6d4-6f1c-4353-9412-b446dea7d851" style="">
+                  <label class="govuk-label govuk-checkboxes__label" for="impactAreas-fbb7a6d4-6f1c-4353-9412-b446dea7d851">
+                    Funding
+                  </label>
+                  
+                </div>
+              
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="impactAreas-cf2bad73-a37f-4288-9985-8d903e344634" name="impactAreas" type="checkbox" value="cf2bad73-a37f-4288-9985-8d903e344634" style="">
+                  <label class="govuk-label govuk-checkboxes__label" for="impactAreas-cf2bad73-a37f-4288-9985-8d903e344634">
+                    Other
+                  </label>
+                  
+                </div>
+              
+            </div>
+          </fieldset>
+        </div>
+        
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="affectedReferenceDataArea">
+            Affected Reference Data Area
+          </label>
+          <div class="govuk-hint">
+            If applicable, specify which reference data area will be affected
+          </div>
+          <input class="govuk-input" id="affectedReferenceDataArea" name="affectedReferenceDataArea" type="text" value="" style="">
+        </div>
+        
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="technicalDependencies">
+            Technical Dependencies
+          </label>
+          <div class="govuk-hint">
+            List any technical dependencies or system requirements
+          </div>
+          <textarea class="govuk-textarea" id="technicalDependencies" name="technicalDependencies" rows="3" style=""></textarea>
+        </div>
+        
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="relatedDocuments">
+            Related Documents
+          </label>
+          <div class="govuk-hint">
+            URLs or references to related documentation
+          </div>
+          <textarea class="govuk-textarea" id="relatedDocuments" name="relatedDocuments" rows="2" style=""></textarea>
+        </div>
+        
+        <div class="govuk-form-group ">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+              Will you be providing attachments? *
+            </legend>
+            
+            <div class="govuk-radios">
+              
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="attachments-Yes" name="attachments" type="radio" value="Yes" style="">
+                  <label class="govuk-label govuk-radios__label" for="attachments-Yes">
+                    Yes
+                  </label>
+                </div>
+              
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="attachments-No" name="attachments" type="radio" value="No" style="">
+                  <label class="govuk-label govuk-radios__label" for="attachments-No">
+                    No
+                  </label>
+                </div>
+              
+            </div>
+          </fieldset>
+        </div>
+        
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="additionalNotes">
+            Additional Notes
+          </label>
+          <div class="govuk-hint">
+            Any other information that may be relevant
+          </div>
+          <textarea class="govuk-textarea" id="additionalNotes" name="additionalNotes" rows="3" style=""></textarea>
+        </div>
+        
+        <div class="govuk-form-group ">
+          <div class="govuk-checkboxes">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="declaration" name="declaration" type="checkbox" value="true" style="">
+              <label class="govuk-label govuk-checkboxes__label" for="declaration">
+                I confirm that the information provided is accurate and complete *
+              </label>
+            </div>
+          </div>
+          
+        </div>
+        
+        <button type="submit" class="govuk-button" data-module="govuk-button">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+
+      </main>
+    </div>
+
+    <footer class="govuk-footer" role="contentinfo">
+      <div class="govuk-width-container">
+        <div class="govuk-footer__meta">
+          <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
+            <h2 class="govuk-visually-hidden">Support links</h2>
+            <ul class="govuk-footer__inline-list">
+              <li class="govuk-footer__inline-list-item">
+                <a class="govuk-footer__link" href="#">
+                  Help
+                </a>
+              </li>
+              <li class="govuk-footer__inline-list-item">
+                <a class="govuk-footer__link" href="#">
+                  Privacy
+                </a>
+              </li>
+              <li class="govuk-footer__inline-list-item">
+                <a class="govuk-footer__link" href="#">
+                  Cookies
+                </a>
+              </li>
+              <li class="govuk-footer__inline-list-item">
+                <a class="govuk-footer__link" href="#">
+                  Accessibility statement
+                </a>
+              </li>
+              <li class="govuk-footer__inline-list-item">
+                <a class="govuk-footer__link" href="#">
+                  Contact
+                </a>
+              </li>
+              <li class="govuk-footer__inline-list-item">
+                <a class="govuk-footer__link" href="#">
+                  Terms and conditions
+                </a>
+              </li>
+            </ul>
+
+            <svg aria-hidden="true" focusable="false" class="govuk-footer__licence-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 483.2 195.7" height="17" width="41">
+              <path fill="currentColor" d="M421.5 142.8V.1l-50.7 32.3v161.1h112.4v-50.7zm-122.3-9.6A47.12 47.12 0 0 1 221 97.8c0-26 21.1-47.1 47.1-47.1 16.7 0 31.4 8.7 39.7 21.8l42.7-27.2A97.63 97.63 0 0 0 268.1 0c-36.5 0-68.3 20.1-85.1 49.7A98 98 0 0 0 97.8 0C43.9 0 0 43.9 0 97.8s43.9 97.8 97.8 97.8c36.5 0 68.3-20.1 85.1-49.7a97.76 97.76 0 0 0 149.6 25.4l19.4 22.2h3v-87.8h-80l24.3 27.5zM97.8 145c-26 0-47.1-21.1-47.1-47.1s21.1-47.1 47.1-47.1 47.2 21 47.2 47S123.8 145 97.8 145"></path>
+            </svg>
+            <span class="govuk-footer__licence-description">
+              All content is available under the
+              <a class="govuk-footer__link" href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" rel="license">Open Government Licence v3.0</a>, except where otherwise stated
+            </span>
+          </div>
+          <div class="govuk-footer__meta-item">
+            <a class="govuk-footer__link govuk-footer__copyright-logo" href="https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/">© Crown copyright</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="/assets/js/govuk-frontend.min.js"></script>
+    <script>window.GOVUKFrontend.initAll()</script>
+    
+    
+<script>
+  // Show/hide organisation field based on submission source
+  document.addEventListener('DOMContentLoaded', function() {
+    const submissionSourceSelect = document.getElementById('submissionSource');
+    const organisationGroup = document.getElementById('organisationGroup');
+    
+    function updateOrganisationVisibility() {
+      if (submissionSourceSelect.value === 'Other') {
+        organisationGroup.style.display = 'block';
+      } else {
+        organisationGroup.style.display = 'none';
+      }
+    }
+    
+    // Initial state
+    updateOrganisationVisibility();
+    
+    // Update on change
+    submissionSourceSelect.addEventListener('change', updateOrganisationVisibility);
+  });
+</script>
+
+  
+
+</body></html>

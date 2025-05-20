@@ -1,6 +1,6 @@
 {% extends "layouts/base-with-nav.njk" %}
 
-{% block title %}Edit BCR: {{ submission.id }} | Register Team Internal Services{% endblock %}
+{% block title %}Edit BCR: {{ bcr.id }} | Register Team Internal Services{% endblock %}
 
 {% block navigation %}
   {% include "partials/bcr-navigation.njk" %}
@@ -9,7 +9,24 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-xl">Edit BCR: {{ submission.id }}</h1>
+      <h1 class="govuk-heading-xl">Edit BCR: {{ bcr.id }}</h1>
+      
+      {% if errors and errors is defined %}
+      <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" data-module="govuk-error-summary">
+        <h2 class="govuk-error-summary__title" id="error-summary-title">
+          There is a problem
+        </h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            {% for key, error in errors %}
+              <li>
+                <a href="#{{ key }}">{{ error.text }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      {% endif %}
       
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
@@ -18,7 +35,7 @@
             <p class="govuk-body">Use this form to edit the Business Change Request (BCR). Fields marked with <span class="govuk-required">*</span> are required.</p>
           </div>
           
-          <form action="/bcr/submissions/{{ submission.id }}/edit" method="post" class="govuk-!-margin-bottom-9">
+          <form action="/bcr/edit/{{ bcr.id }}" method="post" class="govuk-!-margin-bottom-9">
             <!-- Section 1: Submitter Information -->
             <div class="govuk-form-group govuk-!-margin-bottom-8">
               <fieldset class="govuk-fieldset">
@@ -84,75 +101,56 @@
                   <p class="govuk-body govuk-!-margin-bottom-0">Provide details about the change you are requesting.</p>
                 </div>
                 
-                <div class="govuk-form-group">
-                  <label class="govuk-label" for="title">
-                    Title <span class="govuk-required">*</span>
-                  </label>
-                  <input class="govuk-input" id="title" name="title" type="text" value="{{ submission.title or submission.description }}" required>
-                </div>
+
                 
-                <div class="govuk-form-group">
+                <div class="govuk-form-group {% if errors is defined and errors.description %}govuk-form-group--error{% endif %}">
                   <label class="govuk-label" for="description">
                     Description <span class="govuk-required">*</span>
                   </label>
-                  <textarea class="govuk-textarea" id="description" name="description" rows="5" required>{{ submission.description }}</textarea>
+                  {% if errors.description %}
+                  <p id="description-error" class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span> {{ errors.description.text }}
+                  </p>
+                  {% endif %}
+                  <textarea class="govuk-textarea {% if errors is defined and errors.description %}govuk-textarea--error{% endif %}" id="description" name="description" rows="5" required>{{ formData.description or bcr.description }}</textarea>
                 </div>
                 
-                <div class="govuk-form-group">
+                <div class="govuk-form-group {% if errors is defined and errors.justification %}govuk-form-group--error{% endif %}">
                   <label class="govuk-label" for="justification">
                     Justification <span class="govuk-required">*</span>
                   </label>
-                  <textarea class="govuk-textarea" id="justification" name="justification" rows="5" required>{{ submission.justification }}</textarea>
+                  {% if errors.justification %}
+                  <p id="justification-error" class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span> {{ errors.justification.text }}
+                  </p>
+                  {% endif %}
+                  <textarea class="govuk-textarea {% if errors is defined and errors.justification %}govuk-textarea--error{% endif %}" id="justification" name="justification" rows="5" required>{{ formData.justification or bcr.justification }}</textarea>
                 </div>
                 
-                <div class="govuk-form-group">
+                <div class="govuk-form-group {% if errors is defined and errors.impactAreas %}govuk-form-group--error{% endif %}">
                   <fieldset class="govuk-fieldset">
                     <legend class="govuk-fieldset__legend">
                       Select which of the following your change request relates to <span class="govuk-required">*</span>
                     </legend>
-                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                    {% if errors.impactAreas %}
+                    <p id="impactAreas-error" class="govuk-error-message">
+                      <span class="govuk-visually-hidden">Error:</span> {{ errors.impactAreas.text }}
+                    </p>
+                    {% endif %}
+                    <div class="govuk-checkboxes {% if errors is defined and errors.impactAreas %}govuk-checkboxes--error{% endif %}" data-module="govuk-checkboxes">
+                      {% for area in impactAreas %}
                       <div class="govuk-checkboxes__item">
-                        <input class="govuk-checkboxes__input" id="changeType-api" name="changeType" type="checkbox" value="API" {% if submission.changeType and submission.changeType.includes('API') %}checked{% endif %}>
-                        <label class="govuk-label govuk-checkboxes__label" for="changeType-api">
-                          API
+                        <input class="govuk-checkboxes__input" id="impactAreas-{{ area.name }}" name="impactAreas" type="checkbox" value="{{ area.name }}" {% if selectedImpactAreas and selectedImpactAreas.includes(area.name) %}checked{% endif %}>
+                        <label class="govuk-label govuk-checkboxes__label" for="impactAreas-{{ area.name }}">
+                          {{ area.name }}
                         </label>
+                        {% if area.description %}
+                        <div class="govuk-hint govuk-checkboxes__hint">
+                          {{ area.description }}
+                        </div>
+                        {% endif %}
                       </div>
-                      <div class="govuk-checkboxes__item">
-                        <input class="govuk-checkboxes__input" id="changeType-csv" name="changeType" type="checkbox" value="CSV" {% if submission.changeType and submission.changeType.includes('CSV') %}checked{% endif %}>
-                        <label class="govuk-label govuk-checkboxes__label" for="changeType-csv">
-                          CSV
-                        </label>
-                      </div>
-                      <div class="govuk-checkboxes__item">
-                        <input class="govuk-checkboxes__input" id="changeType-frontend" name="changeType" type="checkbox" value="Frontend UI" {% if submission.changeType and submission.changeType.includes('Frontend UI') %}checked{% endif %}>
-                        <label class="govuk-label govuk-checkboxes__label" for="changeType-frontend">
-                          Frontend UI
-                        </label>
-                      </div>
-                      <div class="govuk-checkboxes__item">
-                        <input class="govuk-checkboxes__input" id="changeType-validation" name="changeType" type="checkbox" value="Validation" {% if submission.changeType and submission.changeType.includes('Validation') %}checked{% endif %}>
-                        <label class="govuk-label govuk-checkboxes__label" for="changeType-validation">
-                          Validation
-                        </label>
-                      </div>
-                      <div class="govuk-checkboxes__item">
-                        <input class="govuk-checkboxes__input" id="changeType-reference-data" name="changeType" type="checkbox" value="Reference Data" {% if submission.changeType and submission.changeType.includes('Reference Data') %}checked{% endif %}>
-                        <label class="govuk-label govuk-checkboxes__label" for="changeType-reference-data">
-                          Reference Data
-                        </label>
-                      </div>
-                      <div class="govuk-checkboxes__item">
-                        <input class="govuk-checkboxes__input" id="changeType-content" name="changeType" type="checkbox" value="Content and Guidance" {% if submission.changeType and submission.changeType.includes('Content and Guidance') %}checked{% endif %}>
-                        <label class="govuk-label govuk-checkboxes__label" for="changeType-content">
-                          Content and Guidance
-                        </label>
-                      </div>
-                      <div class="govuk-checkboxes__item">
-                        <input class="govuk-checkboxes__input" id="changeType-other" name="changeType" type="checkbox" value="Other" {% if submission.changeType and submission.changeType.includes('Other') %}checked{% endif %}>
-                        <label class="govuk-label govuk-checkboxes__label" for="changeType-other">
-                          Other
-                        </label>
-                      </div>
+                      {% endfor %}
                     </div>
                   </fieldset>
                 </div>
@@ -217,9 +215,9 @@
                     <div class="govuk-checkboxes" data-module="govuk-checkboxes">
                       {% for area in impactAreas %}
                         <div class="govuk-checkboxes__item">
-                          <input class="govuk-checkboxes__input" id="impactAreas-{{ loop.index }}" name="impactAreas" type="checkbox" value="{{ area }}" {% if submission.impactAreas and submission.impactAreas.includes(area) %}checked{% endif %}>
+                          <input class="govuk-checkboxes__input" id="impactAreas-{{ loop.index }}" name="impactAreas" type="checkbox" value="{{ area.value }}" {% if selectedImpactAreas and selectedImpactAreas.includes(area.value) %}checked{% endif %}>
                           <label class="govuk-label govuk-checkboxes__label" for="impactAreas-{{ loop.index }}">
-                            {{ area }}
+                            {{ area.value }}
                           </label>
                         </div>
                       {% endfor %}
@@ -260,7 +258,7 @@
                   <label class="govuk-label" for="relatedDocuments">
                     Related Documents (URLs)
                   </label>
-                  <textarea class="govuk-textarea" id="relatedDocuments" name="relatedDocuments" rows="3">{{ submission.relatedDocuments | join('\n') }}</textarea>
+                  <textarea class="govuk-textarea" id="relatedDocuments" name="relatedDocuments" rows="3">{% if submission.relatedDocuments %}{{ submission.relatedDocuments | join('\n') }}{% endif %}</textarea>
                   <div class="govuk-hint">Enter one URL per line</div>
                 </div>
               </fieldset>
@@ -290,8 +288,11 @@
               <button type="submit" class="govuk-button" data-module="govuk-button">
                 Save Changes
               </button>
-              <a href="/bcr/submissions/{{ submission.id }}" class="govuk-button govuk-button--secondary">
+              <a href="/bcr/submissions/{{ bcr.id }}" class="govuk-button govuk-button--secondary">
                 Cancel
+              </a>
+              <a href="/bcr/submissions/{{ bcr.id }}/delete-confirmation" class="govuk-button govuk-button--warning" data-module="govuk-button">
+                Delete BCR
               </a>
             </div>
           </form>

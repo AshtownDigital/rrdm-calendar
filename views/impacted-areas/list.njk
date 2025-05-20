@@ -1,0 +1,82 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}
+  {{ title }} - RRDM
+{% endblock %}
+
+{% block breadcrumbs %}
+  <li class="govuk-breadcrumbs__list-item">
+    <a class="govuk-breadcrumbs__link" href="/bcr/dashboard">BCR Dashboard</a>
+  </li>
+  <li class="govuk-breadcrumbs__list-item">
+    Impacted Areas
+  </li>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">Manage Impacted Areas</h1>
+      
+      {% if successMessage %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+              Success
+            </h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">
+              {{ successMessage }}
+            </p>
+          </div>
+        </div>
+      {% endif %}
+      
+      <div class="govuk-button-group">
+        <a href="/impacted-areas/new" class="govuk-button">Add New Area</a>
+      </div>
+      
+      {% if areas.length === 0 %}
+        <div class="govuk-inset-text">
+          <p class="govuk-body">There are no impacted areas defined. Please add some using the button above.</p>
+        </div>
+      {% else %}
+        <table class="govuk-table">
+          <caption class="govuk-table__caption govuk-table__caption--m">Defined Impacted Areas</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">Name</th>
+              <th scope="col" class="govuk-table__header">Description</th>
+              <th scope="col" class="govuk-table__header">Active</th>
+              <th scope="col" class="govuk-table__header">BCRs Count</th>
+              <th scope="col" class="govuk-table__header">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for area in areas %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">{{ area.name }}</td>
+                <td class="govuk-table__cell">{{ area.description | truncate(100) }}</td>
+                <td class="govuk-table__cell">
+                  {% if area.isActive %}
+                    <strong class="govuk-tag govuk-tag--green">Active</strong>
+                  {% else %}
+                    <strong class="govuk-tag govuk-tag--grey">Inactive</strong>
+                  {% endif %}
+                </td>
+                <td class="govuk-table__cell">{{ area.bcrCount }}</td>
+                <td class="govuk-table__cell">
+                  <a href="/impacted-areas/{{ area.id }}/edit" class="govuk-link govuk-!-margin-right-3">Edit</a>
+                  {% if area.bcrCount === 0 %}
+                    <a href="/impacted-areas/{{ area.id }}/warning?action=delete" class="govuk-link govuk-link--warning">Delete</a>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

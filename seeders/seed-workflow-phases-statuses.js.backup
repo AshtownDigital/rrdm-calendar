@@ -1,0 +1,50 @@
+// Seeder for Workflow Phases and Statuses for RRDM
+// Run with: npx prisma db seed --preview-feature
+
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+const workflowPhases = [
+  { order: 1,  name: 'Submission', currentStatus: 'Submission', completedStatus: 'completed:submission' },
+  { order: 2,  name: 'Prioritisation', currentStatus: 'Prioritisation', completedStatus: 'completed:prioritisation' },
+  { order: 3,  name: 'Technical Review and Analysis', currentStatus: 'Technical Review and Analysis', completedStatus: 'completed:review_analysis' },
+  { order: 4,  name: 'Governance Playback', currentStatus: 'Governance Playback', completedStatus: 'completed:governance' },
+  { order: 5,  name: 'Stakeholder Consultation', currentStatus: 'Stakeholder Consultation', completedStatus: 'completed:stakeholder' },
+  { order: 6,  name: 'Final Drafting', currentStatus: 'Final Drafting', completedStatus: 'completed:drafting' },
+  { order: 7,  name: 'Final Approval', currentStatus: 'Final Approval', completedStatus: 'completed:approval' },
+  { order: 8,  name: 'Implementation', currentStatus: 'Implementation', completedStatus: 'completed:implementation' },
+  { order: 9,  name: 'Validation & Testing', currentStatus: 'Validation & Testing', completedStatus: 'completed:testing' },
+  { order: 10, name: 'Go Live', currentStatus: 'Go Live', completedStatus: 'completed:go_live' },
+  { order: 11, name: 'Post-Implementation Review', currentStatus: 'Post-Implementation Review', completedStatus: 'completed:post_review' },
+  { order: 12, name: 'Closed', currentStatus: 'Closed', completedStatus: 'completed:closed' }
+];
+
+async function main() {
+  for (const phase of workflowPhases) {
+    // Create or update the phase
+    await prisma.workflowPhase.upsert({
+      where: { name: phase.name },
+      update: {
+        order: phase.order,
+        currentStatus: phase.currentStatus,
+        completedStatus: phase.completedStatus
+      },
+      create: {
+        order: phase.order,
+        name: phase.name,
+        currentStatus: phase.currentStatus,
+        completedStatus: phase.completedStatus
+      }
+    });
+  }
+  console.log('Workflow phases and statuses seeded successfully.');
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

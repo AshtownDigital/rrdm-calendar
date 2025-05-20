@@ -1,0 +1,15 @@
+/* Monitoring page styles */
+
+/* Code display for raw metrics */
+.app-code {
+  background-color: #f3f2f1;
+  padding: 15px;
+  font-family: monospace;
+  font-size: 14px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  border-left: 5px solid #1d70b8;
+  margin: 0;
+}
+
+/* Additional monitoring specific styles can be added here */

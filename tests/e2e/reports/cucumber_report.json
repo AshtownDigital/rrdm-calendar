@@ -1,0 +1,421 @@
+[
+  {
+    "description": "  As a user of the RRDM system\n  I want to submit a Business Change Request (BCR)\n  So that it can be reviewed and processed",
+    "elements": [
+      {
+        "description": "",
+        "id": "bcr-submission-process;submit-a-new-bcr-with-valid-data",
+        "keyword": "Scenario",
+        "line": 10,
+        "name": "Submit a new BCR with valid data",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 1974142972
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "I am logged in as a standard user",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:5"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 1729578256
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 8,
+            "name": "I am on the BCR submissions page",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:60"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 227302067
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 11,
+            "name": "I click on \"Create New Submission\"",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:65"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 832273511
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 12,
+            "name": "I should see the BCR submission form",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:166"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 15775294
+            }
+          },
+          {
+            "arguments": [
+              {
+                "rows": [
+                  {
+                    "cells": [
+                      "Field",
+                      "Value"
+                    ]
+                  },
+                  {
+                    "cells": [
+                      "Full Name",
+                      "Test User"
+                    ]
+                  },
+                  {
+                    "cells": [
+                      "Email Address",
+                      "test.user@education.gov.uk"
+                    ]
+                  },
+                  {
+                    "cells": [
+                      "Submission Source",
+                      "Internal"
+                    ]
+                  },
+                  {
+                    "cells": [
+                      "Brief Description",
+                      "Update to apprenticeship funding bands"
+                    ]
+                  },
+                  {
+                    "cells": [
+                      "Justification",
+                      "Current funding bands need updating"
+                    ]
+                  },
+                  {
+                    "cells": [
+                      "Urgency Level",
+                      "Medium"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "keyword": "When ",
+            "line": 13,
+            "name": "I fill in the following fields:",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:172"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 30931521369
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 21,
+            "name": "I check the declaration checkbox",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:351"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 313883643
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 22,
+            "name": "I click the \"Submit\" button",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:446"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 858374014
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 23,
+            "name": "I should see a confirmation message",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:522"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 193139358
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 24,
+            "name": "the message should contain the submission reference number",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:597"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 174224538
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 324556021
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "bcr-submission-process;submit-a-bcr-with-high-urgency",
+        "keyword": "Scenario",
+        "line": 40,
+        "name": "Submit a BCR with high urgency",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 1201229255
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "I am logged in as a standard user",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:5"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 889529372
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 8,
+            "name": "I am on the BCR submissions page",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:60"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 237914614
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 41,
+            "name": "I am logged in as a standard user",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:5"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 173303477
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 42,
+            "name": "I am on the BCR submissions page",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:60"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 283332843
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 43,
+            "name": "I click on \"Create New Submission\"",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:65"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 863054847
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 44,
+            "name": "I should see the BCR submission form",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:166"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 14584053
+            }
+          },
+          {
+            "arguments": [
+              {
+                "rows": [
+                  {
+                    "cells": [
+                      "Field",
+                      "Value"
+                    ]
+                  },
+                  {
+                    "cells": [
+                      "Full Name",
+                      "Test User"
+                    ]
+                  },
+                  {
+                    "cells": [
+                      "Email Address",
+                      "test.user@education.gov.uk"
+                    ]
+                  },
+                  {
+                    "cells": [
+                      "Submission Source",
+                      "Internal"
+                    ]
+                  },
+                  {
+                    "cells": [
+                      "Brief Description",
+                      "Critical security update"
+                    ]
+                  },
+                  {
+                    "cells": [
+                      "Justification",
+                      "Security vulnerability identified"
+                    ]
+                  },
+                  {
+                    "cells": [
+                      "Urgency Level",
+                      "High"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "keyword": "When ",
+            "line": 45,
+            "name": "I fill in the following fields:",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:172"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 31006180770
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 53,
+            "name": "I check the declaration checkbox",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:351"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 314073457
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 54,
+            "name": "I click the \"Submit\" button",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:446"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 850544000
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 55,
+            "name": "I should see a confirmation message",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:522"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 168809259
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 56,
+            "name": "the message should contain the submission reference number",
+            "match": {
+              "location": "tests/e2e/step_definitions/bcr-submission.steps.js:597"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 180377739
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 217169111
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      }
+    ],
+    "id": "bcr-submission-process",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "BCR Submission Process",
+    "tags": [],
+    "uri": "tests/e2e/features/bcr-submission.feature"
+  }
+]

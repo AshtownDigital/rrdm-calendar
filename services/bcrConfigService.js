@@ -11,13 +11,20 @@ const { v4: uuidv4 } = require('uuid');
  * @param {string} type - Configuration type (phase, status, impactArea, etc.)
  * @returns {Promise<Array>} - Array of configurations
  */
+// DEPRECATED: Phase and status logic now handled by workflowPhaseService/WorkflowPhase model
+// Only use this for impactArea, urgencyLevel, and other non-phase/status config types
 const getConfigsByType = async (type) => {
-  const configs = await prisma.bcrConfigs.findMany({
-    where: { type },
-    orderBy: { displayOrder: 'asc' }
-  });
-  
-  return configs;
+  try {
+    const configs = await prisma.bcrConfigs.findMany({
+      where: { type },
+      orderBy: { displayOrder: 'asc' }
+    });
+    
+    return configs;
+  } catch (error) {
+    console.error(`Error fetching configs of type ${type}:`, error);
+    return [];
+  }
 };
 
 /**
@@ -46,8 +53,8 @@ const createConfig = async (configData) => {
       name: configData.name,
       value: configData.value,
       displayOrder: configData.displayOrder || 0,
-      description: configData.description,
-      metadata: configData.metadata || {}
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
   });
   
@@ -68,8 +75,7 @@ const updateConfig = async (id, configData) => {
       name: configData.name,
       value: configData.value,
       displayOrder: configData.displayOrder,
-      description: configData.description,
-      metadata: configData.metadata
+      updatedAt: new Date() // Update the timestamp
     }
   });
   
@@ -93,25 +99,111 @@ const deleteConfig = async (id) => {
  * Get all phases with their associated statuses
  * @returns {Promise<Object>} - Object with phases and phase-status mapping
  */
+// DEPRECATED: Use workflowPhaseService for all phase/status logic
 const getPhasesWithStatuses = async () => {
-  const phases = await getConfigsByType('phase');
-  const statuses = await getConfigsByType('status');
-  
-  // Create a mapping of phase values to status names
-  const phaseStatusMapping = {};
-  
-  for (const status of statuses) {
-    const phaseValue = status.value;
-    if (!phaseStatusMapping[phaseValue]) {
-      phaseStatusMapping[phaseValue] = [];
+  try {
+    // Get phases if they exist, otherwise use statuses as phases
+    let phases = await getConfigsByType('phase');
+    const statuses = await getConfigsByType('status');
+    
+    // If no phases exist, create virtual phases based on statuses
+    if (!phases || phases.length === 0) {
+      console.log('No phases found, using statuses as phases');
+      phases = statuses.map(status => ({
+        id: status.id,
+        type: 'phase',
+        name: status.name,
+        value: status.value,
+        displayOrder: status.displayOrder
+      }));
     }
-    phaseStatusMapping[phaseValue].push(status.name);
+    
+    // Create a mapping of phase values to status names
+    const phaseStatusMapping = {};
+    
+    for (const status of statuses) {
+      // Use status value as phase value if no specific mapping exists
+      const phaseValue = status.value;
+      if (!phaseStatusMapping[phaseValue]) {
+        phaseStatusMapping[phaseValue] = [];
+      }
+      phaseStatusMapping[phaseValue].push(status.name);
+    }
+    
+    return {
+      phases,
+      phaseStatusMapping
+    };
+  } catch (error) {
+    console.error('Error in getPhasesWithStatuses:', error);
+    return {
+      phases: [],
+      phaseStatusMapping: {}
+    };
   }
-  
-  return {
-    phases,
-    phaseStatusMapping
-  };
+};
+
+/**
+ * Get phase-status mappings
+ * @returns {Promise<Array>} - Array of phase-status mappings
+ */
+// DEPRECATED: Use workflowPhaseService for all phase/status logic
+const getPhaseStatusMappings = async () => {
+  try {
+    // Query the database for phase-status mappings
+    const mappings = await prisma.bcrConfigs.findMany({
+      where: {
+        type: 'phaseStatusMapping'
+      },
+      orderBy: {
+        displayOrder: 'asc'
+      }
+    });
+    
+    if (!mappings || mappings.length === 0) {
+      // If no mappings exist, get phases and statuses and create default mappings
+      const phases = await getConfigsByType('phase');
+      const statuses = await getConfigsByType('status');
+      
+      // Create a simple mapping based on phases and statuses
+      const defaultMappings = [];
+      
+      for (const phase of phases) {
+        // Find statuses that might be related to this phase
+        const relatedStatuses = statuses.filter(status => {
+          // Simple logic: if status value contains phase value or vice versa
+          return status.value.includes(phase.value) || 
+                 phase.value.includes(status.value) ||
+                 status.name.toLowerCase().includes(phase.name.toLowerCase()) ||
+                 phase.name.toLowerCase().includes(status.name.toLowerCase());
+        });
+        
+        if (relatedStatuses.length > 0) {
+          for (const status of relatedStatuses) {
+            defaultMappings.push({
+              id: `${phase.id}_${status.id}`,
+              type: 'phaseStatusMapping',
+              name: `${phase.name} - ${status.name}`,
+              value: JSON.stringify({
+                phaseId: phase.id,
+                phaseValue: phase.value,
+                statusId: status.id,
+                statusValue: status.value
+              }),
+              displayOrder: phase.displayOrder * 100 + status.displayOrder
+            });
+          }
+        }
+      }
+      
+      return defaultMappings;
+    }
+    
+    return mappings;
+  } catch (error) {
+    console.error('Error fetching phase-status mappings:', error);
+    return [];
+  }
 };
 
 module.exports = {
@@ -121,6 +213,7 @@ module.exports = {
   updateConfig,
   deleteConfig,
   getPhasesWithStatuses,
+  getPhaseStatusMappings,
   // Export prisma for testing purposes
   _prisma: prisma
 };

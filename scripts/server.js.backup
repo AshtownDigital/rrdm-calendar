@@ -1,0 +1,1094 @@
+const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const nunjucks = require('nunjucks');
+const dateFilter = require('nunjucks-date-filter');
+const session = require('express-session');
+
+// Import enhanced components
+const { ensureSessionTable, configureSessionMiddleware } = require('./utils/session-manager');
+const { createRedisClient } = require('./utils/redis-manager');
+const { handleWebError, apiErrorHandler: enhancedApiErrorHandler, ErrorTypes } = require('./utils/error-handler');
+
+// Load environment configuration
+const config = require('./config/env');
+const { prisma } = require('./config/database');
+
+const passport = require('passport');
+const flash = require('connect-flash');
+// Initialize Express
+const app = express();
+
+// Initialize logging with better error handling for serverless environments
+let logger;
+let performanceMiddleware;
+let startMetricsLogging;
+
+// Detect serverless environment
+const isServerless = process.env.VERCEL === '1';
+
+// Set up console-based logger as fallback
+const consoleLogger = {
+  info: (...args) => console.log('[INFO]', ...args),
+  warn: (...args) => console.warn('[WARN]', ...args),
+  error: (...args) => console.error('[ERROR]', ...args),
+  debug: (...args) => console.debug('[DEBUG]', ...args)
+};
+
+// Set up dummy performance middleware
+const dummyPerformanceMiddleware = () => (req, res, next) => next();
+const dummyStartMetricsLogging = () => {};
+
+// In serverless, use simplified logging to avoid initialization issues
+if (isServerless) {
+  logger = consoleLogger;
+  performanceMiddleware = dummyPerformanceMiddleware;
+  startMetricsLogging = dummyStartMetricsLogging;
+  
+  logger.info('Serverless environment detected, using simplified logging');
+} else {
+  // In regular environment, try to use full logging
+  try {
+    const loggerModule = require('./services/logger');
+    logger = loggerModule.logger;
+    
+    // Initialize performance monitoring
+    const perfModule = require('./services/monitoring/performanceMonitor');
+    performanceMiddleware = perfModule.performanceMiddleware;
+    startMetricsLogging = perfModule.startMetricsLogging;
+    
+    // Start metrics logging (every 5 minutes)
+    startMetricsLogging(300000);
+    
+    // Log application startup
+    logger.info('Application starting', {
+      environment: process.env.NODE_ENV || 'development',
+      port: process.env.PORT || 3000,
+      version: require('./package.json').version
+    });
+  } catch (error) {
+    console.warn('Warning: Could not initialize logging or performance monitoring:', error.message);
+    // Fall back to console logger
+    logger = consoleLogger;
+    performanceMiddleware = dummyPerformanceMiddleware;
+    startMetricsLogging = dummyStartMetricsLogging;
+  }
+}
+
+
+// Trust proxy when running on Vercel
+if (process.env.VERCEL === '1') {
+  app.set('trust proxy', 1);
+}
+
+// Function to handle database connection with retries
+async function connectWithRetry(retries = 5, delay = 5000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      await prisma.$connect();
+      console.log('Successfully connected to database');
+      return true;
+    } catch (error) {
+      console.error(`Failed to connect to database (attempt ${i + 1}/${retries}):`, error);
+      if (i < retries - 1) {
+        console.log(`Retrying in ${delay/1000} seconds...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  return false;
+}
+
+// Handle graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, closing Prisma connection');
+  try {
+    await prisma.$disconnect();
+    console.log('Prisma disconnected successfully');
+  } catch (error) {
+    console.error('Error disconnecting from Prisma:', error);
+  }
+  process.exit(0);
+});
+
+// Add body parser middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Import and mount the Vercel health check route
+// This must be before any authentication middleware
+const vercelHealthRoute = require('./routes/vercel-health');
+app.use('/_vercel/health', vercelHealthRoute);
+
+// Import and apply middleware conditionally to avoid errors
+// Wrap all middleware in a function to control execution order
+function applyMiddleware() {
+  // Create a simple middleware that logs requests in serverless environment
+  if (isServerless) {
+    app.use((req, res, next) => {
+      logger.info(`[${req.method}] ${req.path}`);
+      next();
+    });
+    
+    // Use serverless-optimized rate limiter in Vercel environment
+    try {
+      const { serverlessFallbackLimiter } = require('./middleware/rateLimiter');
+      app.use(serverlessFallbackLimiter);
+      logger.info('Serverless fallback rate limiter applied');
+    } catch (error) {
+      logger.warn('Could not load serverless rate limiter:', error.message);
+    }
+  }
+
+  // Security middleware
+  try {
+    // Import security middleware
+    const { securityHeaders } = require('./middleware/securityMiddleware');
+    // Apply security headers
+    app.use(securityHeaders());
+    logger.info('Security middleware applied');
+  } catch (error) {
+    logger.warn('Could not apply security middleware:', error.message);
+    // Apply basic security headers as fallback
+    app.use((req, res, next) => {
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-XSS-Protection', '1; mode=block');
+      res.setHeader('X-Frame-Options', 'DENY');
+      next();
+    });
+    logger.info('Basic security headers applied as fallback');
+  }
+
+  // Rate limiting middleware - skip in serverless to avoid Redis dependency
+  if (!isServerless) {
+    try {
+      // Import rate limiting middleware
+      const { apiLimiter, authLimiter, generalLimiter } = require('./middleware/rateLimiter');
+      // Apply rate limiting
+      app.use('/api', apiLimiter);
+      app.use('/auth', authLimiter);
+      app.use(generalLimiter);
+      logger.info('Rate limiting middleware applied');
+    } catch (error) {
+      logger.warn('Could not apply rate limiting middleware:', error.message);
+    }
+  } else {
+    logger.info('Rate limiting skipped in serverless environment');
+  }
+
+  // Logging middleware
+  try {
+    // Import logging middleware
+    const { createLoggingMiddleware } = require('./middleware/loggingMiddleware');
+    // Apply logging middleware
+    app.use(createLoggingMiddleware('combined'));
+    logger.info('Logging middleware applied');
+  } catch (error) {
+    logger.warn('Could not apply logging middleware:', error.message);
+    // Apply basic logging middleware as fallback
+    app.use((req, res, next) => {
+      const start = Date.now();
+      res.on('finish', () => {
+        const duration = Date.now() - start;
+        logger.info(`${req.method} ${req.path} ${res.statusCode} ${duration}ms`);
+      });
+      next();
+    });
+    logger.info('Basic logging middleware applied as fallback');
+  }
+
+  // Apply performance monitoring if available
+  if (typeof performanceMiddleware === 'function') {
+    app.use(performanceMiddleware());
+    logger.info('Performance monitoring middleware applied');
+  }
+}
+
+// Apply middleware
+applyMiddleware();
+
+
+// Cookie parser middleware
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
+// Use enhanced session management
+// This will ensure the Session table exists with the correct structure
+(async () => {
+  try {
+    await ensureSessionTable();
+    logger.info('Session table verified successfully', {
+      service: 'rrdm-app'
+    });
+  } catch (error) {
+    logger.error('Failed to verify session table', {
+      service: 'rrdm-app',
+      error: error.message
+    });
+  }
+})();
+
+// Configure session middleware with enhanced error handling
+configureSessionMiddleware(app, {
+  secret: config.sessionSecret || 'rrdm-dev-secret-key',
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+    secure: config.isProd, // Only use secure cookies in production
+    sameSite: 'lax'
+  }
+});
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Connect flash middleware
+app.use(flash());
+
+// Configure Passport with Neon PostgreSQL database
+console.log('Using Neon PostgreSQL database passport configuration');
+require('./config/passport-db')(passport);
+
+// Set up static file serving with environment-specific cache control
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: config.isProd ? '1d' : 0,
+  etag: true,
+  setHeaders: function (res, path) {
+    // Ensure CSS files have the correct content type
+    if (path.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    }
+  }
+}));
+
+// Handle favicon requests to prevent 500 errors
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+app.get('/favicon.png', (req, res) => res.status(204).end());
+
+// Serve GOV.UK Frontend assets from node_modules
+app.use('/assets', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk/assets')));
+app.use('/scripts', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk')));
+
+// Fallback route for CSS files to ensure they're always served with the correct content type
+app.get('/stylesheets/:file', (req, res, next) => {
+  const filePath = path.join(__dirname, 'public', 'stylesheets', req.params.file);
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      return next(); // File doesn't exist, let Express handle it
+    }
+    res.setHeader('Content-Type', 'text/css');
+    res.sendFile(filePath);
+  });
+});
+
+// Set up view engine
+app.set('view engine', 'njk');
+app.set('views', path.join(__dirname, 'views'));
+
+// Configure Nunjucks
+const env = nunjucks.configure('views', {
+  autoescape: true,
+  express: app,
+  watch: true
+});
+
+// Add array filters
+env.addFilter('map', (arr, prop) => {
+  return arr.map(item => item[prop]);
+});
+
+// Add date filter using the imported nunjucks-date-filter package
+env.addFilter('date', dateFilter);
+
+// Add padStart filter to pad numbers with leading zeros
+env.addFilter('padStart', (value, length, padChar = '0') => {
+  return String(value).padStart(length, padChar);
+});
+
+// Add fallback custom date filter in case the package filter fails
+env.addFilter('formatDate', (str) => {
+  return new Date(str).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+});
+
+// Add UK date format filter (DD/MM/YYYY)
+env.addFilter('ukDate', (str) => {
+  if (!str) return '';
+  const date = new Date(str);
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+});
+
+// Add UK date format with day of week filter (ddd DD/MM/YYYY)
+env.addFilter('ukDateWithDay', (str) => {
+  if (!str) return '';
+  const date = new Date(str);
+  if (isNaN(date.getTime())) return '';
+  const dayOfWeek = date.toLocaleDateString('en-GB', { weekday: 'short' });
+  const formattedDate = date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+  return `${dayOfWeek} ${formattedDate}`;
+});
+
+// Add number formatting filter
+env.addFilter('toLocaleString', (num) => {
+  return num.toLocaleString('en-GB');
+});
+
+// Add regex search filter
+env.addFilter('regex_search', (str, pattern) => {
+  if (!str) return null;
+  const regex = new RegExp(pattern);
+  return str.match(regex);
+});
+
+// Add global variables for partials
+app.locals.header = 'partials/header.njk';
+app.locals.navigation = 'partials/navigation.njk';
+app.locals.footer = 'partials/footer.njk';
+
+// Middleware to set navigation for each request
+app.use((req, res, next) => {
+  // Default navigation
+  if (!res.locals.navigation) {
+    res.locals.navigation = 'partials/navigation.njk';
+  }
+  
+  // Make user available to all templates
+  res.locals.user = req.user || null;
+  
+  next();
+});
+
+// Import route modules
+const homeRouter = require('./routes/home/index');
+const refDataRouter = require('./routes/ref-data/index');
+const fundingRouter = require('./routes/funding/index');
+const bcrRouter = require('./routes/bcr/index');
+const accessRouter = require('./routes/access/index');
+
+// Legacy routes - these will be removed after migration is complete
+const dashboardRouter = require('./routes/dashboard/index');
+const itemsRouter = require('./routes/items');
+const valuesRouter = require('./routes/values/index');
+const releaseNotesRouter = require('./routes/release-notes/index');
+const restorePointsRouter = require('./routes/restore-points');
+
+// Import monitoring route for performance dashboard
+const monitoringRouter = require('./routes/monitoring');
+
+// Import API routes for Vercel serverless optimization
+const apiRouter = require('./api');
+
+// Import controllers for debug routes
+const { listSubmissions: debugListSubmissions } = require('./controllers/bcr/submissionsController');
+
+// Import auth middleware
+const { ensureAuthenticated, ensureAdmin, checkPermission } = require('./middleware/auth');
+const adminAuth = require('./middleware/admin-auth');
+const tokenRefreshMiddleware = require('./middleware/token-refresh');
+
+// Import centralized error handler middleware
+let errorHandler;
+try {
+  errorHandler = require('./middleware/errorHandler');
+  logger.info('Error handler middleware loaded');
+} catch (error) {
+  logger.warn('Could not load error handler middleware:', error.message);
+  // Create a comprehensive fallback error handler
+  errorHandler = {
+    ApiError: class ApiError extends Error {
+      constructor(statusCode, message, details = null) {
+        super(message);
+        this.statusCode = statusCode;
+        this.details = details;
+        this.isApiError = true;
+      }
+    },
+    notFound: (req, res, next) => {
+      const error = new Error(`Not Found - ${req.originalUrl}`);
+      error.statusCode = 404;
+      next(error);
+    },
+    apiErrorHandler: (err, req, res, next) => {
+      if (!req.path.startsWith('/api/')) {
+        return next(err);
+      }
+      const statusCode = err.statusCode || 500;
+      const errorResponse = {
+        success: false,
+        error: {
+          message: err.message || 'Server Error',
+          status: statusCode
+        }
+      };
+      logger.error(`API Error: ${err.message}`);
+      return res.status(statusCode).json(errorResponse);
+    },
+    webErrorHandler: (err, req, res, next) => {
+      if (req.path.startsWith('/api/')) {
+        return next(err);
+      }
+      const statusCode = err.statusCode || 500;
+      logger.error(`Web Error: ${err.message}`);
+      res.status(statusCode).render('error', {
+        title: `Error ${statusCode}`,
+        message: err.message || 'An unexpected error occurred',
+        error: process.env.NODE_ENV === 'development' ? err : {},
+        user: req.user
+      });
+    }
+  };
+  logger.info('Fallback error handler created');
+}
+
+// Access routes - some endpoints don't require authentication (login, logout)
+// but the user management routes are protected by adminAuth middleware in the router
+app.use('/access', accessRouter);
+
+// Debug endpoint for BCR submissions (bypasses authentication)
+app.get('/debug/bcr-submissions', async (req, res) => {
+  try {
+    console.log('Debug endpoint called - bypassing authentication');
+    
+    // Create a mock session for the debug endpoint
+    req.session = {
+      passport: {
+        user: {
+          id: 'debug-user',
+          username: 'debug@example.com',
+          displayName: 'Debug User',
+          role: 'admin'
+        }
+      }
+    };
+    
+    // Manually set up the render function to capture the data
+    const originalRender = res.render;
+    res.render = function(view, options) {
+      console.log('Debug render called with view:', view);
+      console.log('Debug render data:', JSON.stringify(options, null, 2));
+      return originalRender.call(this, view, options);
+    };
+    
+    // Create a custom error handler for this route
+    const handleError = (error) => {
+      console.error('Debug endpoint error details:', {
+        message: error.message,
+        stack: error.stack,
+        code: error.code,
+        name: error.name
+      });
+      
+      // Send a detailed error response for debugging
+      res.status(500).send(`
+        <h1>Debug Error Information</h1>
+        <h2>Error Message</h2>
+        <pre>${error.message}</pre>
+        <h2>Error Stack</h2>
+        <pre>${error.stack}</pre>
+        <h2>Error Code</h2>
+        <pre>${error.code || 'N/A'}</pre>
+      `);
+    };
+    
+    try {
+      const submissionsController = require('./controllers/bcr/submissionsController');
+      await submissionsController.listSubmissions(req, res);
+    } catch (controllerError) {
+      handleError(controllerError);
+    }
+  } catch (outerError) {
+    console.error('Error in debug endpoint outer try/catch:', outerError);
+    res.status(500).send('Outer Error: ' + outerError.message);
+  }
+});
+
+// New simplified debug endpoint for BCR submissions
+app.get('/debug/bcr-submissions-simple', async (req, res) => {
+  try {
+    console.log('Simplified debug endpoint called');
+    
+    // Create a mock user for the debug endpoint instead of modifying the session
+    req.user = {
+      id: 'debug-user',
+      email: 'debug@example.com',
+      name: 'Debug User',
+      role: 'admin'
+    };
+    
+    // Use the simplified debug controller
+    const debugController = require('./controllers/bcr/debugSubmissionsController');
+    await debugController.debugListSubmissions(req, res);
+  } catch (error) {
+    console.error('Error in simplified debug endpoint:', error);
+    res.status(500).send(`
+      <h1>Simplified Debug Error</h1>
+      <h2>Error Message</h2>
+      <pre>${error.message}</pre>
+      <h2>Error Stack</h2>
+      <pre>${error.stack}</pre>
+    `);
+  }
+});
+
+// Direct access route for BCR submissions (bypasses authentication)
+app.get('/direct/bcr-submissions', async (req, res) => {
+  try {
+    console.log('Direct BCR submissions access route called');
+    
+    // Create a mock user with admin privileges
+    req.user = {
+      id: '00000000-0000-0000-0000-000000000000',
+      email: 'admin@example.com',
+      name: 'Admin User',
+      role: 'admin'
+    };
+    
+    // Call the actual submissions controller
+    const submissionsController = require('./controllers/bcr/submissionsController');
+    await submissionsController.listSubmissions(req, res);
+  } catch (error) {
+    console.error('Error in direct BCR submissions access route:', error);
+    res.status(500).send(`
+      <h1>Direct Access Error</h1>
+      <h2>Error Message</h2>
+      <pre>${error.message}</pre>
+      <h2>Error Stack</h2>
+      <pre>${error.stack}</pre>
+    `);
+  }
+});
+
+// Direct access route for editing BCR submissions (bypasses authentication)
+app.get('/direct/bcr-edit/:id', async (req, res) => {
+  try {
+    console.log('Direct BCR edit access route called for ID:', req.params.id);
+    
+    // Create a mock user with admin privileges
+    req.user = {
+      id: '00000000-0000-0000-0000-000000000000',
+      email: 'admin@example.com',
+      name: 'Admin User',
+      role: 'admin'
+    };
+    
+    // Call the actual form controller
+    const formController = require('./controllers/bcr/formController');
+    await formController.showEditForm(req, res);
+  } catch (error) {
+    console.error('Error in direct BCR edit access route:', error);
+    res.status(500).send(`
+      <h1>Direct Access Error</h1>
+      <h2>Error Message</h2>
+      <pre>${error.message}</pre>
+      <h2>Error Stack</h2>
+      <pre>${error.stack}</pre>
+    `);
+  }
+});
+
+// Direct access route for BCR delete confirmation page
+app.get('/bcr/submissions/:id/delete-confirmation', async (req, res) => {
+  try {
+    console.log('BCR delete confirmation route called for ID:', req.params.id);
+    
+    // Create a mock user with admin privileges
+    req.user = {
+      id: '00000000-0000-0000-0000-000000000000',
+      email: 'admin@example.com',
+      name: 'Admin User',
+      role: 'admin'
+    };
+    
+    // Get the BCR directly to check if it exists
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
+    const bcr = await prisma.bcrs.findUnique({
+      where: { id: req.params.id }
+    });
+    
+    if (!bcr) {
+      console.log(`BCR with ID ${req.params.id} not found`);
+      return res.status(404).render('error', {
+        title: 'Not Found',
+        message: `BCR with ID ${req.params.id} not found. The BCR may have been deleted or the ID is incorrect.`,
+        error: {},
+        user: req.user
+      });
+    }
+    
+    // Use the new submissionController for the updated data model
+    const submissionController = require('./controllers/bcr/submissionController');
+    await submissionController.showDeleteConfirmation(req, res);
+  } catch (error) {
+    console.error('Error in BCR delete confirmation route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while trying to view the delete confirmation page.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: {
+        id: '00000000-0000-0000-0000-000000000000',
+        email: 'admin@example.com',
+        name: 'Admin User',
+        role: 'admin'
+      }
+    });
+  }
+});
+
+// Direct access route for BCR deletion
+app.post('/bcr/submissions/:id/delete', async (req, res) => {
+  try {
+    console.log('BCR delete route called for ID:', req.params.id);
+    
+    // Create a mock user with admin privileges
+    req.user = {
+      id: '00000000-0000-0000-0000-000000000000',
+      email: 'admin@example.com',
+      name: 'Admin User',
+      role: 'admin'
+    };
+    
+    // Get the BCR directly to check if it exists
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
+    const bcr = await prisma.bcrs.findUnique({
+      where: { id: req.params.id }
+    });
+    
+    if (!bcr) {
+      console.log(`BCR with ID ${req.params.id} not found`);
+      return res.status(404).render('error', {
+        title: 'Not Found',
+        message: `BCR with ID ${req.params.id} not found. The BCR may have been deleted or the ID is incorrect.`,
+        error: {},
+        user: req.user
+      });
+    }
+
+    // Use the new submissionController for the updated data model
+    const submissionController = require('./controllers/bcr/submissionController');
+    await submissionController.deleteSubmission(req, res);
+  } catch (error) {
+    console.error('Error in BCR delete route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while trying to delete the BCR.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: {
+        id: '00000000-0000-0000-0000-000000000000',
+        email: 'admin@example.com',
+        name: 'Admin User',
+        role: 'admin'
+      }
+    });
+  }
+});
+
+// Route for submitting a new BCR with the updated data model
+app.post('/bcr/submit-new', ensureAuthenticated, async (req, res) => {
+  try {
+    console.log('New BCR submission route called with updated data model');
+    
+    // Use the new submissionController for the updated data model
+    const submissionController = require('./controllers/bcr/submissionController');
+    await submissionController.createSubmission(req, res);
+  } catch (error) {
+    console.error('Error in new BCR submission route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while trying to create the BCR submission.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Direct access route for viewing individual BCR submissions (fixed version)
+app.get('/direct/bcr-submissions/:id', async (req, res) => {
+  try {
+    console.log('Direct BCR submission view route called for ID:', req.params.id);
+    
+    // Create a mock user with admin privileges
+    req.user = {
+      id: '00000000-0000-0000-0000-000000000000',
+      email: 'admin@example.com',
+      name: 'Admin User',
+      role: 'admin'
+    };
+    
+    // Get the BCR directly to check if it exists
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
+    
+    // Try with capitalized 'Bcrs' first
+    let bcr = null;
+    try {
+      bcr = await prisma.Bcrs.findUnique({
+        where: { id: req.params.id }
+      });
+    } catch (error) {
+      console.log('Error with capitalized Bcrs model:', error.message);
+      // Fallback to lowercase 'bcrs'
+      try {
+        bcr = await prisma.bcrs.findUnique({
+          where: { id: req.params.id }
+        });
+      } catch (error) {
+        console.log('Error with lowercase bcrs model:', error.message);
+      }
+    }
+    
+    if (!bcr) {
+      console.log(`BCR with ID ${req.params.id} not found`);
+      return res.status(404).render('error', {
+        title: 'Not Found',
+        message: `BCR with ID ${req.params.id} not found. The BCR may have been deleted or the ID is incorrect.`,
+        error: {},
+        user: req.user
+      });
+    }
+    
+    // Create submission and workflow objects directly from BCR data
+    const submission = {
+      bcrId: bcr.id,
+      bcrCode: bcr.bcrNumber,
+      description: bcr.description,
+      priority: bcr.priority,
+      impact: bcr.impact,
+      requestedBy: bcr.requestedBy,
+      createdAt: bcr.createdAt,
+      updatedAt: bcr.updatedAt
+    };
+    
+    const workflow = {
+      bcrId: bcr.id,
+      status: bcr.status,
+      assignedTo: bcr.assignedTo,
+      targetDate: bcr.targetDate,
+      implementationDate: bcr.implementationDate,
+      notes: bcr.notes,
+      createdAt: bcr.createdAt,
+      updatedAt: bcr.updatedAt
+    };
+    
+    // Get the user who requested the BCR
+    let requester = null;
+    try {
+      requester = await prisma.Users.findUnique({
+        where: { id: bcr.requestedBy }
+      });
+    } catch (error) {
+      console.log('Error retrieving requester:', error.message);
+    }
+    
+    // Get the user who is assigned to the BCR
+    let assignee = null;
+    if (bcr.assignedTo) {
+      try {
+        assignee = await prisma.Users.findUnique({
+          where: { id: bcr.assignedTo }
+        });
+      } catch (error) {
+        console.log('Error retrieving assignee:', error.message);
+      }
+    }
+    
+    // Get urgency levels and impact areas
+    let urgencyLevels = [];
+    let impactAreas = [];
+    try {
+      urgencyLevels = await prisma.BcrConfigs.findMany({
+        where: { type: 'urgencyLevel' },
+        orderBy: { displayOrder: 'asc' }
+      });
+      
+      impactAreas = await prisma.BcrConfigs.findMany({
+        where: { type: 'impactArea' },
+        orderBy: { displayOrder: 'asc' }
+      });
+    } catch (error) {
+      console.log('Error retrieving BCR configs:', error.message);
+    }
+    
+    // Render the template with all available data
+    return res.render('modules/bcr/submission-details', {
+      title: `BCR ${bcr.bcrNumber || bcr.id}`,
+      bcr,
+      submission,
+      workflow,
+      requester,
+      assignee,
+      urgencyLevels,
+      impactAreas,
+      user: req.user
+    });
+  } catch (error) {
+    console.error('Error in direct BCR submission view route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while trying to view the BCR submission.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: {
+        id: '00000000-0000-0000-0000-000000000000',
+        email: 'admin@example.com',
+        name: 'Admin User',
+        role: 'admin'
+      }
+    });
+  }
+});
+    
+    if (!bcr) {
+      console.log(`BCR with ID ${req.params.id} not found`);
+      return res.status(404).render('error', {
+        title: 'Not Found',
+        message: `BCR with ID ${req.params.id} not found. The BCR may have been deleted or the ID is incorrect.`,
+        error: {},
+        user: req.user
+      });
+    }
+    
+    // Use the new submissionController for the updated data model
+    console.log('Using new submissionController for BCR view with ID:', req.params.id);
+    const submissionController = require('./controllers/bcr/submissionController');
+    return await submissionController.viewSubmission(req, res);
+  } catch (error) {
+    console.error('Error in direct BCR submission view route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while trying to view the BCR submission.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: {
+        id: '00000000-0000-0000-0000-000000000000',
+        email: 'admin@example.com',
+        name: 'Admin User',
+        role: 'admin'
+      }
+    });
+  }
+});
+
+// Apply token refresh middleware to all authenticated routes
+app.use(tokenRefreshMiddleware);
+
+// Protected routes - accessible to all authenticated users
+app.use('/home', ensureAuthenticated, homeRouter);
+app.use('/ref-data', ensureAuthenticated, refDataRouter);
+app.use('/funding', ensureAuthenticated, fundingRouter);
+app.use('/bcr', ensureAuthenticated, bcrRouter);
+
+// Legacy routes - these will be removed after migration is complete
+// Redirect /dashboard to /ref-data/dashboard
+app.get('/dashboard', ensureAuthenticated, (req, res) => {
+  res.redirect('/ref-data/dashboard');
+});
+
+// Keep these routes for backward compatibility
+app.use('/items', ensureAuthenticated, itemsRouter);
+app.use('/values', ensureAuthenticated, valuesRouter);
+app.use('/release-notes', ensureAuthenticated, releaseNotesRouter);
+app.use('/restore-points', ensureAuthenticated, restorePointsRouter);
+
+// Use API routes for Vercel serverless optimization
+app.use('/api', ensureAuthenticated, apiRouter);
+
+// Redirect root to home page or login page
+app.get('/', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.redirect('/home');
+  } else {
+    res.redirect('/access/login');
+  }
+});
+
+// Home page route
+app.get('/home', (req, res) => {
+  // Use the home module for the home page
+  res.render('modules/home/index', {
+    title: 'Register Team Internal Services',
+    user: req.user
+  });
+});
+
+// Direct route to the dashboard for authenticated users
+app.get('/dashboard', ensureAuthenticated, (req, res) => {
+  const currentYear = new Date().getFullYear();
+  // Render the dashboard index template directly
+  res.render('modules/home/index', {
+    serviceName: 'Reference Data Management',
+    selectedYear: currentYear,
+    latestYear: currentYear,
+    latestVersion: '1.0',
+    user: req.user
+  });
+});
+
+// Fallback route for the ref-data dashboard
+app.get('/ref-data/dashboard', ensureAuthenticated, (req, res) => {
+  res.redirect('/dashboard');
+});
+
+// Session error handling middleware (specific to session issues)
+app.use((err, req, res, next) => {
+  // Handle session errors specifically
+  if (err.code === 'ENOENT' || err.message.includes('session')) {
+    // Clear the invalid session - safely handle the case where session might not exist
+    if (req.session) {
+      req.session.destroy((sessionErr) => {
+        if (sessionErr) {
+          console.error('Error destroying session:', sessionErr);
+        }
+        
+        // Clear the cookies
+        res.clearCookie('connect.sid');
+        
+        // Render a security error page
+        return res.status(403).render('error', {
+          title: 'Security Error',
+          message: 'Your session has expired or is invalid. Please try again.',
+          action: '/access/login',
+          actionText: 'Sign in again'
+        });
+      });
+    } else {
+      // If session doesn't exist, just clear cookies and render error
+      res.clearCookie('connect.sid');
+      
+      return res.status(403).render('error', {
+        title: 'Security Error',
+        message: 'Your session has expired or is invalid. Please try again.',
+        action: '/access/login',
+        actionText: 'Sign in again'
+      });
+    }
+  } else {
+    // Pass other errors to the next error handler
+    next(err);
+  }
+});
+
+// Use enhanced error handler for web routes
+app.use(function(err, req, res, next) {
+  // If it's already a typed error, use it directly
+  if (err.type) {
+    return handleWebError(err, req, res, {
+      viewPath: 'error',
+      defaultMessage: 'An unexpected error occurred'
+    });
+  }
+  
+  // Otherwise, create a generic server error
+  const serverError = {
+    type: ErrorTypes.SERVER,
+    message: err.message || 'An unexpected error occurred',
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    statusCode: err.statusCode || 500
+  };
+  
+  return handleWebError(serverError, req, res, {
+    viewPath: 'error',
+    defaultMessage: 'An unexpected error occurred'
+  });
+});
+
+
+
+// Register monitoring route
+app.use('/monitoring', monitoringRouter);
+
+// Enhanced 404 handling
+app.use((req, res) => {
+  const notFoundError = {
+    type: ErrorTypes.NOT_FOUND,
+    message: 'The page you are looking for does not exist.',
+    statusCode: 404
+  };
+  
+  return handleWebError(notFoundError, req, res, {
+    viewPath: 'error',
+    defaultMessage: 'Page Not Found'
+  });
+});
+
+// Get port from environment configuration
+const PORT = config.port;
+
+// Only start the server when running directly with Node.js
+// This prevents the server from trying to start in Vercel's serverless environment
+if (!process.env.VERCEL && require.main === module) {
+  // Database connection
+  // Use Neon PostgreSQL database connection
+  console.log('Using Neon PostgreSQL database connection');
+  const db = require('./config/database');
+  
+  const { testConnection } = db;
+
+  // Test database connection
+  testConnection().then((connected) => {
+    if (!connected) {
+      console.error('Failed to connect to database after multiple attempts. Exiting...');
+      process.exit(1);
+    }
+    
+    // With Prisma, schema migrations are handled separately with prisma migrate
+    // No need to sync models at runtime as it's done during deployment
+    console.log('Using Prisma for database schema management');
+    // If needed, you can perform database health checks here
+    
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  });
+}
+
+// Export the Express app for Vercel serverless functions
+module.exports = app;
+
+// Set environment variables for Vercel deployment
+
+
+if (process.env.VERCEL) {
+  // Force production environment on Vercel
+  process.env.NODE_ENV = process.env.NODE_ENV || 'production';
+  logger.info(`Running in Vercel ${process.env.NODE_ENV} environment`);
+  
+  // For Vercel, ensure database connection is established
+  try {
+    // Connect to database when running in Vercel with retries
+    // Use a shorter timeout for serverless functions
+    connectWithRetry(3, 3000).then(connected => {
+      if (!connected) {
+        logger.error('Failed to connect to database in Vercel environment');
+      } else {
+        logger.info('Successfully connected to database in Vercel environment');
+      }
+    }).catch(error => {
+      logger.error('Database connection promise rejected:', error.message);
+    });
+  } catch (error) {
+    logger.error('Error connecting to database in Vercel environment:', error.message);
+  }
+  
+  // Add global error handler for unhandled rejections in serverless
+  process.on('unhandledRejection', (reason, promise) => {
+    logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    // In serverless, we don't exit the process
+  });
+  
+  process.on('uncaughtException', (error) => {
+    logger.error('Uncaught Exception:', error);
+    // In serverless, we don't exit the process
+  });
+}

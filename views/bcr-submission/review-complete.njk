@@ -1,0 +1,77 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}
+  {{ title }} - RRDM
+{% endblock %}
+
+{% block breadcrumbs %}
+  <li class="govuk-breadcrumbs__list-item">
+    <a class="govuk-breadcrumbs__link" href="/bcr/dashboard">BCR Dashboard</a>
+  </li>
+  <li class="govuk-breadcrumbs__list-item">
+    <a class="govuk-breadcrumbs__link" href="/bcr-submission/list">Submissions</a>
+  </li>
+  <li class="govuk-breadcrumbs__list-item">
+    {{ title }}
+  </li>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-panel govuk-panel--confirmation">
+        <h1 class="govuk-panel__title">
+          {{ title }}
+        </h1>
+        <div class="govuk-panel__body">
+          {{ message }}
+        </div>
+      </div>
+
+      <h2 class="govuk-heading-m">Submission details</h2>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Submission Code
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ submission.submissionCode }}
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Submitted By
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ submission.fullName }}
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Review Outcome
+          </dt>
+          <dd class="govuk-summary-list__value">
+            <strong class="govuk-tag {% if reviewOutcome == 'Approved' %}govuk-tag--green{% elif reviewOutcome == 'Rejected' %}govuk-tag--red{% else %}govuk-tag--blue{% endif %}">
+              {{ reviewOutcome }}
+            </strong>
+          </dd>
+        </div>
+        {% if submission.reviewComments %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Review Comments
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ submission.reviewComments }}
+          </dd>
+        </div>
+        {% endif %}
+      </dl>
+
+      <div class="govuk-button-group">
+        <a href="/bcr-submission/list" class="govuk-button">Return to Submissions</a>
+        <a href="/bcr/dashboard" class="govuk-button govuk-button--secondary">Go to Dashboard</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

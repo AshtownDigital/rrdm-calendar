@@ -1,321 +1,148 @@
+/**
+ * Clean server.js for RRDM application
+ */
 const express = require('express');
-const path = require('path');
-const fs = require('fs');
-const nunjucks = require('nunjucks');
-const dateFilter = require('nunjucks-date-filter');
 const session = require('express-session');
+const path = require('path');
+const nunjucks = require('nunjucks');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+const fs = require('fs');
 
-// Import enhanced components
-const { ensureSessionTable, configureSessionMiddleware } = require('./utils/session-manager');
-const { createRedisClient } = require('./utils/redis-manager');
-const { handleWebError, apiErrorHandler: enhancedApiErrorHandler, ErrorTypes } = require('./utils/error-handler');
-
-// Load environment configuration
-const config = require('./config/env');
-const { prisma } = require('./config/database');
-
-const passport = require('passport');
-const flash = require('connect-flash');
-// Initialize Express
+// Create Express app
 const app = express();
+const port = parseInt(process.env.PORT || '3000', 10);
 
-// Initialize logging with better error handling for serverless environments
-let logger;
-let performanceMiddleware;
-let startMetricsLogging;
+// Configure Nunjucks
+const env = nunjucks.configure([
+  path.join(__dirname, 'views'),
+  path.join(__dirname, 'views/modules'),
+  path.join(__dirname, 'views/layouts'),
+  path.join(__dirname, 'views/partials')
+], {
+  autoescape: true,
+  express: app
+});
 
-// Detect serverless environment
-const isServerless = process.env.VERCEL === '1';
-
-// Set up console-based logger as fallback
-const consoleLogger = {
-  info: (...args) => console.log('[INFO]', ...args),
-  warn: (...args) => console.warn('[WARN]', ...args),
-  error: (...args) => console.error('[ERROR]', ...args),
-  debug: (...args) => console.debug('[DEBUG]', ...args)
-};
-
-// Set up dummy performance middleware
-const dummyPerformanceMiddleware = () => (req, res, next) => next();
-const dummyStartMetricsLogging = () => {};
-
-// In serverless, use simplified logging to avoid initialization issues
-if (isServerless) {
-  logger = consoleLogger;
-  performanceMiddleware = dummyPerformanceMiddleware;
-  startMetricsLogging = dummyStartMetricsLogging;
+// Add custom filters to Nunjucks
+env.addFilter('date', function(date, format) {
+  if (!date) return '';
   
-  logger.info('Serverless environment detected, using simplified logging');
-} else {
-  // In regular environment, try to use full logging
-  try {
-    const loggerModule = require('./services/logger');
-    logger = loggerModule.logger;
-    
-    // Initialize performance monitoring
-    const perfModule = require('./services/monitoring/performanceMonitor');
-    performanceMiddleware = perfModule.performanceMiddleware;
-    startMetricsLogging = perfModule.startMetricsLogging;
-    
-    // Start metrics logging (every 5 minutes)
-    startMetricsLogging(300000);
-    
-    // Log application startup
-    logger.info('Application starting', {
-      environment: process.env.NODE_ENV || 'development',
-      port: process.env.PORT || 3000,
-      version: require('./package.json').version
-    });
-  } catch (error) {
-    console.warn('Warning: Could not initialize logging or performance monitoring:', error.message);
-    // Fall back to console logger
-    logger = consoleLogger;
-    performanceMiddleware = dummyPerformanceMiddleware;
-    startMetricsLogging = dummyStartMetricsLogging;
-  }
-}
-
-
-// Trust proxy when running on Vercel
-if (process.env.VERCEL === '1') {
-  app.set('trust proxy', 1);
-}
-
-// Function to handle database connection with retries
-async function connectWithRetry(retries = 5, delay = 5000) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      await prisma.$connect();
-      console.log('Successfully connected to database');
-      return true;
-    } catch (error) {
-      console.error(`Failed to connect to database (attempt ${i + 1}/${retries}):`, error);
-      if (i < retries - 1) {
-        console.log(`Retrying in ${delay/1000} seconds...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
-    }
-  }
-  return false;
-}
-
-// Handle graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, closing Prisma connection');
-  try {
-    await prisma.$disconnect();
-    console.log('Prisma disconnected successfully');
-  } catch (error) {
-    console.error('Error disconnecting from Prisma:', error);
-  }
-  process.exit(0);
+  // Convert string to Date object if needed
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  // Default format
+  if (!format) format = 'DD MMM YYYY';
+  
+  // Simple date formatter
+  const day = dateObj.getDate().toString().padStart(2, '0');
+  const month = dateObj.getMonth();
+  const year = dateObj.getFullYear();
+  
+  // Month names
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  
+  // Replace format tokens
+  return format
+    .replace('DD', day)
+    .replace('MMM', monthNames[month])
+    .replace('YYYY', year);
 });
 
-// Add body parser middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Import and mount the Vercel health check route
-// This must be before any authentication middleware
-const vercelHealthRoute = require('./routes/vercel-health');
-app.use('/_vercel/health', vercelHealthRoute);
-
-// Import and apply middleware conditionally to avoid errors
-// Wrap all middleware in a function to control execution order
-function applyMiddleware() {
-  // Create a simple middleware that logs requests in serverless environment
-  if (isServerless) {
-    app.use((req, res, next) => {
-      logger.info(`[${req.method}] ${req.path}`);
-      next();
-    });
-    
-    // Use serverless-optimized rate limiter in Vercel environment
-    try {
-      const { serverlessFallbackLimiter } = require('./middleware/rateLimiter');
-      app.use(serverlessFallbackLimiter);
-      logger.info('Serverless fallback rate limiter applied');
-    } catch (error) {
-      logger.warn('Could not load serverless rate limiter:', error.message);
-    }
-  }
-
-  // Security middleware
-  try {
-    // Import security middleware
-    const { securityHeaders } = require('./middleware/securityMiddleware');
-    // Apply security headers
-    app.use(securityHeaders());
-    logger.info('Security middleware applied');
-  } catch (error) {
-    logger.warn('Could not apply security middleware:', error.message);
-    // Apply basic security headers as fallback
-    app.use((req, res, next) => {
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('X-XSS-Protection', '1; mode=block');
-      res.setHeader('X-Frame-Options', 'DENY');
-      next();
-    });
-    logger.info('Basic security headers applied as fallback');
-  }
-
-  // Rate limiting middleware - skip in serverless to avoid Redis dependency
-  if (!isServerless) {
-    try {
-      // Import rate limiting middleware
-      const { apiLimiter, authLimiter, generalLimiter } = require('./middleware/rateLimiter');
-      // Apply rate limiting
-      app.use('/api', apiLimiter);
-      app.use('/auth', authLimiter);
-      app.use(generalLimiter);
-      logger.info('Rate limiting middleware applied');
-    } catch (error) {
-      logger.warn('Could not apply rate limiting middleware:', error.message);
-    }
-  } else {
-    logger.info('Rate limiting skipped in serverless environment');
-  }
-
-  // Logging middleware
-  try {
-    // Import logging middleware
-    const { createLoggingMiddleware } = require('./middleware/loggingMiddleware');
-    // Apply logging middleware
-    app.use(createLoggingMiddleware('combined'));
-    logger.info('Logging middleware applied');
-  } catch (error) {
-    logger.warn('Could not apply logging middleware:', error.message);
-    // Apply basic logging middleware as fallback
-    app.use((req, res, next) => {
-      const start = Date.now();
-      res.on('finish', () => {
-        const duration = Date.now() - start;
-        logger.info(`${req.method} ${req.path} ${res.statusCode} ${duration}ms`);
-      });
-      next();
-    });
-    logger.info('Basic logging middleware applied as fallback');
-  }
-
-  // Apply performance monitoring if available
-  if (typeof performanceMiddleware === 'function') {
-    app.use(performanceMiddleware());
-    logger.info('Performance monitoring middleware applied');
-  }
-}
-
-// Apply middleware
-applyMiddleware();
-
-
-// Cookie parser middleware
-const cookieParser = require('cookie-parser');
-app.use(cookieParser());
-
-// Use enhanced session management
-// This will ensure the Session table exists with the correct structure
-(async () => {
-  try {
-    await ensureSessionTable();
-    logger.info('Session table verified successfully', {
-      service: 'rrdm-app'
-    });
-  } catch (error) {
-    logger.error('Failed to verify session table', {
-      service: 'rrdm-app',
-      error: error.message
-    });
-  }
-})();
-
-// Configure session middleware with enhanced error handling
-configureSessionMiddleware(app, {
-  secret: config.sessionSecret || 'rrdm-dev-secret-key',
-  cookie: {
-    maxAge: 24 * 60 * 60 * 1000, // 1 day
-    secure: config.isProd, // Only use secure cookies in production
-    sameSite: 'lax'
-  }
+// UK Date format filter (DD/MM/YYYY)
+env.addFilter('ukDate', function(date) {
+  if (!date) return '';
+  
+  // Convert string to Date object if needed
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  // Format as DD/MM/YYYY
+  const day = dateObj.getDate().toString().padStart(2, '0');
+  const month = (dateObj.getMonth() + 1).toString().padStart(2, '0'); // Month is 0-indexed
+  const year = dateObj.getFullYear();
+  
+  return `${day}/${month}/${year}`;
 });
 
-// Passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
+// UK Date with day name format filter (Monday, 12 May 2025)
+env.addFilter('ukDateWithDay', function(date) {
+  if (!date) return '';
+  
+  // Convert string to Date object if needed
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  // Day names
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  
+  // Month names
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  
+  // Format as Monday, 12 May 2025
+  const dayName = dayNames[dateObj.getDay()];
+  const day = dateObj.getDate();
+  const month = monthNames[dateObj.getMonth()];
+  const year = dateObj.getFullYear();
+  
+  return `${dayName}, ${day} ${month} ${year}`;
+});
 
-// Connect flash middleware
-app.use(flash());
-
-// Configure Passport with Neon PostgreSQL database
-console.log('Using Neon PostgreSQL database passport configuration');
-require('./config/passport-db')(passport);
-
-// Set up static file serving with environment-specific cache control
-app.use(express.static(path.join(__dirname, 'public'), {
-  maxAge: config.isProd ? '1d' : 0,
-  etag: true,
-  setHeaders: function (res, path) {
-    // Ensure CSS files have the correct content type
-    if (path.endsWith('.css')) {
-      res.setHeader('Content-Type', 'text/css');
-    }
-  }
-}));
-
-// Handle favicon requests to prevent 500 errors
-app.get('/favicon.ico', (req, res) => res.status(204).end());
-app.get('/favicon.png', (req, res) => res.status(204).end());
-
-// Serve GOV.UK Frontend assets from node_modules
-app.use('/assets', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk/assets')));
-app.use('/scripts', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk')));
-
-// Fallback route for CSS files to ensure they're always served with the correct content type
-app.get('/stylesheets/:file', (req, res, next) => {
-  const filePath = path.join(__dirname, 'public', 'stylesheets', req.params.file);
-  fs.access(filePath, fs.constants.F_OK, (err) => {
-    if (err) {
-      return next(); // File doesn't exist, let Express handle it
-    }
-    res.setHeader('Content-Type', 'text/css');
-    res.sendFile(filePath);
-  });
+// Map filter for arrays
+env.addFilter('map', function(arr, property) {
+  if (!arr || !Array.isArray(arr)) return [];
+  return arr.map(item => item[property]);
 });
 
 // Set up view engine
 app.set('view engine', 'njk');
 app.set('views', path.join(__dirname, 'views'));
 
-// Configure Nunjucks
-const env = nunjucks.configure('views', {
-  autoescape: true,
-  express: app,
-  watch: true
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Create a virtual path prefix for assets
+app.use('/assets', express.static(path.join(__dirname, 'public')));
+
+// Create specific mapping for CSS files
+app.use('/assets/css', express.static(path.join(__dirname, 'public/stylesheets')));
+
+// Session middleware
+app.use(session({
+  secret: 'rrdm-secret-key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false }
+}));
+
+// Cookie parser middleware - required for cookie-based CSRF protection
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
+// CSRF Protection Middleware
+const csrf = require('csurf');
+const csrfProtection = csrf({ cookie: true });
+
+// Apply CSRF protection globally
+app.use(csrfProtection);
+
+// Add CSRF token to all responses
+app.use((req, res, next) => {
+  res.locals.csrfToken = req.csrfToken();
+  next();
 });
 
-// Add array filters
-env.addFilter('map', (arr, prop) => {
-  return arr.map(item => item[prop]);
-});
-
-// Add custom date filter
-env.addFilter('date', (str) => {
-  return new Date(str).toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
-});
-
-// Add number formatting filter
-env.addFilter('toLocaleString', (num) => {
-  return num.toLocaleString('en-GB');
-});
-
-// Add regex search filter
-env.addFilter('regex_search', (str, pattern) => {
-  if (!str) return null;
-  const regex = new RegExp(pattern);
-  return str.match(regex);
+// Mock authentication middleware for testing
+app.use((req, res, next) => {
+  if (!req.user) {
+    req.user = {
+      id: '00000000-0000-0000-0000-000000000001',
+      email: 'admin@example.com',
+      name: 'Admin User',
+      role: 'admin'
+    };
+  }
+  next();
 });
 
 // Add global variables for partials
@@ -333,126 +160,892 @@ app.use((req, res, next) => {
   // Make user available to all templates
   res.locals.user = req.user || null;
   
+  // Add CSRF token to all responses
+  res.locals.csrfToken = req.csrfToken ? req.csrfToken() : '';
+  
   next();
 });
 
 // Import route modules
-const homeRouter = require('./routes/home/index');
-const refDataRouter = require('./routes/ref-data/index');
-const fundingRouter = require('./routes/funding/index');
-const bcrRouter = require('./routes/bcr/index');
-const accessRouter = require('./routes/access/index');
+const refDataRouter = require('./routes/ref-data');
+const fundingRouter = require('./routes/funding');
+const releaseManagementRouter = require('./routes/release-management');
+const accessRouter = require('./routes/access');
+const monitoringRouter = require('./routes/monitoring');
 
-// Legacy routes - these will be removed after migration is complete
-const dashboardRouter = require('./routes/dashboard/index');
-const itemsRouter = require('./routes/items');
-const valuesRouter = require('./routes/values/index');
-const releaseNotesRouter = require('./routes/release-notes/index');
-const restorePointsRouter = require('./routes/restore-points');
+// BCR module routes
+const bcrRouter = require('./routes/bcr/routes');
+const bcrSubmissionRouter = require('./routes/bcr-submission/routes');
+const impactedAreasRouter = require('./routes/impacted-areas/routes');
 
-// Import API routes for Vercel serverless optimization
-const apiRouter = require('./api');
-
-// Import auth middleware
-const { ensureAuthenticated, ensureAdmin, checkPermission } = require('./middleware/auth');
-const adminAuth = require('./middleware/admin-auth');
-const tokenRefreshMiddleware = require('./middleware/token-refresh');
-
-// Import centralized error handler middleware
-let errorHandler;
-try {
-  errorHandler = require('./middleware/errorHandler');
-  logger.info('Error handler middleware loaded');
-} catch (error) {
-  logger.warn('Could not load error handler middleware:', error.message);
-  // Create a comprehensive fallback error handler
-  errorHandler = {
-    ApiError: class ApiError extends Error {
-      constructor(statusCode, message, details = null) {
-        super(message);
-        this.statusCode = statusCode;
-        this.details = details;
-        this.isApiError = true;
-      }
-    },
-    notFound: (req, res, next) => {
-      const error = new Error(`Not Found - ${req.originalUrl}`);
-      error.statusCode = 404;
-      next(error);
-    },
-    apiErrorHandler: (err, req, res, next) => {
-      if (!req.path.startsWith('/api/')) {
-        return next(err);
-      }
-      const statusCode = err.statusCode || 500;
-      const errorResponse = {
-        success: false,
-        error: {
-          message: err.message || 'Server Error',
-          status: statusCode
-        }
-      };
-      logger.error(`API Error: ${err.message}`);
-      return res.status(statusCode).json(errorResponse);
-    },
-    webErrorHandler: (err, req, res, next) => {
-      if (req.path.startsWith('/api/')) {
-        return next(err);
-      }
-      const statusCode = err.statusCode || 500;
-      logger.error(`Web Error: ${err.message}`);
-      res.status(statusCode).render('error', {
-        title: `Error ${statusCode}`,
-        message: err.message || 'An unexpected error occurred',
-        error: process.env.NODE_ENV === 'development' ? err : {},
-        user: req.user
-      });
-    }
-  };
-  logger.info('Fallback error handler created');
-}
-
-// Access routes - some endpoints don't require authentication (login, logout)
-// but the user management routes are protected by adminAuth middleware in the router
-app.use('/access', accessRouter);
-
-// Apply token refresh middleware to all authenticated routes
-app.use(tokenRefreshMiddleware);
-
-// Protected routes - accessible to all authenticated users
-app.use('/home', ensureAuthenticated, homeRouter);
-app.use('/ref-data', ensureAuthenticated, refDataRouter);
-app.use('/funding', ensureAuthenticated, fundingRouter);
-app.use('/bcr', ensureAuthenticated, bcrRouter);
-
-// Legacy routes - these will be removed after migration is complete
-// Redirect /dashboard to /ref-data/dashboard
-app.get('/dashboard', ensureAuthenticated, (req, res) => {
-  res.redirect('/ref-data/dashboard');
+// Routes
+// Home route
+app.get('/', (req, res) => {
+  // Use the home.njk template directly as the index page
+  res.render('modules/home/home', {
+    title: 'Register Team Internal Services',
+    user: req.user
+  });
 });
 
-// Keep these routes for backward compatibility
-app.use('/items', ensureAuthenticated, itemsRouter);
-app.use('/values', ensureAuthenticated, valuesRouter);
-app.use('/release-notes', ensureAuthenticated, releaseNotesRouter);
-app.use('/restore-points', ensureAuthenticated, restorePointsRouter);
+// Home page route
+app.get('/home', (req, res) => {
+  // Use the home.njk template for the home page
+  res.render('modules/home/home', {
+    title: 'Register Team Internal Services',
+    user: req.user
+  });
+});
 
-// Use API routes for Vercel serverless optimization
-app.use('/api', ensureAuthenticated, apiRouter);
+// Mount BCR module routes
+app.use('/bcr', bcrRouter);
+app.use('/bcr-submission', bcrSubmissionRouter);
+app.use('/impacted-areas', impactedAreasRouter);
 
-// Redirect root to home page or login page
-app.get('/', (req, res) => {
-  if (req.isAuthenticated()) {
-    res.redirect('/home');
-  } else {
-    res.redirect('/access/login');
+// Register all module routes
+app.use('/ref-data', refDataRouter);
+app.use('/funding', fundingRouter);
+app.use('/release-management', releaseManagementRouter);
+app.use('/access', accessRouter);
+app.use('/monitoring', monitoringRouter);
+
+// BCR Submissions route
+app.get('/bcr/submissions', async (req, res) => {
+  try {
+    console.log('BCR Submissions route called');
+    
+    // Get BCR submissions controller
+    const submissionsController = require('./controllers/bcr/submissionsController');
+    
+    // Call the controller's listSubmissions function
+    return await submissionsController.listSubmissions(req, res);
+  } catch (error) {
+    console.error('Error in BCR submissions route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while trying to list BCR submissions.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
   }
 });
 
-// Direct route to the dashboard for authenticated users
-app.get('/dashboard', ensureAuthenticated, (req, res) => {
+// BCR routes that must come before the generic /:id route
+// BCR Submit Form route
+app.get('/bcr/submit', async (req, res) => {
+  try {
+    console.log('BCR Submit Form route called');
+    const formController = require('./controllers/bcr/formController');
+    await formController.showSubmitForm(req, res);
+  } catch (error) {
+    console.error('Error in BCR Submit Form route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while trying to load the BCR submission form.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// BCR Phase-Status Mapping route
+app.get('/bcr/phase-status-mapping', async (req, res) => {
+  try {
+    console.log('BCR Phase-Status Mapping route called');
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.listPhaseStatusMappings(req, res);
+  } catch (error) {
+    console.error('Error in BCR Phase-Status Mapping route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while trying to load the phase-status mapping page.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// BCR Phase-Status Mapping sub-routes
+// Create phase
+app.get('/bcr/phase-status-mapping/create-phase', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.showCreatePhaseForm(req, res);
+  } catch (error) {
+    console.error('Error in BCR create phase route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Create status
+app.get('/bcr/phase-status-mapping/create-status', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.showCreateStatusForm(req, res);
+  } catch (error) {
+    console.error('Error in BCR create status route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Phase detail view
+app.get('/bcr/phase-status-mapping/phase/:id', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.showPhaseDetail(req, res);
+  } catch (error) {
+    console.error('Error in BCR phase detail route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Edit phase
+app.get('/bcr/phase-status-mapping/edit-phase/:id', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.showEditPhaseForm(req, res);
+  } catch (error) {
+    console.error('Error in BCR edit phase route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Edit status
+app.get('/bcr/phase-status-mapping/edit-status/:id', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.showEditStatusForm(req, res);
+  } catch (error) {
+    console.error('Error in BCR edit status route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Delete phase warning
+app.get('/bcr/phase-status-mapping/delete-phase/:id', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.showDeletePhaseWarning(req, res);
+  } catch (error) {
+    console.error('Error in BCR delete phase route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Delete status warning
+app.get('/bcr/phase-status-mapping/delete-status/:id', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.showDeleteStatusWarning(req, res);
+  } catch (error) {
+    console.error('Error in BCR delete status route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Confirmation pages
+app.get('/bcr/phase-status-mapping/create-phase-confirmation', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.showCreatePhaseConfirmation(req, res);
+  } catch (error) {
+    console.error('Error in BCR create phase confirmation route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+app.get('/bcr/phase-status-mapping/create-status-confirmation', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.showCreateStatusConfirmation(req, res);
+  } catch (error) {
+    console.error('Error in BCR create status confirmation route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+app.get('/bcr/phase-status-mapping/edit-phase-confirmation', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.showEditPhaseConfirmation(req, res);
+  } catch (error) {
+    console.error('Error in BCR edit phase confirmation route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+app.get('/bcr/phase-status-mapping/edit-status-confirmation', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.showEditStatusConfirmation(req, res);
+  } catch (error) {
+    console.error('Error in BCR edit status confirmation route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+app.get('/bcr/phase-status-mapping/delete-phase-confirmation', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.showDeletePhaseConfirmation(req, res);
+  } catch (error) {
+    console.error('Error in BCR delete phase confirmation route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+app.get('/bcr/phase-status-mapping/delete-status-confirmation', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.showDeleteStatusConfirmation(req, res);
+  } catch (error) {
+    console.error('Error in BCR delete status confirmation route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// BCR workflow route
+app.get('/bcr/workflow', async (req, res) => {
+  try {
+    const workflowController = require('./controllers/bcr/workflowController');
+    await workflowController.showWorkflow(req, res);
+  } catch (error) {
+    console.error('Error in BCR workflow route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// BCR submissions list
+app.get('/bcr/submissions', async (req, res) => {
+  try {
+    const submissionsController = require('./controllers/bcr/submissionsController');
+    await submissionsController.listSubmissions(req, res);
+  } catch (error) {
+    console.error('Error in BCR submissions list route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// BCR Impact Areas routes
+// List impact areas
+app.get('/bcr/impact-areas', async (req, res) => {
+  try {
+    const impactAreaController = require('./controllers/bcr/impactAreaController');
+    await impactAreaController.listImpactAreas(req, res);
+  } catch (error) {
+    console.error('Error in BCR impact areas list route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Create impact area form
+app.get('/bcr/impact-areas/create', async (req, res) => {
+  try {
+    const impactAreaController = require('./controllers/bcr/impactAreaController');
+    await impactAreaController.showCreateForm(req, res);
+  } catch (error) {
+    console.error('Error in BCR create impact area route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Process create impact area form
+app.post('/bcr/impact-areas/create', async (req, res) => {
+  try {
+    const impactAreaController = require('./controllers/bcr/impactAreaController');
+    await impactAreaController.createImpactArea(req, res);
+  } catch (error) {
+    console.error('Error in BCR create impact area POST route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Create impact area confirmation
+app.get('/bcr/impact-areas/create-confirmation', async (req, res) => {
+  try {
+    const impactAreaController = require('./controllers/bcr/impactAreaController');
+    await impactAreaController.showCreateConfirmation(req, res);
+  } catch (error) {
+    console.error('Error in BCR create impact area confirmation route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Edit impact area form
+app.get('/bcr/impact-areas/edit/:id', async (req, res) => {
+  try {
+    const impactAreaController = require('./controllers/bcr/impactAreaController');
+    await impactAreaController.showEditForm(req, res);
+  } catch (error) {
+    console.error('Error in BCR edit impact area route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Process edit impact area form
+app.post('/bcr/impact-areas/edit/:id', async (req, res) => {
+  try {
+    const impactAreaController = require('./controllers/bcr/impactAreaController');
+    await impactAreaController.updateImpactArea(req, res);
+  } catch (error) {
+    console.error('Error in BCR edit impact area POST route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Edit impact area confirmation
+app.get('/bcr/impact-areas/edit-confirmation', async (req, res) => {
+  try {
+    const impactAreaController = require('./controllers/bcr/impactAreaController');
+    await impactAreaController.showEditConfirmation(req, res);
+  } catch (error) {
+    console.error('Error in BCR edit impact area confirmation route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Delete impact area warning
+app.get('/bcr/impact-areas/delete/:id', async (req, res) => {
+  try {
+    const impactAreaController = require('./controllers/bcr/impactAreaController');
+    await impactAreaController.showDeleteWarning(req, res);
+  } catch (error) {
+    console.error('Error in BCR delete impact area route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Process delete impact area
+app.post('/bcr/impact-areas/delete/:id', async (req, res) => {
+  try {
+    const impactAreaController = require('./controllers/bcr/impactAreaController');
+    await impactAreaController.deleteImpactArea(req, res);
+  } catch (error) {
+    console.error('Error in BCR delete impact area POST route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Delete impact area confirmation
+app.get('/bcr/impact-areas/delete-confirmation', async (req, res) => {
+  try {
+    const impactAreaController = require('./controllers/bcr/impactAreaController');
+    await impactAreaController.showDeleteConfirmation(req, res);
+  } catch (error) {
+    console.error('Error in BCR delete impact area confirmation route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// POST routes for form submissions
+// Submit form
+app.post('/bcr/submit', async (req, res) => {
+  try {
+    const formController = require('./controllers/bcr/formController');
+    await formController.processSubmission(req, res);
+  } catch (error) {
+    console.error('Error in BCR submit form POST route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while processing your submission.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Create phase
+app.post('/bcr/phase-status-mapping/create-phase', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.createPhase(req, res);
+  } catch (error) {
+    console.error('Error in BCR create phase POST route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Create status
+app.post('/bcr/phase-status-mapping/create-status', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.createStatus(req, res);
+  } catch (error) {
+    console.error('Error in BCR create status POST route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Edit phase
+app.post('/bcr/phase-status-mapping/edit-phase/:id', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.updatePhase(req, res);
+  } catch (error) {
+    console.error('Error in BCR edit phase POST route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Edit status
+app.post('/bcr/phase-status-mapping/edit-status/:id', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.updateStatus(req, res);
+  } catch (error) {
+    console.error('Error in BCR edit status POST route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Delete phase
+app.post('/bcr/phase-status-mapping/delete-phase/:id', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.deletePhase(req, res);
+  } catch (error) {
+    console.error('Error in BCR delete phase POST route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Delete status
+app.post('/bcr/phase-status-mapping/delete-status/:id', async (req, res) => {
+  try {
+    const phaseStatusController = require('./controllers/bcr/phaseStatusController');
+    await phaseStatusController.deleteStatus(req, res);
+  } catch (error) {
+    console.error('Error in BCR delete status POST route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Update BCR status
+app.post('/bcr/update-status/:id', async (req, res) => {
+  try {
+    const statusController = require('./controllers/bcr/statusController');
+    await statusController.updateStatus(req, res);
+  } catch (error) {
+    console.error('Error in BCR update status POST route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Update workflow
+app.post('/bcr/workflow', async (req, res) => {
+  try {
+    const workflowController = require('./controllers/bcr/workflowController');
+    await workflowController.updateWorkflow(req, res);
+  } catch (error) {
+    console.error('Error in BCR workflow POST route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Direct BCR Submission View route
+// Canonical BCR view route (loads the same as direct BCR submission details)
+app.get('/bcr/:id', async (req, res) => {
+  // Reuse the same logic as /direct/bcr-submissions/:id
+  try {
+    console.log('Canonical BCR view route called for ID:', req.params.id);
+    let bcr = null;
+    try {
+      bcr = await prisma.Bcrs.findUnique({
+        where: { id: req.params.id }
+      });
+    } catch (error) {
+      console.log('Error retrieving BCR:', error.message);
+    }
+    if (!bcr) {
+      console.log(`BCR with ID ${req.params.id} not found`);
+      return res.status(404).render('error', {
+        title: 'Not Found',
+        message: `BCR with ID ${req.params.id} not found. The BCR may have been deleted or the ID is incorrect.`,
+        error: {},
+        user: req.user
+      });
+    }
+    const submission = {
+      bcrId: bcr.id,
+      bcrCode: bcr.bcrNumber,
+      description: bcr.description,
+      priority: bcr.priority,
+      impact: bcr.impact,
+      requestedBy: bcr.requestedBy,
+      createdAt: bcr.createdAt,
+      updatedAt: bcr.updatedAt
+    };
+    const workflow = {
+      bcrId: bcr.id,
+      status: bcr.status,
+      assignedTo: bcr.assignedTo,
+      targetDate: bcr.targetDate,
+      implementationDate: bcr.implementationDate,
+      notes: bcr.notes,
+      createdAt: bcr.createdAt,
+      updatedAt: bcr.updatedAt
+    };
+    let requester = null;
+    try {
+      requester = await prisma.Users.findUnique({
+        where: { id: bcr.requestedBy }
+      });
+    } catch (error) {
+      console.log('Error retrieving requester:', error.message);
+    }
+    let assignee = null;
+    if (bcr.assignedTo) {
+      try {
+        assignee = await prisma.Users.findUnique({
+          where: { id: bcr.assignedTo }
+        });
+      } catch (error) {
+        console.log('Error retrieving assignee:', error.message);
+      }
+    }
+    let urgencyLevels = [];
+    let impactAreas = [];
+    let phases = [];
+    try {
+      urgencyLevels = await prisma.BcrConfigs.findMany({
+        where: { type: 'urgencyLevel' },
+        orderBy: { displayOrder: 'asc' }
+      });
+      impactAreas = await prisma.BcrConfigs.findMany({
+        where: { type: 'impactArea' },
+        orderBy: { displayOrder: 'asc' }
+      });
+      phases = await prisma.BcrConfigs.findMany({
+        where: { type: 'phase' },
+        orderBy: { displayOrder: 'asc' }
+      });
+    } catch (error) {
+      console.log('Error retrieving BCR configs:', error.message);
+    }
+    // Aggregate all submission-related dates
+    let submissionDates = [];
+    if (bcr.createdAt) {
+      submissionDates.push(bcr.createdAt);
+    }
+    if (submission.createdAt && submission.createdAt !== bcr.createdAt) {
+      submissionDates.push(submission.createdAt);
+    }
+    const histories = [];
+    if (bcr.history && Array.isArray(bcr.history)) histories.push(...bcr.history);
+    if (submission.history && Array.isArray(submission.history)) histories.push(...submission.history);
+    if (bcr.workflowHistory && Array.isArray(bcr.workflowHistory)) histories.push(...bcr.workflowHistory);
+    if (submission.workflowHistory && Array.isArray(submission.workflowHistory)) histories.push(...submission.workflowHistory);
+    histories.forEach(item => {
+      if (item.action && item.action.toLowerCase().includes('submit') && item.date) {
+        submissionDates.push(item.date);
+      }
+    });
+    submissionDates = [...new Set(submissionDates.map(d => new Date(d).toISOString()))].sort();
+    return res.render('modules/bcr/bcr-details.njk', {
+      title: `BCR ${bcr.bcrNumber || bcr.id}`,
+      bcr,
+      submission,
+      workflow,
+      requester,
+      assignee,
+      urgencyLevels,
+      impactAreas,
+      phases,
+      submissionDates,
+      user: req.user
+    });
+  } catch (error) {
+    console.error('Error in canonical BCR view route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while trying to view the BCR.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+app.get('/direct/bcr-submissions/:id', async (req, res) => {
+  try {
+    console.log('Direct BCR submission view route called for ID:', req.params.id);
+    
+    // Use the dedicated controller for BCR submission details
+    const submissionDetailsController = require('./controllers/bcr/submissionDetailsController');
+    await submissionDetailsController.showSubmissionDetails(req, res);
+  } catch (error) {
+    console.error('Error in direct BCR submission view route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while trying to view the BCR submission.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Direct BCR submissions list route
+app.get('/direct/bcr-submissions', async (req, res) => {
+  try {
+    console.log('Direct BCR submissions list route called');
+    
+    // Call the submissions controller
+    const submissionsController = require('./controllers/bcr/submissionsController');
+    await submissionsController.listSubmissions(req, res);
+  } catch (error) {
+    console.error('Error in direct BCR submissions list route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while trying to list BCR submissions.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Direct BCR edit route
+app.get('/direct/bcr-edit/:id', async (req, res) => {
+  try {
+    console.log('Direct BCR edit route called for ID:', req.params.id);
+    
+    // Call the form controller
+    const formController = require('./controllers/bcr/formController');
+    await formController.showEditForm(req, res);
+  } catch (error) {
+    console.error('Error in direct BCR edit route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while trying to edit the BCR.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// BCR edit submission form processing
+app.post('/bcr/edit/:id', async (req, res) => {
+  try {
+    console.log('BCR edit submission route called for ID:', req.params.id);
+    
+    // Call the form controller
+    const formController = require('./controllers/bcr/formController');
+    await formController.processEditSubmission(req, res);
+  } catch (error) {
+    console.error('Error in BCR edit submission route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while trying to process the BCR edit.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// BCR delete confirmation page
+app.get('/bcr/submissions/:id/delete-confirmation', async (req, res) => {
+  try {
+    console.log('BCR delete confirmation route called for ID:', req.params.id);
+    
+    // Call the form controller
+    const formController = require('./controllers/bcr/formController');
+    await formController.showDeleteConfirmation(req, res);
+  } catch (error) {
+    console.error('Error in BCR delete confirmation route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while trying to load the BCR delete confirmation page.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// BCR delete processing
+app.post('/bcr/submissions/:id/delete', async (req, res) => {
+  try {
+    console.log('BCR delete route called for ID:', req.params.id);
+    
+    // Call the form controller
+    const formController = require('./controllers/bcr/formController');
+    await formController.deleteBcr(req, res);
+  } catch (error) {
+    console.error('Error in BCR delete route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while trying to delete the BCR.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Dashboard route
+app.get('/dashboard', (req, res) => {
   const currentYear = new Date().getFullYear();
-  // Render the dashboard index template directly
   res.render('modules/dashboard/index', {
     serviceName: 'Reference Data Management',
     selectedYear: currentYear,
@@ -462,155 +1055,66 @@ app.get('/dashboard', ensureAuthenticated, (req, res) => {
   });
 });
 
-// Fallback route for the ref-data dashboard
-app.get('/ref-data/dashboard', ensureAuthenticated, (req, res) => {
-  res.redirect('/dashboard');
+// Serve stylesheets
+app.get('/stylesheets/:file', (req, res, next) => {
+  const filePath = path.join(__dirname, 'public', 'stylesheets', req.params.file);
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      return next(); // File doesn't exist, let Express handle it
+    }
+    res.setHeader('Content-Type', 'text/css');
+    res.sendFile(filePath);
+  });
 });
 
-// Session error handling middleware (specific to session issues)
+// Error handler
 app.use((err, req, res, next) => {
-  // Handle session errors specifically
-  if (err.code === 'ENOENT' || err.message.includes('session')) {
-    // Clear the invalid session - safely handle the case where session might not exist
-    if (req.session) {
-      req.session.destroy((sessionErr) => {
-        if (sessionErr) {
-          console.error('Error destroying session:', sessionErr);
-        }
-        
-        // Clear the cookies
-        res.clearCookie('connect.sid');
-        
-        // Render a security error page
-        return res.status(403).render('error', {
-          title: 'Security Error',
-          message: 'Your session has expired or is invalid. Please try again.',
-          action: '/access/login',
-          actionText: 'Sign in again'
-        });
-      });
-    } else {
-      // If session doesn't exist, just clear cookies and render error
-      res.clearCookie('connect.sid');
-      
-      return res.status(403).render('error', {
-        title: 'Security Error',
-        message: 'Your session has expired or is invalid. Please try again.',
-        action: '/access/login',
-        actionText: 'Sign in again'
-      });
-    }
-  } else {
-    // Pass other errors to the next error handler
-    next(err);
-  }
-});
-
-// Use enhanced error handler for web routes
-app.use(function(err, req, res, next) {
-  // If it's already a typed error, use it directly
-  if (err.type) {
-    return handleWebError(err, req, res, {
-      viewPath: 'error',
-      defaultMessage: 'An unexpected error occurred'
-    });
-  }
-  
-  // Otherwise, create a generic server error
-  const serverError = {
-    type: ErrorTypes.SERVER,
-    message: err.message || 'An unexpected error occurred',
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-    statusCode: err.statusCode || 500
-  };
-  
-  return handleWebError(serverError, req, res, {
-    viewPath: 'error',
-    defaultMessage: 'An unexpected error occurred'
+  console.error('Error:', err);
+  res.status(err.status || 500).render('error', {
+    title: 'Error',
+    message: err.message,
+    error: process.env.NODE_ENV === 'development' ? err : {},
+    user: req.user
   });
 });
 
-// Enhanced 404 handling
-app.use((req, res) => {
-  const notFoundError = {
-    type: ErrorTypes.NOT_FOUND,
-    message: 'The page you are looking for does not exist.',
-    statusCode: 404
-  };
-  
-  return handleWebError(notFoundError, req, res, {
-    viewPath: 'error',
-    defaultMessage: 'Page Not Found'
-  });
-});
-
-// Get port from environment configuration
-const PORT = config.port;
-
-// Only start the server when running directly with Node.js
-// This prevents the server from trying to start in Vercel's serverless environment
-if (!process.env.VERCEL && require.main === module) {
-  // Database connection
-  // Use Neon PostgreSQL database connection
-  console.log('Using Neon PostgreSQL database connection');
-  const db = require('./config/database');
-  
-  const { testConnection } = db;
-
-  // Test database connection
-  testConnection().then((connected) => {
-    if (!connected) {
-      console.error('Failed to connect to database after multiple attempts. Exiting...');
-      process.exit(1);
-    }
-    
-    // With Prisma, schema migrations are handled separately with prisma migrate
-    // No need to sync models at runtime as it's done during deployment
-    console.log('Using Prisma for database schema management');
-    // If needed, you can perform database health checks here
-    
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  });
-}
-
-// Export the Express app for Vercel serverless functions
-module.exports = app;
-
-// Set environment variables for Vercel deployment
-
-
-if (process.env.VERCEL) {
-  // Force production environment on Vercel
-  process.env.NODE_ENV = process.env.NODE_ENV || 'production';
-  logger.info(`Running in Vercel ${process.env.NODE_ENV} environment`);
-  
-  // For Vercel, ensure database connection is established
+// BCR Submission Routes
+app.get('/bcr-submission/new', async (req, res) => {
   try {
-    // Connect to database when running in Vercel with retries
-    // Use a shorter timeout for serverless functions
-    connectWithRetry(3, 3000).then(connected => {
-      if (!connected) {
-        logger.error('Failed to connect to database in Vercel environment');
-      } else {
-        logger.info('Successfully connected to database in Vercel environment');
-      }
-    }).catch(error => {
-      logger.error('Database connection promise rejected:', error.message);
-    });
+    const submissionController = require('./controllers/bcr/submissionController');
+    await submissionController.newSubmission(req, res);
   } catch (error) {
-    logger.error('Error connecting to database in Vercel environment:', error.message);
+    console.error('Error in new BCR submission route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while trying to access the new BCR submission form.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
   }
-  
-  // Add global error handler for unhandled rejections in serverless
-  process.on('unhandledRejection', (reason, promise) => {
-    logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    // In serverless, we don't exit the process
-  });
-  
-  process.on('uncaughtException', (error) => {
-    logger.error('Uncaught Exception:', error);
-    // In serverless, we don't exit the process
-  });
-}
+});
+
+
+
+// Legacy routes for backward compatibility
+app.post('/direct/bcr-submissions/:id/update', async (req, res) => {
+  try {
+    console.log('Legacy update BCR submission status route called for ID:', req.params.id);
+    res.redirect(`/bcr/${req.params.id}/update`);
+  } catch (error) {
+    console.error('Error in legacy update BCR submission status route:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An unexpected error occurred while trying to update the BCR submission status.',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+});
+
+// Start the server
+const server = app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
+});
+
+module.exports = server;

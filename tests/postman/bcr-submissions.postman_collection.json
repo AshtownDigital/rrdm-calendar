@@ -1,0 +1,152 @@
+{
+  "info": {
+    "name": "RRDM BCR Submissions",
+    "description": "Tests for BCR submission endpoints in the RRDM application",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create BCR Submission",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Cookie",
+            "value": "connect.sid={{session_id}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"description\": \"Test BCR submission created via Postman\",\n    \"priority\": \"medium\",\n    \"impact\": \"Systems, Reporting\",\n    \"submitterName\": \"Test User\",\n    \"submitterEmail\": \"test@example.com\",\n    \"employmentType\": \"yes\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/bcr/submit-new",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["bcr", "submit-new"]
+        },
+        "description": "Create a new BCR submission with the updated data model"
+      },
+      "response": []
+    },
+    {
+      "name": "Get BCR Submission by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "connect.sid={{session_id}}"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/direct/bcr-submissions/{{bcr_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["direct", "bcr-submissions", "{{bcr_id}}"]
+        },
+        "description": "Get a BCR submission by its ID"
+      },
+      "response": []
+    },
+    {
+      "name": "Delete BCR Submission",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "connect.sid={{session_id}}"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/bcr/submissions/{{bcr_id}}/delete",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["bcr", "submissions", "{{bcr_id}}", "delete"]
+        },
+        "description": "Delete a BCR submission by its ID"
+      },
+      "response": []
+    },
+    {
+      "name": "Create Critical Priority BCR",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Cookie",
+            "value": "connect.sid={{session_id}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"description\": \"Critical priority BCR submission\",\n    \"priority\": \"critical\",\n    \"impact\": \"Systems, Users, Training\",\n    \"submitterName\": \"Test User\",\n    \"submitterEmail\": \"test@example.com\",\n    \"employmentType\": \"yes\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/bcr/submit-new",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["bcr", "submit-new"]
+        },
+        "description": "Create a new BCR submission with critical priority"
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// You can add pre-request scripts here if needed",
+          "// For example, to get a session ID or authentication token"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Default test script",
+          "pm.test(\"Status code is 200 or 302\", function () {",
+          "    pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+          "});",
+          "",
+          "// If this is a redirect response (for form submissions)",
+          "if (pm.response.code === 302) {",
+          "    pm.test(\"Redirect location is valid\", function () {",
+          "        pm.response.to.have.header(\"Location\");",
+          "    });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "session_id",
+      "value": "your_session_id_here",
+      "type": "string"
+    },
+    {
+      "key": "bcr_id",
+      "value": "your_bcr_id_here",
+      "type": "string"
+    }
+  ]
+}

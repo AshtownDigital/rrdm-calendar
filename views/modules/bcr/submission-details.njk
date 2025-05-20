@@ -1,10 +1,23 @@
 {% extends "layouts/base-with-nav.njk" %}
 
-{% block title %}BCR Details | Register Team Internal Services{% endblock %}
+{% block title %}{{ submission.bcrCode if submission else bcr.bcrNumber }} | Register Team Internal Services{% endblock %}
 
 {% block navigation %}
   {% include "partials/bcr-navigation.njk" %}
 {% endblock %}
+
+{% set extractedCurrentPhaseId = 1 %}
+{% if submission.notes %}
+  {% set notesLines = submission.notes.split('\n') %}
+  {% for line in notesLines %}
+    {% if line | slice(0, 14) == 'Current Phase:' %}
+      {% set phaseNumber = line.replace('Current Phase:', '').trim() %}
+      {% if phaseNumber | int > 0 %}
+        {% set extractedCurrentPhaseId = phaseNumber | int %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
 
 {% block pageScripts %}
 <script>
@@ -51,6 +64,11 @@
     }, 100);
   }
 </script>
+</script>
+{% endblock %}
+
+{% block head %}
+  <!-- No additional styles required -->
 {% endblock %}
 
 {% block content %}
@@ -60,35 +78,72 @@
       <div class="govuk-grid-row govuk-!-margin-bottom-8">
         <div class="govuk-grid-column-two-thirds">
           <span class="govuk-caption-xl govuk-!-margin-bottom-2">Business Change Request</span>
-          <h1 class="govuk-heading-xl govuk-!-margin-bottom-4">{{ submission.id }}</h1>
-          <p class="govuk-body-l govuk-!-margin-bottom-1">Reference: <strong>{{ submission.id }}</strong></p>
-          <p class="govuk-body-m govuk-!-margin-bottom-0">Trello ID: <strong>{{ submission.trelloId if submission.trelloId else 'Not assigned' }}</strong></p>
+          <h1 class="govuk-heading-xl govuk-!-margin-bottom-4">{{ submission.bcrCode if submission else bcr.bcrNumber }}</h1>
+          <p class="govuk-body-l govuk-!-margin-bottom-1">Reference: <strong>{{ submission.bcrCode if submission else bcr.bcrNumber }}</strong></p>
+          <p class="govuk-body-m govuk-!-margin-bottom-0">Status: 
+            {% if workflow %}
+              {% if workflow.status === 'new' or workflow.status === 'new_submission' %}
+                <strong class="govuk-tag govuk-tag--blue">{{ workflow.status | replace('_', ' ') | title }}</strong>
+              {% elif workflow.status === 'draft' %}
+                <strong class="govuk-tag govuk-tag--grey">{{ workflow.status | title }}</strong>
+              {% elif workflow.status === 'under_review' or workflow.status === 'being_prioritised' or workflow.status === 'under_technical_review' or workflow.status === 'in_governance_review' %}
+                <strong class="govuk-tag govuk-tag--light-blue">{{ workflow.status | replace('_', ' ') | title }}</strong>
+              {% elif workflow.status === 'approved' or workflow.status === 'implemented' %}
+                <strong class="govuk-tag govuk-tag--green">{{ workflow.status | title }}</strong>
+              {% elif workflow.status === 'rejected' %}
+                <strong class="govuk-tag govuk-tag--red">{{ workflow.status | title }}</strong>
+              {% else %}
+                <strong class="govuk-tag">{{ workflow.status | replace('_', ' ') | title }}</strong>
+              {% endif %}
+            {% else %}
+              <strong class="govuk-tag govuk-tag--grey">Unknown</strong>
+            {% endif %}
+          </p>
         </div>
         <div class="govuk-grid-column-one-third">
           <div class="app-card app-card--highlight govuk-!-margin-top-2">
             <p class="govuk-body-s govuk-!-margin-bottom-1">Submitted on</p>
-            <p class="govuk-body-l govuk-!-margin-bottom-4"><strong>{{ submission.dateSubmitted | date }}</strong></p>
+            {% if submissionDates and submissionDates.length > 1 %}
+              <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-4">
+                {% for date in submissionDates %}
+                  <li><strong>{{ date | ukDate }}</strong></li>
+                {% endfor %}
+              </ul>
+            {% elif submissionDates and submissionDates.length == 1 %}
+              <p class="govuk-body-l govuk-!-margin-bottom-4"><strong>{{ submissionDates[0] | ukDate }}</strong></p>
+            {% else %}
+              <p class="govuk-body-l govuk-!-margin-bottom-4"><strong>Unknown</strong></p>
+            {% endif %}
             <p class="govuk-body-s govuk-!-margin-bottom-1">Last Updated</p>
-            <p class="govuk-body-l govuk-!-margin-bottom-4"><strong>{{ submission.lastUpdated | date }}</strong></p>
-            <p class="govuk-body-s govuk-!-margin-bottom-1">Prioritisation</p>
+            <p class="govuk-body-l govuk-!-margin-bottom-4"><strong>{% if submission and submission.updatedAt %}{{ submission.updatedAt | date('DD MMM YYYY') }}{% elif bcr and bcr.updatedAt %}{{ bcr.updatedAt | date('DD MMM YYYY') }}{% else %}Unknown{% endif %}</strong></p>
+            <p class="govuk-body-s govuk-!-margin-bottom-1">Priority</p>
             <p class="govuk-body-l govuk-!-margin-bottom-0">
-              {% set prioritisationFound = false %}
-              {% for prioritisation in prioritisations if prioritisation.bcrId === submission.id %}
-                {% set prioritisationFound = true %}
-                {% if prioritisation.prioritisationFlag === 'Critical' %}
-                  <strong class="govuk-tag govuk-tag--red">{{ prioritisation.prioritisationFlag }}</strong>
-                {% elif prioritisation.prioritisationFlag === 'High' %}
-                  <strong class="govuk-tag govuk-tag--orange">{{ prioritisation.prioritisationFlag }}</strong>
-                {% elif prioritisation.prioritisationFlag === 'Medium' %}
-                  <strong class="govuk-tag govuk-tag--yellow">{{ prioritisation.prioritisationFlag }}</strong>
-                {% elif prioritisation.prioritisationFlag === 'Low' %}
-                  <strong class="govuk-tag govuk-tag--green">{{ prioritisation.prioritisationFlag }}</strong>
+              {% if submission and submission.priority %}
+                {% if submission.priority === 'critical' %}
+                  <strong class="govuk-tag govuk-tag--red">{{ submission.priority | title }}</strong>
+                {% elif submission.priority === 'high' %}
+                  <strong class="govuk-tag govuk-tag--orange">{{ submission.priority | title }}</strong>
+                {% elif submission.priority === 'medium' %}
+                  <strong class="govuk-tag govuk-tag--yellow">{{ submission.priority | title }}</strong>
+                {% elif submission.priority === 'low' %}
+                  <strong class="govuk-tag govuk-tag--green">{{ submission.priority | title }}</strong>
                 {% else %}
-                  <strong class="govuk-tag govuk-tag--grey">{{ prioritisation.prioritisationFlag }}</strong>
+                  <strong class="govuk-tag govuk-tag--grey">{{ submission.priority | title }}</strong>
                 {% endif %}
-              {% endfor %}
-              {% if not prioritisationFound %}
-                <strong class="govuk-tag govuk-tag--grey">Pending</strong>
+              {% elif bcr and bcr.priority %}
+                {% if bcr.priority === 'critical' %}
+                  <strong class="govuk-tag govuk-tag--red">{{ bcr.priority | title }}</strong>
+                {% elif bcr.priority === 'high' %}
+                  <strong class="govuk-tag govuk-tag--orange">{{ bcr.priority | title }}</strong>
+                {% elif bcr.priority === 'medium' %}
+                  <strong class="govuk-tag govuk-tag--yellow">{{ bcr.priority | title }}</strong>
+                {% elif bcr.priority === 'low' %}
+                  <strong class="govuk-tag govuk-tag--green">{{ bcr.priority | title }}</strong>
+                {% else %}
+                  <strong class="govuk-tag govuk-tag--grey">{{ bcr.priority | title }}</strong>
+                {% endif %}
+              {% else %}
+                <strong class="govuk-tag govuk-tag--grey">Not Set</strong>
               {% endif %}
             </p>
           </div>
@@ -99,55 +154,63 @@
 
       <!-- Status and Actions Grid -->
       <div class="govuk-grid-row govuk-!-margin-bottom-8">
-        <!-- Current Status Card -->
+        <!-- Current Phase Card (Moved to first position) -->
         <div class="govuk-grid-column-one-third">
           <div class="app-card app-card--highlight">
-            <h3 class="govuk-heading-m govuk-!-margin-bottom-2">Current Status</h3>
+            <h3 class="govuk-heading-m govuk-!-margin-bottom-2">Current Phase</h3>
             <p class="govuk-body-l govuk-!-margin-bottom-0">
               {% set lastCompletedPhase = null %}
               {% set lastCompletedPhaseStatus = null %}
               
-              {% for phase in phases %}
-                {% if phase.id < submission.currentPhaseId %}
-                  {% set isPhaseCompleted = false %}
-                  {% if submission.workflowHistory and submission.workflowHistory.length > 0 %}
-                    {% for entry in submission.workflowHistory %}
-                      {% if entry.action === 'Phase Updated' and entry.notes.includes('Phase ' + phase.id) and entry.completed %}
-                        {% set isPhaseCompleted = true %}
-                        {% set lastCompletedPhase = phase %}
-                      {% endif %}
-                    {% endfor %}
-                  {% endif %}
+              {% if submission and submission.currentPhaseName %}
+                <strong>{{ submission.currentPhaseName }}</strong><br>
+              {% else %}
+                {% set found = false %}
+                {% if phases and submission and submission.currentPhaseId %}
+                  {% for phase in phases %}
+                    {% if not found and phase.value and submission.currentPhaseId and phase.value|string == submission.currentPhaseId|string %}
+                      {% set found = true %}
+                      <strong>{{ phase.name }}</strong><br>
+                    {% endif %}
+                  {% endfor %}
                 {% endif %}
-              {% endfor %}
-              
-              {% if lastCompletedPhase %}
-                {% set phaseNameParts = lastCompletedPhase.name.split(' - ') %}
-                {% if phaseNameParts.length > 1 %}
-                  {% set lastCompletedPhaseStatus = phaseNameParts[1] %}
+                {% if not found %}
+                  <strong>Unknown Phase</strong><br>
                 {% endif %}
               {% endif %}
               
               {% if lastCompletedPhaseStatus %}
                 <strong class="govuk-tag govuk-tag--green">{{ lastCompletedPhaseStatus }}</strong>
-              {% elif submission.status === 'Submission Received' %}
-                <strong class="govuk-tag">{{ submission.status }}</strong>
-              {% elif submission.status === 'Under Review' %}
-                <strong class="govuk-tag govuk-tag--blue">{{ submission.status }}</strong>
-              {% elif submission.status === 'Approved' %}
-                <strong class="govuk-tag govuk-tag--green">{{ submission.status }}</strong>
-              {% elif submission.status === 'Implementation Scheduled' %}
-                <strong class="govuk-tag govuk-tag--yellow">{{ submission.status }}</strong>
-              {% elif submission.status === 'In Progress' %}
-                <strong class="govuk-tag govuk-tag--orange">{{ submission.status }}</strong>
-              {% elif submission.status === 'Implemented' %}
-                <strong class="govuk-tag govuk-tag--pink">{{ submission.status }}</strong>
-              {% elif submission.status === 'Go Live' %}
-                <strong class="govuk-tag govuk-tag--purple">{{ submission.status }}</strong>
-              {% elif submission.status === 'Completed' %}
-                <strong class="govuk-tag govuk-tag--turquoise">{{ submission.status }}</strong>
-              {% elif submission.status === 'Rejected' %}
-                <strong class="govuk-tag govuk-tag--red">{{ submission.status }}</strong>
+              {% elif submission.status === 'new_submission' or submission.status === 'submitted' %}
+                <strong class="govuk-tag govuk-tag--purple">Submission Received</strong>
+              {% elif submission.status === 'under_review' %}
+                <strong class="govuk-tag govuk-tag--blue">Under Review</strong>
+              {% elif submission.status === 'approved' %}
+                <strong class="govuk-tag govuk-tag--green">Approved</strong>
+              {% elif submission.status === 'being_prioritised' %}
+                <strong class="govuk-tag govuk-tag--yellow">Being Prioritised</strong>
+              {% elif submission.status === 'under_technical_review' or submission.status === 'in_governance_review' %}
+                <strong class="govuk-tag govuk-tag--light-blue">In Review</strong>
+              {% elif submission.status === 'consulting_stakeholders' %}
+                <strong class="govuk-tag govuk-tag--light-blue">Consulting Stakeholders</strong>
+              {% elif submission.status === 'drafting_in_progress' %}
+                <strong class="govuk-tag govuk-tag--light-blue">Drafting In Progress</strong>
+              {% elif submission.status === 'awaiting_final_approval' %}
+                <strong class="govuk-tag govuk-tag--yellow">Awaiting Approval</strong>
+              {% elif submission.status === 'being_implemented' %}
+                <strong class="govuk-tag govuk-tag--light-blue">Being Implemented</strong>
+              {% elif submission.status === 'testing_in_progress' %}
+                <strong class="govuk-tag govuk-tag--light-blue">Testing In Progress</strong>
+              {% elif submission.status === 'preparing_for_go_live' %}
+                <strong class="govuk-tag govuk-tag--turquoise">Preparing For Go Live</strong>
+              {% elif submission.status === 'implemented' %}
+                <strong class="govuk-tag govuk-tag--green">Implemented</strong>
+              {% elif submission.status === 'rejected' %}
+                <strong class="govuk-tag govuk-tag--red">Rejected</strong>
+              {% elif submission.status === 'under_post_implementation_review' %}
+                <strong class="govuk-tag govuk-tag--light-blue">Post Implementation Review</strong>
+              {% elif submission.status === 'closing' %}
+                <strong class="govuk-tag govuk-tag--green">Closing</strong>
               {% else %}
                 <strong class="govuk-tag govuk-tag--grey">{{ submission.status }}</strong>
               {% endif %}
@@ -155,34 +218,49 @@
           </div>
         </div>
         
-        <!-- Current Phase Card -->
+        <!-- Current Status Card (Moved to second position) -->
         <div class="govuk-grid-column-one-third">
           <div class="app-card app-card--highlight">
-            <h3 class="govuk-heading-m govuk-!-margin-bottom-2">Current Phase</h3>
+            <h3 class="govuk-heading-m govuk-!-margin-bottom-2">Current Status</h3>
             <p class="govuk-body-l govuk-!-margin-bottom-0">
-              {% set phaseFound = false %}
-              {% for phase in phases %}
-                {% if phase.id === submission.currentPhaseId %}
-                  {% set phaseFound = true %}
-                  {% set phaseNameParts = phase.name.split(' - ') %}
-                  {% set phaseMainName = phaseNameParts[0] %}
-                  {% set phaseStatus = phaseNameParts[1] if phaseNameParts.length > 1 else '' %}
-                  
-                  {% if phaseStatus %}
-                    <strong class="govuk-tag govuk-tag--yellow">{{ phaseStatus }}</strong>
-                  {% else %}
-                    {% set statusObj = statuses | selectattr('phase', 'equalto', submission.currentPhaseId) | first %}
-                    {% if statusObj %}
-                      <strong class="govuk-tag govuk-tag--yellow">{{ statusObj.name }}</strong>
-                    {% else %}
-                      <strong class="govuk-tag govuk-tag--yellow">{{ phaseMainName }}</strong>
-                    {% endif %}
-                  {% endif %}
-                {% endif %}
-              {% endfor %}
+              <strong>{{ submission.statusDisplay }}</strong><br>
               
-              {% if not phaseFound %}
-                <strong class="govuk-tag govuk-tag--yellow">Phase {{ submission.currentPhaseId }}</strong>
+              {% if submission.status === 'new_submission' or submission.status === 'submitted' %}
+                <strong class="govuk-tag govuk-tag--purple">Submission Received</strong>
+              {% elif submission.status === 'under_review' %}
+                <strong class="govuk-tag govuk-tag--blue">Under Review</strong>
+              {% elif submission.status === 'approved' %}
+                <strong class="govuk-tag govuk-tag--green">Approved</strong>
+              {% elif submission.status === 'being_prioritised' %}
+                <strong class="govuk-tag govuk-tag--yellow">Being Prioritised</strong>
+              {% elif submission.status === 'under_technical_review' %}
+                <strong class="govuk-tag govuk-tag--light-blue">Technical Review</strong>
+              {% elif submission.status === 'in_governance_review' %}
+                <strong class="govuk-tag govuk-tag--light-blue">Governance Review</strong>
+              {% elif submission.status === 'consulting_stakeholders' %}
+                <strong class="govuk-tag govuk-tag--light-blue">Consulting Stakeholders</strong>
+              {% elif submission.status === 'drafting_in_progress' %}
+                <strong class="govuk-tag govuk-tag--light-blue">Drafting In Progress</strong>
+              {% elif submission.status === 'awaiting_final_approval' %}
+                <strong class="govuk-tag govuk-tag--yellow">Awaiting Approval</strong>
+              {% elif submission.status === 'being_implemented' %}
+                <strong class="govuk-tag govuk-tag--light-blue">Being Implemented</strong>
+              {% elif submission.status === 'testing_in_progress' %}
+                <strong class="govuk-tag govuk-tag--light-blue">Testing In Progress</strong>
+              {% elif submission.status === 'preparing_for_go_live' %}
+                <strong class="govuk-tag govuk-tag--turquoise">Preparing For Go Live</strong>
+              {% elif submission.status === 'implemented' %}
+                <strong class="govuk-tag govuk-tag--green">Implemented</strong>
+              {% elif submission.status === 'rejected' %}
+                <strong class="govuk-tag govuk-tag--red">Rejected</strong>
+              {% elif submission.status === 'under_post_implementation_review' %}
+                <strong class="govuk-tag govuk-tag--light-blue">Post Implementation Review</strong>
+              {% elif submission.status === 'closing' %}
+                <strong class="govuk-tag govuk-tag--green">Closing</strong>
+              {% elif submission.status === 'draft' %}
+                <strong class="govuk-tag govuk-tag--grey">Draft</strong>
+              {% else %}
+                <strong class="govuk-tag govuk-tag--grey">{{ submission.status }}</strong>
               {% endif %}
             </p>
           </div>
@@ -193,7 +271,6 @@
           <div class="app-card app-card--highlight">
             <h3 class="govuk-heading-m govuk-!-margin-bottom-2">Available Actions</h3>
             <div class="govuk-button-group">
-              <a href="#update-status" class="govuk-button govuk-!-margin-bottom-0 govuk-!-margin-right-2">Update Status</a>
               <a href="#" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0">Reject</a>
             </div>
           </div>
@@ -209,8 +286,9 @@
               Details
             </a>
           </li>
+
           <li class="govuk-tabs__list-item" role="presentation">
-            <a class="govuk-tabs__tab" href="#workflow" id="tab_workflow" role="tab" aria-controls="workflow" tabindex="-1">
+            <a class="govuk-tabs__tab" href="#workflow-actions" id="tab_workflow-actions" role="tab" aria-controls="workflow-actions" tabindex="-1">
               Workflow Actions
             </a>
           </li>
@@ -254,8 +332,8 @@
                     <h3 class="govuk-heading-s govuk-!-margin-bottom-2">Submission Information</h3>
                     <ul class="govuk-list">
                       <li><strong>Reference:</strong> {{ submission.id }}</li>
-                      <li><strong>Submitted:</strong> {{ submission.dateSubmitted | date }}</li>
-                      <li><strong>Last Updated:</strong> {{ submission.lastUpdated | date }}</li>
+                      <li><strong>Submitted:</strong> {{ submission.dateSubmitted | ukDate }}</li>
+                      <li><strong>Last Updated:</strong> {{ submission.lastUpdated | ukDate }}</li>
                     </ul>
                   </div>
                 </div>
@@ -464,117 +542,234 @@
           </div>
         </div>
         
+
+        
         <!-- Workflow Actions Tab -->
-        <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="workflow" role="tabpanel" aria-labelledby="tab_workflow" tabindex="0">
+        <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="workflow-actions" role="tabpanel" aria-labelledby="tab_workflow-actions" tabindex="0">
           <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
               <h2 class="govuk-heading-l">Workflow Management</h2>
+              
+              <!-- Workflow Actions Summary -->
+              <div class="govuk-grid-row">
+                <div class="govuk-grid-column-full">
+                  <div class="govuk-inset-text govuk-!-margin-bottom-6">
+                    <h3 class="govuk-heading-m govuk-!-margin-bottom-2">Available Actions</h3>
+                    <p class="govuk-body">Select an action below to progress this BCR through the workflow:</p>
+                    <div class="govuk-button-group govuk-!-margin-top-4">
+                      <a href="#update-status" class="govuk-button" data-module="govuk-button" onclick="document.getElementById('tab_update-status').click()">
+                        Update Status
+                      </a>
+                      <a href="/direct/bcr-submissions/{{ submission.id }}/edit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+                        Edit BCR
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
               
               <!-- Workflow Progress -->
               <div class="govuk-grid-row">
                 <div class="govuk-grid-column-full">
                   <div class="app-card govuk-!-margin-bottom-6">
-                    <h1 class="govuk-heading-l">BCR Workflow Progress</h1>
+                    <h2 class="govuk-heading-l" id="workflow">Workflow Progress for {{ submission.bcrNumber }}</h2>
                     
-                    <!-- DWP Timeline Component -->
-                    <div class="dwp-timeline">
-                      <ol class="dwp-timeline__items">
-                        <!-- Regular Phases -->
-                        {% for phase in phases %}
-                          {% set isCurrentPhase = phase.id === submission.currentPhaseId %}
-                          {% set isCompletedPhase = phase.id < submission.currentPhaseId %}
-                          {% set isFuturePhase = phase.id > submission.currentPhaseId %}
-                          
-                          {% set isPhaseReset = false %}
-                          {% if submission.workflowHistory %}
-                            {% for item in submission.workflowHistory %}
-                              {% if item.action === 'Status Updated' and item.completed === false %}
-                                {% set statusName = item.notes | replace('Changed status to ', '') %}
-                                {% if statusName === 'Collation and Categorisation' and phase.id === 2 %}
-                                  {% set isPhaseReset = true %}
-                                {% elif statusName === 'Technical and Business Impact Review' and phase.id === 3 %}
-                                  {% set isPhaseReset = true %}
-                                {% elif statusName === 'Internal Governance Review' and phase.id === 4 %}
-                                  {% set isPhaseReset = true %}
-                                {% elif statusName === 'Stakeholder Feedback' and phase.id === 5 %}
-                                  {% set isPhaseReset = true %}
-                                {% elif statusName === 'Draft Implementation Planning' and phase.id === 6 %}
-                                  {% set isPhaseReset = true %}
-                                {% elif statusName === 'Final Approval' and phase.id === 7 %}
-                                  {% set isPhaseReset = true %}
-                                {% elif statusName === 'Implementation' and phase.id === 8 %}
-                                  {% set isPhaseReset = true %}
-                                {% elif statusName === 'Testing' and phase.id === 9 %}
-                                  {% set isPhaseReset = true %}
-                                {% elif statusName === 'Go Live' and phase.id === 10 %}
-                                  {% set isPhaseReset = true %}
-                                {% elif statusName === 'Post-Implementation Review' and phase.id === 11 %}
-                                  {% set isPhaseReset = true %}
-                                {% endif %}
-                              {% endif %}
-                            {% endfor %}
-                          {% endif %}
-                          
-                          {% set phaseNameParts = phase.name.split(' - ') %}
-                          {% set phaseMainName = phaseNameParts[0] %}
-                          {% set phaseStatus = phaseNameParts[1] if phaseNameParts.length > 1 else '' %}
-                          
-                          <li class="dwp-timeline__item {% if isCurrentPhase %}dwp-timeline__item--current{% endif %} {% if isFuturePhase %}dwp-timeline__item--future{% endif %}">
-                            <p class="dwp-timeline__datetime">{{ submission.lastUpdated | date if submission.lastUpdated and isCurrentPhase else submission.dateSubmitted | date }}</p>
-                            <h2 class="dwp-timeline__heading"><a href="#update-status" class="govuk-link" onclick="preSelectPhase('{{ phase.id }}', '{{ phaseMainName }}', '{{ phaseStatus }}')" data-phase-id="{{ phase.id }}" data-phase-name="{{ phaseMainName }}" data-phase-status="{{ phaseStatus }}">Phase {{ phase.id }}: {{ phaseMainName }}</a></h2>
-                            {% if isCurrentPhase %}
-                              {% set statusObj = statuses | selectattr('phase', 'equalto', phase.id) | first %}
-                              {% if statusObj %}
-                                <p class="dwp-timeline__by-line">Status: {{ statusObj.name }}</p>
-                              {% elif phaseStatus %}
-                                <p class="dwp-timeline__by-line">Status: {{ phaseStatus }}</p>
-                              {% endif %}
-                            {% elif phaseStatus %}
-                              <p class="dwp-timeline__by-line">Status: {{ phaseStatus }}</p>
-                            {% endif %}
-                            {% if isCurrentPhase %}
-                              <p class="dwp-timeline__content">
-                                <strong class="govuk-tag govuk-tag--yellow">Current phase</strong>
-                              </p>
-                            {% elif isPhaseReset %}
-                              <p class="dwp-timeline__content">
-                                <strong class="govuk-tag govuk-tag--orange">Reset</strong>
-                              </p>
-                            {% elif isFuturePhase %}
-                              <p class="dwp-timeline__content">
-                                <strong class="govuk-tag govuk-tag--red">Not completed</strong>
-                              </p>
-                            {% elif isCompletedPhase %}
-                              <p class="dwp-timeline__content">
-                                <strong class="govuk-tag govuk-tag--green">Completed</strong>
-                              </p>
+                    <!-- Current Phase and Status Summary Box -->
+                    <div class="govuk-inset-text govuk-!-margin-bottom-6">
+                      {% set currentPhase = phases | selectattr('id', 'equalto', submission.currentPhaseId) | first if submission.currentPhaseId else phases | first %}
+                      {% set phaseNameParts = currentPhase.name.split(' - ') if currentPhase else ['Unknown', ''] %}
+                      {% set currentPhaseMainName = phaseNameParts[0] %}
+                      {% set currentPhaseStatus = phaseNameParts[1] if phaseNameParts.length > 1 else '' %}
+                      
+                      <h3 class="govuk-heading-m govuk-!-margin-bottom-2">Current Phase and Status</h3>
+                      <div class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                          <dt class="govuk-summary-list__key">Current Phase</dt>
+                          <dd class="govuk-summary-list__value">
+                            <strong class="govuk-tag govuk-tag--turquoise">{{ currentPhaseMainName }}</strong>
+                          </dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                          <dt class="govuk-summary-list__key">Current Status</dt>
+                          <dd class="govuk-summary-list__value">
+                            {% if submission.status === 'Submission Received' %}
+                              <strong class="govuk-tag govuk-tag--purple">{{ submission.status }}</strong>
+                            {% elif submission.status === 'Under Review' %}
+                              <strong class="govuk-tag govuk-tag--blue">{{ submission.status }}</strong>
+                            {% elif submission.status === 'Approved' %}
+                              <strong class="govuk-tag govuk-tag--green">{{ submission.status }}</strong>
+                            {% elif submission.status === 'In Progress' %}
+                              <strong class="govuk-tag govuk-tag--light-blue">{{ submission.status }}</strong>
+                            {% elif submission.status === 'Implemented' %}
+                              <strong class="govuk-tag govuk-tag--pink">{{ submission.status }}</strong>
+                            {% elif submission.status === 'Go Live' %}
+                              <strong class="govuk-tag govuk-tag--turquoise">{{ submission.status }}</strong>
+                            {% elif submission.status === 'Completed' %}
+                              <strong class="govuk-tag govuk-tag--green">{{ submission.status }}</strong>
+                            {% elif submission.status === 'Rejected' %}
+                              <strong class="govuk-tag govuk-tag--red">{{ submission.status }}</strong>
                             {% else %}
-                              <p class="dwp-timeline__content">
-                                <strong class="govuk-tag govuk-tag--grey">Unknown</strong>
-                              </p>
+                              <strong class="govuk-tag govuk-tag--grey">{{ submission.status }}</strong>
                             {% endif %}
-                          </li>
-                        {% endfor %}
-                        
-                        <!-- Special Status Items -->
-                        {% if submission.status === 'Rejected' %}
-                          <li class="dwp-timeline__item dwp-timeline__item--rejected">
-                            <p class="dwp-timeline__datetime">{{ submission.lastUpdated | date if submission.lastUpdated else submission.dateSubmitted | date }}</p>
-                            <h2 class="dwp-timeline__heading">BCR Rejected</h2>
-                            <p class="dwp-timeline__by-line">by {{ submission.reviewer if submission.reviewer else 'System' }}</p>
-                            <p class="dwp-timeline__content">This BCR has been rejected and will not proceed further.</p>
-                          </li>
+                          </dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                          <dt class="govuk-summary-list__key">Last Updated</dt>
+                          <dd class="govuk-summary-list__value">
+                            {{ submission.lastUpdated | ukDateWithDay if submission.lastUpdated else "Not available" }}
+                          </dd>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Workflow Phases Timeline Section -->
+                    <div class="govuk-!-margin-top-6">
+                      <h3 class="govuk-heading-m govuk-!-margin-bottom-4">Workflow Phases</h3>
+                      
+                      <!-- Group phases by functional area based on BCR workflow page -->
+                      {% set phaseGroups = {
+                        "Submission & Initial Review": phases | selectattr("id", "ge", 1) | selectattr("id", "le", 3),
+                        "Review & Approval": phases | selectattr("id", "ge", 4) | selectattr("id", "le", 6),
+                        "Requirements Documentation": phases | selectattr("id", "ge", 7) | selectattr("id", "le", 9),
+                        "Implementation & Release": phases | selectattr("id", "ge", 10) | selectattr("id", "le", 11),
+                        "Release Management": phases | selectattr("id", "ge", 12)
+                      } %}
+                      
+                      {% for groupName, groupPhases in phaseGroups %}
+                        {% if groupPhases.length > 0 %}
+                          <h4 class="govuk-heading-s govuk-!-margin-bottom-2">{{ groupName }}</h4>
+                          <div class="govuk-inset-text govuk-!-margin-bottom-6">
+                            <dl class="govuk-summary-list">
+                              {% for phase in groupPhases %}
+                                {# Extract current phase from notes if available #}
+                                {% set extractedCurrentPhaseId = 1 %}
+                                {% if submission.notes %}
+                                  {% set notesLines = submission.notes.split('\n') %}
+                                  {% for line in notesLines %}
+                                    {% if line.startsWith('Current Phase:') %}
+                                      {% set phaseNumber = line.replace('Current Phase:', '').trim() %}
+                                      {% if phaseNumber | int > 0 %}
+                                        {% set extractedCurrentPhaseId = phaseNumber | int %}
+                                      {% endif %}
+                                    {% endif %}
+                                  {% endfor %}
+                                {% endif %}
+                                {% set isCurrentPhase = phase.value | int === extractedCurrentPhaseId %}
+                                {% set isCompletedPhase = phase.value | int < extractedCurrentPhaseId %}
+                                {% set isFuturePhase = phase.value | int > extractedCurrentPhaseId %}
+                                
+                                {% set phaseNameParts = phase.name.split(' - ') %}
+                                {% set phaseMainName = phaseNameParts[0] %}
+                                {% set phaseStatus = phaseNameParts[1] if phaseNameParts.length > 1 else '' %}
+                                
+                                {% set phaseCompletionDate = null %}
+                                {% if submission.notes and isCompletedPhase %}
+                                  {% set notesLines = submission.notes.split('\n') %}
+                                  {% for line in notesLines %}
+                                    {% if ('Phase ' + phase.value + ' completed') in line and 'on ' in line %}
+                                      {% set dateParts = line.split('on ') %}
+                                      {% if dateParts.length > 1 %}
+                                        {% set dateString = dateParts[1].split(' ')[0] %}
+                                        {% set phaseCompletionDate = dateString %}
+                                      {% endif %}
+                                    {% endif %}
+                                  {% endfor %}
+                                {% endif %}
+                                
+                                <!-- Set phase tag color based on group -->
+                                {% set phaseTagClass = "govuk-tag--blue" %}
+                                {% if phase.id >= 1 and phase.id <= 3 %}
+                                  {% set phaseTagClass = "govuk-tag--blue" %}
+                                {% elif phase.id >= 4 and phase.id <= 6 %}
+                                  {% set phaseTagClass = "govuk-tag--purple" %}
+                                {% elif phase.id >= 7 and phase.id <= 9 %}
+                                  {% set phaseTagClass = "govuk-tag--orange" %}
+                                {% elif phase.id >= 10 %}
+                                  {% set phaseTagClass = "govuk-tag--red" %}
+                                {% endif %}
+                                
+                                <!-- Phase row -->
+                                <div class="govuk-summary-list__row">
+                                  <dt class="govuk-summary-list__key" style="width: 15%;">
+                                    <strong class="govuk-tag {{ phaseTagClass }}">Phase {{ phase.id }}</strong>
+                                  </dt>
+                                  <dd class="govuk-summary-list__value">
+                                    <h4 class="govuk-heading-s govuk-!-margin-bottom-2">{{ phaseMainName }}</h4>
+                                    
+                                    {% if isCurrentPhase %}
+                                      {% set statusObj = statuses | selectattr('phase', 'equalto', phase.id) | first %}
+                                      {% if statusObj %}
+                                        <p class="govuk-body-s govuk-!-margin-bottom-1 govuk-!-margin-top-3">Status:</p>
+                                        <strong class="govuk-tag govuk-tag--light-blue">{{ statusObj.name }}</strong>
+                                      {% elif phaseStatus %}
+                                        <p class="govuk-body-s govuk-!-margin-bottom-1 govuk-!-margin-top-3">Status:</p>
+                                        <strong class="govuk-tag govuk-tag--light-blue">{{ phaseStatus }}</strong>
+                                      {% endif %}
+                                    {% elif isCompletedPhase %}
+                                      <p class="govuk-body-s govuk-!-margin-bottom-1 govuk-!-margin-top-3">Status:</p>
+                                      <strong class="govuk-tag govuk-tag--green">Completed</strong>
+                                      {% if phaseCompletionDate %}
+                                        <p class="govuk-body-s govuk-!-margin-top-2">Completed on: {{ phaseCompletionDate | ukDate }}</p>
+                                      {% endif %}
+                                    {% elif isFuturePhase %}
+                                      <p class="govuk-body-s govuk-!-margin-bottom-1 govuk-!-margin-top-3">Status:</p>
+                                      <strong class="govuk-tag govuk-tag--grey">Pending</strong>
+                                    {% endif %}
+                                  </dd>
+                                  <dd class="govuk-summary-list__actions">
+                                    {% if isCurrentPhase %}
+                                      <a href="#update-status" class="govuk-link" onclick="preSelectPhase('{{ phase.id }}', '{{ phaseMainName }}', '{{ phaseStatus }}')">
+                                        Update<span class="govuk-visually-hidden"> status for {{ phaseMainName }}</span>
+                                      </a>
+                                    {% endif %}
+                                  </dd>
+                                </div>
+                                
+
+                              {% endfor %}
+                            </dl>
+                          </div>
                         {% endif %}
-                        
-                        {% if submission.status === 'Completed' %}
-                          <li class="dwp-timeline__item dwp-timeline__item--completed">
-                            <p class="dwp-timeline__datetime">{{ submission.completedDate | date if submission.completedDate else submission.lastUpdated | date }}</p>
-                            <h2 class="dwp-timeline__heading">BCR Completed</h2>
-                            <p class="dwp-timeline__by-line">by {{ submission.reviewer if submission.reviewer else 'System' }}</p>
-                            <p class="dwp-timeline__content">This BCR has been successfully completed.</p>
-                          </li>
-                        {% endif %}
-                      </ol>
+                      {% endfor %}
+                      
+                      <!-- Special Status Items -->
+                      {% if submission.status === 'Rejected' %}
+                        <h4 class="govuk-heading-s govuk-!-margin-bottom-2">Rejection Details</h4>
+                        <div class="govuk-inset-text govuk-!-margin-bottom-6" style="border-left: 5px solid #942514;">
+                          <dl class="govuk-summary-list">
+                            <div class="govuk-summary-list__row">
+                              <dt class="govuk-summary-list__key" style="width: 15%;">
+                                <strong class="govuk-tag govuk-tag--red">Rejected</strong>
+                              </dt>
+                              <dd class="govuk-summary-list__value">
+                                <h4 class="govuk-heading-s govuk-!-margin-bottom-2">BCR Rejected</h4>
+                                <p class="govuk-body-s">This BCR has been rejected by {{ submission.reviewer if submission.reviewer else 'System' }} and will not proceed further.</p>
+                                <p class="govuk-body-s govuk-!-margin-top-2">Rejected on: {{ submission.lastUpdated | ukDate if submission.lastUpdated else "Unknown date" }}</p>
+                              </dd>
+                              <dd class="govuk-summary-list__actions"></dd>
+                            </div>
+                          </dl>
+                        </div>
+                      {% endif %}
+                      
+                      {% if submission.status === 'Completed' %}
+                        <h4 class="govuk-heading-s govuk-!-margin-bottom-2">Completion Details</h4>
+                        <div class="govuk-inset-text govuk-!-margin-bottom-6" style="border-left: 5px solid #005a30;">
+                          <dl class="govuk-summary-list">
+                            <div class="govuk-summary-list__row">
+                              <dt class="govuk-summary-list__key" style="width: 15%;">
+                                <strong class="govuk-tag govuk-tag--green">Completed</strong>
+                              </dt>
+                              <dd class="govuk-summary-list__value">
+                                <h4 class="govuk-heading-s govuk-!-margin-bottom-2">BCR Completed</h4>
+                                <p class="govuk-body-s">This BCR has been successfully completed by {{ submission.reviewer if submission.reviewer else 'System' }}.</p>
+                                <p class="govuk-body-s govuk-!-margin-top-2">Completed on: {{ submission.completedDate | ukDate if submission.completedDate else submission.lastUpdated | ukDate }}</p>
+                              </dd>
+                              <dd class="govuk-summary-list__actions"></dd>
+                            </div>
+                          </dl>
+                        </div>
+                      {% endif %}
                     </div>
                   </div>
                 </div>
@@ -596,16 +791,35 @@
                   <tbody class="govuk-table__body">
                     <tr class="govuk-table__row">
                       <td class="govuk-table__cell">Submission Received</td>
-                      <td class="govuk-table__cell">{{ submission.dateSubmitted | date }}</td>
+                      <td class="govuk-table__cell">{{ submission.dateSubmitted | ukDate }}</td>
                       <td class="govuk-table__cell">{{ submission.submitter.name }}</td>
                     </tr>
-                    {% if submission.workflowHistory %}
-                      {% for item in submission.workflowHistory %}
-                        <tr class="govuk-table__row">
-                          <td class="govuk-table__cell">{{ item.action }}</td>
-                          <td class="govuk-table__cell">{{ item.date | date }}</td>
-                          <td class="govuk-table__cell">{{ item.user }}</td>
-                        </tr>
+                    {% if submission.notes %}
+                      {# Display workflow history entries directly from the notes #}
+                      {% set notesLines = submission.notes.split('\n') %}
+                      {% set inHistoryEntry = false %}
+                      {% set currentAction = '' %}
+                      {% set currentDate = '' %}
+                      {% set currentUser = '' %}
+                      
+                      {% for line in notesLines %}
+                        {% if '--- WORKFLOW HISTORY ENTRY ---' in line %}
+                          {% set inHistoryEntry = true %}
+                        {% elif inHistoryEntry and line | slice(0, 7) == 'Action:' %}
+                          {% set currentAction = line.replace('Action:', '').trim() %}
+                        {% elif inHistoryEntry and line | slice(0, 5) == 'Date:' %}
+                          {% set currentDate = line.replace('Date:', '').trim() %}
+                        {% elif inHistoryEntry and line | slice(0, 5) == 'User:' %}
+                          {% set currentUser = line.replace('User:', '').trim() %}
+                        {% elif inHistoryEntry and line | slice(0, 10) == 'Completed:' %}
+                          {# End of entry, display it #}
+                          <tr class="govuk-table__row">
+                            <td class="govuk-table__cell">{{ currentAction }}</td>
+                            <td class="govuk-table__cell">{{ currentDate | ukDate }}</td>
+                            <td class="govuk-table__cell">{{ currentUser }}</td>
+                          </tr>
+                          {% set inHistoryEntry = false %}
+                        {% endif %}
                       {% endfor %}
                     {% endif %}
                   </tbody>
@@ -702,7 +916,7 @@
             <div class="govuk-grid-column-full">
               <h2 class="govuk-heading-l">Update BCR Status</h2>
               
-              <form action="/bcr/submissions/{{ submission.id }}/update" method="post" class="govuk-!-margin-bottom-6">
+              <form action="/direct/bcr-submissions/{{ submission.id }}/update" method="post" class="govuk-!-margin-bottom-6">
                 <div class="govuk-form-group">
                   <fieldset class="govuk-fieldset">
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
@@ -733,18 +947,20 @@
                           <strong class="govuk-tag govuk-tag--grey">{{ submission.status }}</strong>
                         {% endif %}
                       </p>
-                      <p class="govuk-body">Current phase: <strong class="govuk-tag govuk-tag--yellow">Phase {{ submission.currentPhaseId }}</strong> <span class="govuk-!-margin-left-2">{{ submission.currentPhase.split(' - ')[0] }}</span></p>
-                      
-                      {% if submission.workflowHistory and submission.workflowHistory.length > 0 %}
+                      <p class="govuk-body">Current phase: <strong class="govuk-tag govuk-tag--light-blue">{{ phases | selectattr('value', 'equalto', extractedCurrentPhaseId) | map(attribute='name') | first | default('Current Phase') }}</strong></p>
+                      {% if submission.notes %}
                         <p class="govuk-body">Phase completion status:</p>
                         <div class="govuk-grid-row">
                           {% for phase in phases %}
                             {% set phaseCompleted = false %}
-                            {% for entry in submission.workflowHistory %}
-                              {% if entry.action === 'Phase Updated' and entry.notes.includes('Phase ' + phase.id) and entry.completed %}
-                                {% set phaseCompleted = true %}
-                              {% endif %}
-                            {% endfor %}
+                            {% if submission.notes %}
+                              {% set notesLines = submission.notes.split('\n') %}
+                              {% for line in notesLines %}
+                                {% if ('Phase ' + phase.value + ' completed') in line %}
+                                  {% set phaseCompleted = true %}
+                                {% endif %}
+                              {% endfor %}
+                            {% endif %}
                             
                             {% if loop.index0 % 4 == 0 and loop.index0 != 0 %}
                             </div>
@@ -753,15 +969,15 @@
                             
                             <div class="govuk-grid-column-one-quarter govuk-!-margin-bottom-3">
                               {% if phaseCompleted %}
-                                <strong class="govuk-tag govuk-tag--green">Phase {{ phase.id }}</strong>
+                                <strong class="govuk-tag govuk-tag--green">{{ phase.value }}</strong>
                                 <p class="govuk-body-s govuk-!-margin-bottom-0">{{ phase.name.split(' - ')[0] }}</p>
                                 <p class="govuk-body-s govuk-!-margin-bottom-0 govuk-!-font-weight-bold">Completed</p>
-                              {% elif phase.id === submission.currentPhaseId %}
-                                <strong class="govuk-tag govuk-tag--yellow">Phase {{ phase.id }}</strong>
+                              {% elif phase.value | int === extractedCurrentPhaseId %}
+                                <strong class="govuk-tag govuk-tag--light-blue">{{ phase.value }}</strong>
                                 <p class="govuk-body-s govuk-!-margin-bottom-0">{{ phase.name.split(' - ')[0] }}</p>
                                 <p class="govuk-body-s govuk-!-margin-bottom-0 govuk-!-font-weight-bold">Current</p>
-                              {% elif phase.id < submission.currentPhaseId %}
-                                <strong class="govuk-tag govuk-tag--grey">Phase {{ phase.id }}</strong>
+                              {% elif phase.value | int < extractedCurrentPhaseId %}
+                                <strong class="govuk-tag govuk-tag--grey">{{ phase.value }}</strong>
                                 <p class="govuk-body-s govuk-!-margin-bottom-0">{{ phase.name.split(' - ')[0] }}</p>
                                 <p class="govuk-body-s govuk-!-margin-bottom-0 govuk-!-font-weight-bold">Skipped</p>
                               {% endif %}
@@ -777,25 +993,26 @@
                       </label>
                       <select class="govuk-select" id="phaseId" name="phaseId">
                         <option value="">Select a phase</option>
-                        {% set currentPhaseId = submission.currentPhaseId | default(1) %}
+                        {# Use the already extracted current phase ID #}
+                        {% set currentPhaseId = extractedCurrentPhaseId %}
                         {% set nextPhaseId = currentPhaseId + 1 %}
                         
-                        {# Check for completed phases #}
+                        {# For simplicity, we'll just consider phases with values less than the current phase ID as completed #}
                         {% set completedPhases = [] %}
-                        {% if submission.workflowHistory and submission.workflowHistory.length > 0 %}
-                          {% for entry in submission.workflowHistory %}
-                            {% if entry.action === 'Phase Updated' and entry.completed %}
-                              {% if entry.notes and entry.notes.includes('Phase ') %}
-                                {% set phaseText = entry.notes.split('Phase ')[1] %}
-                                {% if phaseText %}
-                                  {% set phaseNumber = phaseText.split(' ')[0] %}
-                                  {% set completedPhaseId = phaseNumber | int %}
-                                  {% set completedPhases = (completedPhases.push(completedPhaseId), completedPhases) %}
-                                {% endif %}
-                              {% endif %}
-                            {% endif %}
-                          {% endfor %}
-                        {% endif %}
+                        {% for phase in phases %}
+                          {% if phase.value | int < currentPhaseId %}
+                            {# This phase is completed based on the current phase ID #}
+                            {% set isCompleted = true %}
+                          {% else %}
+                            {% set isCompleted = false %}
+                          {% endif %}
+                          
+                          {# Store the completion status with the phase for later reference #}
+                          {% if isCompleted %}
+                            {# We can't modify the phase object directly, but we can track completed phase values #}
+                            {% set completedPhases = completedPhases + [phase.value | int] %}
+                          {% endif %}
+                        {% endfor %}
                         
                         {# Show current phase and next phase only if current phase is not completed #}
                         {% set currentPhaseCompleted = false %}
@@ -805,41 +1022,18 @@
                           {% endif %}
                         {% endfor %}
                         
-                        {# Always show current phase #}
+                        {# Display all phases in the dropdown #}
                         {% for phase in phases %}
-                          {% if phase.id === currentPhaseId %}
-                            <option value="{{ phase.id }}" selected>
-                              Phase {{ phase.id }}: {{ phase.name }} (Current{% if currentPhaseCompleted %} - Completed{% endif %})
-                            </option>
-                          {% endif %}
+                          <option value="{{ phase.value }}" {% if phase.value | int == currentPhaseId %}selected{% endif %}>
+                            Phase {{ phase.value }}: {{ phase.name }} 
+                            {% if phase.value | int == currentPhaseId %}(Current){% endif %}
+                            {% if phase.value | int == nextPhaseId %}(Next Phase){% endif %}
+                          </option>
                         {% endfor %}
                         
-                        {# Show next phase if current phase is completed #}
-                        {% if currentPhaseCompleted and nextPhaseId <= phases.length %}
-                          {% for phase in phases %}
-                            {% if phase.id === nextPhaseId %}
-                              <option value="{{ phase.id }}">
-                                Phase {{ phase.id }}: {{ phase.name }} (Next Phase)
-                              </option>
-                            {% endif %}
-                          {% endfor %}
-                        {% endif %}
-                        
-                        {# Show previous phases #}
-                        {% for phase in phases %}
-                          {% if phase.id < currentPhaseId %}
-                            <option value="{{ phase.id }}">
-                              Phase {{ phase.id }}: {{ phase.name }} (Previous{% for completedPhase in completedPhases %}{% if completedPhase === phase.id %} - Completed{% endif %}{% endfor %})
-                            </option>
-                          {% endif %}
-                        {% endfor %}
-                        
-                        {# Always allow rejection option #}
-                        {% for phase in phases %}
-                          {% if phase.name.includes('Rejected') %}
-                            <option value="{{ phase.id }}">Phase {{ phase.id }}: {{ phase.name }} (Special)</option>
-                          {% endif %}
-                        {% endfor %}
+                        {# Add special options #}
+                        <option value="reject">Reject BCR</option>
+                        <option value="complete">Mark as Complete</option>
                       </select>
                       <div class="govuk-hint">When you mark a phase as completed, the workflow will automatically advance to the next phase.</div>
                     </div>

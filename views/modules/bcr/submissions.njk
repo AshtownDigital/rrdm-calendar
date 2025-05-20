@@ -138,7 +138,8 @@
               <caption class="govuk-table__caption govuk-table__caption--m">BCR submissions ({{ submissions.length }})</caption>
               <thead class="govuk-table__head">
                 <tr class="govuk-table__row">
-                  <th scope="col" class="govuk-table__header">BCR ID</th>
+                  <th scope="col" class="govuk-table__header govuk-table__header--numeric">Record #</th>
+                  <th scope="col" class="govuk-table__header">BCR Code</th>
                   <th scope="col" class="govuk-table__header">Date</th>
                   <th scope="col" class="govuk-table__header">Description</th>
                   <th scope="col" class="govuk-table__header">Submitter</th>
@@ -151,11 +152,21 @@
               <tbody class="govuk-table__body">
                 {% for submission in submissions %}
                   <tr class="govuk-table__row">
-                    <td class="govuk-table__cell">
-                      <a href="/bcr/submissions/{{ submission.id }}" class="govuk-link">{{ submission.id }}</a>
+                    <td class="govuk-table__cell govuk-table__cell--numeric">
+                      {{ loop.index }}
                     </td>
-                    <td class="govuk-table__cell">{{ submission.dateSubmitted | date }}</td>
-                    <td class="govuk-table__cell">{{ submission.description | truncate(100) }}</td>
+                    <td class="govuk-table__cell">
+                      <a href="/direct/bcr-submissions/{{ submission.id }}" class="govuk-link">
+                        {% if submission.bcrNumber %}
+                          {{ submission.bcrNumber }}
+                        {% else %}
+                          {% set paddedIndex = '000' + loop.index %}{% set recordId = paddedIndex.substring(paddedIndex.length - 3) %}
+                          BCR-{{ academicYear }}-{{ recordId }}
+                        {% endif %}
+                      </a>
+                    </td>
+                    <td class="govuk-table__cell">{{ submission.dateSubmitted }}</td>
+                    <td class="govuk-table__cell">{% if submission.description.length > 100 %}{{ submission.description.substring(0, 97) }}...{% else %}{{ submission.description }}{% endif %}</td>
                     <td class="govuk-table__cell">
                       {% if submission.submitterName %}
                         {{ submission.submitterName }}<br>
@@ -166,7 +177,67 @@
                       {% endif %}
                     </td>
                     <td class="govuk-table__cell">
-                      {{ submission.status }}
+                      {% if submission.displayStatus === 'Being Submitted' %}
+                        <strong class="govuk-tag govuk-tag--blue">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Submitted' %}
+                        <strong class="govuk-tag govuk-tag--purple">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Being Prioritised' %}
+                        <strong class="govuk-tag govuk-tag--light-blue">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Prioritised' %}
+                        <strong class="govuk-tag govuk-tag--green">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Under Technical Review' %}
+                        <strong class="govuk-tag govuk-tag--light-blue">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Technical Review Complete' %}
+                        <strong class="govuk-tag govuk-tag--green">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'In Governance Review' %}
+                        <strong class="govuk-tag govuk-tag--light-blue">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Governance Approved' %}
+                        <strong class="govuk-tag govuk-tag--green">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Consulting Stakeholders' %}
+                        <strong class="govuk-tag govuk-tag--light-blue">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Stakeholders Consulted' %}
+                        <strong class="govuk-tag govuk-tag--green">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Drafting In Progress' %}
+                        <strong class="govuk-tag govuk-tag--light-blue">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Draft Completed' %}
+                        <strong class="govuk-tag govuk-tag--green">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Awaiting Final Approval' %}
+                        <strong class="govuk-tag govuk-tag--light-blue">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Final Approval Granted' %}
+                        <strong class="govuk-tag govuk-tag--green">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Being Implemented' %}
+                        <strong class="govuk-tag govuk-tag--light-blue">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Implementation Complete' %}
+                        <strong class="govuk-tag govuk-tag--green">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Testing In Progress' %}
+                        <strong class="govuk-tag govuk-tag--light-blue">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Testing Passed' %}
+                        <strong class="govuk-tag govuk-tag--green">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Preparing for Go Live' %}
+                        <strong class="govuk-tag govuk-tag--light-blue">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Gone Live' %}
+                        <strong class="govuk-tag govuk-tag--green">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Under Post-Implementation Review' %}
+                        <strong class="govuk-tag govuk-tag--light-blue">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Review Completed' %}
+                        <strong class="govuk-tag govuk-tag--green">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Closing' %}
+                        <strong class="govuk-tag govuk-tag--light-blue">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Closed' %}
+                        <strong class="govuk-tag govuk-tag--green">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus and submission.displayStatus.includes('Phase') %}
+                        <strong class="govuk-tag govuk-tag--blue">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Draft' or submission.displayStatus === 'Submitted' %}
+                        <strong class="govuk-tag govuk-tag--blue">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Approved' %}
+                        <strong class="govuk-tag govuk-tag--green">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Rejected' %}
+                        <strong class="govuk-tag govuk-tag--red">{{ submission.displayStatus }}</strong>
+                      {% elif submission.displayStatus === 'Under Review' %}
+                        <strong class="govuk-tag govuk-tag--light-blue">{{ submission.displayStatus }}</strong>
+                      {% else %}
+                        <strong class="govuk-tag">{{ submission.displayStatus | default(submission.status) }}</strong>
+                      {% endif %}
                     </td>
                     <td class="govuk-table__cell">
                       {% if submission.urgency === 'Critical' %}
@@ -183,10 +254,8 @@
                     </td>
                     <td class="govuk-table__cell">{{ submission.assignedReviewer or 'Unassigned' }}</td>
                     <td class="govuk-table__cell">
-                      <a href="/bcr/submissions/{{ submission.id }}/edit" class="govuk-link govuk-!-margin-right-3">Edit</a>
-                      {% if submission.status === 'Completed' or submission.status === 'Rejected' %}
-                        <a href="/bcr/submissions/{{ submission.id }}/archive" class="govuk-link">Archive</a>
-                      {% endif %}
+                      <a href="/direct/bcr-edit/{{ submission.id }}" class="govuk-link govuk-!-margin-right-3">Edit</a>
+                      <!-- Archive functionality not implemented yet -->
                     </td>
                   </tr>
                 {% endfor %}

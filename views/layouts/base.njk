@@ -64,6 +64,9 @@
   <!-- Fixed Home Card Styles (with explicit type attribute) -->
   <link rel="stylesheet" href="/stylesheets/home-cards-fixed.css" type="text/css">
   
+  <!-- Monitoring Styles (with explicit type attribute) -->
+  <link rel="stylesheet" href="/stylesheets/monitoring.css" type="text/css">
+  
   <!-- Ensure stylesheets are properly loaded -->
   <script>
     // Function to ensure stylesheets are properly loaded
@@ -78,7 +81,8 @@
         '/stylesheets/dashboard.css',
         '/stylesheets/home-dashboard.css',
         '/stylesheets/app-cards.css',
-        '/stylesheets/home-cards-fixed.css'
+        '/stylesheets/home-cards-fixed.css',
+        '/stylesheets/monitoring.css'
       ];
       
       // Check if stylesheets are loaded, if not, reload them
@@ -127,7 +131,11 @@
   {% if isBcrPage %}
     {% include "partials/bcr-navigation.njk" %}
   {% else %}
-    {% include navigation %}
+    {% if navigation %}
+      {% include navigation %}
+    {% else %}
+      {% include "partials/navigation.njk" %}
+    {% endif %}
   {% endif %}
 
   <div class="govuk-width-container">

@@ -1,0 +1,100 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}BCR Details | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <!-- Page header with BCR ID -->
+      <div class="govuk-grid-row govuk-!-margin-bottom-8">
+        <div class="govuk-grid-column-two-thirds">
+          <span class="govuk-caption-xl govuk-!-margin-bottom-2">Business Change Request</span>
+          <h1 class="govuk-heading-xl govuk-!-margin-bottom-4">{{ submission.bcrNumber }}</h1>
+          <p class="govuk-body-l govuk-!-margin-bottom-1">Reference: <strong>{{ submission.bcrNumber }}</strong></p>
+          <p class="govuk-body-m govuk-!-margin-bottom-0">ID: <strong>{{ submission.id }}</strong></p>
+        </div>
+        <div class="govuk-grid-column-one-third">
+          <div class="app-card app-card--highlight govuk-!-margin-top-2">
+            <p class="govuk-body-s govuk-!-margin-bottom-1">Created on</p>
+            <p class="govuk-body-l govuk-!-margin-bottom-4"><strong>{{ submission.createdAt | date("DD MMM YYYY HH:mm") }}</strong></p>
+            <p class="govuk-body-s govuk-!-margin-bottom-1">Last Updated</p>
+            <p class="govuk-body-l govuk-!-margin-bottom-4"><strong>{{ submission.updatedAt | date("DD MMM YYYY HH:mm") }}</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- BCR Details -->
+      <div class="govuk-grid-row govuk-!-margin-bottom-8">
+        <div class="govuk-grid-column-two-thirds">
+          <h2 class="govuk-heading-l">BCR Details</h2>
+          
+          <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Title</dt>
+              <dd class="govuk-summary-list__value">{{ submission.title }}</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Description</dt>
+              <dd class="govuk-summary-list__value">{{ submission.description }}</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Status</dt>
+              <dd class="govuk-summary-list__value">
+                {% if submission.status === 'draft' %}
+                  <strong class="govuk-tag govuk-tag--grey">Draft</strong>
+                {% elif submission.status === 'new' %}
+                  <strong class="govuk-tag govuk-tag--blue">New</strong>
+                {% elif submission.status === 'submitted' %}
+                  <strong class="govuk-tag govuk-tag--blue">Submitted</strong>
+                {% elif submission.status === 'under_review' %}
+                  <strong class="govuk-tag govuk-tag--light-blue">Under Review</strong>
+                {% elif submission.status === 'approved' %}
+                  <strong class="govuk-tag govuk-tag--green">Approved</strong>
+                {% elif submission.status === 'rejected' %}
+                  <strong class="govuk-tag govuk-tag--red">Rejected</strong>
+                {% elif submission.status === 'implemented' %}
+                  <strong class="govuk-tag govuk-tag--green">Implemented</strong>
+                {% else %}
+                  <strong class="govuk-tag govuk-tag--grey">{{ submission.status | replace('_', ' ') | capitalize }}</strong>
+                {% endif %}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Priority</dt>
+              <dd class="govuk-summary-list__value">
+                {% if submission.priority === 'critical' %}
+                  <strong class="govuk-tag govuk-tag--red">Critical</strong>
+                {% elif submission.priority === 'high' %}
+                  <strong class="govuk-tag govuk-tag--orange">High</strong>
+                {% elif submission.priority === 'medium' %}
+                  <strong class="govuk-tag govuk-tag--yellow">Medium</strong>
+                {% elif submission.priority === 'low' %}
+                  <strong class="govuk-tag govuk-tag--green">Low</strong>
+                {% else %}
+                  <strong class="govuk-tag govuk-tag--grey">{{ submission.priority | capitalize }}</strong>
+                {% endif %}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Impact Areas</dt>
+              <dd class="govuk-summary-list__value">{{ submission.impact }}</dd>
+            </div>
+          </dl>
+          
+          <div class="govuk-button-group govuk-!-margin-top-6">
+            <a href="/direct/bcr-edit/{{ submission.id }}" class="govuk-button">
+              Edit BCR
+            </a>
+            <a href="/bcr/submissions/{{ submission.id }}/delete-confirmation" class="govuk-button govuk-button--warning">
+              Delete BCR
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

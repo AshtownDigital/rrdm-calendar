@@ -1,143 +1,279 @@
 /**
  * API Business Change Request (BCR) Routes
+ * Implements the API endpoints specified in the BCR_DEVELOPER_OVERVIEW.md document
  */
 const express = require('express');
 const router = express.Router();
-const { BCR } = require('../../models');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 const { ensureAuthenticated, checkPermission } = require('../../middleware/auth');
+const { v4: uuidv4 } = require('uuid');
 
 /**
- * GET /api/bcr
- * Get all BCRs, optionally filtered by status or priority
+ * POST /api/bcr-submission
+ * Create a new BCR submission as specified in the BCR_DEVELOPER_OVERVIEW.md document
  */
-const getBCRList = async (req, res) => {
+const createBCRSubmission = async (req, res) => {
   try {
-    const where = {};
-    
-    // Apply filters if provided
-    if (req.query.status) {
-      where.status = req.query.status;
-    }
-    
-    if (req.query.priority) {
-      where.priority = req.query.priority;
-    }
-    
-    const bcrs = await BCR.findAll({ where });
-    res.status(200).json(bcrs);
-  } catch (error) {
-    console.error('Error fetching BCRs:', error);
-    res.status(500).json({ error: 'Failed to fetch BCRs' });
-  }
-};
-
-/**
- * POST /api/bcr
- * Create a new BCR
- */
-const createBCR = async (req, res) => {
-  try {
-    const { title, description, priority, targetDate } = req.body;
+    const {
+      fullName,
+      emailAddress,
+      employmentType,
+      organisation,
+      description,
+      justification,
+      urgency,
+      impactAreas,
+      technicalDependencies,
+      relatedDocuments,
+      hasAttachments,
+      additionalComments,
+      declaration
+    } = req.body;
     
     // Validate required fields
-    if (!title || !description || !priority) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    if (!fullName || !emailAddress || !description || !justification || !urgency || !impactAreas || !declaration) {
+      return res.status(400).json({ 
+        error: 'Missing required fields',
+        missingFields: Object.entries({
+          fullName,
+          emailAddress,
+          description,
+          justification,
+          urgency,
+          impactAreas,
+          declaration
+        }).filter(([_, value]) => !value).map(([key]) => key)
+      });
+    }
+    
+    // Generate BCR code
+    const now = new Date();
+    const fiscalYearStart = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+    const fiscalYearEnd = fiscalYearStart + 1;
+    const shortYearStart = fiscalYearStart.toString().slice(-2);
+    const shortYearEnd = fiscalYearEnd.toString().slice(-2);
+    
+    let nextId = 1000;
+    const highestBcr = await prisma.Bcrs.findFirst({
+      where: {
+        bcrNumber: {
+          startsWith: `BCR-${shortYearStart}/${shortYearEnd}-`
+        }
+      },
+      orderBy: {
+        bcrNumber: 'desc'
+      }
+    });
+    
+    if (highestBcr && highestBcr.bcrNumber) {
+      const parts = highestBcr.bcrNumber.split('-');
+      const lastPart = parts[parts.length - 1];
+      const lastId = parseInt(lastPart, 10);
+      if (!isNaN(lastId)) {
+        nextId = lastId + 1;
+      }
+    }
+    
+    const bcrNumber = `BCR-${shortYearStart}/${shortYearEnd}-${nextId}`;
+    
+    // Create the user if they don't exist
+    let user = await prisma.Users.findFirst({
+      where: {
+        email: emailAddress
+      }
+    });
+    
+    if (!user) {
+      user = await prisma.Users.create({
+        data: {
+          id: uuidv4(),
+          name: fullName,
+          email: emailAddress,
+          organisation: organisation || 'DfE',
+          role: 'user',
+          createdAt: now,
+          updatedAt: now
+        }
+      });
     }
     
     // Create the BCR
-    const bcr = await BCR.create({
-      title,
-      description,
-      priority,
-      targetDate,
-      status: 'draft',
-      createdBy: req.user.id
+    const bcr = await prisma.Bcrs.create({
+      data: {
+        id: uuidv4(),
+        bcrNumber,
+        description,
+        status: 'new_submission',
+        priority: urgency,
+        impact: impactAreas.join(', '),
+        requestedBy: user.id,
+        notes: `Submission by ${fullName} (${emailAddress})\n\nJustification: ${justification}\n\nTechnical Dependencies: ${technicalDependencies || 'None'}\n\nRelated Documents: ${relatedDocuments || 'None'}\n\nAdditional Comments: ${additionalComments || 'None'}\n\nHas Attachments: ${hasAttachments === 'yes' ? 'Yes' : 'No'}`,
+        createdAt: now,
+        updatedAt: now
+      }
     });
     
-    res.status(201).json(bcr);
+    return res.status(201).json({
+      id: bcr.id,
+      bcrNumber: bcr.bcrNumber,
+      status: bcr.status,
+      message: 'BCR submission created successfully'
+    });
   } catch (error) {
-    console.error('Error creating BCR:', error);
-    res.status(500).json({ error: 'Failed to create BCR' });
+    console.error('Error creating BCR submission:', error);
+    res.status(500).json({ error: 'Failed to create BCR submission' });
   }
 };
 
 /**
- * GET /api/bcr/:id
- * Get a specific BCR by ID
+ * POST /api/bcr/:id/update
+ * Update BCR phase as specified in the BCR_DEVELOPER_OVERVIEW.md document
  */
-const getBCRById = async (req, res) => {
+const updateBCRPhase = async (req, res) => {
   try {
-    const bcr = await BCR.findByPk(req.params.id);
+    const { id } = req.params;
+    const { phase, phaseCompleted, comment, reviewerName } = req.body;
+    
+    // Validate required fields
+    if (!phase || !comment || !reviewerName) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    // Get the BCR
+    const bcr = await prisma.Bcrs.findUnique({
+      where: { id }
+    });
     
     if (!bcr) {
       return res.status(404).json({ error: 'BCR not found' });
     }
     
-    res.status(200).json(bcr);
+    // Determine the new status based on the phase and completion flag
+    let newStatus;
+    if (phase === 'reject') {
+      newStatus = 'rejected';
+    } else if (phase === 'complete') {
+      newStatus = 'completed';
+    } else {
+      // Get the phase configuration
+      const phaseConfig = await prisma.BcrConfigs.findFirst({
+        where: {
+          type: 'phase',
+          value: phase
+        }
+      });
+      
+      if (!phaseConfig) {
+        return res.status(400).json({ error: 'Invalid phase' });
+      }
+      
+      // Determine if we should use the in_progress or completed status
+      if (phaseCompleted) {
+        newStatus = `phase_${phase}_completed`;
+      } else {
+        newStatus = `phase_${phase}_in_progress`;
+      }
+    }
+    
+    // Update the BCR
+    const now = new Date();
+    const updatedBcr = await prisma.Bcrs.update({
+      where: { id },
+      data: {
+        status: newStatus,
+        updatedAt: now,
+        notes: `${bcr.notes || ''}\n\n[${now.toISOString()}] Phase updated to ${phase} by ${reviewerName}. Comment: ${comment}`
+      }
+    });
+    
+    // Create workflow activity record
+    await prisma.BcrWorkflowActivity.create({
+      data: {
+        id: uuidv4(),
+        bcrId: id,
+        userId: req.user?.id || null,
+        activityType: 'phase_update',
+        fromStatus: bcr.status,
+        toStatus: newStatus,
+        comment,
+        timestamp: now
+      }
+    });
+    
+    return res.status(200).json({
+      id: updatedBcr.id,
+      status: updatedBcr.status,
+      message: 'BCR phase updated successfully'
+    });
   } catch (error) {
-    console.error('Error fetching BCR:', error);
-    res.status(500).json({ error: 'Failed to fetch BCR' });
+    console.error('Error updating BCR phase:', error);
+    res.status(500).json({ error: 'Failed to update BCR phase' });
   }
 };
 
 /**
- * PATCH /api/bcr/:id/status
- * Update the status of a BCR
+ * POST /api/bcr-submission/:id/review
+ * Promote a BCR submission as specified in the BCR_DEVELOPER_OVERVIEW.md document
  */
-const updateBCRStatus = async (req, res) => {
+const promoteBCRSubmission = async (req, res) => {
   try {
-    const { status, comment } = req.body;
+    const { id } = req.params;
     
-    if (!status) {
-      return res.status(400).json({ error: 'Status is required' });
-    }
-    
-    // Validate status value using GOV.UK Design System tag colors
-    const validStatuses = ['draft', 'submitted', 'in-progress', 'approved', 'rejected', 'completed'];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({ error: 'Invalid status value' });
-    }
-    
-    // Find the BCR
-    const bcr = await BCR.findByPk(req.params.id);
+    // Get the BCR submission
+    const bcr = await prisma.Bcrs.findUnique({
+      where: { id }
+    });
     
     if (!bcr) {
-      return res.status(404).json({ error: 'BCR not found' });
+      return res.status(404).json({ error: 'BCR submission not found' });
     }
     
-    // Update the BCR status
-    await BCR.update(
-      { 
-        status,
-        lastComment: comment || null,
-        updatedBy: req.user.id
-      },
-      { where: { id: req.params.id } }
-    );
+    // Update the BCR status to the first phase
+    const now = new Date();
+    const updatedBcr = await prisma.Bcrs.update({
+      where: { id },
+      data: {
+        status: 'phase_1_in_progress',
+        updatedAt: now,
+        notes: `${bcr.notes || ''}\n\n[${now.toISOString()}] Submission promoted to Phase 1 by ${req.user?.name || 'System'}.`
+      }
+    });
     
-    // Get the updated BCR
-    const updatedBCR = await BCR.findByPk(req.params.id);
+    // Create workflow activity record
+    await prisma.BcrWorkflowActivity.create({
+      data: {
+        id: uuidv4(),
+        bcrId: id,
+        userId: req.user?.id || null,
+        activityType: 'promotion',
+        fromStatus: bcr.status,
+        toStatus: 'phase_1_in_progress',
+        comment: 'BCR submission promoted to workflow',
+        timestamp: now
+      }
+    });
     
-    res.status(200).json(updatedBCR);
+    return res.status(201).json({
+      id: updatedBcr.id,
+      status: updatedBcr.status,
+      message: 'BCR submission promoted successfully'
+    });
   } catch (error) {
-    console.error('Error updating BCR status:', error);
-    res.status(500).json({ error: 'Failed to update BCR status' });
+    console.error('Error promoting BCR submission:', error);
+    res.status(500).json({ error: 'Failed to promote BCR submission' });
   }
 };
 
-// Apply authentication middleware to all routes
-router.use(ensureAuthenticated);
+// Define API routes
 
-// Define routes
-router.get('/', getBCRList);
-router.post('/', checkPermission('bcr.create'), createBCR);
-router.get('/:id', getBCRById);
-router.patch('/:id/status', checkPermission('bcr.update'), updateBCRStatus);
+// Create BCR Submission
+router.post('/bcr-submission', ensureAuthenticated, createBCRSubmission);
 
-module.exports = {
-  router,
-  getBCRList,
-  createBCR,
-  getBCRById,
-  updateBCRStatus
-};
+// Update BCR Phase
+router.post('/bcr/:id/update', ensureAuthenticated, updateBCRPhase);
+
+// Promote BCR Submission
+router.post('/bcr-submission/:id/review', ensureAuthenticated, promoteBCRSubmission);
+
+module.exports = router;

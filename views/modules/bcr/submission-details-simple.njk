@@ -1,0 +1,75 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}BCR Details | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <!-- Page header with BCR ID -->
+      <div class="govuk-grid-row govuk-!-margin-bottom-8">
+        <div class="govuk-grid-column-full">
+          <span class="govuk-caption-xl govuk-!-margin-bottom-2">Business Change Request</span>
+          <h1 class="govuk-heading-xl govuk-!-margin-bottom-4">{{ submission.id }}</h1>
+          
+          <!-- Basic BCR Information -->
+          <div class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+
+            </div>
+            
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Status</dt>
+              <dd class="govuk-summary-list__value">{{ submission.status | default('Unknown') }}</dd>
+            </div>
+            
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Requested By</dt>
+              <dd class="govuk-summary-list__value">
+                {% if submission.Users_Bcrs_requestedByToUsers %}
+                  {{ submission.Users_Bcrs_requestedByToUsers.name }}
+                {% else %}
+                  Unknown
+                {% endif %}
+              </dd>
+            </div>
+            
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Assigned To</dt>
+              <dd class="govuk-summary-list__value">
+                {% if submission.Users_Bcrs_assignedToToUsers %}
+                  {{ submission.Users_Bcrs_assignedToToUsers.name }}
+                {% else %}
+                  Unassigned
+                {% endif %}
+              </dd>
+            </div>
+            
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Description</dt>
+              <dd class="govuk-summary-list__value">{{ submission.description | default('No description provided') }}</dd>
+            </div>
+          </div>
+          
+          <!-- Debug Information -->
+          <div class="govuk-!-margin-top-9">
+            <h2 class="govuk-heading-m">Debug Information</h2>
+            <pre class="govuk-body" style="background-color: #f3f2f1; padding: 1rem; overflow: auto;">
+BCR ID: {{ submission.id }}
+Title: {{ submission.title | default('Untitled') }}
+Status: {{ submission.status | default('Unknown') }}
+Current Phase ID: {{ submission.currentPhaseId | default('Not set') }}
+Has History: {{ (submission.history and submission.history.length > 0) | string }}
+Has Workflow History: {{ (submission.workflowHistory and submission.workflowHistory.length > 0) | string }}
+Phases Available: {{ phases | length }}
+Statuses Available: {{ statuses | length }}
+            </pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
