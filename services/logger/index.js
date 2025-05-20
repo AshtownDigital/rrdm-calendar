@@ -45,8 +45,20 @@ const logger = createLogger({
   exitOnError: false
 });
 
-// Add file transports in production
-if (config.isProd) {
+// Determine if we're running in a serverless environment
+const isServerless = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME;
+
+// Add file transports in production (but not in serverless environments)
+if (config.isProd && !isServerless) {
+  // Make sure logs directory exists
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const logDir = path.join(process.cwd(), 'logs');
+    
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
   logger.add(
     new transports.File({ 
       filename: 'logs/error.log', 
@@ -65,6 +77,12 @@ if (config.isProd) {
       tailable: true
     })
   );
+  } catch (err) {
+    console.warn('Unable to create logs directory:', err.message);
+    // Continue without file logging
+  }
+} else if (config.isProd && isServerless) {
+  console.log('Running in serverless mode - file logging disabled');
 }
 
 // Create HTTP logger for Morgan integration
@@ -88,8 +106,8 @@ const httpLogger = createLogger({
   ]
 });
 
-// Add file transport for HTTP logs in production
-if (config.isProd) {
+// Add file transport for HTTP logs in production (but not in serverless environments)
+if (config.isProd && !isServerless) {
   httpLogger.add(
     new transports.File({ 
       filename: 'logs/http.log',
