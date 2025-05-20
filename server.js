@@ -101,11 +101,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Create a virtual path prefix for assets
+// Create virtual path prefixes for assets with explicit mappings
 app.use('/assets', express.static(path.join(__dirname, 'public')));
-
-// Create specific mapping for CSS files
 app.use('/assets/css', express.static(path.join(__dirname, 'public/stylesheets')));
+app.use('/assets/images', express.static(path.join(__dirname, 'public/images')));
+
+// Ensure direct access to stylesheets works too (for compatibility)
+app.use('/stylesheets', express.static(path.join(__dirname, 'public/stylesheets')));
+
+// Add a special handler for GOV.UK Frontend assets
+app.use('/assets/govuk-frontend', express.static(path.join(__dirname, 'node_modules/govuk-frontend/govuk')));
 
 // Session middleware
 app.use(session({
@@ -1112,9 +1117,30 @@ app.post('/direct/bcr-submissions/:id/update', async (req, res) => {
   }
 });
 
-// Start the server
-const server = app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+// Check if we're in a serverless environment (Vercel, AWS Lambda, etc.)
+const isServerless = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME;
 
-module.exports = server;
+// Only start the server if not in a serverless environment
+let server;
+if (!isServerless) {
+  // For local development, try the specified port first
+  server = app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+  }).on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      // If port is in use, try a different port
+      const alternatePort = parseInt(port) + 1000;
+      console.log(`Port ${port} is in use, trying port ${alternatePort}...`);
+      server = app.listen(alternatePort, () => {
+        console.log(`Server running at http://localhost:${alternatePort}`);
+      });
+    } else {
+      console.error('Server error:', err);
+    }
+  });
+} else {
+  console.log('Running in serverless mode - no HTTP server started');
+}
+
+// Export the Express app for serverless environments
+module.exports = app;

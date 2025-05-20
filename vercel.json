@@ -21,8 +21,18 @@
       "methods": ["GET"]
     },
     { 
+      "src": "/assets/css/(.*)", 
+      "dest": "/public/stylesheets/$1",
+      "headers": { "Cache-Control": "public, max-age=31536000, immutable" }
+    },
+    { 
+      "src": "/assets/images/(.*)", 
+      "dest": "/public/images/$1",
+      "headers": { "Cache-Control": "public, max-age=31536000, immutable" }
+    },
+    { 
       "src": "/assets/(.*)", 
-      "dest": "/public/assets/$1",
+      "dest": "/public/$1",
       "headers": { "Cache-Control": "public, max-age=31536000, immutable" }
     },
     { 
