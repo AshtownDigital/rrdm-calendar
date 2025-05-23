@@ -2,8 +2,9 @@
  * Authentication Controller
  * Handles user authentication for the BCR module
  */
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+// Using centralized Prisma client
+const { prisma } = require('../config/prisma');
+// Prisma client is imported from centralized config
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
 

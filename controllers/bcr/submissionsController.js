@@ -2,15 +2,23 @@
  * BCR Submissions Controller
  * Handles BCR submissions listing, viewing, and filtering
  */
-const { PrismaClient } = require('@prisma/client');
 const { validate: isUuid } = require('uuid');
-const prisma = new PrismaClient();
+
+// Import services
 const bcrService = require('../../services/bcrService');
 const bcrConfigService = require('../../services/bcrConfigService');
 const trelloService = require('../../services/trelloService');
 const pdfService = require('../../services/pdfService');
 const slaService = require('../../services/slaService');
 const path = require('path');
+
+// Import MongoDB models
+const Submission = require('../../models/Submission');
+const Bcr = require('../../models/Bcr');
+const User = require('../../models/User');
+const BcrConfig = require('../../models/BcrConfig');
+const ImpactedArea = require('../../models/ImpactedArea');
+const AuditLog = require('../../models/AuditLog');
 
 /**
  * Helper to validate if a string is a UUID or BCR number
@@ -19,7 +27,7 @@ const path = require('path');
  */
 function isValidBcrId(id) {
   if (!id) return false;
-  const isBcrNumber = /^BCR-\d{4}-\d{4}$/.test(id);
+  const isBcrNumber = /^BCR-\d{2}\/\d{2}-\d{3}$/.test(id);
   return isBcrNumber || isUuid(id);
 }
 
@@ -35,11 +43,6 @@ function renderError(res, { status = 500, title = 'Error', message = 'An error o
   });
 }
 
-/**
- * List BCR submissions with optional filtering
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
 /**
  * List BCR submissions with optional filtering
  * @param {import('express').Request} req
@@ -100,7 +103,7 @@ async function listSubmissions(req, res) {
       throw error;
     }
     
-    // Create a mapping of phase IDs to their in-progress status
+    // Create a mapping of phase values to their in-progress status
     const phaseToStatusMap = {};
     
     // Log phase and status data for debugging
@@ -109,7 +112,7 @@ async function listSubmissions(req, res) {
     // First, log the first few phases and statuses for debugging
     if (phases.length > 0) {
       console.log('Sample phase:', {
-        id: phases[0].id,
+        id: phases[0]._id,
         name: phases[0].name,
         value: phases[0].value,
         type: phases[0].type
@@ -118,352 +121,325 @@ async function listSubmissions(req, res) {
     
     if (allStatuses.length > 0) {
       console.log('Sample status:', {
-        id: allStatuses[0].id,
+        id: allStatuses[0]._id,
         name: allStatuses[0].name,
         value: allStatuses[0].value,
         type: allStatuses[0].type
       });
     }
     
-    // Initialize the mapping with null for each phase value
-    phases.forEach(phase => {
-      phaseToStatusMap[phase.value] = null;
-    });
-    
-    // Populate the mapping with statuses
+    // Map phases to their in-progress status
     for (const phase of phases) {
-      // Find in-progress status for this phase (not starting with 'completed:')
-      const inProgressStatuses = allStatuses.filter(status => 
-        status.value === phase.value && !status.name.startsWith('completed:')
+      // Find the in-progress status for this phase
+      const inProgressStatus = allStatuses.find(status => 
+        status.phaseValue === phase.value && 
+        status.statusType === 'in_progress'
       );
       
-      if (inProgressStatuses.length > 0) {
-        // Use the first in-progress status found
-        phaseToStatusMap[phase.value] = inProgressStatuses[0].name;
-        console.log(`Mapped phase ${phase.name} (${phase.value}) to status ${inProgressStatuses[0].name}`);
+      if (inProgressStatus) {
+        phaseToStatusMap[phase.value] = inProgressStatus.value;
+        console.log(`Mapped phase ${phase.value} to status ${inProgressStatus.value}`);
       } else {
-        console.log(`No in-progress status found for phase ${phase.name} (${phase.value})`);
+        console.warn(`No in-progress status found for phase ${phase.value}`);
       }
     }
     
-    // Get only the In Progress statuses for each phase (non-completed statuses)
-    const inProgressStatuses = allStatuses.filter(status => {
-      return !status.name.startsWith('completed:');
-    });
+    // Get all unique submitters for the filter dropdown
+    const submitters = [];
+    const submitterSet = new Set();
     
-    // Update each submission to show the In Progress Status instead of the enum status
-    submissions.forEach(submission => {
-      // Parse the notes field to extract the current phase
-      if (submission.notes) {
-        const phaseMatch = submission.notes.match(/Current Phase: ([^\n]+)/i);
-        const phaseStatusMatch = submission.notes.match(/Phase Status: ([^\n]+)/i);
+    for (const submission of submissions) {
+      if (submission.submission && submission.submission.submittedBy) {
+        const submitter = submission.submission.submittedBy;
+        const submitterKey = submitter.email || submitter.name;
         
-        if (phaseStatusMatch && phaseStatusMatch[1]) {
-          // Use the phase status from the notes field
-          submission.displayStatus = phaseStatusMatch[1];
-          console.log(`Set displayStatus from phase status: ${submission.displayStatus}`);
-        } else if (phaseMatch && phaseMatch[1]) {
-          // Find the phase by name
-          const matchingPhase = phases.find(p => p.name === phaseMatch[1]);
-          if (matchingPhase) {
-            // Use phase.value instead of phase.id for the mapping
-            if (phaseToStatusMap[matchingPhase.value]) {
-              submission.displayStatus = phaseToStatusMap[matchingPhase.value];
-              console.log(`Set displayStatus from matching phase: ${submission.displayStatus}`);
-            } else {
-              console.log(`No status mapping found for phase: ${matchingPhase.name} (${matchingPhase.value})`);
-              // Fall back to using the phase name as the display status
-              submission.displayStatus = `${matchingPhase.name} Phase`;
-              console.log(`Set fallback displayStatus to: ${submission.displayStatus}`);
-            }
-          } else {
-            console.log(`No matching phase found for: ${phaseMatch[1]}`);
-          }
+        if (submitterKey && !submitterSet.has(submitterKey)) {
+          submitterSet.add(submitterKey);
+          submitters.push({
+            id: submitter.id,
+            name: submitter.name,
+            email: submitter.email
+          });
         }
       }
-      
-      // If we still don't have a display status, use the enum status with proper formatting
-      if (!submission.displayStatus) {
-        // Convert the enum status (e.g., 'under_review') to a more readable format (e.g., 'Under Review')
-        const formattedStatus = submission.status
-          .split('_')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
+    }
+    
+    // Sort submitters by name
+    submitters.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    
+    // Get all unique statuses for the filter dropdown
+    const statusOptions = [];
+    const statusSet = new Set();
+    
+    for (const submission of submissions) {
+      if (submission.status && !statusSet.has(submission.status)) {
+        statusSet.add(submission.status);
         
-        submission.displayStatus = formattedStatus;
-        console.log(`Set displayStatus to formatted enum status: ${submission.displayStatus}`);
+        // Find the display name for this status
+        const statusConfig = allStatuses.find(s => s.value === submission.status);
+        const displayName = statusConfig ? statusConfig.name : submission.status;
+        
+        statusOptions.push({
+          value: submission.status,
+          name: displayName
+        });
       }
+    }
+    
+    // Sort status options by name
+    statusOptions.sort((a, b) => a.name.localeCompare(b.name));
+    
+    // Format the submissions for display
+    const formattedSubmissions = submissions.map(submission => {
+      // Find the display name for the status
+      const statusConfig = allStatuses.find(s => s.value === submission.status);
+      const statusName = statusConfig ? statusConfig.name : submission.status || 'Unknown';
       
-      // If we couldn't extract a status, use a default based on the enum status
-      if (!submission.displayStatus) {
-        // Map the enum status to a more user-friendly display status
-        switch (submission.status) {
-          case 'draft':
-            submission.displayStatus = 'Being Submitted';
-            break;
-          case 'new_submission':
-            submission.displayStatus = 'New Submission';
-            break;
-          case 'submitted':
-            submission.displayStatus = 'Submission Received';
-            break;
-          case 'under_review':
-            submission.displayStatus = 'Under Review';
-            break;
-          case 'approved':
-            submission.displayStatus = 'Approved';
-            break;
-          case 'implemented':
-            submission.displayStatus = 'Implemented';
-            break;
-          case 'rejected':
-            submission.displayStatus = 'Rejected';
-            break;
-          default:
-            submission.displayStatus = submission.status;
-        }
-      }
+      // Find the display name for the phase
+      const phaseConfig = phases.find(p => p.value === submission.currentPhase);
+      const phaseName = phaseConfig ? phaseConfig.name : submission.currentPhase || 'Unknown';
+      
+      // Find the tag color for the status
+      const statusColor = statusConfig ? statusConfig.color || 'blue' : 'blue';
+      
+      // Format the impacted areas
+      const formattedImpactAreas = Array.isArray(submission.impactedAreas) 
+        ? submission.impactedAreas.map(area => {
+            const areaConfig = impactAreas.find(ia => ia.value === area);
+            return areaConfig ? areaConfig.name : area;
+          }).join(', ') 
+        : 'None';
+      
+      return {
+        id: submission.id,
+        bcrCode: submission.bcrCode,
+        submissionDate: submission.createdAt ? new Date(submission.createdAt).toLocaleDateString('en-GB') : 'Unknown',
+        submitter: submission.submission && submission.submission.submittedBy 
+          ? submission.submission.submittedBy.name 
+          : 'Unknown',
+        description: submission.submission ? submission.submission.briefDescription : 'No description',
+        status: {
+          value: submission.status,
+          name: statusName,
+          color: statusColor
+        },
+        phase: {
+          value: submission.currentPhase,
+          name: phaseName
+        },
+        urgencyLevel: submission.urgencyLevel || 'Unknown',
+        impactedAreas: formattedImpactAreas
+      };
     });
     
-    // Get current academic year (e.g., '25/26' for 2025-2026)
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-indexed
-    
-    // Academic year starts in September, so if we're before September, use previous year
-    const academicYearStart = currentMonth >= 9 ? currentYear : currentYear - 1;
-    const academicYearEnd = academicYearStart + 1;
-    
-    // Format as YY/YY (e.g., 25/26)
-    const academicYear = `${(academicYearStart % 100).toString().padStart(2, '0')}/${(academicYearEnd % 100).toString().padStart(2, '0')}`;
-    const submitters = [...new Set(
-      submissions
-        .filter(s => s.Users_Bcrs_requestedByToUsers)
-        .map(s => s.Users_Bcrs_requestedByToUsers.name)
-    )].sort();
-
-    res.render('modules/bcr/submissions.njk', {
+    // Render the submissions list page
+    res.render('bcr/submissions', {
       title: 'BCR Submissions',
-      submissions,
+      submissions: formattedSubmissions,
       filters: {
-        statuses: inProgressStatuses.map(s => s.name),
-        impactAreas: impactAreas.map(ia => ia.name),
-        submitters
+        status: status || 'all',
+        impactArea: impactArea || 'all',
+        submitter: submitter || 'all',
+        startDate: startDate || '',
+        endDate: endDate || ''
       },
-      selectedFilters: {
-        status, impactArea, submitter, startDate, endDate
+      filterOptions: {
+        statuses: [{ value: 'all', name: 'All Statuses' }, ...statusOptions],
+        impactAreas: [
+          { value: 'all', name: 'All Impact Areas' },
+          ...impactAreas.map(area => ({ value: area.value, name: area.name }))
+        ],
+        submitters: [
+          { id: 'all', name: 'All Submitters' },
+          ...submitters
+        ]
       },
-      academicYear,
+      phaseToStatusMap,
       user: req.user
     });
   } catch (error) {
     console.error('Error in listSubmissions:', error);
-    console.error('Error stack:', error.stack);
-    
-    // Check if this is a database connection error
-    if (error.code === 'P1001' || error.code === 'P1002') {
-      console.error('Database connection error detected');
-    }
-    
-    // Check if this is a schema error
-    if (error.code === 'P2001' || error.code === 'P2002') {
-      console.error('Schema error detected');
-    }
-    
-    renderError(res, {
+    return renderError(res, {
       status: 500,
-      title: 'Error',
-      message: `Failed to list BCR submissions: ${error.message}`,
+      title: 'Error Listing BCR Submissions',
+      message: 'An error occurred while listing BCR submissions',
       error,
       user: req.user
     });
   }
 }
 
-/**
- * View a single BCR submission
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
 /**
  * View a single BCR submission
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  */
 async function viewSubmission(req, res) {
-  console.log('Starting viewSubmission for ID:', req.params.id);
   try {
     const bcrId = req.params.id;
-    const isPrintMode = req.query.print === 'true';
     
     if (!isValidBcrId(bcrId)) {
       return renderError(res, {
         status: 400,
         title: 'Invalid ID Format',
         message: 'The provided ID is not in a valid format',
-        error: { details: `Expected a UUID or BCR number, got: ${bcrId}` },
         user: req.user
       });
     }
-
-    // Try to get the BCR using the service
-    let bcr = null;
-    try {
-      bcr = await bcrService.getBcrById(bcrId);
-    } catch (serviceError) {
-      console.error('Error from bcrService.getBcrById:', serviceError);
-      // fallback to raw query below
-    }
-
-    // If still not found, try raw query
-    if (!bcr) {
-      try {
-        console.log(`BCR not found via service, trying raw query for ID: ${bcrId}`);
-        const rawResults = await prisma.$queryRaw`SELECT id FROM bcrs WHERE bcrNumber = ${bcrId} OR id = ${bcrId}`;
-        if (rawResults && rawResults.length > 0) {
-          bcr = await prisma.Bcrs.findUnique({
-            where: { id: rawResults[0].id },
-            include: {
-              Users_Bcrs_requestedByToUsers: true,
-              Users_Bcrs_assignedToToUsers: true
-            }
-          });
-        }
-      } catch (queryError) {
-        console.error('Error in raw query:', queryError);
-      }
-    }
-
+    
+    // Get the BCR
+    const bcr = await bcrService.getBcrById(bcrId);
+    
     if (!bcr) {
       return renderError(res, {
         status: 404,
-        title: 'Not Found',
+        title: 'BCR Not Found',
         message: `BCR with ID ${bcrId} not found`,
         user: req.user
       });
     }
-
-    // Ensure the BCR has the expected structure for the template
-    if (!bcr.history) bcr.history = [];
-    if (!bcr.workflowHistory) bcr.workflowHistory = [];
     
-    // Ensure other required properties exist to prevent template errors
-    if (!bcr.bcrNumber) bcr.bcrNumber = bcr.id.substring(0, 8);
-    if (!bcr.title) bcr.title = 'Untitled BCR';
-    if (!bcr.status) bcr.status = 'unknown';
+    // Get the submission
+    const submission = bcr.submission;
     
-    // Get all the data needed for the template
-    const [statuses, users, phases, prioritisations, phaseStatusMappings] = await Promise.all([
-      bcrConfigService.getConfigsByType('status'),
-      prisma.users.findMany({ orderBy: { name: 'asc' } }),
-      bcrConfigService.getConfigsByType('phase'),
-      [], // Placeholder for prioritisations if you have them
-      bcrConfigService.getPhaseStatusMappings() // Get phase-status mappings
-    ]);
-
-    // Get SLA status for the BCR
-    const slaStatus = await slaService.getSlaStatus(bcr.id);
-
-    // Handle PDF generation if requested
-    if (req.query.generatePdf === 'true' && !isPrintMode) {
-      try {
-        // Generate a base URL for the PDF generation
-        const protocol = req.protocol;
-        const host = req.get('host');
-        const baseUrl = `${protocol}://${host}`;
-        
-        // Generate the PDF
-        const pdfPath = await pdfService.generateBcrReport(bcr, baseUrl);
-        
-        // Get the relative path for download
-        const relativePath = path.relative(path.join(__dirname, '../../public'), pdfPath);
-        const downloadUrl = `/reports/${path.basename(pdfPath)}`;
-        
-        // Redirect to the BCR view with a success message
-        req.flash('success', 'PDF report generated successfully');
-        return res.redirect(`/bcr/${bcr.id}?pdfUrl=${encodeURIComponent(downloadUrl)}`);
-      } catch (pdfError) {
-        console.error('Error generating PDF:', pdfError);
-        req.flash('error', 'Failed to generate PDF report');
-        return res.redirect(`/bcr/${bcr.id}`);
-      }
+    if (!submission) {
+      return renderError(res, {
+        status: 404,
+        title: 'Submission Not Found',
+        message: `Submission for BCR ${bcrId} not found`,
+        user: req.user
+      });
     }
-
-    // Log the data being sent to the template
-    console.log('BCR data to render:', {
+    
+    // Get the workflow activities
+    const workflowActivities = await bcrService.getWorkflowActivities(bcrId);
+    
+    // Get all phases and statuses for the dropdown
+    const phases = await bcrConfigService.getConfigsByType('phase');
+    const statuses = await bcrConfigService.getConfigsByType('status');
+    
+    // Get all users for the assignee dropdown
+    const users = await User.find({}).sort({ name: 1 });
+    
+    // Format the BCR for display
+    const formattedBcr = {
       id: bcr.id,
-      title: bcr.title || 'Untitled',
+      bcrCode: bcr.bcrCode,
+      submissionDate: bcr.createdAt ? new Date(bcr.createdAt).toLocaleDateString('en-GB') : 'Unknown',
+      submitter: submission.submittedBy ? submission.submittedBy.name : 'Unknown',
+      description: submission.briefDescription || 'No description',
       status: bcr.status,
-      hasHistory: Array.isArray(bcr.history),
-      historyLength: Array.isArray(bcr.history) ? bcr.history.length : 'N/A',
-      hasWorkflowHistory: Array.isArray(bcr.workflowHistory),
-      workflowHistoryLength: Array.isArray(bcr.workflowHistory) ? bcr.workflowHistory.length : 'N/A',
-      currentPhaseId: bcr.currentPhaseId,
-      phasesCount: phases.length,
-      statusesCount: statuses.length,
-      hasSlaStatus: !!slaStatus
+      phase: bcr.currentPhase,
+      urgencyLevel: bcr.urgencyLevel || 'Unknown',
+      impactedAreas: Array.isArray(bcr.impactedAreas) ? bcr.impactedAreas.join(', ') : 'None',
+      workflowHistory: bcr.workflowHistory || []
+    };
+    
+    // Format the submission for display
+    const formattedSubmission = {
+      id: submission.id,
+      submissionCode: submission.submissionCode,
+      fullName: submission.fullName,
+      emailAddress: submission.emailAddress,
+      briefDescription: submission.briefDescription,
+      detailedDescription: submission.detailedDescription,
+      businessJustification: submission.businessJustification,
+      submissionSource: submission.submissionSource,
+      urgencyLevel: submission.urgencyLevel,
+      impactAreas: Array.isArray(submission.impactAreas) ? submission.impactAreas.join(', ') : 'None',
+      affectedReferenceDataArea: submission.affectedReferenceDataArea,
+      technicalDependencies: submission.technicalDependencies,
+      relatedDocuments: submission.relatedDocuments,
+      attachments: submission.attachments,
+      additionalNotes: submission.additionalNotes,
+      declaration: submission.declaration,
+      submittedBy: submission.submittedBy ? {
+        id: submission.submittedBy.id,
+        name: submission.submittedBy.name,
+        email: submission.submittedBy.email
+      } : null
+    };
+    
+    // Format the workflow activities for display
+    const formattedActivities = workflowActivities.map(activity => {
+      // Find the display name for the status
+      const statusConfig = statuses.find(s => s.value === activity.status);
+      const statusName = statusConfig ? statusConfig.name : activity.status || 'Unknown';
+      
+      // Find the display name for the phase
+      const phaseConfig = phases.find(p => p.value === activity.phase);
+      const phaseName = phaseConfig ? phaseConfig.name : activity.phase || 'Unknown';
+      
+      return {
+        id: activity.id,
+        timestamp: activity.performedAt ? new Date(activity.performedAt).toLocaleString('en-GB') : 'Unknown',
+        action: activity.action,
+        phase: {
+          value: activity.phase,
+          name: phaseName
+        },
+        status: {
+          value: activity.status,
+          name: statusName
+        },
+        performedBy: activity.performedBy ? activity.performedBy.name : 'System',
+        notes: activity.notes
+      };
     });
     
-    // Enhance BCR object with current phase information
-    const currentPhase = phases.find(phase => phase.value === bcr.currentPhaseId);
-    if (currentPhase) {
-      bcr.currentPhaseName = currentPhase.name;
-    } else {
-      // Set a default phase name if no matching phase is found
-      bcr.currentPhaseName = 'Unknown Phase';
-      console.warn(`No matching phase found for currentPhaseId: ${bcr.currentPhaseId}`);
+    // Check if Trello integration is enabled
+    const trelloEnabled = process.env.TRELLO_API_KEY && process.env.TRELLO_TOKEN;
+    
+    // Get SLA information if available
+    let slaInfo = null;
+    try {
+      if (bcr.currentPhase) {
+        slaInfo = await slaService.getSlaForPhase(bcr.currentPhase);
+      }
+    } catch (error) {
+      console.warn('Error getting SLA info:', error);
     }
     
-    // Ensure all required properties exist for the template
-    bcr.Users_Bcrs_requestedByToUsers = bcr.Users_Bcrs_requestedByToUsers || { name: 'Unknown', email: '', role: '' };
-    bcr.Users_Bcrs_assignedToToUsers = bcr.Users_Bcrs_assignedToToUsers || { name: 'Unassigned', email: '', role: '' };
-    
-    // Get the status display name based on the database status value
-    let statusDisplay = bcr.status;
-    if (bcr.status) {
-      // Convert snake_case to Title Case for display
-      statusDisplay = bcr.status
-        .split('_')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-    }
-    bcr.statusDisplay = statusDisplay;
-    
-    // Render the template with data
-    res.render('modules/bcr/submission-details.njk', {
-      title: `BCR ${bcr.bcrNumber} - ${bcr.title}`,
-      submission: bcr,
-      phases,
-      prioritisations,
-      statuses,
-      phaseStatusMappings,
-      slaStatus,
-      isPrintMode,
-      pdfUrl: req.query.pdfUrl,
-      user: req.user
+    // Render the BCR view page
+    res.render('bcr/view', {
+      title: `BCR ${bcr.bcrCode}`,
+      bcr: formattedBcr,
+      submission: formattedSubmission,
+      workflowActivities: formattedActivities,
+      phases: phases.map(phase => ({
+        id: phase._id,
+        value: phase.value,
+        name: phase.name
+      })),
+      statuses: statuses.map(status => ({
+        id: status._id,
+        value: status.value,
+        name: status.name,
+        phaseValue: status.phaseValue
+      })),
+      users: users.map(user => ({
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      })),
+      trelloEnabled,
+      slaInfo,
+      user: req.user,
+      csrfToken: req.csrfToken ? req.csrfToken() : null
     });
   } catch (error) {
-    console.error('Unhandled error in viewSubmission controller:', error);
-    // Improved error logging and user feedback
-    let errorMessage = 'Failed to load BCR submission';
-    if (error && error.message) {
-      errorMessage += ': ' + error.message;
-    }
-    renderError(res, {
+    console.error('Error in viewSubmission:', error);
+    return renderError(res, {
       status: 500,
-      title: 'Error',
-      message: errorMessage,
+      title: 'Error Viewing BCR Submission',
+      message: 'An error occurred while viewing the BCR submission',
       error,
       user: req.user
     });
   }
 }
 
-/**
- * Show the phase update confirmation page
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
 /**
  * Show the phase update confirmation page
  * @param {import('express').Request} req
@@ -471,66 +447,104 @@ async function viewSubmission(req, res) {
  */
 async function phaseUpdateConfirmation(req, res) {
   try {
-    const bcrId = req.params.id;
+    const { bcrId, phase, status } = req.query;
+    
     if (!isValidBcrId(bcrId)) {
       return renderError(res, {
         status: 400,
         title: 'Invalid ID Format',
-        message: 'The provided ID is not in a valid format',
+        message: 'The provided BCR ID is not in a valid format',
         user: req.user
       });
     }
+    
+    // Get the BCR
     const bcr = await bcrService.getBcrById(bcrId);
+    
     if (!bcr) {
       return renderError(res, {
         status: 404,
-        title: 'Not Found',
+        title: 'BCR Not Found',
         message: `BCR with ID ${bcrId} not found`,
         user: req.user
       });
     }
-    res.render('modules/bcr/phase-update-confirmation.njk', {
-      title: 'Phase Update Confirmation',
-      bcr,
-      user: req.user
+    
+    // Get the phase and status details
+    const phases = await bcrConfigService.getConfigsByType('phase');
+    const statuses = await bcrConfigService.getConfigsByType('status');
+    
+    const phaseConfig = phases.find(p => p.value === phase);
+    const statusConfig = statuses.find(s => s.value === status);
+    
+    if (!phaseConfig || !statusConfig) {
+      return renderError(res, {
+        status: 400,
+        title: 'Invalid Phase or Status',
+        message: 'The provided phase or status is not valid',
+        user: req.user
+      });
+    }
+    
+    // Render the confirmation page
+    res.render('bcr/phase-update-confirmation', {
+      title: 'Confirm Phase Update',
+      bcr: {
+        id: bcr.id,
+        bcrCode: bcr.bcrCode,
+        currentPhase: bcr.currentPhase,
+        status: bcr.status
+      },
+      newPhase: {
+        value: phaseConfig.value,
+        name: phaseConfig.name
+      },
+      newStatus: {
+        value: statusConfig.value,
+        name: statusConfig.name
+      },
+      user: req.user,
+      csrfToken: req.csrfToken ? req.csrfToken() : null
     });
   } catch (error) {
-    console.error('Error in phase update confirmation:', error);
-    renderError(res, {
+    console.error('Error in phaseUpdateConfirmation:', error);
+    return renderError(res, {
       status: 500,
-      title: 'Error',
-      message: 'Failed to load phase update confirmation',
+      title: 'Error Loading Confirmation Page',
+      message: 'An error occurred while loading the phase update confirmation page',
       error,
       user: req.user
     });
   }
 }
 
-// Export as named exports for clarity and testability
 /**
  * Simple test endpoint to verify controller and database connection
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  */
 async function testEndpoint(req, res) {
-  console.log('Test endpoint reached');
   try {
-    // Test basic database connection
-    const statusCount = await prisma.bcrConfigs.count({
-      where: { type: 'status' }
-    });
+    // Test database connection by fetching a few records
+    const phases = await BcrConfig.find({ type: 'phase' }).limit(3);
+    const statuses = await BcrConfig.find({ type: 'status' }).limit(3);
+    const impactAreas = await ImpactedArea.find({}).limit(3);
     
-    // Return a simple JSON response
+    // Return the test results
     res.json({
       success: true,
-      message: 'Test endpoint working',
-      statusCount,
-      timestamp: new Date().toISOString()
+      message: 'BCR submissions controller is working',
+      data: {
+        phases: phases.map(p => ({ id: p._id, name: p.name, value: p.value })),
+        statuses: statuses.map(s => ({ id: s._id, name: s.name, value: s.value })),
+        impactAreas: impactAreas.map(ia => ({ id: ia._id, name: ia.name, value: ia.value }))
+      }
     });
   } catch (error) {
-    console.error('Error in test endpoint:', error);
+    console.error('Error in testEndpoint:', error);
     res.status(500).json({
       success: false,
+      message: 'Error in BCR submissions controller test endpoint',
       error: error.message
     });
   }
@@ -543,32 +557,40 @@ async function testEndpoint(req, res) {
  */
 async function newSubmission(req, res) {
   try {
-    // Get impact areas from the new ImpactedArea model
-    const impactAreas = await prisma.impactedArea.findMany({
-      orderBy: { order: 'asc' }
-    });
-    
-    // Get urgency levels and other config data needed for the form
+    // Get impact areas and urgency levels for the form
+    const impactAreas = await ImpactedArea.find({}).sort({ order: 1 });
     const urgencyLevels = await bcrConfigService.getConfigsByType('urgencyLevel');
+    
+    // Define submission sources and attachments options
     const submissionSources = ['Internal', 'External', 'Partner', 'Other'];
     const attachmentsOptions = ['Yes', 'No'];
     
     // Render the new submission form
     res.render('bcr-submission/new', {
       title: 'New BCR Submission',
-      impactAreas,
-      urgencyLevels,
+      impactAreas: impactAreas.map(ia => ({
+        id: ia._id,
+        name: ia.name,
+        value: ia.value,
+        order: ia.order
+      })),
+      urgencyLevels: urgencyLevels.map(ul => ({
+        id: ul._id,
+        name: ul.name,
+        value: ul.value,
+        order: ul.displayOrder
+      })),
       submissionSources,
       attachmentsOptions,
       user: req.user,
-      csrfToken: req.csrfToken()
+      csrfToken: req.csrfToken ? req.csrfToken() : null
     });
   } catch (error) {
     console.error('Error in newSubmission:', error);
-    renderError(res, {
+    return renderError(res, {
       status: 500,
-      title: 'Error',
-      message: 'Failed to load submission form',
+      title: 'Error Loading Submission Form',
+      message: 'An error occurred while loading the submission form',
       error,
       user: req.user
     });
@@ -586,10 +608,10 @@ async function createSubmission(req, res) {
     const {
       fullName,
       emailAddress,
-      submissionSource,
-      organisation,
       briefDescription,
-      justification,
+      detailedDescription,
+      businessJustification,
+      submissionSource,
       urgencyLevel,
       impactAreas,
       affectedReferenceDataArea,
@@ -601,29 +623,9 @@ async function createSubmission(req, res) {
     } = req.body;
     
     // Validate required fields
-    const requiredFields = ['fullName', 'emailAddress', 'submissionSource', 'briefDescription', 
-                          'justification', 'urgencyLevel', 'declaration'];
-    
-    const missingFields = requiredFields.filter(field => !req.body[field]);
-    
-    // Check if impactAreas is provided (it's an array)
-    if (!impactAreas || (Array.isArray(impactAreas) && impactAreas.length === 0)) {
-      missingFields.push('impactAreas');
-    }
-    
-    // Special validation for organisation when submissionSource is 'Other'
-    if (submissionSource === 'Other' && !organisation) {
-      missingFields.push('organisation');
-    }
-    
-    // If any required fields are missing, return to form with errors
-    if (missingFields.length > 0) {
-      console.log('Missing required fields:', missingFields);
-      
+    if (!fullName || !emailAddress || !briefDescription || !urgencyLevel || !impactAreas) {
       // Get form data for re-rendering
-      const impactAreasData = await prisma.impactedArea.findMany({
-        orderBy: { order: 'asc' }
-      });
+      const impactAreasData = await ImpactedArea.find({}).sort({ order: 1 });
       const urgencyLevelsData = await bcrConfigService.getConfigsByType('urgencyLevel');
       const submissionSources = ['Internal', 'External', 'Partner', 'Other'];
       const attachmentsOptions = ['Yes', 'No'];
@@ -631,106 +633,97 @@ async function createSubmission(req, res) {
       return res.status(400).render('bcr-submission/new', {
         title: 'New BCR Submission',
         error: true,
+        errorMessage: 'Please fill in all required fields',
         formData: req.body,
-        missingFields,
-        impactAreas: impactAreasData,
-        urgencyLevels: urgencyLevelsData,
+        impactAreas: impactAreasData.map(ia => ({
+          id: ia._id,
+          name: ia.name,
+          value: ia.value,
+          order: ia.order
+        })),
+        urgencyLevels: urgencyLevelsData.map(ul => ({
+          id: ul._id,
+          name: ul.name,
+          value: ul.value,
+          order: ul.displayOrder
+        })),
         submissionSources,
         attachmentsOptions,
         user: req.user,
-        csrfToken: req.csrfToken()
+        csrfToken: req.csrfToken ? req.csrfToken() : null
       });
     }
     
     // Generate a unique submission code
-    const currentYear = new Date().getFullYear().toString().slice(-2);
-    const nextYear = (parseInt(currentYear) + 1).toString().padStart(2, '0');
-    const yearCode = `${currentYear}/${nextYear}`;
-    
-    // Count existing submissions to determine the next number
-    const submissionCount = await prisma.submission.count();
-    const submissionNumber = (submissionCount + 1).toString().padStart(3, '0');
-    const submissionCode = `SUB-${yearCode}-${submissionNumber}`;
-    
-    // Create the submission in the database
     const now = new Date();
-    const submission = await prisma.submission.create({
-      data: {
-        submissionCode,
-        fullName,
-        emailAddress,
-        submissionSource,
-        organisation: organisation || null,
-        briefDescription,
-        justification,
-        urgencyLevel,
-        impactAreas: Array.isArray(impactAreas) ? impactAreas : [impactAreas],
-        affectedReferenceDataArea: affectedReferenceDataArea || null,
-        technicalDependencies: technicalDependencies || null,
-        relatedDocuments: relatedDocuments || null,
-        attachments,
-        additionalNotes: additionalNotes || null,
-        declaration: declaration === 'true' || declaration === true,
-        createdAt: now,
-        updatedAt: now,
-        submittedById: req.user.id
-      }
+    const currentYear = now.getFullYear();
+    const nextYear = currentYear + 1;
+    const yearCode = `${String(currentYear).slice(2)}/${String(nextYear).slice(2)}`;
+    
+    // Get the next submission number
+    const lastSubmission = await Submission.findOne({}, {}, { sort: { 'submissionNumber': -1 } });
+    const submissionNumber = lastSubmission ? lastSubmission.submissionNumber + 1 : 1;
+    
+    // Format the submission code
+    const submissionCode = `SUB-${yearCode}-${String(submissionNumber).padStart(3, '0')}`;
+    
+    // Create the submission
+    const submission = new Submission({
+      submissionNumber,
+      submissionCode,
+      fullName,
+      emailAddress,
+      briefDescription,
+      detailedDescription,
+      businessJustification,
+      submissionSource,
+      urgencyLevel,
+      impactAreas: Array.isArray(impactAreas) ? impactAreas : [impactAreas],
+      affectedReferenceDataArea: affectedReferenceDataArea || null,
+      technicalDependencies: technicalDependencies || null,
+      relatedDocuments: relatedDocuments || null,
+      attachments,
+      additionalNotes: additionalNotes || null,
+      declaration: declaration === 'true' || declaration === true,
+      createdAt: now,
+      updatedAt: now,
+      submittedById: req.user._id
     });
+    
+    // Save the submission
+    await submission.save();
     
     // Create a BCR record linked to this submission
-    const bcrCode = `BCR-${yearCode}-${submissionNumber}`;
-    const bcr = await prisma.bcr.create({
-      data: {
-        bcrCode,
-        submissionId: submission.id,
-        currentPhase: 'Initial Assessment',
-        status: 'Submitted',
-        urgencyLevel,
-        impactedAreas: Array.isArray(impactAreas) ? impactAreas : [impactAreas],
-        workflowHistory: JSON.stringify([{
-          phase: 'Submission',
-          status: 'Submitted',
-          timestamp: now.toISOString(),
-          userId: req.user.id,
-          userName: req.user.name || 'System'
-        }]),
-        createdAt: now,
-        updatedAt: now
-      }
-    });
-    
-    // Update the submission with the BCR ID
-    await prisma.submission.update({
-      where: { id: submission.id },
-      data: { bcrId: bcr.id }
+    const bcr = await bcrService.createBcr(submission._id, {
+      currentPhase: 'Initial Assessment',
+      status: 'Submitted'
     });
     
     // Create an audit log entry
-    await prisma.auditLog.create({
-      data: {
-        action: 'CREATE_BCR',
-        userId: req.user.id,
-        resourceType: 'BCR',
-        resourceId: bcr.id,
-        details: JSON.stringify({
-          submissionId: submission.id,
-          submissionCode,
-          bcrCode,
-          timestamp: now.toISOString()
-        }),
-        ipAddress: req.ip || '127.0.0.1'
-      }
+    const auditLog = new AuditLog({
+      action: 'CREATE_BCR',
+      userId: req.user._id,
+      resourceType: 'BCR',
+      resourceId: bcr.id,
+      details: {
+        submissionId: submission._id,
+        submissionCode,
+        bcrCode: bcr.bcrCode,
+        timestamp: now.toISOString()
+      },
+      ipAddress: req.ip || '127.0.0.1',
+      createdAt: now
     });
     
+    await auditLog.save();
+    
     // Redirect to confirmation page
-    res.redirect(`/bcr-submission/confirm?id=${submission.id}`);
+    res.redirect(`/bcr-submission/confirm?id=${submission._id}`);
   } catch (error) {
     console.error('Error in createSubmission:', error);
     
     // Get form data for re-rendering
-    const impactAreasData = await prisma.impactedArea.findMany({
-      orderBy: { order: 'asc' }
-    });
+    const impactAreasData = await ImpactedArea.find({}).sort({ order: 1 });
     const urgencyLevelsData = await bcrConfigService.getConfigsByType('urgencyLevel');
     const submissionSources = ['Internal', 'External', 'Partner', 'Other'];
     const attachmentsOptions = ['Yes', 'No'];
@@ -740,12 +733,22 @@ async function createSubmission(req, res) {
       error: true,
       systemError: error.message,
       formData: req.body,
-      impactAreas: impactAreasData,
-      urgencyLevels: urgencyLevelsData,
+      impactAreas: impactAreasData.map(ia => ({
+        id: ia._id,
+        name: ia.name,
+        value: ia.value,
+        order: ia.order
+      })),
+      urgencyLevels: urgencyLevelsData.map(ul => ({
+        id: ul._id,
+        name: ul.name,
+        value: ul.value,
+        order: ul.displayOrder
+      })),
       submissionSources,
       attachmentsOptions,
       user: req.user,
-      csrfToken: req.csrfToken()
+      csrfToken: req.csrfToken ? req.csrfToken() : null
     });
   }
 }
@@ -772,10 +775,18 @@ async function reviewSubmission(req, res) {
     // Update the BCR with review information
     const updatedBcr = await bcrService.updateBcr(bcrId, {
       status: reviewStatus,
-      assignedTo,
-      notes: reviewNotes ? `${reviewNotes}\n\nReviewed by: ${req.user.name} on ${new Date().toISOString()}` : undefined,
-      reviewedBy: req.user.id,
-      reviewedAt: new Date()
+      notes: reviewNotes,
+      userId: req.user._id
+    });
+    
+    // Add a workflow activity
+    await bcrService.addWorkflowActivity(bcrId, {
+      phase: updatedBcr.currentPhase,
+      status: reviewStatus,
+      action: 'Review',
+      performedById: req.user._id,
+      notes: reviewNotes,
+      updateBcr: false // Already updated above
     });
     
     // Redirect to the BCR view page

@@ -2,11 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "server.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/**/*.js",
+      "src": "api/consolidated.js",
       "use": "@vercel/node"
     },
     {
@@ -17,7 +13,12 @@
   "routes": [
     {
       "src": "/_vercel/health",
-      "dest": "/api/_vercel/health.js",
+      "dest": "/api/consolidated.js",
+      "methods": ["GET"]
+    },
+    {
+      "src": "/api/hello",
+      "dest": "/api/consolidated.js",
       "methods": ["GET"]
     },
     { 
@@ -45,16 +46,15 @@
       "dest": "/public/stylesheets/$1",
       "headers": { "Cache-Control": "public, max-age=31536000, immutable" }
     },
-    { "src": "/debug", "dest": "/server.js" },
-    { "src": "/(.*)", "dest": "/server.js" }
+    { "src": "/(.*)", "dest": "/api/consolidated.js" }
   ],
   "env": {
     "NODE_ENV": "production",
     "VERCEL": "1",
     "SESSION_PERSISTENCE": "true",
-    "PRISMA_CLIENT_ENGINE_TYPE": "dataproxy",
     "REDIS_ENABLED": "true",
     "REDIS_MOCK": "false",
-    "RATE_LIMIT_ENABLED": "true"
+    "RATE_LIMIT_ENABLED": "true",
+    "MONGODB_URI": "${MONGODB_URI}"
   }
 }

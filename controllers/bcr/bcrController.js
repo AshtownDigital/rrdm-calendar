@@ -2,9 +2,10 @@
  * BCR Controller
  * Handles BCR viewing and updating
  */
-const { PrismaClient } = require('@prisma/client');
+// Using centralized Prisma client
+const { prisma } = require('../config/prisma');
 const { validate: isUuid } = require('uuid');
-const prisma = new PrismaClient();
+// Prisma client is imported from centralized config
 const bcrService = require('../../services/bcrService');
 const bcrConfigService = require('../../services/bcrConfigService');
 const slaService = require('../../services/slaService');

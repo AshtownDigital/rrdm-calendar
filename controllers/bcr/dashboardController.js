@@ -2,14 +2,20 @@
  * BCR Dashboard Controller
  * Handles BCR dashboard and module status display
  */
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
 const bcrService = require('../../services/bcrService');
 const bcrConfigService = require('../../services/bcrConfigService');
 const counterService = require('../../services/counterService');
 const workflowPhaseService = require('../../services/workflowPhaseService');
 const path = require('path');
 const fs = require('fs');
+
+// Import MongoDB models
+const Bcr = require('../../models/Bcr');
+const Submission = require('../../models/Submission');
+const BcrConfig = require('../../models/BcrConfig');
+const User = require('../../models/User');
+const WorkflowPhase = require('../../models/WorkflowPhase');
+const ImpactedArea = require('../../models/ImpactedArea');
 
 /**
  * Render an error page with consistent formatting
@@ -50,20 +56,13 @@ async function dashboard(req, res) {
       impactAreas
     ] = await Promise.all([
       // Get recent BCRs from the Bcr model
-      prisma.Bcr.findMany({
-        orderBy: { createdAt: 'desc' },
-        take: 5,
-        include: {
-          submission: {
-            select: {
-              submissionCode: true,
-              fullName: true,
-              emailAddress: true,
-              briefDescription: true
-            }
-          }
-        }
-      }),
+      Bcr.find({})
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate({
+          path: 'submissionId',
+          select: 'submissionCode fullName emailAddress briefDescription'
+        }),
       
       // Get urgency levels
       bcrConfigService.getConfigsByType('urgencyLevel'),
@@ -101,152 +100,92 @@ async function dashboard(req, res) {
     
     // Count BCRs for each urgency level
     for (const level of levelsToUse) {
-      bcrsByUrgency[level.value] = await prisma.Bcr.count({
-        where: { urgencyLevel: level.value }
+      bcrsByUrgency[level.value] = await Bcr.countDocuments({
+        urgencyLevel: level.value
       });
     }
 
     // Get BCRs by impact area
     const bcrsByImpactArea = {};
     for (const area of impactAreas) {
-      bcrsByImpactArea[area.value] = await prisma.Bcr.count({
-        where: {
-          impactedAreas: {
-            has: area.value
-          }
-        }
+      bcrsByImpactArea[area.value] = await Bcr.countDocuments({
+        impactedAreas: area.value
       });
     }
 
     // Get BCRs by status for the dashboard tabs
-    // Get BCRs for each tab on the dashboard
-    // Active BCRs (not rejected or completed)
-    const activeBcrs = await prisma.Bcr.findMany({
-      where: { 
-        status: { notIn: ['Rejected', 'Completed'] }
-      },
-      include: {
-        submission: true
-      },
-      orderBy: { updatedAt: 'desc' }
-    });
-
-    // Completed BCRs
-    const completedBcrs = await prisma.Bcr.findMany({
-      where: { 
-        status: 'Completed'
-      },
-      include: {
-        submission: true
-      },
-      orderBy: { updatedAt: 'desc' }
-    });
-
-    // Rejected BCRs
-    const rejectedBcrsList = await prisma.Bcr.findMany({
-      where: { 
+    const [activeBcrs, completedBcrs, rejectedBcrsData] = await Promise.all([
+      // Active BCRs (In Progress, Approved, etc.)
+      Bcr.find({
+        status: { $in: ['In Progress', 'Approved', 'Pending'] }
+      })
+        .sort({ createdAt: -1 })
+        .populate({
+          path: 'submissionId',
+          select: 'submissionCode fullName emailAddress briefDescription'
+        }),
+      
+      // Completed BCRs (Implemented, Completed, etc.)
+      Bcr.find({
+        status: { $in: ['Implemented', 'Completed'] }
+      })
+        .sort({ createdAt: -1 })
+        .populate({
+          path: 'submissionId',
+          select: 'submissionCode fullName emailAddress briefDescription'
+        }),
+      
+      // Rejected BCRs
+      Bcr.find({
         status: 'Rejected'
-      },
-      include: {
-        submission: true
-      },
-      orderBy: { updatedAt: 'desc' }
-    });
+      })
+        .sort({ createdAt: -1 })
+        .populate({
+          path: 'submissionId',
+          select: 'submissionCode fullName emailAddress briefDescription'
+        })
+    ]);
     
-    // Format the BCRs for display in the dashboard
-    const activeBcrsData = activeBcrs.map(bcr => ({
-      id: bcr.id,
-      bcrNumber: bcr.bcrCode,
-      description: bcr.submission?.briefDescription || '',
-      status: bcr.status,
-      priority: bcr.urgencyLevel,
-      phase: bcr.currentPhase,
-      updatedAt: bcr.updatedAt,
-      createdAt: bcr.createdAt,
-      requestedBy: bcr.submission?.fullName || 'Unknown'
-    }));
-    
-    const completedBcrsData = completedBcrs.map(bcr => ({
-      id: bcr.id,
-      bcrNumber: bcr.bcrCode,
-      description: bcr.submission?.briefDescription || '',
-      status: bcr.status,
-      priority: bcr.urgencyLevel,
-      phase: bcr.currentPhase,
-      completedAt: bcr.updatedAt,
-      createdAt: bcr.createdAt,
-      requestedBy: bcr.submission?.fullName || 'Unknown'
-    }));
-    
-    const rejectedBcrsData = rejectedBcrsList.map(bcr => ({
-      id: bcr.id,
-      bcrNumber: bcr.bcrCode,
-      description: bcr.submission?.briefDescription || '',
-      status: bcr.status,
-      priority: bcr.urgencyLevel,
-      phase: bcr.currentPhase,
-      rejectedAt: bcr.updatedAt,
-      createdAt: bcr.createdAt,
-      requestedBy: bcr.submission?.fullName || 'Unknown'
-    }));
-
-    // Get workflow phases for filtering
-    const workflowPhases = await bcrConfigService.getConfigsByType('workflow_phase');
-    const workflowPhaseNames = workflowPhases.map(phase => phase.value);
-
     // Format BCRs for display
     // Helper function to get appropriate tag color based on status
-    function getStatusTagColor(status) {
-      const statusColors = {
-        'new_submission': 'govuk-tag govuk-tag--blue',
-        'submitted': 'govuk-tag govuk-tag--light-blue',
-        'under_review': 'govuk-tag govuk-tag--purple',
-        'approved': 'govuk-tag govuk-tag--green',
-        'rejected': 'govuk-tag govuk-tag--red',
-        'implemented': 'govuk-tag govuk-tag--green',
-        'closed': 'govuk-tag govuk-tag--grey'
-      };
-      return statusColors[status] || 'govuk-tag';
-    }
+    dashboard.getStatusTagColor = function(status) {
+      if (status === 'Completed' || status === 'Implemented') {
+        return 'govuk-tag govuk-tag--green';
+      } else if (status === 'Rejected') {
+        return 'govuk-tag govuk-tag--red';
+      } else if (status === 'On Hold') {
+        return 'govuk-tag govuk-tag--yellow';
+      } else {
+        return 'govuk-tag govuk-tag--blue';
+      }
+    };
     
-    const formatBcrs = (bcrs) => {
-      // Create a map of phase numbers to phase names
-      const phaseMap = {};
-      phases.forEach(phase => {
-        phaseMap[phase.value] = phase.name;
-      });
-      
+    dashboard.formatBcrs = function(bcrs) {
       return bcrs.map(bcr => {
-        // Check if this is a new Bcr model with submission data
-        let submissionCode = null;
-        if (bcr.submission && bcr.submission.submissionCode) {
-          submissionCode = bcr.submission.submissionCode;
-        } else if (bcr.submissionId) {
-          // For legacy BCRs, we don't have the submission data directly
-          // But we could potentially fetch it if needed
-          submissionCode = bcr.submissionCode || null;
-        }
-        
-        // Map the phase number to a phase name
-        const phaseNumber = bcr.phase || bcr.currentPhase;
-        const phaseName = phaseMap[phaseNumber] || `Phase ${phaseNumber}` || 'Initial Assessment';
-        
+        const submission = bcr.submissionId;
         return {
-          ...bcr,
-          bcrCode: bcr.bcrNumber || `BCR-${bcr.recordNumber}`,
-          currentPhase: phaseName, // Use the phase name instead of the number
-          statusTagColor: getStatusTagColor(bcr.status),
-          urgencyLevel: bcr.priority || 'Medium',
-          submissionCode: submissionCode
+          id: bcr._id,
+          bcrCode: bcr.bcrCode,
+          submissionDate: bcr.createdAt ? new Date(bcr.createdAt).toLocaleDateString('en-GB') : 'Unknown',
+          submitter: submission ? submission.fullName : 'Unknown',
+          description: submission ? submission.briefDescription : 'No description',
+          status: bcr.status,
+          statusTagColor: dashboard.getStatusTagColor(bcr.status),
+          phase: bcr.currentPhase,
+          urgencyLevel: bcr.urgencyLevel || 'Unknown',
+          impactedAreas: Array.isArray(bcr.impactedAreas) ? bcr.impactedAreas.join(', ') : 'None'
         };
       });
     };
-
-    const formattedActiveBcrs = formatBcrs(activeBcrsData);
-    const formattedCompletedBcrs = formatBcrs(completedBcrsData);
-    const formattedRejectedBcrs = formatBcrs(rejectedBcrsData);
-
-    // Calculate total BCRs (active + completed + rejected)
+    
+    const formattedActiveBcrs = dashboard.formatBcrs(activeBcrs);
+    const formattedCompletedBcrs = dashboard.formatBcrs(completedBcrs);
+    const formattedRejectedBcrs = dashboard.formatBcrs(rejectedBcrsData);
+    
+    // Get workflow phase names for the dashboard
+    const workflowPhaseNames = phases.map(phase => phase.name);
+    
+    // Count totals for each category
     const totalActiveBcrs = formattedActiveBcrs.length;
     const totalCompletedBcrs = formattedCompletedBcrs.length;
     const totalRejectedBcrs = formattedRejectedBcrs.length;
@@ -309,9 +248,9 @@ async function moduleStatus(req, res) {
     
     // Check models
     const models = [
-      { name: 'Bcrs', exists: true, count: await prisma.bcrs.count() },
-      { name: 'BcrConfigs', exists: true, count: await prisma.bcrConfigs.count() },
-      { name: 'Users', exists: true, count: await prisma.users.count() }
+      { name: 'Bcrs', exists: true, count: await Bcr.countDocuments() },
+      { name: 'BcrConfigs', exists: true, count: await BcrConfig.countDocuments() },
+      { name: 'Users', exists: true, count: await User.countDocuments() }
     ];
     
     // Check controllers

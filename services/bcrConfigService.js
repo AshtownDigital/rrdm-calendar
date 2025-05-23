@@ -1,24 +1,23 @@
 /**
  * BCR Config Service
- * Handles all database operations for BCR configurations using Prisma
+ * Handles all database operations for BCR configurations using MongoDB
  */
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
 const { v4: uuidv4 } = require('uuid');
+
+// Import MongoDB models
+const BcrConfig = require('../models/BcrConfig');
+const WorkflowPhase = require('../models/WorkflowPhase');
 
 /**
  * Get all BCR configurations by type
  * @param {string} type - Configuration type (phase, status, impactArea, etc.)
  * @returns {Promise<Array>} - Array of configurations
  */
-// DEPRECATED: Phase and status logic now handled by workflowPhaseService/WorkflowPhase model
 // Only use this for impactArea, urgencyLevel, and other non-phase/status config types
 const getConfigsByType = async (type) => {
   try {
-    const configs = await prisma.bcrConfigs.findMany({
-      where: { type },
-      orderBy: { displayOrder: 'asc' }
-    });
+    const configs = await BcrConfig.find({ type })
+      .sort({ displayOrder: 1 });
     
     return configs;
   } catch (error) {
@@ -33,11 +32,13 @@ const getConfigsByType = async (type) => {
  * @returns {Promise<Object>} - Configuration object
  */
 const getConfigById = async (id) => {
-  const config = await prisma.bcrConfigs.findUnique({
-    where: { id }
-  });
-  
-  return config;
+  try {
+    const config = await BcrConfig.findById(id);
+    return config;
+  } catch (error) {
+    console.error(`Error fetching config with ID ${id}:`, error);
+    return null;
+  }
 };
 
 /**
@@ -46,19 +47,25 @@ const getConfigById = async (id) => {
  * @returns {Promise<Object>} - Created configuration
  */
 const createConfig = async (configData) => {
-  const newConfig = await prisma.bcrConfigs.create({
-    data: {
-      id: uuidv4(),
+  try {
+    const newConfig = new BcrConfig({
       type: configData.type,
       name: configData.name,
       value: configData.value,
       displayOrder: configData.displayOrder || 0,
+      color: configData.color || null,
+      phaseValue: configData.phaseValue || null,
+      statusType: configData.statusType || null,
       createdAt: new Date(),
       updatedAt: new Date()
-    }
-  });
-  
-  return newConfig;
+    });
+    
+    await newConfig.save();
+    return newConfig;
+  } catch (error) {
+    console.error('Error creating config:', error);
+    throw error;
+  }
 };
 
 /**
@@ -68,18 +75,30 @@ const createConfig = async (configData) => {
  * @returns {Promise<Object>} - Updated configuration
  */
 const updateConfig = async (id, configData) => {
-  const updatedConfig = await prisma.bcrConfigs.update({
-    where: { id },
-    data: {
-      type: configData.type,
-      name: configData.name,
-      value: configData.value,
-      displayOrder: configData.displayOrder,
-      updatedAt: new Date() // Update the timestamp
+  try {
+    const config = await BcrConfig.findById(id);
+    
+    if (!config) {
+      throw new Error(`Config with ID ${id} not found`);
     }
-  });
-  
-  return updatedConfig;
+    
+    // Update fields
+    if (configData.type) config.type = configData.type;
+    if (configData.name) config.name = configData.name;
+    if (configData.value) config.value = configData.value;
+    if (configData.displayOrder !== undefined) config.displayOrder = configData.displayOrder;
+    if (configData.color) config.color = configData.color;
+    if (configData.phaseValue) config.phaseValue = configData.phaseValue;
+    if (configData.statusType) config.statusType = configData.statusType;
+    
+    config.updatedAt = new Date();
+    
+    await config.save();
+    return config;
+  } catch (error) {
+    console.error(`Error updating config with ID ${id}:`, error);
+    throw error;
+  }
 };
 
 /**
@@ -88,46 +107,74 @@ const updateConfig = async (id, configData) => {
  * @returns {Promise<Object>} - Deleted configuration
  */
 const deleteConfig = async (id) => {
-  const deletedConfig = await prisma.bcrConfigs.delete({
-    where: { id }
-  });
-  
-  return deletedConfig;
+  try {
+    const config = await BcrConfig.findById(id);
+    
+    if (!config) {
+      throw new Error(`Config with ID ${id} not found`);
+    }
+    
+    await BcrConfig.deleteOne({ _id: id });
+    return config;
+  } catch (error) {
+    console.error(`Error deleting config with ID ${id}:`, error);
+    throw error;
+  }
 };
 
 /**
  * Get all phases with their associated statuses
  * @returns {Promise<Object>} - Object with phases and phase-status mapping
  */
-// DEPRECATED: Use workflowPhaseService for all phase/status logic
 const getPhasesWithStatuses = async () => {
   try {
-    // Get phases if they exist, otherwise use statuses as phases
-    let phases = await getConfigsByType('phase');
-    const statuses = await getConfigsByType('status');
+    // Get phases from WorkflowPhase model
+    const phases = await WorkflowPhase.find({}).sort({ order: 1 });
+    
+    // Get statuses from BcrConfig
+    const statuses = await BcrConfig.find({ type: 'status' }).sort({ displayOrder: 1 });
     
     // If no phases exist, create virtual phases based on statuses
     if (!phases || phases.length === 0) {
       console.log('No phases found, using statuses as phases');
-      phases = statuses.map(status => ({
-        id: status.id,
+      const virtualPhases = statuses.map(status => ({
+        _id: status._id,
         type: 'phase',
         name: status.name,
         value: status.value,
-        displayOrder: status.displayOrder
+        order: status.displayOrder
       }));
+      
+      // Create a mapping of phase values to status names
+      const phaseStatusMapping = {};
+      
+      for (const status of statuses) {
+        // Use status value as phase value if no specific mapping exists
+        const phaseValue = status.value;
+        if (!phaseStatusMapping[phaseValue]) {
+          phaseStatusMapping[phaseValue] = [];
+        }
+        phaseStatusMapping[phaseValue].push(status.name);
+      }
+      
+      return {
+        phases: virtualPhases,
+        phaseStatusMapping
+      };
     }
     
     // Create a mapping of phase values to status names
     const phaseStatusMapping = {};
     
-    for (const status of statuses) {
-      // Use status value as phase value if no specific mapping exists
-      const phaseValue = status.value;
-      if (!phaseStatusMapping[phaseValue]) {
-        phaseStatusMapping[phaseValue] = [];
+    for (const phase of phases) {
+      // Find statuses associated with this phase
+      const phaseStatuses = statuses.filter(status => status.phaseValue === phase.value);
+      
+      if (phaseStatuses.length > 0) {
+        phaseStatusMapping[phase.value] = phaseStatuses.map(status => status.name);
+      } else {
+        phaseStatusMapping[phase.value] = [];
       }
-      phaseStatusMapping[phaseValue].push(status.name);
     }
     
     return {
@@ -147,56 +194,35 @@ const getPhasesWithStatuses = async () => {
  * Get phase-status mappings
  * @returns {Promise<Array>} - Array of phase-status mappings
  */
-// DEPRECATED: Use workflowPhaseService for all phase/status logic
 const getPhaseStatusMappings = async () => {
   try {
-    // Query the database for phase-status mappings
-    const mappings = await prisma.bcrConfigs.findMany({
-      where: {
-        type: 'phaseStatusMapping'
-      },
-      orderBy: {
-        displayOrder: 'asc'
-      }
-    });
+    // Get all phases
+    const phases = await WorkflowPhase.find({}).sort({ order: 1 });
     
-    if (!mappings || mappings.length === 0) {
-      // If no mappings exist, get phases and statuses and create default mappings
-      const phases = await getConfigsByType('phase');
-      const statuses = await getConfigsByType('status');
+    // Get all statuses
+    const statuses = await BcrConfig.find({ type: 'status' }).sort({ displayOrder: 1 });
+    
+    // Create mappings based on phaseValue in statuses
+    const mappings = [];
+    
+    for (const phase of phases) {
+      // Find statuses for this phase
+      const phaseStatuses = statuses.filter(status => status.phaseValue === phase.value);
       
-      // Create a simple mapping based on phases and statuses
-      const defaultMappings = [];
-      
-      for (const phase of phases) {
-        // Find statuses that might be related to this phase
-        const relatedStatuses = statuses.filter(status => {
-          // Simple logic: if status value contains phase value or vice versa
-          return status.value.includes(phase.value) || 
-                 phase.value.includes(status.value) ||
-                 status.name.toLowerCase().includes(phase.name.toLowerCase()) ||
-                 phase.name.toLowerCase().includes(status.name.toLowerCase());
+      for (const status of phaseStatuses) {
+        mappings.push({
+          id: `${phase._id}_${status._id}`,
+          type: 'phaseStatusMapping',
+          name: `${phase.name} - ${status.name}`,
+          value: JSON.stringify({
+            phaseId: phase._id,
+            phaseValue: phase.value,
+            statusId: status._id,
+            statusValue: status.value
+          }),
+          displayOrder: phase.order * 100 + status.displayOrder
         });
-        
-        if (relatedStatuses.length > 0) {
-          for (const status of relatedStatuses) {
-            defaultMappings.push({
-              id: `${phase.id}_${status.id}`,
-              type: 'phaseStatusMapping',
-              name: `${phase.name} - ${status.name}`,
-              value: JSON.stringify({
-                phaseId: phase.id,
-                phaseValue: phase.value,
-                statusId: status.id,
-                statusValue: status.value
-              }),
-              displayOrder: phase.displayOrder * 100 + status.displayOrder
-            });
-          }
-        }
       }
-      
-      return defaultMappings;
     }
     
     return mappings;
@@ -213,7 +239,5 @@ module.exports = {
   updateConfig,
   deleteConfig,
   getPhasesWithStatuses,
-  getPhaseStatusMappings,
-  // Export prisma for testing purposes
-  _prisma: prisma
+  getPhaseStatusMappings
 };

@@ -2,9 +2,10 @@
  * BCR Submission Model
  * Handles database operations for BCR submissions using Prisma
  */
-const { PrismaClient } = require('@prisma/client');
+// Using centralized Prisma client
+const { prisma } = require('../config/prisma');
 const { v4: uuidv4 } = require('uuid');
-const prisma = new PrismaClient();
+// Prisma client is imported from centralized config
 const { SUBMISSION_SOURCES, URGENCY_LEVELS, ATTACHMENTS_OPTIONS } = require('../../config/constants');
 
 /**

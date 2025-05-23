@@ -1,30 +1,87 @@
-// models/Submission.js
-// Standalone model for BCR submissions
+/**
+ * Submission model for MongoDB
+ * Based on the Prisma Submission model
+ */
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-// Deprecated: Submission model is now managed by Prisma.
-// Use `const { PrismaClient } = require('@prisma/client');` and access prisma.Submissions in your code.
-
-// This file is kept for legacy compatibility. Remove all Mongoose usage from your codebase.
-  submissionNumber: {
-    type: String,
+const SubmissionSchema = new Schema({
+  recordNumber: {
+    type: Number,
     unique: true
   },
-  bcr: {
-    type: Schema.Types.ObjectId,
-    ref: 'Bcr',
-    required: true
-  },
-  submittedBy: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  status: {
+  submissionCode: {
     type: String,
-    enum: ['draft', 'submitted', 'under_review', 'approved', 'rejected', 'implemented'],
-    default: 'draft'
+    unique: true,
+    required: true
   },
-  submissionDate: {
+  fullName: {
+    type: String,
+    required: true,
+    maxlength: 60
+  },
+  emailAddress: {
+    type: String,
+    required: true,
+    maxlength: 80
+  },
+  submissionSource: {
+    type: String,
+    required: true
+  },
+  organisation: {
+    type: String
+  },
+  briefDescription: {
+    type: String,
+    required: true,
+    maxlength: 500
+  },
+  justification: {
+    type: String,
+    required: true
+  },
+  urgencyLevel: {
+    type: String,
+    required: true
+  },
+  impactAreas: {
+    type: [String],
+    required: true
+  },
+  affectedReferenceDataArea: {
+    type: String
+  },
+  technicalDependencies: {
+    type: String
+  },
+  relatedDocuments: {
+    type: String
+  },
+  attachments: {
+    type: String,
+    required: true
+  },
+  additionalNotes: {
+    type: String
+  },
+  declaration: {
+    type: Boolean,
+    required: true
+  },
+  reviewOutcome: {
+    type: String
+  },
+  reviewComments: {
+    type: String
+  },
+  reviewedAt: {
+    type: Date
+  },
+  deletedAt: {
+    type: Date
+  },
+  createdAt: {
     type: Date,
     default: Date.now
   },
@@ -32,16 +89,14 @@
     type: Date,
     default: Date.now
   },
-  notes: {
-    type: String
+  submittedById: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
-  history: {
-    type: Array,
-    default: []
-  },
-  workflowHistory: {
-    type: Array,
-    default: []
+  bcrId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Bcr'
   }
 });
 
@@ -49,6 +104,21 @@
 SubmissionSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
+});
+
+// Auto-increment recordNumber
+SubmissionSchema.pre('save', async function(next) {
+  if (this.isNew) {
+    try {
+      const lastSubmission = await this.constructor.findOne({}, {}, { sort: { 'recordNumber': -1 } });
+      this.recordNumber = lastSubmission ? lastSubmission.recordNumber + 1 : 1;
+      next();
+    } catch (error) {
+      next(error);
+    }
+  } else {
+    next();
+  }
 });
 
 const Submission = mongoose.model('Submission', SubmissionSchema);

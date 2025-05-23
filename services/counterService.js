@@ -3,8 +3,9 @@
  * Handles global counters for BCR submissions and statuses
  * Updated to exclusively use the new Bcr model and provide more accurate counts
  */
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+// Using centralized Prisma client
+const { prisma } = require('../config/prisma');
+// Prisma client is imported from centralized config
 const workflowPhaseService = require('./workflowPhaseService');
 
 // In-memory cache for counters to avoid excessive database queries

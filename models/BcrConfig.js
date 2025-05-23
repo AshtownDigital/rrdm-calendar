@@ -8,8 +8,8 @@ const BcrConfigSchema = new Schema({
   type: {
     type: String,
     required: true,
-    // Only use for impactArea, urgencyLevel, role. 'phase' and 'status' are now handled by WorkflowPhase (Prisma)
-    enum: ['impactArea', 'urgencyLevel', 'role']
+    // Expanded to include all possible types from the PostgreSQL database
+    enum: ['impactArea', 'urgencyLevel', 'role', 'impactArea_description', 'phase', 'status', 'phase-status']
   },
   name: {
     type: String,

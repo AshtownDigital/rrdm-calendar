@@ -2,9 +2,10 @@
  * Impacted Areas Controller
  * Handles management of BCR impact areas
  */
-const { PrismaClient } = require('@prisma/client');
+// Using centralized Prisma client
+const { prisma } = require('../config/prisma');
 const { validate: isUuid } = require('uuid');
-const prisma = new PrismaClient();
+// Prisma client is imported from centralized config
 const bcrConfigService = require('../../services/bcrConfigService');
 
 /**

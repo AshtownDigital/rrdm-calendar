@@ -1,0 +1,31 @@
+{
+  "name": "RRDM Green Staging",
+  "description": "Reference Data Management System - Green Staging Environment",
+  "repository": "https://github.com/cnkinfolks-projects/rrdm",
+  "keywords": ["node", "express", "mongodb", "reference-data"],
+  "env": {
+    "NODE_ENV": {
+      "description": "Environment setting for the application",
+      "value": "staging"
+    },
+    "MONGODB_URI": {
+      "description": "MongoDB connection string",
+      "required": true
+    },
+    "SESSION_SECRET": {
+      "description": "Secret for session management",
+      "generator": "secret"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  }
+}

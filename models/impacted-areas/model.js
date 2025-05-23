@@ -1,10 +1,14 @@
 /**
  * Impacted Areas Model
- * Handles database operations for impacted areas using Prisma
+ * Handles database operations for impacted areas using MongoDB
  */
-const { PrismaClient } = require('@prisma/client');
 const { v4: uuidv4 } = require('uuid');
-const prisma = new PrismaClient();
+
+// Import MongoDB models
+const ImpactedArea = require('../ImpactedArea');
+const BcrConfig = require('../BcrConfig');
+const Submission = require('../Submission');
+const Bcr = require('../Bcr');
 
 /**
  * Create a new impacted area
@@ -17,10 +21,8 @@ const createImpactedArea = async (areaData) => {
   if (areaData.order === undefined) throw new Error('Order is required');
   
   // Check if name is unique
-  const existingArea = await prisma.impactedArea.findFirst({
-    where: {
-      name: areaData.name
-    }
+  const existingArea = await ImpactedArea.findOne({
+    name: areaData.name
   });
   
   if (existingArea) {
@@ -28,40 +30,38 @@ const createImpactedArea = async (areaData) => {
   }
   
   // Create the impacted area
-  const impactedArea = await prisma.impactedArea.create({
-    data: {
-      id: uuidv4(),
-      name: areaData.name,
-      description: areaData.description || '',
-      order: areaData.order,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }
+  const impactedArea = new ImpactedArea({
+    name: areaData.name,
+    value: areaData.name.toLowerCase().replace(/\s+/g, '_'),
+    description: areaData.description || '',
+    order: areaData.order,
+    createdAt: new Date(),
+    updatedAt: new Date()
   });
+  
+  await impactedArea.save();
   
   // For backward compatibility, also create in BcrConfigs
   try {
     // Get next record number for BcrConfigs
-    const lastArea = await prisma.bcrConfigs.findFirst({
-      where: { type: 'impactArea' },
-      orderBy: {
-        recordNumber: 'desc'
-      }
-    });
+    const lastArea = await BcrConfig.findOne(
+      { type: 'impactArea' },
+      {},
+      { sort: { 'recordNumber': -1 } }
+    );
     
     const recordNumber = lastArea ? lastArea.recordNumber + 1 : 1;
     
-    await prisma.bcrConfigs.create({
-      data: {
-        id: impactedArea.id, // Use the same ID for consistency
-        type: 'impactArea',
-        recordNumber,
-        name: areaData.name,
-        description: areaData.description || '',
-        value: areaData.name.toLowerCase().replace(/\s+/g, '_'),
-        displayOrder: areaData.order
-      }
+    const bcrConfig = new BcrConfig({
+      type: 'impactArea',
+      recordNumber,
+      name: areaData.name,
+      description: areaData.description || '',
+      value: areaData.name.toLowerCase().replace(/\s+/g, '_'),
+      displayOrder: areaData.order
     });
+    
+    await bcrConfig.save();
   } catch (error) {
     console.warn('Could not create backward compatibility record in BcrConfigs:', error);
   }
@@ -75,23 +75,16 @@ const createImpactedArea = async (areaData) => {
  */
 const getAllImpactedAreas = async () => {
   try {
-    const impactedAreas = await prisma.impactedArea.findMany({
-      orderBy: {
-        order: 'asc'
-      }
-    });
+    const impactedAreas = await ImpactedArea.find({})
+      .sort({ order: 1 });
     
     return impactedAreas;
   } catch (error) {
     console.error('Error getting impacted areas:', error);
     // Fallback to BcrConfigs for backward compatibility
     try {
-      const legacyAreas = await prisma.bcrConfigs.findMany({
-        where: { type: 'impactArea' },
-        orderBy: {
-          displayOrder: 'asc'
-        }
-      });
+      const legacyAreas = await BcrConfig.find({ type: 'impactArea' })
+        .sort({ displayOrder: 1 });
       
       return legacyAreas;
     } catch (fallbackError) {
@@ -108,20 +101,16 @@ const getAllImpactedAreas = async () => {
  */
 const getImpactedAreaById = async (id) => {
   try {
-    const impactedArea = await prisma.impactedArea.findUnique({
-      where: { id }
-    });
+    const impactedArea = await ImpactedArea.findById(id);
     
     return impactedArea;
   } catch (error) {
     console.error('Error getting impacted area by ID:', error);
     // Fallback to BcrConfigs for backward compatibility
     try {
-      const legacyArea = await prisma.bcrConfigs.findFirst({
-        where: {
-          id,
-          type: 'impactArea'
-        }
+      const legacyArea = await BcrConfig.findOne({
+        _id: id,
+        type: 'impactArea'
       });
       
       return legacyArea;
@@ -144,11 +133,9 @@ const updateImpactedArea = async (id, areaData) => {
   if (areaData.order === undefined) throw new Error('Order is required');
   
   // Check if name is unique (excluding this area)
-  const existingArea = await prisma.impactedArea.findFirst({
-    where: {
-      name: areaData.name,
-      id: { not: id }
-    }
+  const existingArea = await ImpactedArea.findOne({
+    name: areaData.name,
+    _id: { $ne: id }
   });
   
   if (existingArea) {
@@ -156,35 +143,41 @@ const updateImpactedArea = async (id, areaData) => {
   }
   
   // Update the impacted area
-  const updatedArea = await prisma.impactedArea.update({
-    where: { id },
-    data: {
-      name: areaData.name,
-      description: areaData.description || '',
-      order: areaData.order,
-      updatedAt: new Date()
-    }
-  });
+  const impactedArea = await ImpactedArea.findById(id);
+  
+  if (!impactedArea) {
+    throw new Error(`Impacted area with ID '${id}' not found`);
+  }
+  
+  impactedArea.name = areaData.name;
+  impactedArea.value = areaData.name.toLowerCase().replace(/\s+/g, '_');
+  impactedArea.description = areaData.description || '';
+  impactedArea.order = areaData.order;
+  impactedArea.updatedAt = new Date();
+  
+  await impactedArea.save();
   
   // Update in BcrConfigs for backward compatibility
   try {
-    await prisma.bcrConfigs.updateMany({
-      where: { 
-        id,
+    await BcrConfig.updateMany(
+      { 
+        _id: id,
         type: 'impactArea'
       },
-      data: {
-        name: areaData.name,
-        description: areaData.description || '',
-        value: areaData.name.toLowerCase().replace(/\s+/g, '_'),
-        displayOrder: areaData.order
+      {
+        $set: {
+          name: areaData.name,
+          description: areaData.description || '',
+          value: areaData.name.toLowerCase().replace(/\s+/g, '_'),
+          displayOrder: areaData.order
+        }
       }
-    });
+    );
   } catch (error) {
     console.warn('Could not update backward compatibility record in BcrConfigs:', error);
   }
   
-  return updatedArea;
+  return impactedArea;
 };
 
 /**
@@ -194,44 +187,39 @@ const updateImpactedArea = async (id, areaData) => {
  */
 const deleteImpactedArea = async (id) => {
   // Check if the area is in use
-  const submissions = await prisma.submission.findMany({
-    where: {
-      impactAreas: {
-        has: id
-      }
-    }
+  const submissions = await Submission.find({
+    impactAreas: id
   });
   
-  const bcrs = await prisma.bcr.findMany({
-    where: {
-      impactedAreas: {
-        has: id
-      }
-    }
+  const bcrs = await Bcr.find({
+    impactedAreas: id
   });
   
   if (submissions.length > 0 || bcrs.length > 0) {
     throw new Error('Cannot delete impacted area that is in use');
   }
   
+  // Find the impacted area
+  const impactedArea = await ImpactedArea.findById(id);
+  
+  if (!impactedArea) {
+    throw new Error(`Impacted area with ID '${id}' not found`);
+  }
+  
   // Delete the impacted area
-  const deletedArea = await prisma.impactedArea.delete({
-    where: { id }
-  });
+  await ImpactedArea.findByIdAndDelete(id);
   
   // Delete from BcrConfigs for backward compatibility
   try {
-    await prisma.bcrConfigs.deleteMany({
-      where: { 
-        id,
-        type: 'impactArea'
-      }
+    await BcrConfig.deleteMany({
+      _id: id,
+      type: 'impactArea'
     });
   } catch (error) {
     console.warn('Could not delete backward compatibility record in BcrConfigs:', error);
   }
   
-  return deletedArea;
+  return impactedArea;
 };
 
 module.exports = {

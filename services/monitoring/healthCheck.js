@@ -31,7 +31,8 @@ let prisma;
 function getPrismaClient() {
   if (!prisma) {
     try {
-      const { PrismaClient } = require('@prisma/client');
+      // Using centralized Prisma client
+const { prisma } = require('../config/prisma');
       prisma = new PrismaClient();
     } catch (error) {
       logger.error('Failed to initialize Prisma client', { error: error.message });

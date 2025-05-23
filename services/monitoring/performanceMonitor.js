@@ -7,18 +7,8 @@
  */
 const { logger } = require('../logger');
 const os = require('os');
-const { PrismaClient } = require('@prisma/client');
+const mongoose = require('mongoose');
 const { testCsrfConfiguration } = require('../../tests/csrf-config.test');
-
-// Initialize Prisma client with query logging
-const prisma = new PrismaClient({
-  log: [
-    {
-      emit: 'event',
-      level: 'query'
-    }
-  ]
-});
 
 // Track query durations
 let queryMetrics = {
@@ -30,36 +20,43 @@ let queryMetrics = {
 // Configure slow query threshold (in milliseconds)
 const SLOW_QUERY_THRESHOLD = 100;
 
-// Listen for query events
-prisma.$on('query', (e) => {
-  const duration = e.duration;
+// Set up MongoDB query monitoring
+mongoose.set('debug', (collectionName, method, query, doc) => {
+  const start = Date.now();
   
-  // Update metrics
-  queryMetrics.count++;
-  queryMetrics.totalDuration += duration;
-  
-  // Track slow queries
-  if (duration > SLOW_QUERY_THRESHOLD) {
-    queryMetrics.slowQueries.push({
-      query: e.query,
-      params: e.params,
-      duration,
-      timestamp: new Date()
-    });
+  // Return a function to be called when the query is complete
+  return () => {
+    const duration = Date.now() - start;
     
-    // Keep only the last 100 slow queries
-    if (queryMetrics.slowQueries.length > 100) {
-      queryMetrics.slowQueries.shift();
+    // Update metrics
+    queryMetrics.count++;
+    queryMetrics.totalDuration += duration;
+    
+    // Track slow queries
+    if (duration > SLOW_QUERY_THRESHOLD) {
+      queryMetrics.slowQueries.push({
+        collection: collectionName,
+        method,
+        query,
+        duration,
+        timestamp: new Date()
+      });
+      
+      // Keep only the last 100 slow queries
+      if (queryMetrics.slowQueries.length > 100) {
+        queryMetrics.slowQueries.shift();
+      }
+      
+      // Log slow query
+      logger.warn('Slow database query detected', {
+        collection: collectionName,
+        method,
+        query: JSON.stringify(query),
+        duration,
+        threshold: SLOW_QUERY_THRESHOLD
+      });
     }
-    
-    // Log slow query
-    logger.warn('Slow database query detected', {
-      query: e.query,
-      params: e.params,
-      duration,
-      threshold: SLOW_QUERY_THRESHOLD
-    });
-  }
+  };
 });
 
 /**
@@ -106,7 +103,15 @@ function getApplicationMetrics() {
  * @returns {Object} - Database metrics
  */
 function getDatabaseMetrics() {
+  // Get MongoDB connection stats
+  const mongoStats = {
+    connectionState: mongoose.connection.readyState, // 0: disconnected, 1: connected, 2: connecting, 3: disconnecting
+    collections: Object.keys(mongoose.connection.collections).length,
+    models: Object.keys(mongoose.models).length
+  };
+  
   return {
+    mongodb: mongoStats,
     queries: {
       count: queryMetrics.count,
       totalDuration: queryMetrics.totalDuration,
@@ -189,8 +194,8 @@ async function getAllMetrics() {
  * @param {number} interval - Interval in milliseconds
  */
 function startMetricsLogging(interval = 300000) { // Default: 5 minutes
-  setInterval(() => {
-    const metrics = getAllMetrics();
+  setInterval(async () => {
+    const metrics = await getAllMetrics();
     
     logger.info('Application metrics', { metrics });
     

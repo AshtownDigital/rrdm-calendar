@@ -1,13 +1,20 @@
 /**
  * Clean server.js for RRDM application
+ * Updated to use MongoDB instead of Prisma
  */
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const nunjucks = require('nunjucks');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
 const fs = require('fs');
+
+// Connect to MongoDB
+const { connect, db } = require('./config/database.mongo');
+
+// Initialize MongoDB connection
+connect().catch(err => {
+  console.error('Failed to connect to MongoDB:', err);
+});
 
 // Create Express app
 const app = express();
@@ -123,6 +130,13 @@ app.use(session({
 // Cookie parser middleware - required for cookie-based CSRF protection
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
+
+// MongoDB connection status middleware
+app.use((req, res, next) => {
+  // Add MongoDB connection status to response locals
+  res.locals.mongoConnected = db.readyState === 1;
+  next();
+});
 
 // CSRF Protection Middleware
 const csrf = require('csurf');
@@ -1142,5 +1156,14 @@ if (!isServerless) {
   console.log('Running in serverless mode - no HTTP server started');
 }
 
-// Export the Express app for serverless environments
-module.exports = app;
+// For Vercel serverless functions, we need to export a handler function
+if (isServerless) {
+  // Export a request handler function for serverless environments
+  module.exports = (req, res) => {
+    // Vercel serverless function handler
+    return app(req, res);
+  };
+} else {
+  // Export the Express app for standard environments
+  module.exports = app;
+}

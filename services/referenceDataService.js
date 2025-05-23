@@ -4,10 +4,11 @@
  * Handles all database operations for reference data using Prisma
  * Implements caching for frequently accessed data
  */
-const { PrismaClient } = require('@prisma/client');
+// Using centralized Prisma client
+const { prisma } = require('../config/prisma');
 const { mediumCache } = require('../utils/cache');
 
-const prisma = new PrismaClient();
+// Prisma client is imported from centralized config
 
 /**
  * Get all reference data

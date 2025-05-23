@@ -2,8 +2,9 @@
  * Controller for updating BCR submission status
  * Handles updating the status and phase of a BCR submission
  */
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+// Using centralized Prisma client
+const { prisma } = require('../config/prisma');
+// Prisma client is imported from centralized config
 
 /**
  * Submit BCR update - Updates the BCR phase and status

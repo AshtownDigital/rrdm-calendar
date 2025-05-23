@@ -4,8 +4,9 @@
  * This service provides comprehensive audit logging for tracking user actions.
  * It records who did what, when, and to which resource for compliance and security.
  */
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+// Using centralized Prisma client
+const { prisma } = require('../config/prisma');
+// Prisma client is imported from centralized config
 const { logger } = require('../logger');
 
 /**

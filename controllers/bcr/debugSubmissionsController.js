@@ -2,8 +2,9 @@
  * Debug version of the BCR Submissions Controller
  * Simplified to help identify the specific issue
  */
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+// Using centralized Prisma client
+const { prisma } = require('../config/prisma');
+// Prisma client is imported from centralized config
 const bcrService = require('../../services/bcrService');
 const bcrConfigService = require('../../services/bcrConfigService');
 

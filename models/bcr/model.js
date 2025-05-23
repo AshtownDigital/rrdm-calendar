@@ -1,11 +1,14 @@
 /**
  * BCR Model
- * Handles database operations for BCRs using Prisma
+ * Handles database operations for BCRs using MongoDB
  */
-const { PrismaClient } = require('@prisma/client');
 const { v4: uuidv4 } = require('uuid');
-const prisma = new PrismaClient();
 const { WORKFLOW_PHASES, PHASE_STATUSES, URGENCY_LEVELS } = require('../../config/constants');
+
+// Import MongoDB models
+const Bcr = require('../Bcr');
+const Submission = require('../Submission');
+const User = require('../User');
 
 /**
  * Generate a BCR code in the format BCR-YY/YY-NNN
@@ -43,10 +46,7 @@ const generateBcrCode = (recordNumber) => {
 const createBcrFromSubmission = async (submissionId) => {
   try {
     // Get the submission from the database
-    const submission = await prisma.Submission.findUnique({
-      where: { id: submissionId },
-      include: { bcr: true }
-    });
+    const submission = await Submission.findById(submissionId);
     
     if (!submission) {
       throw new Error('Submission not found');
@@ -57,9 +57,7 @@ const createBcrFromSubmission = async (submissionId) => {
     }
     
     // Check if a BCR already exists for this submission
-    const existingBcr = await prisma.Bcr.findFirst({
-      where: { submissionId: submissionId }
-    });
+    const existingBcr = await Bcr.findOne({ submissionId });
     
     if (existingBcr) {
       console.log(`BCR already exists for submission ${submissionId}: ${existingBcr.bcrCode}`);
@@ -67,39 +65,36 @@ const createBcrFromSubmission = async (submissionId) => {
     }
     
     // Get next record number
-    const lastBcr = await prisma.Bcr.findFirst({
-      orderBy: {
-        recordNumber: 'desc'
-      }
-    });
+    const lastBcr = await Bcr.findOne({}, {}, { sort: { 'recordNumber': -1 } });
     
     const recordNumber = lastBcr ? lastBcr.recordNumber + 1 : 1;
     const bcrCode = generateBcrCode(recordNumber);
     
     // Create the BCR
-    const bcr = await prisma.Bcr.create({
-      data: {
-        id: uuidv4(),
-        recordNumber,
-        bcrCode,
-        submission: {
-          connect: { id: submission.id }
-        },
-        currentPhase: WORKFLOW_PHASES[0], // Start at first phase
-        status: PHASE_STATUSES[1], // In Progress
-        urgencyLevel: submission.urgencyLevel,
-        impactedAreas: submission.impactAreas || [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        workflowHistory: [{
-          phase: WORKFLOW_PHASES[0],
-          status: PHASE_STATUSES[1],
-          comment: 'BCR created from submission',
-          updatedBy: 'System',
-          timestamp: new Date()
-        }]
-      }
+    const bcr = new Bcr({
+      recordNumber,
+      bcrCode,
+      submissionId: submission._id,
+      currentPhase: WORKFLOW_PHASES[0], // Start at first phase
+      status: PHASE_STATUSES[1], // In Progress
+      urgencyLevel: submission.urgencyLevel,
+      impactedAreas: submission.impactAreas || [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      workflowHistory: [{
+        phase: WORKFLOW_PHASES[0],
+        status: PHASE_STATUSES[1],
+        comment: 'BCR created from submission',
+        updatedBy: 'System',
+        timestamp: new Date()
+      }]
     });
+    
+    await bcr.save();
+    
+    // Update the submission with the BCR ID
+    submission.bcrId = bcr._id;
+    await submission.save();
     
     return bcr;
   } catch (error) {
@@ -121,77 +116,45 @@ const getBcrById = async (id) => {
     console.log(`Looking for BCR with ID: ${id}`);
     
     // Check if the ID is a UUID or a BCR code
-    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
-      console.log('ID appears to be a UUID');
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id) || 
+        /^[0-9a-f]{24}$/i.test(id)) {
+      console.log('ID appears to be a UUID or MongoDB ObjectId');
       
-      // If it's a UUID, find in the Bcr model
-      bcr = await prisma.Bcr.findUnique({
-        where: { id },
-        include: { submission: true }
-      });
-      
-      console.log(`BCR in model: ${bcr ? 'Found' : 'Not found'}`);
+      // If it's a UUID or ObjectId, find by _id
+      bcr = await Bcr.findById(id)
+        .populate({
+          path: 'submissionId',
+          populate: {
+            path: 'submittedById',
+            model: 'User'
+          }
+        });
     } else {
-      console.log('ID appears to be a BCR code or number');
+      console.log('ID appears to be a BCR code');
       
-      // Try to find by BCR code
-      bcr = await prisma.Bcr.findFirst({
-        where: { bcrCode: id },
-        include: { submission: true }
-      });
-      
-      console.log(`BCR by code: ${bcr ? 'Found' : 'Not found'}`);
-      
-      // If still not found, try by record number
-      if (!bcr) {
-        const recordNumber = parseInt(id, 10);
-        if (!isNaN(recordNumber)) {
-          console.log(`Trying record number: ${recordNumber}`);
-          
-          bcr = await prisma.Bcr.findFirst({
-            where: { recordNumber },
-            include: { submission: true }
-          });
-          
-          console.log(`BCR by record number: ${bcr ? 'Found' : 'Not found'}`);
-        }
-      }
+      // If it's a BCR code, find by bcrCode
+      bcr = await Bcr.findOne({ bcrCode: id })
+        .populate({
+          path: 'submissionId',
+          populate: {
+            path: 'submittedById',
+            model: 'User'
+          }
+        });
     }
     
     if (bcr) {
-      // Get impacted areas as names if they exist
-      if (bcr.impactedAreas && bcr.impactedAreas.length > 0) {
-        const impactedAreas = await prisma.ImpactedAreas.findMany({
-          where: {
-            id: {
-              in: bcr.impactedAreas
-            }
-          }
-        });
-        
-        bcr.impactedAreaNames = impactedAreas.map(area => area.name);
-      } else {
-        bcr.impactedAreaNames = [];
-      }
+      console.log(`Found BCR: ${bcr.bcrCode}`);
       
-      // Set status tag color based on status
+      // Add tag colors based on status
       if (bcr.status === 'Completed') {
         bcr.statusTagColor = 'govuk-tag govuk-tag--green';
-      } else if (bcr.status === 'Blocked' || bcr.status === 'Rejected') {
+      } else if (bcr.status === 'Rejected') {
         bcr.statusTagColor = 'govuk-tag govuk-tag--red';
       } else if (bcr.status === 'On Hold') {
         bcr.statusTagColor = 'govuk-tag govuk-tag--yellow';
       } else {
         bcr.statusTagColor = 'govuk-tag govuk-tag--blue';
-      }
-      
-      // Get submission details if available
-      if (bcr.submissionId) {
-        const submissionModel = require('../bcr-submission/model');
-        const submission = await submissionModel.getSubmissionById(bcr.submissionId);
-        if (submission) {
-          bcr.submission = submission;
-        }
       }
     }
     
@@ -208,27 +171,30 @@ const getBcrById = async (id) => {
  * @returns {Promise<Array>} - Array of BCRs
  */
 const getAllBcrs = async (filters = {}) => {
-  const whereConditions = {};
+  const query = {};
   
   // Apply filters if provided
   if (filters.currentPhase) {
-    whereConditions.currentPhase = filters.currentPhase;
+    query.currentPhase = filters.currentPhase;
   }
   
   if (filters.status) {
-    whereConditions.status = filters.status;
+    query.status = filters.status;
   }
   
   if (filters.urgencyLevel) {
-    whereConditions.urgencyLevel = filters.urgencyLevel;
+    query.urgencyLevel = filters.urgencyLevel;
   }
   
-  const bcrs = await prisma.Bcrs.findMany({
-    where: whereConditions,
-    orderBy: {
-      createdAt: 'desc'
-    }
-  });
+  const bcrs = await Bcr.find(query)
+    .populate({
+      path: 'submissionId',
+      populate: {
+        path: 'submittedById',
+        model: 'User'
+      }
+    })
+    .sort({ createdAt: -1 });
   
   return bcrs;
 };
@@ -253,9 +219,7 @@ const updateBcrPhase = async (id, phase, status, comment, updatedBy) => {
   }
   
   // Get the current BCR
-  const bcr = await prisma.Bcrs.findUnique({
-    where: { id }
-  });
+  const bcr = await Bcr.findById(id);
   
   if (!bcr) {
     throw new Error('BCR not found');
@@ -271,16 +235,14 @@ const updateBcrPhase = async (id, phase, status, comment, updatedBy) => {
   };
   
   // Update the BCR
-  const updatedBcr = await prisma.Bcrs.update({
-    where: { id },
-    data: {
-      currentPhase: phase,
-      status,
-      workflowHistory: [...(bcr.workflowHistory || []), historyEntry]
-    }
-  });
+  bcr.currentPhase = phase;
+  bcr.status = status;
+  bcr.workflowHistory = [...(bcr.workflowHistory || []), historyEntry];
+  bcr.updatedAt = new Date();
   
-  return updatedBcr;
+  await bcr.save();
+  
+  return bcr;
 };
 
 /**
@@ -290,9 +252,7 @@ const updateBcrPhase = async (id, phase, status, comment, updatedBy) => {
  */
 const autoAdvancePhase = async (id) => {
   // Get the current BCR
-  const bcr = await prisma.Bcrs.findUnique({
-    where: { id }
-  });
+  const bcr = await Bcr.findById(id);
   
   if (!bcr) {
     throw new Error('BCR not found');
@@ -320,16 +280,14 @@ const autoAdvancePhase = async (id) => {
     };
     
     // Update the BCR
-    const updatedBcr = await prisma.Bcrs.update({
-      where: { id },
-      data: {
-        currentPhase: nextPhase,
-        status: PHASE_STATUSES[1], // In Progress
-        workflowHistory: [...(bcr.workflowHistory || []), historyEntry]
-      }
-    });
+    bcr.currentPhase = nextPhase;
+    bcr.status = PHASE_STATUSES[1]; // In Progress
+    bcr.workflowHistory = [...(bcr.workflowHistory || []), historyEntry];
+    bcr.updatedAt = new Date();
     
-    return updatedBcr;
+    await bcr.save();
+    
+    return bcr;
   }
   
   // If the current phase is not completed or skipped, do nothing

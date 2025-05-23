@@ -4,8 +4,9 @@
  */
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+// Using centralized Prisma client
+const { prisma } = require('../config/prisma');
+// Prisma client is imported from centralized config
 const { ensureAuthenticated, checkPermission } = require('../../middleware/auth');
 const { v4: uuidv4 } = require('uuid');
 

@@ -7,7 +7,27 @@ require('dotenv').config();
 
 // MongoDB connection string with credentials
 // Using MongoDB Atlas connection string format with SSL options
-const MONGODB_URI = 'mongodb+srv://Freddieo:y8HUkVOlM6PBr8m7@non.2pdpvcy.mongodb.net/rrdm?retryWrites=true&w=majority';
+// Note: For security, it's better to use environment variables for credentials
+let MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://Freddieo:KrY4FIiTXL5opqaY@non.2pdpvcy.mongodb.net/?retryWrites=true&w=majority&appName=NON';
+
+// Ensure the MongoDB URI is properly formatted
+if (MONGODB_URI && !MONGODB_URI.startsWith('mongodb://') && !MONGODB_URI.startsWith('mongodb+srv://')) {
+  console.error('Invalid MongoDB URI format. URI must start with mongodb:// or mongodb+srv://');
+  // Try to extract and reformat the URI if it's malformed
+  if (MONGODB_URI.includes('@') && MONGODB_URI.includes('.mongodb.net')) {
+    const parts = MONGODB_URI.split('@');
+    if (parts.length === 2) {
+      const credentials = parts[0].includes(':') ? parts[0] : `Freddieo:KrY4FIiTXL5opqaY`;
+      const host = parts[1];
+      MONGODB_URI = `mongodb+srv://${credentials}@${host}`;
+      console.log('Reformatted MongoDB URI to correct format');
+    }
+  } else {
+    // Fall back to the default URI if we can't fix it
+    MONGODB_URI = 'mongodb+srv://Freddieo:KrY4FIiTXL5opqaY@non.2pdpvcy.mongodb.net/?retryWrites=true&w=majority&appName=NON';
+    console.log('Using fallback MongoDB URI');
+  }
+}
 
 // Configure mongoose
 mongoose.set('strictQuery', false);
@@ -20,16 +40,35 @@ const connect = async () => {
   if (dbConnection) return dbConnection;
   
   try {
-    // Using a simpler connection approach
+    // Using modern connection approach (deprecated options removed)
     dbConnection = await mongoose.connect(MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000 // Shorter timeout for faster feedback
+      serverSelectionTimeoutMS: 5000, // Shorter timeout for faster feedback
+      connectTimeoutMS: 10000,        // Connection timeout
+      socketTimeoutMS: 45000          // Socket timeout
     });
     console.log('MongoDB connection established successfully');
     return dbConnection;
   } catch (error) {
     console.error('MongoDB connection error:', error);
+    
+    // Provide more detailed error information
+    if (error.name === 'MongoServerError') {
+      if (error.code === 8000 || error.message.includes('auth')) {
+        console.error('Authentication failed. Please check your username and password.');
+        console.error('You may need to update your MongoDB Atlas credentials or whitelist your IP address.');
+      } else if (error.code === 13) {
+        console.error('Authorization failed. The user does not have permission to access the database.');
+      }
+    } else if (error.name === 'MongoNetworkError') {
+      console.error('Network error. Please check your internet connection and MongoDB Atlas network settings.');
+    }
+    
+    // For serverless environments, we don't want to crash the application
+    if (process.env.VERCEL === '1') {
+      console.error('Running in serverless mode, continuing despite MongoDB connection failure');
+      return null;
+    }
+    
     throw error;
   }
 };

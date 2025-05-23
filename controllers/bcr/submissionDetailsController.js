@@ -2,8 +2,9 @@
  * Controller for BCR submission details
  * Handles rendering the BCR submission details page with correct phase groupings
  */
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+// Using centralized Prisma client
+const { prisma } = require('../config/prisma');
+// Prisma client is imported from centralized config
 
 /**
  * View BCR details - Renamed to match the BCR_DEVELOPER_OVERVIEW.md document

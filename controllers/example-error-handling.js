@@ -4,8 +4,9 @@
  * This file demonstrates how to implement the comprehensive error handling
  * throughout the application, especially for database operations and API endpoints.
  */
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+// Using centralized Prisma client
+const { prisma } = require('../config/prisma');
+// Prisma client is imported from centralized config
 const { 
   handleDatabaseError, 
   handleApiError, 

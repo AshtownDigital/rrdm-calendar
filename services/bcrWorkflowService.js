@@ -2,8 +2,9 @@
  * BCR Workflow Service
  * Handles BCR workflow transitions and status updates based on the BPMN process
  */
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+// Using centralized Prisma client
+const { prisma } = require('../config/prisma');
+// Prisma client is imported from centralized config
 const { v4: uuidv4 } = require('uuid');
 const bcrService = require('./bcrService');
 const bcrConfigService = require('./bcrConfigService');

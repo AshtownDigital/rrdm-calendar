@@ -5,13 +5,14 @@
  * Redis status, and session information.
  */
 const os = require('os');
-const { PrismaClient } = require('@prisma/client');
+// Using centralized Prisma client
+const { prisma } = require('../config/prisma');
 const { getRedisManager } = require('../../utils/redis-manager');
 const { getSessionManager } = require('../../utils/session-manager');
 const { createError, ErrorTypes } = require('../../utils/error-handler');
 
 // Initialize Prisma client
-const prisma = new PrismaClient();
+// Prisma client is imported from centralized config
 
 // Initialize Redis manager
 const redisManager = getRedisManager();

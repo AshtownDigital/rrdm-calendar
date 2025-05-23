@@ -1,11 +1,15 @@
 /**
  * BCR Submission Model
- * Handles database operations for BCR submissions using Prisma
+ * Handles database operations for BCR submissions using MongoDB
  */
-const { PrismaClient } = require('@prisma/client');
 const { v4: uuidv4 } = require('uuid');
-const prisma = new PrismaClient();
 const { SUBMISSION_SOURCES, URGENCY_LEVELS, ATTACHMENTS_OPTIONS } = require('../../config/constants');
+
+// Import MongoDB models
+const Submission = require('../Submission');
+const Bcr = require('../Bcr');
+const User = require('../User');
+const ImpactedArea = require('../ImpactedArea');
 
 /**
  * Generate a submission code in the format SUB-YY/YY-NNN
@@ -65,34 +69,36 @@ const createSubmission = async (submissionData) => {
     if (!submissionData.declaration) throw new Error('Declaration is required');
 
     // Count existing submissions to determine the next number
-    const submissionCount = await prisma.submission.count();
+    const submissionCount = await Submission.countDocuments();
     const submissionCode = generateSubmissionCode(submissionCount + 1);
     
     // Create the submission in the database
     const now = new Date();
-    const submission = await prisma.submission.create({
-      data: {
-        submissionCode,
-        fullName: submissionData.fullName,
-        emailAddress: submissionData.emailAddress,
-        submissionSource: submissionData.submissionSource,
-        organisation: submissionData.organisation || null,
-        briefDescription: submissionData.briefDescription,
-        justification: submissionData.justification,
-        urgencyLevel: submissionData.urgencyLevel,
-        impactAreas: Array.isArray(submissionData.impactAreas) ? submissionData.impactAreas : [submissionData.impactAreas],
-        affectedReferenceDataArea: submissionData.affectedReferenceDataArea || null,
-        technicalDependencies: submissionData.technicalDependencies || null,
-        relatedDocuments: submissionData.relatedDocuments || null,
-        attachments: submissionData.attachments,
-        additionalNotes: submissionData.additionalNotes || null,
-        declaration: submissionData.declaration === 'true' || submissionData.declaration === true,
-        reviewOutcome: 'Pending Review', // Set default review outcome for all new submissions
-        createdAt: now,
-        updatedAt: now,
-        submittedById: submissionData.submittedById || '00000000-0000-0000-0000-000000000001' // Default to admin user if not provided
-      }
+    const submission = new Submission({
+      submissionNumber: submissionCount + 1,
+      submissionCode,
+      fullName: submissionData.fullName,
+      emailAddress: submissionData.emailAddress,
+      submissionSource: submissionData.submissionSource,
+      organisation: submissionData.organisation || null,
+      briefDescription: submissionData.briefDescription,
+      detailedDescription: submissionData.detailedDescription || submissionData.briefDescription,
+      businessJustification: submissionData.justification,
+      urgencyLevel: submissionData.urgencyLevel,
+      impactAreas: Array.isArray(submissionData.impactAreas) ? submissionData.impactAreas : [submissionData.impactAreas],
+      affectedReferenceDataArea: submissionData.affectedReferenceDataArea || null,
+      technicalDependencies: submissionData.technicalDependencies || null,
+      relatedDocuments: submissionData.relatedDocuments || null,
+      attachments: submissionData.attachments,
+      additionalNotes: submissionData.additionalNotes || null,
+      declaration: submissionData.declaration === true || submissionData.declaration === 'true',
+      status: 'Submitted',
+      createdAt: now,
+      updatedAt: now,
+      submittedById: submissionData.submittedById || null
     });
+    
+    await submission.save();
     
     return submission;
   } catch (error) {
@@ -108,41 +114,30 @@ const createSubmission = async (submissionData) => {
  */
 const getSubmissionById = async (id) => {
   try {
-    // Check if the ID is a UUID or a submission code
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    let submission = null;
     
-    // Query the submission
-    const submission = await prisma.submission.findUnique({
-      where: isUuid ? { id } : { submissionCode: id },
-      include: {
-        bcr: true,
-        submittedBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
-      }
-    });
-    
-    if (!submission) {
-      return null;
+    // Check if the ID is a MongoDB ObjectId or a submission code
+    if (/^[0-9a-f]{24}$/i.test(id)) {
+      // If it's an ObjectId, find by _id
+      submission = await Submission.findById(id)
+        .populate('submittedById', 'name email role');
+    } else {
+      // If it's a submission code, find by submissionCode
+      submission = await Submission.findOne({ submissionCode: id })
+        .populate('submittedById', 'name email role');
     }
     
-    // Get impacted areas as names if they exist
-    if (submission.impactAreas && submission.impactAreas.length > 0) {
-      const impactedAreas = await prisma.impactedArea.findMany({
-        where: {
-          id: {
-            in: submission.impactAreas
-          }
-        }
-      });
-      
-      submission.impactedAreaNames = impactedAreas.map(area => area.name);
-    } else {
-      submission.impactedAreaNames = [];
+    if (submission) {
+      // Get impacted area names
+      if (submission.impactAreas && submission.impactAreas.length > 0) {
+        const impactedAreas = await ImpactedArea.find({
+          value: { $in: submission.impactAreas }
+        });
+        
+        submission.impactedAreaNames = impactedAreas.map(area => area.name);
+      } else {
+        submission.impactedAreaNames = [];
+      }
     }
     
     return submission;
@@ -159,65 +154,62 @@ const getSubmissionById = async (id) => {
  */
 const getAllSubmissions = async (filters = {}) => {
   try {
-    const whereConditions = {};
+    const query = {};
     
-    // Only include non-deleted submissions by default
-    if (filters.includeDeleted !== true) {
-      whereConditions.deletedAt = null;
+    // Apply filters if provided
+    if (filters.status) {
+      query.status = filters.status;
     }
     
-    // Apply other filters if provided
     if (filters.submissionSource) {
-      whereConditions.submissionSource = filters.submissionSource;
+      query.submissionSource = filters.submissionSource;
     }
     
     if (filters.urgencyLevel) {
-      whereConditions.urgencyLevel = filters.urgencyLevel;
+      query.urgencyLevel = filters.urgencyLevel;
     }
     
-    if (filters.status) {
-      whereConditions.status = filters.status;
+    if (filters.impactArea) {
+      query.impactAreas = { $in: [filters.impactArea] };
     }
     
-    const submissions = await prisma.submission.findMany({
-      where: whereConditions,
-      orderBy: {
-        createdAt: 'desc'
-      },
-      include: {
-        submittedBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
+    // Date filters
+    if (filters.startDate || filters.endDate) {
+      query.createdAt = {};
+      if (filters.startDate) {
+        query.createdAt.$gte = new Date(filters.startDate);
       }
-    });
+      if (filters.endDate) {
+        query.createdAt.$lte = new Date(filters.endDate);
+      }
+    }
     
-    // Process submissions to add impacted area names
-    const processedSubmissions = [];
+    // Exclude deleted submissions
+    query.deletedAt = null;
     
-    for (const submission of submissions) {
-      // Get impacted areas as names if they exist
+    const submissions = await Submission.find(query)
+      .populate('submittedById', 'name email role')
+      .populate('bcrId')
+      .sort({ createdAt: -1 });
+    
+    // Get impacted area names for each submission
+    const impactedAreas = await ImpactedArea.find({});
+    
+    return submissions.map(submission => {
+      const result = submission.toObject();
+      
+      // Add impacted area names
       if (submission.impactAreas && submission.impactAreas.length > 0) {
-        const impactedAreas = await prisma.impactedArea.findMany({
-          where: {
-            id: {
-              in: submission.impactAreas
-            }
-          }
+        result.impactedAreaNames = submission.impactAreas.map(areaValue => {
+          const area = impactedAreas.find(a => a.value === areaValue);
+          return area ? area.name : areaValue;
         });
-        
-        submission.impactedAreaNames = impactedAreas.map(area => area.name);
       } else {
-        submission.impactedAreaNames = [];
+        result.impactedAreaNames = [];
       }
       
-      processedSubmissions.push(submission);
-    }
-    
-    return processedSubmissions;
+      return result;
+    });
   } catch (error) {
     console.error('Error getting all submissions:', error);
     return [];
@@ -231,12 +223,14 @@ const getAllSubmissions = async (filters = {}) => {
  */
 const softDeleteSubmission = async (id) => {
   try {
-    const submission = await prisma.submission.update({
-      where: { id },
-      data: {
-        deletedAt: new Date()
-      }
-    });
+    const submission = await Submission.findById(id);
+    
+    if (!submission) {
+      throw new Error('Submission not found');
+    }
+    
+    submission.deletedAt = new Date();
+    await submission.save();
     
     return submission;
   } catch (error) {
@@ -252,26 +246,22 @@ const softDeleteSubmission = async (id) => {
  */
 const hardDeleteSubmission = async (id) => {
   try {
-    // Check if the submission exists first
-    const submission = await prisma.submission.findUnique({
-      where: { id }
-    });
+    const submission = await Submission.findById(id);
     
     if (!submission) {
       throw new Error('Submission not found');
     }
     
-    // Check if it's marked as deleted
-    if (!submission.deletedAt) {
-      throw new Error('Submission must be soft-deleted before hard deletion');
+    // Check if there's a BCR associated with this submission
+    if (submission.bcrId) {
+      // Delete the BCR first
+      await Bcr.findByIdAndDelete(submission.bcrId);
     }
     
-    // Perform the hard delete
-    const deletedSubmission = await prisma.submission.delete({
-      where: { id }
-    });
+    // Delete the submission
+    await Submission.findByIdAndDelete(id);
     
-    return deletedSubmission;
+    return submission;
   } catch (error) {
     console.error('Error hard deleting submission:', error);
     throw error;
@@ -285,14 +275,15 @@ const hardDeleteSubmission = async (id) => {
  */
 const markAsReviewed = async (id) => {
   try {
-    // Update the submission timestamp only
-    // We don't have a reviewedAt field in the Submission model
-    const submission = await prisma.Submission.update({
-      where: { id },
-      data: {
-        updatedAt: new Date()
-      }
-    });
+    const submission = await Submission.findById(id);
+    
+    if (!submission) {
+      throw new Error('Submission not found');
+    }
+    
+    submission.status = 'Reviewed';
+    submission.reviewedAt = new Date();
+    await submission.save();
     
     return submission;
   } catch (error) {
@@ -309,16 +300,16 @@ const markAsReviewed = async (id) => {
  */
 const markAsRejected = async (id, rejectionReason = '') => {
   try {
-    // Update the submission with rejection information
-    // Note: We're only updating fields that exist in the schema
-    const submission = await prisma.Submission.update({
-      where: { id },
-      data: {
-        updatedAt: new Date(),
-        rejectedAt: new Date(),
-        additionalNotes: rejectionReason ? `Rejection reason: ${rejectionReason}` : 'Submission rejected'
-      }
-    });
+    const submission = await Submission.findById(id);
+    
+    if (!submission) {
+      throw new Error('Submission not found');
+    }
+    
+    submission.status = 'Rejected';
+    submission.rejectionReason = rejectionReason;
+    submission.rejectedAt = new Date();
+    await submission.save();
     
     return submission;
   } catch (error) {
@@ -336,6 +327,13 @@ const markAsRejected = async (id, rejectionReason = '') => {
  */
 const updateSubmission = async (id, submissionData, editorName = 'System') => {
   try {
+    // Find the current submission
+    const currentSubmission = await Submission.findById(id);
+    
+    if (!currentSubmission) {
+      throw new Error('Submission not found');
+    }
+    
     // Validate submission data
     if (!submissionData.fullName) throw new Error('Full name is required');
     if (!submissionData.emailAddress) throw new Error('Email address is required');
@@ -357,82 +355,80 @@ const updateSubmission = async (id, submissionData, editorName = 'System') => {
       throw new Error('Valid attachments option is required');
     }
     
-    // Get the current submission to compare changes
-    const currentSubmission = await prisma.submission.findUnique({
-      where: { id }
-    });
+    // Process impact areas
+    const newImpactAreas = Array.isArray(submissionData.impactAreas) 
+      ? submissionData.impactAreas 
+      : [submissionData.impactAreas];
     
-    if (!currentSubmission) {
-      throw new Error('Submission not found');
-    }
-    
-    // Create edit history entry
+    // Create an edit history entry
     const now = new Date();
-    const timestamp = now.toISOString();
     const editEntry = {
-      timestamp,
-      formattedDate: `${now.toLocaleDateString()} ${now.toLocaleTimeString()}`,
       editor: editorName,
+      timestamp: now.toISOString(),
       changes: []
     };
     
-    // Compare fields and track changes
+    // Track changes
     if (currentSubmission.fullName !== submissionData.fullName) {
-      editEntry.changes.push({ field: 'Full Name', from: currentSubmission.fullName, to: submissionData.fullName });
+      editEntry.changes.push({ 
+        field: 'Full Name', 
+        from: currentSubmission.fullName, 
+        to: submissionData.fullName 
+      });
     }
     if (currentSubmission.emailAddress !== submissionData.emailAddress) {
-      editEntry.changes.push({ field: 'Email Address', from: currentSubmission.emailAddress, to: submissionData.emailAddress });
+      editEntry.changes.push({ 
+        field: 'Email Address', 
+        from: currentSubmission.emailAddress, 
+        to: submissionData.emailAddress 
+      });
     }
     if (currentSubmission.submissionSource !== submissionData.submissionSource) {
-      editEntry.changes.push({ field: 'Submission Source', from: currentSubmission.submissionSource, to: submissionData.submissionSource });
+      editEntry.changes.push({ 
+        field: 'Submission Source', 
+        from: currentSubmission.submissionSource, 
+        to: submissionData.submissionSource 
+      });
     }
     if (currentSubmission.organisation !== submissionData.organisation) {
-      editEntry.changes.push({ field: 'Organisation', from: currentSubmission.organisation || 'None', to: submissionData.organisation || 'None' });
+      editEntry.changes.push({ 
+        field: 'Organisation', 
+        from: currentSubmission.organisation || 'None', 
+        to: submissionData.organisation || 'None' 
+      });
     }
     if (currentSubmission.briefDescription !== submissionData.briefDescription) {
-      editEntry.changes.push({ field: 'Brief Description', from: currentSubmission.briefDescription, to: submissionData.briefDescription });
+      editEntry.changes.push({ 
+        field: 'Brief Description', 
+        from: currentSubmission.briefDescription, 
+        to: submissionData.briefDescription 
+      });
     }
-    if (currentSubmission.justification !== submissionData.justification) {
-      editEntry.changes.push({ field: 'Justification', from: currentSubmission.justification, to: submissionData.justification });
+    if (currentSubmission.businessJustification !== submissionData.justification) {
+      editEntry.changes.push({ 
+        field: 'Justification', 
+        from: currentSubmission.businessJustification, 
+        to: submissionData.justification 
+      });
     }
     if (currentSubmission.urgencyLevel !== submissionData.urgencyLevel) {
-      editEntry.changes.push({ field: 'Urgency Level', from: currentSubmission.urgencyLevel, to: submissionData.urgencyLevel });
-    }
-    
-    // Compare impact areas (arrays)
-    const currentImpactAreas = currentSubmission.impactAreas || [];
-    const newImpactAreas = Array.isArray(submissionData.impactAreas) ? submissionData.impactAreas : [submissionData.impactAreas].filter(Boolean);
-    
-    if (JSON.stringify(currentImpactAreas.sort()) !== JSON.stringify(newImpactAreas.sort())) {
-      // Get impact area names for better readability
-      const impactedAreasMap = {};
-      const allImpactAreaIds = [...new Set([...currentImpactAreas, ...newImpactAreas])];
-      
-      if (allImpactAreaIds.length > 0) {
-        const impactedAreas = await prisma.impactedArea.findMany({
-          where: {
-            id: {
-              in: allImpactAreaIds
-            }
-          }
-        });
-        
-        impactedAreas.forEach(area => {
-          impactedAreasMap[area.id] = area.name;
-        });
-      }
-      
-      const currentImpactAreaNames = currentImpactAreas.map(id => impactedAreasMap[id] || id);
-      const newImpactAreaNames = newImpactAreas.map(id => impactedAreasMap[id] || id);
-      
       editEntry.changes.push({ 
-        field: 'Impact Areas', 
-        from: currentImpactAreaNames.join(', ') || 'None', 
-        to: newImpactAreaNames.join(', ') 
+        field: 'Urgency Level', 
+        from: currentSubmission.urgencyLevel, 
+        to: submissionData.urgencyLevel 
       });
     }
     
-    // Compare other fields
+    // Compare impact areas
+    const currentImpactAreas = currentSubmission.impactAreas || [];
+    if (JSON.stringify(currentImpactAreas.sort()) !== JSON.stringify(newImpactAreas.sort())) {
+      editEntry.changes.push({ 
+        field: 'Impact Areas', 
+        from: currentImpactAreas.join(', '), 
+        to: newImpactAreas.join(', ') 
+      });
+    }
+    
     if (currentSubmission.affectedReferenceDataArea !== submissionData.affectedReferenceDataArea) {
       editEntry.changes.push({ 
         field: 'Affected Reference Data Area', 
@@ -505,46 +501,41 @@ const updateSubmission = async (id, submissionData, editorName = 'System') => {
     // Combine user notes with edit history
     const notesWithHistory = `${userNotes.trim()}\n\n${editHistoryMarker}${JSON.stringify(existingHistory)}`;
     
-    // Update the submission in the database
-    const submission = await prisma.submission.update({
-      where: { id },
-      data: {
-        fullName: submissionData.fullName,
-        emailAddress: submissionData.emailAddress,
-        submissionSource: submissionData.submissionSource,
-        organisation: submissionData.organisation || null,
-        briefDescription: submissionData.briefDescription,
-        justification: submissionData.justification,
-        urgencyLevel: submissionData.urgencyLevel,
-        impactAreas: newImpactAreas,
-        affectedReferenceDataArea: submissionData.affectedReferenceDataArea || null,
-        technicalDependencies: submissionData.technicalDependencies || null,
-        relatedDocuments: submissionData.relatedDocuments || null,
-        attachments: submissionData.attachments,
-        additionalNotes: notesWithHistory,
-        updatedAt: now
-      }
-    });
+    // Update the submission
+    currentSubmission.fullName = submissionData.fullName;
+    currentSubmission.emailAddress = submissionData.emailAddress;
+    currentSubmission.submissionSource = submissionData.submissionSource;
+    currentSubmission.organisation = submissionData.organisation || null;
+    currentSubmission.briefDescription = submissionData.briefDescription;
+    currentSubmission.detailedDescription = submissionData.detailedDescription || submissionData.briefDescription;
+    currentSubmission.businessJustification = submissionData.justification;
+    currentSubmission.urgencyLevel = submissionData.urgencyLevel;
+    currentSubmission.impactAreas = newImpactAreas;
+    currentSubmission.affectedReferenceDataArea = submissionData.affectedReferenceDataArea || null;
+    currentSubmission.technicalDependencies = submissionData.technicalDependencies || null;
+    currentSubmission.relatedDocuments = submissionData.relatedDocuments || null;
+    currentSubmission.attachments = submissionData.attachments;
+    currentSubmission.additionalNotes = notesWithHistory;
+    currentSubmission.updatedAt = now;
+    
+    await currentSubmission.save();
     
     // Add edit history to the returned object for display purposes
-    submission.editHistory = existingHistory;
+    const result = currentSubmission.toObject();
+    result.editHistory = existingHistory;
     
     // Get impacted area names
-    if (submission.impactAreas && submission.impactAreas.length > 0) {
-      const impactedAreas = await prisma.impactedArea.findMany({
-        where: {
-          id: {
-            in: submission.impactAreas
-          }
-        }
+    if (result.impactAreas && result.impactAreas.length > 0) {
+      const impactedAreas = await ImpactedArea.find({
+        value: { $in: result.impactAreas }
       });
       
-      submission.impactedAreaNames = impactedAreas.map(area => area.name);
+      result.impactedAreaNames = impactedAreas.map(area => area.name);
     } else {
-      submission.impactedAreaNames = [];
+      result.impactedAreaNames = [];
     }
     
-    return submission;
+    return result;
   } catch (error) {
     console.error('Error updating submission:', error);
     throw error;

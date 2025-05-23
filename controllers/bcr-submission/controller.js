@@ -2,8 +2,6 @@
  * BCR Submission Controller
  * Handles submission form rendering, creation, review, and deletion
  */
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
 const submissionModel = require('../../models/bcr-submission/model');
 const bcrModel = require('../../models/bcr/model');
 const impactedAreasModel = require('../../models/impacted-areas/model');
@@ -11,6 +9,12 @@ const counterService = require('../../services/counterService');
 const { refreshCounters } = counterService;
 const { SUBMISSION_SOURCES, URGENCY_LEVELS, ATTACHMENTS_OPTIONS } = require('../../config/constants');
 const { formatDate } = require('../../utils/dateUtils');
+
+// Import MongoDB models
+const Submission = require('../../models/Submission');
+const Bcr = require('../../models/Bcr');
+const ImpactedArea = require('../../models/ImpactedArea');
+const BcrConfig = require('../../models/BcrConfig');
 
 /**
  * Render the new submission form
@@ -109,7 +113,6 @@ const reviewSubmission = async (req, res) => {
     const submissionId = req.params.id;
     
     // Get the submission with all its details using the model
-    // This will also populate the impactedAreaNames
     const submission = await submissionModel.getSubmissionById(submissionId);
     
     if (!submission) {
@@ -121,32 +124,17 @@ const reviewSubmission = async (req, res) => {
       });
     }
     
-    if (submission.deletedAt) {
-      return res.status(400).render('bcr-submission/warning', {
-        title: 'Cannot Review Deleted Submission',
-        message: 'This submission has been deleted and cannot be reviewed',
-        submission,
-        user: req.user
-      });
-    }
-    
-    // Format the creation date
+    // Format dates for display
     const createdAtFormatted = submission.createdAt ? 
-      new Date(submission.createdAt).toLocaleDateString('en-GB', {
+      new Date(submission.createdAt).toLocaleDateString('en-GB', { 
         day: 'numeric', 
         month: 'long', 
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+        year: 'numeric' 
       }) : 'Unknown';
-    
-    // Log impact areas for debugging
-    console.log('Impact Areas:', submission.impactAreas);
-    console.log('Impact Area Names:', submission.impactedAreaNames);
     
     // Render the review form
     res.render('bcr-submission/review', {
-      title: `Review Submission: ${submission.submissionCode}`,
+      title: 'Review Submission',
       submission: {
         ...submission,
         createdAtFormatted
@@ -186,27 +174,16 @@ const deleteSubmission = async (req, res) => {
       });
     }
     
-    if (submission.deletedAt) {
-      return res.status(400).render('bcr-submission/warning', {
-        title: 'Already Deleted',
-        message: 'This submission has already been deleted',
-        submission,
-        user: req.user
-      });
-    }
-    
     // Soft delete the submission
     await submissionModel.softDeleteSubmission(submissionId);
     
-    // Render confirmation page
-    res.render('bcr-submission/confirm', {
-      title: 'Submission Deleted',
-      message: `Submission ${submission.submissionCode} has been deleted`,
-      submission,
-      user: req.user
-    });
+    // Refresh counters to update the dashboard
+    await refreshCounters();
+    
+    // Redirect to the submissions list
+    res.redirect('/bcr-submission/list?deleted=true');
   } catch (error) {
-    console.error('Error soft deleting submission:', error);
+    console.error('Error deleting submission:', error);
     res.status(500).render('error', {
       title: 'Error',
       message: 'An error occurred while deleting the submission',
@@ -237,27 +214,14 @@ const hardDeleteSubmission = async (req, res) => {
       });
     }
     
-    if (!submission.deletedAt) {
-      return res.status(400).render('bcr-submission/warning', {
-        title: 'Cannot Hard Delete',
-        message: 'This submission must be soft deleted before it can be permanently deleted',
-        submission,
-        user: req.user
-      });
-    }
-    
-    // Store the submission code for the confirmation message
-    const submissionCode = submission.submissionCode;
-    
     // Hard delete the submission
     await submissionModel.hardDeleteSubmission(submissionId);
     
-    // Render confirmation page
-    res.render('bcr-submission/confirm', {
-      title: 'Submission Permanently Deleted',
-      message: `Submission ${submissionCode} has been permanently deleted`,
-      user: req.user
-    });
+    // Refresh counters to update the dashboard
+    await refreshCounters();
+    
+    // Redirect to the submissions list
+    res.redirect('/bcr-submission/list?deleted=true');
   } catch (error) {
     console.error('Error hard deleting submission:', error);
     res.status(500).render('error', {
@@ -276,71 +240,35 @@ const hardDeleteSubmission = async (req, res) => {
  */
 const list = async (req, res) => {
   try {
-    // Import PrismaClient for database queries
-    const { PrismaClient } = require('@prisma/client');
-    const prisma = new PrismaClient();
-    
     // Get all submissions
     const submissions = await submissionModel.getAllSubmissions();
     
-    // Format dates for display and add review outcome information
-    const formattedSubmissions = submissions.map(submission => ({
-      ...submission,
-      createdAtFormatted: formatDate(submission.createdAt),
-      reviewedAtFormatted: submission.reviewedAt ? formatDate(submission.reviewedAt) : null,
-      deletedAtFormatted: submission.deletedAt ? formatDate(submission.deletedAt) : null,
-      statusTag: getSubmissionStatusTag(submission),
-      // Include review outcome for the new column
-      reviewOutcome: submission.reviewOutcome || (submission.bcrId ? 'Approved' : null)
-    }));
-    
-    // Get counts from the counter service for consistency across the application
-    console.log('Getting submission counts from counter service...');
-    const counters = await counterService.getCounters(true); // Force refresh to ensure accuracy
-    
-    // Extract submission counts
-    const totalCount = counters.submissions.total || 0;
-    const pendingCount = counters.submissions.pending || 0;
-    const approvedCount = counters.submissions.approved || 0;
-    const rejectedCount = counters.submissions.rejected || 0;
-    const moreInfoCount = counters.submissions.moreInfo || 0;
-    const pausedCount = counters.submissions.paused || 0;
-    const rejectedEditCount = counters.submissions.rejectedEdit || 0;
-    
-    console.log('Submission counts from counter service:', {
-      total: totalCount,
-      pending: pendingCount,
-      approved: approvedCount,
-      rejected: rejectedCount,
-      moreInfo: moreInfoCount,
-      paused: pausedCount,
-      rejectedEdit: rejectedEditCount
+    // Format submissions for display
+    const formattedSubmissions = submissions.map(submission => {
+      return {
+        ...submission,
+        createdAtFormatted: submission.createdAt ? 
+          new Date(submission.createdAt).toLocaleDateString('en-GB', { 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+          }) : 'Unknown',
+        statusTag: getSubmissionStatusTag(submission)
+      };
     });
     
-    // Close the Prisma client
-    await prisma.$disconnect();
-    
-    // Render the list page with stats
+    // Render the list page
     res.render('bcr-submission/list', {
       title: 'BCR Submissions',
       submissions: formattedSubmissions,
-      stats: {
-        total: totalCount,
-        pending: pendingCount,
-        approved: approvedCount,
-        rejected: rejectedCount,
-        moreInfo: moreInfoCount,
-        paused: pausedCount,
-        rejectedEdit: rejectedEditCount
-      },
-      csrfToken: req.csrfToken ? req.csrfToken() : '',
+      deleted: req.query.deleted === 'true',
       user: req.user
     });
   } catch (error) {
     console.error('Error listing submissions:', error);
     res.status(500).render('error', {
       title: 'Error',
-      message: 'An error occurred while loading the submissions list',
+      message: 'An error occurred while listing submissions',
       error: process.env.NODE_ENV === 'development' ? error : {},
       user: req.user
     });
@@ -352,17 +280,25 @@ const list = async (req, res) => {
  * @param {Object} submission - The submission object
  * @returns {string} - The CSS class for the status tag
  */
-function getSubmissionStatusTag(submission) {
-  if (submission.deletedAt) {
-    return 'govuk-tag govuk-tag--red';
+const getSubmissionStatusTag = (submission) => {
+  if (submission.deleted) {
+    return 'govuk-tag govuk-tag--grey';
   }
   
-  if (submission.reviewedAt) {
+  if (submission.bcrId) {
     return 'govuk-tag govuk-tag--green';
   }
   
+  if (submission.reviewOutcome === 'Rejected') {
+    return 'govuk-tag govuk-tag--red';
+  }
+  
+  if (submission.reviewOutcome === 'More Info') {
+    return 'govuk-tag govuk-tag--yellow';
+  }
+  
   return 'govuk-tag govuk-tag--blue';
-}
+};
 
 /**
  * Render the review page for a submission
@@ -372,7 +308,10 @@ function getSubmissionStatusTag(submission) {
 const review = async (req, res) => {
   try {
     const submissionId = req.params.id;
+    
+    // Get the submission
     const submission = await submissionModel.getSubmissionById(submissionId);
+    
     if (!submission) {
       return res.status(404).render('error', {
         title: 'Not Found',
@@ -382,115 +321,29 @@ const review = async (req, res) => {
       });
     }
     
-    // Extract edit history from additional notes if available
-    let editHistory = [];
-    const editHistoryMarker = '[EDIT_HISTORY]';
+    // Format dates for display
+    const createdAtFormatted = submission.createdAt ? 
+      new Date(submission.createdAt).toLocaleDateString('en-GB', { 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric' 
+      }) : 'Unknown';
     
-    if (submission.additionalNotes && submission.additionalNotes.includes(editHistoryMarker)) {
-      const historyStart = submission.additionalNotes.indexOf(editHistoryMarker);
-      if (historyStart !== -1) {
-        try {
-          const historyJson = submission.additionalNotes.substring(historyStart + editHistoryMarker.length);
-          editHistory = JSON.parse(historyJson);
-          
-          // Clean up the additionalNotes for display (remove the edit history part)
-          submission.displayNotes = submission.additionalNotes.substring(0, historyStart).trim();
-        } catch (e) {
-          console.error('Error parsing edit history:', e);
-          editHistory = [];
-          submission.displayNotes = submission.additionalNotes;
-        }
-      } else {
-        submission.displayNotes = submission.additionalNotes;
-      }
-    } else {
-      submission.displayNotes = submission.additionalNotes;
-    }
-    
-    // Get approval/rejection history
-    let approvalHistory = [];
-    
-    // Check if the submission has a BCR created from it
-    let bcr = null;
-    try {
-      // First try to find a BCR with this submission ID
-      bcr = await prisma.Bcr.findFirst({
-        where: { submissionId: submissionId }
-      });
-      
-      if (bcr) {
-        // Add approval entry
-        approvalHistory.push({
-          action: 'Approved',
-          date: bcr.createdAt,
-          formattedDate: new Date(bcr.createdAt).toLocaleString(),
-          user: 'System',
-          details: `BCR ${bcr.bcrCode} created`,
-          phase: bcr.currentPhase,
-          status: bcr.status
-        });
-        
-        // Update submission with BCR information
-        submission.currentPhase = bcr.currentPhase;
-        submission.status = bcr.status;
-      } else if (submission.bcrId) {
-        // If submission has a BCR ID but we couldn't find it by submissionId
-        bcr = await prisma.Bcr.findUnique({
-          where: { id: submission.bcrId }
-        });
-        
-        if (bcr) {
-          approvalHistory.push({
-            action: 'Approved',
-            date: bcr.createdAt,
-            formattedDate: new Date(bcr.createdAt).toLocaleString(),
-            user: 'System',
-            details: `BCR ${bcr.bcrCode} created`,
-            phase: bcr.currentPhase,
-            status: bcr.status
-          });
-          
-          // Update submission with BCR information
-          submission.currentPhase = bcr.currentPhase;
-          submission.status = bcr.status;
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching BCR for submission:', error);
-    }
-    
-    // Only add rejection history if there's no BCR and the submission was updated after creation
-    if (!bcr && submission.updatedAt && submission.updatedAt > submission.createdAt) {
-      // Check if this is a rejected submission
-      const isRejected = !submission.bcrId && submission.updatedAt;
-      
-      if (isRejected) {
-        approvalHistory.push({
-          action: 'Rejected',
-          date: submission.updatedAt,
-          formattedDate: new Date(submission.updatedAt).toLocaleString(),
-          user: 'System',
-          details: 'Submission rejected'
-        });
-      }
-    }
-    
-    // Sort history by date, most recent first
-    approvalHistory.sort((a, b) => b.date - a.date);
-    
+    // Render the review page
     res.render('bcr-submission/review', {
       title: 'Review Submission',
-      submission,
-      editHistory,
-      approvalHistory,
+      submission: {
+        ...submission,
+        createdAtFormatted
+      },
       csrfToken: req.csrfToken ? req.csrfToken() : '',
       user: req.user
     });
   } catch (error) {
-    console.error('Error rendering review form:', error);
+    console.error('Error reviewing submission:', error);
     res.status(500).render('error', {
       title: 'Error',
-      message: 'An error occurred while loading the review page',
+      message: 'An error occurred while reviewing the submission',
       error: process.env.NODE_ENV === 'development' ? error : {},
       user: req.user
     });
@@ -500,13 +353,14 @@ const review = async (req, res) => {
 /**
  * Approve a submission and create a BCR
  * @param {import('express').Request} req 
- * @param {import('express').Response} res 
+ * @param {import('express').Response} res
  */
 const approve = async (req, res) => {
   try {
     const submissionId = req.params.id;
+    const { comments } = req.body;
     
-    // Get the submission with its BCR if it exists
+    // Get the submission
     const submission = await submissionModel.getSubmissionById(submissionId);
     
     if (!submission) {
@@ -518,90 +372,41 @@ const approve = async (req, res) => {
       });
     }
     
-    if (submission.deletedAt) {
-      return res.status(400).render('bcr-submission/warning', {
-        title: 'Cannot Approve Deleted Submission',
-        message: 'This submission has been deleted and cannot be approved',
-        submission,
+    // Check if the submission has already been approved
+    if (submission.bcrId) {
+      return res.status(400).render('error', {
+        title: 'Already Approved',
+        message: 'This submission has already been approved and a BCR has been created',
+        error: {},
         user: req.user
       });
     }
     
-    // Check if a BCR already exists for this submission
-    let existingBcr = await prisma.Bcr.findFirst({
-      where: { submissionId: submissionId }
+    // Update submission as approved
+    await submissionModel.updateSubmission(submissionId, {
+      reviewedAt: new Date(),
+      reviewOutcome: 'Approved',
+      reviewComments: comments || null
     });
     
-    if (existingBcr) {
-      // If BCR exists but submission isn't marked as approved, update it
-      if (submission.reviewOutcome !== 'Approved') {
-        await prisma.Submission.update({
-          where: { id: submissionId },
-          data: {
-            reviewedAt: new Date(),
-            reviewOutcome: 'Approved',
-            bcrId: existingBcr.id,
-            updatedAt: new Date()
-          }
-        });
-        console.log(`Submission ${submissionId} marked as approved with existing BCR ${existingBcr.bcrCode}`);
-      }
-      
-      return res.render('bcr-submission/approved', {
-        title: 'Submission Approved',
-        message: `This submission has been approved and BCR ${existingBcr.bcrCode} has been created.`,
-        submission,
-        bcr: existingBcr,
-        user: req.user
-      });
-    }
-    
-    // Get Phase 1 (Complete and Submit BCR form)
-    const nextPhase = await prisma.BcrConfigs.findFirst({
-      where: {
-        type: 'phase',
-        value: '1'
-      }
-    });
-    
-    // Create a BCR from the submission - this function now checks for existing BCRs
+    // Create a BCR from the submission
     const bcr = await bcrModel.createBcrFromSubmission(submissionId);
     
-    // Set the BCR to Phase 1 with New Submission status
-    if (nextPhase) {
-      await prisma.Bcr.update({
-        where: { id: bcr.id },
-        data: {
-          currentPhase: nextPhase.value,
-          status: 'New Submission'
-        }
-      });
-      console.log(`BCR moved to phase: ${nextPhase.value} with status: New Submission`);
-    }
-    
-    // Mark submission as reviewed with outcome
-    await prisma.Submission.update({
-      where: { id: submissionId },
-      data: {
-        reviewedAt: new Date(),
-        reviewOutcome: 'Approved',
-        bcrId: bcr.id,
-        updatedAt: new Date()
-      }
+    // Update the submission with the BCR ID
+    await submissionModel.updateSubmission(submissionId, {
+      bcrId: bcr._id
     });
     
-    // Update global counters
-    await counterService.updateCountersOnApproval(submissionId, bcr.id);
-    console.log('Updated global counters after approval');
+    // Refresh counters to update the dashboard
+    await refreshCounters();
     
-    // Render confirmation page
-    res.render('bcr-submission/confirm', {
-      title: 'BCR Created',
-      message: `BCR ${bcr.bcrCode} has been created from submission ${submission.submissionCode} and moved to "${nextPhase?.name || 'Phase 1: Complete and Submit BCR form'}" with status "New Submission"`,
+    // Render the approval confirmation page
+    res.render('bcr-submission/review-complete', {
+      title: 'Submission Approved',
+      message: `Submission approved and BCR ${bcr.bcrCode} created`,
       submission,
       bcr,
-      bcrId: bcr.id,
-      action: 'approve',
+      reviewOutcome: 'Approved',
       user: req.user
     });
   } catch (error) {
@@ -618,11 +423,12 @@ const approve = async (req, res) => {
 /**
  * Reject a submission
  * @param {import('express').Request} req 
- * @param {import('express').Response} res 
+ * @param {import('express').Response} res
  */
 const reject = async (req, res) => {
   try {
     const submissionId = req.params.id;
+    const { comments } = req.body;
     
     // Get the submission
     const submission = await submissionModel.getSubmissionById(submissionId);
@@ -636,35 +442,22 @@ const reject = async (req, res) => {
       });
     }
     
-    if (submission.deletedAt) {
-      return res.status(400).render('bcr-submission/warning', {
-        title: 'Cannot Reject Deleted Submission',
-        message: 'This submission has been deleted and cannot be rejected',
-        submission,
-        user: req.user
-      });
-    }
-    
-    // Mark submission as rejected with outcome
-    await prisma.Submission.update({
-      where: { id: submissionId },
-      data: {
-        reviewedAt: new Date(),
-        reviewOutcome: 'Rejected',
-        updatedAt: new Date()
-      }
+    // Update submission as rejected
+    await submissionModel.updateSubmission(submissionId, {
+      reviewedAt: new Date(),
+      reviewOutcome: 'Rejected',
+      reviewComments: comments || null
     });
     
-    // Update global counters
-    await counterService.updateCountersOnRejection(submissionId);
-    console.log('Updated global counters after rejection');
+    // Refresh counters to update the dashboard
+    await refreshCounters();
     
-    // Render confirmation page
-    res.render('bcr-submission/confirm', {
+    // Render the rejection confirmation page
+    res.render('bcr-submission/review-complete', {
       title: 'Submission Rejected',
-      message: `Submission ${submission.submissionCode} has been rejected`,
+      message: 'The submission has been rejected',
       submission,
-      action: 'reject',
+      reviewOutcome: 'Rejected',
       user: req.user
     });
   } catch (error) {
@@ -681,11 +474,12 @@ const reject = async (req, res) => {
 /**
  * Request more information for a submission
  * @param {import('express').Request} req 
- * @param {import('express').Response} res 
+ * @param {import('express').Response} res
  */
 const requestMoreInfo = async (req, res) => {
   try {
     const submissionId = req.params.id;
+    const { comments } = req.body;
     
     // Get the submission
     const submission = await submissionModel.getSubmissionById(submissionId);
@@ -699,38 +493,29 @@ const requestMoreInfo = async (req, res) => {
       });
     }
     
-    if (submission.deletedAt) {
-      return res.status(400).render('bcr-submission/warning', {
-        title: 'Cannot Process Deleted Submission',
-        message: 'This submission has been deleted and cannot be processed',
-        submission,
-        user: req.user
-      });
-    }
-    
-    // Mark submission with outcome
-    await prisma.Submission.update({
-      where: { id: submissionId },
-      data: {
-        reviewedAt: new Date(),
-        reviewOutcome: 'More Info',
-        updatedAt: new Date()
-      }
+    // Update submission to request more info
+    await submissionModel.updateSubmission(submissionId, {
+      reviewedAt: new Date(),
+      reviewOutcome: 'More Info',
+      reviewComments: comments || null
     });
     
-    // Render confirmation page
-    res.render('bcr-submission/confirm', {
+    // Refresh counters to update the dashboard
+    await refreshCounters();
+    
+    // Render the more info confirmation page
+    res.render('bcr-submission/review-complete', {
       title: 'More Information Requested',
-      message: `More information has been requested for submission ${submission.submissionCode}`,
+      message: 'The submission requires more information',
       submission,
-      action: 'request-more-info',
+      reviewOutcome: 'More Info',
       user: req.user
     });
   } catch (error) {
-    console.error('Error processing submission:', error);
+    console.error('Error requesting more info for submission:', error);
     res.status(500).render('error', {
       title: 'Error',
-      message: 'An error occurred while processing the submission',
+      message: 'An error occurred while requesting more information',
       error: process.env.NODE_ENV === 'development' ? error : {},
       user: req.user
     });
@@ -740,7 +525,7 @@ const requestMoreInfo = async (req, res) => {
 /**
  * Reject and edit a submission
  * @param {import('express').Request} req 
- * @param {import('express').Response} res 
+ * @param {import('express').Response} res
  */
 const rejectAndEdit = async (req, res) => {
   try {
@@ -758,32 +543,23 @@ const rejectAndEdit = async (req, res) => {
       });
     }
     
-    if (submission.deletedAt) {
-      return res.status(400).render('bcr-submission/warning', {
-        title: 'Cannot Process Deleted Submission',
-        message: 'This submission has been deleted and cannot be processed',
-        submission,
-        user: req.user
-      });
-    }
-    
-    // Mark submission with outcome
-    await prisma.Submission.update({
-      where: { id: submissionId },
-      data: {
-        reviewedAt: new Date(),
-        reviewOutcome: 'Rejected & Edit',
-        updatedAt: new Date()
-      }
+    // Update submission as rejected
+    await submissionModel.updateSubmission(submissionId, {
+      reviewedAt: new Date(),
+      reviewOutcome: 'Rejected',
+      reviewComments: 'Rejected for editing'
     });
     
-    // Redirect to edit page
-    res.redirect(`/bcr-submission/${submissionId}/edit`);
+    // Refresh counters to update the dashboard
+    await refreshCounters();
+    
+    // Redirect to the edit page
+    res.redirect(`/bcr-submission/edit/${submissionId}`);
   } catch (error) {
-    console.error('Error processing submission:', error);
+    console.error('Error rejecting and editing submission:', error);
     res.status(500).render('error', {
       title: 'Error',
-      message: 'An error occurred while processing the submission',
+      message: 'An error occurred while rejecting and editing the submission',
       error: process.env.NODE_ENV === 'development' ? error : {},
       user: req.user
     });
@@ -793,20 +569,11 @@ const rejectAndEdit = async (req, res) => {
 /**
  * Show confirmation page after submission
  * @param {import('express').Request} req 
- * @param {import('express').Response} res 
+ * @param {import('express').Response} res
  */
 const confirm = async (req, res) => {
   try {
-    const submissionId = req.query.id;
-    
-    if (!submissionId) {
-      return res.status(400).render('error', {
-        title: 'Error',
-        message: 'Submission ID is required',
-        error: {},
-        user: req.user
-      });
-    }
+    const submissionId = req.params.id;
     
     // Get the submission
     const submission = await submissionModel.getSubmissionById(submissionId);
@@ -820,19 +587,18 @@ const confirm = async (req, res) => {
       });
     }
     
-    // Render confirmation page
+    // Render the confirmation page
     res.render('bcr-submission/confirm', {
       title: 'Submission Received',
       message: `Your submission has been received with reference number ${submission.submissionCode}`,
       submission,
-      action: 'submit',
       user: req.user
     });
   } catch (error) {
     console.error('Error showing confirmation page:', error);
     res.status(500).render('error', {
       title: 'Error',
-      message: 'An error occurred while loading the confirmation page',
+      message: 'An error occurred while showing the confirmation page',
       error: process.env.NODE_ENV === 'development' ? error : {},
       user: req.user
     });
@@ -847,6 +613,8 @@ const confirm = async (req, res) => {
 const edit = async (req, res) => {
   try {
     const submissionId = req.params.id;
+    
+    // Get the submission
     const submission = await submissionModel.getSubmissionById(submissionId);
     
     if (!submission) {
@@ -861,13 +629,14 @@ const edit = async (req, res) => {
     // Get all impacted areas for the form
     const impactedAreas = await impactedAreasModel.getAllImpactedAreas();
     
+    // Render the edit form
     res.render('bcr-submission/edit', {
       title: 'Edit Submission',
-      submission,
-      impactAreas: impactedAreas,
       submissionSources: SUBMISSION_SOURCES,
       urgencyLevels: URGENCY_LEVELS,
       attachmentsOptions: ATTACHMENTS_OPTIONS,
+      impactAreas: impactedAreas,
+      submission,
       csrfToken: req.csrfToken ? req.csrfToken() : '',
       user: req.user
     });
@@ -905,41 +674,33 @@ const update = async (req, res) => {
       technicalDependencies: req.body.technicalDependencies,
       relatedDocuments: req.body.relatedDocuments,
       attachments: req.body.attachments,
-      additionalNotes: req.body.additionalNotes
+      additionalNotes: req.body.additionalNotes,
+      declaration: req.body.declaration === 'true' || req.body.declaration === true,
+      updatedAt: new Date()
     };
     
-    // Get editor name from the user object or use a default
-    const editorName = req.user ? req.user.name : 'System User';
-    
     // Update the submission
-    const submission = await submissionModel.updateSubmission(submissionId, submissionData, editorName);
+    await submissionModel.updateSubmission(submissionId, submissionData);
     
-    // Check if there were any changes made
-    if (submission.editHistory && submission.editHistory.length > 0) {
-      // Redirect to the confirmation page
-      return res.redirect(`/bcr-submission/${submissionId}/edit-confirm`);
-    } else {
-      // No changes were made, redirect back to review page
-      return res.redirect(`/bcr-submission/${submissionId}/review`);
-    }
+    // Redirect to the edit confirmation page
+    res.redirect(`/bcr-submission/edit-confirm/${submissionId}`);
   } catch (error) {
     console.error('Error updating submission:', error);
-    
-    // Get the submission
-    const submission = await submissionModel.getSubmissionById(req.params.id);
     
     // Get all impacted areas for the form
     const impactedAreas = await impactedAreasModel.getAllImpactedAreas();
     
-    // Re-render the form with error
+    // Re-render the edit form with error
     res.status(400).render('bcr-submission/edit', {
       title: 'Edit Submission',
-      submission,
-      impactAreas,
       submissionSources: SUBMISSION_SOURCES,
       urgencyLevels: URGENCY_LEVELS,
       attachmentsOptions: ATTACHMENTS_OPTIONS,
-      formData: req.body,
+      impactAreas: impactedAreas,
+      submission: {
+        id: req.params.id,
+        ...req.body
+      },
       error: error.message,
       csrfToken: req.csrfToken ? req.csrfToken() : '',
       user: req.user
@@ -955,6 +716,8 @@ const update = async (req, res) => {
 const editConfirm = async (req, res) => {
   try {
     const submissionId = req.params.id;
+    
+    // Get the submission
     const submission = await submissionModel.getSubmissionById(submissionId);
     
     if (!submission) {
@@ -966,35 +729,18 @@ const editConfirm = async (req, res) => {
       });
     }
     
-    // Extract edit history from additional notes
-    let editHistory = [];
-    const editHistoryMarker = '[EDIT_HISTORY]';
-    
-    if (submission.additionalNotes && submission.additionalNotes.includes(editHistoryMarker)) {
-      const historyStart = submission.additionalNotes.indexOf(editHistoryMarker);
-      if (historyStart !== -1) {
-        try {
-          const historyJson = submission.additionalNotes.substring(historyStart + editHistoryMarker.length);
-          editHistory = JSON.parse(historyJson);
-        } catch (e) {
-          console.error('Error parsing edit history:', e);
-          editHistory = [];
-        }
-      }
-    }
-    
+    // Render the edit confirmation page
     res.render('bcr-submission/edit-confirm', {
-      title: 'Edit Confirmation',
+      title: 'Submission Updated',
+      message: `Your submission ${submission.submissionCode} has been updated`,
       submission,
-      editHistory: editHistory.length > 0 ? editHistory[0] : null,
-      csrfToken: req.csrfToken ? req.csrfToken() : '',
       user: req.user
     });
   } catch (error) {
-    console.error('Error showing edit confirmation:', error);
+    console.error('Error showing edit confirmation page:', error);
     res.status(500).render('error', {
       title: 'Error',
-      message: 'An error occurred while showing the edit confirmation',
+      message: 'An error occurred while showing the edit confirmation page',
       error: process.env.NODE_ENV === 'development' ? error : {},
       user: req.user
     });
@@ -1004,7 +750,7 @@ const editConfirm = async (req, res) => {
 /**
  * Reinstate a rejected submission
  * @param {import('express').Request} req 
- * @param {import('express').Response} res 
+ * @param {import('express').Response} res
  */
 const reinstate = async (req, res) => {
   try {
@@ -1022,69 +768,29 @@ const reinstate = async (req, res) => {
       });
     }
     
-    if (submission.deletedAt) {
-      return res.status(400).render('bcr-submission/warning', {
-        title: 'Cannot Reinstate Deleted Submission',
-        message: 'This submission has been deleted and cannot be reinstated',
-        submission,
+    // Check if the submission is rejected
+    if (submission.reviewOutcome !== 'Rejected') {
+      return res.status(400).render('error', {
+        title: 'Invalid Action',
+        message: 'Only rejected submissions can be reinstated',
+        error: {},
         user: req.user
       });
     }
     
-    // Check if the submission is rejected
-    // Note: We can't check for rejected status directly since there's no status field
-    // For now, we're assuming all submissions are eligible for reinstatement
-    // This logic needs to be updated once we determine how rejected submissions are tracked
-    
-    // Reinstate the submission
-    // Since there's no status field, we just update the timestamp
-    await prisma.Submission.update({
-      where: { id: submissionId },
-      data: {
-        updatedAt: new Date()
-      }
+    // Update submission to reinstate it
+    await submissionModel.updateSubmission(submissionId, {
+      reviewedAt: null,
+      reviewOutcome: null,
+      reviewComments: null,
+      updatedAt: new Date()
     });
     
-    // Add reinstatement to the approval history
-    const editHistoryMarker = '[EDIT_HISTORY]';
-    let additionalNotes = submission.additionalNotes || '';
-    let editHistory = [];
+    // Refresh counters to update the dashboard
+    await refreshCounters();
     
-    if (additionalNotes.includes(editHistoryMarker)) {
-      const historyStart = additionalNotes.indexOf(editHistoryMarker);
-      try {
-        const historyJson = additionalNotes.substring(historyStart + editHistoryMarker.length);
-        editHistory = JSON.parse(historyJson);
-      } catch (e) {
-        console.error('Error parsing edit history:', e);
-        editHistory = [];
-      }
-    }
-    
-    // Add reinstatement entry
-    const reinstatementEntry = {
-      action: 'Reinstated',
-      date: new Date(),
-      user: req.user ? req.user.name : 'System',
-      details: 'Submission reinstated for review'
-    };
-    
-    editHistory.unshift(reinstatementEntry);
-    
-    // Update the additional notes with the new edit history
-    const newAdditionalNotes = additionalNotes.includes(editHistoryMarker)
-      ? additionalNotes.substring(0, additionalNotes.indexOf(editHistoryMarker)) + editHistoryMarker + JSON.stringify(editHistory)
-      : additionalNotes + '\n\n' + editHistoryMarker + JSON.stringify(editHistory);
-    
-    await prisma.Submission.update({
-      where: { id: submissionId },
-      data: {
-        additionalNotes: newAdditionalNotes
-      }
-    });
-    
-    // Redirect to the review page
-    res.redirect(`/bcr-submission/${submissionId}/review`);
+    // Redirect to the submissions list
+    res.redirect('/bcr-submission/list?reinstated=true');
   } catch (error) {
     console.error('Error reinstating submission:', error);
     res.status(500).render('error', {
@@ -1099,12 +805,12 @@ const reinstate = async (req, res) => {
 /**
  * Handle review action form submission
  * @param {import('express').Request} req 
- * @param {import('express').Response} res 
+ * @param {import('express').Response} res
  */
 const reviewAction = async (req, res) => {
   try {
     const submissionId = req.params.id;
-    const { reviewOutcome, comments } = req.body;
+    const { action, comments } = req.body;
     
     // Get the submission
     const submission = await submissionModel.getSubmissionById(submissionId);
@@ -1118,86 +824,26 @@ const reviewAction = async (req, res) => {
       });
     }
     
-    if (submission.deletedAt) {
-      return res.status(400).render('bcr-submission/warning', {
-        title: 'Cannot Review Deleted Submission',
-        message: 'This submission has been deleted and cannot be reviewed',
-        submission,
-        user: req.user
-      });
-    }
-    
-    // Process based on review outcome
-    switch (reviewOutcome) {
+    // Handle different review actions
+    switch (action) {
       case 'approve':
-        // Update submission with Approved status first
-        await prisma.Submission.update({
-          where: { id: submissionId },
-          data: {
-            reviewedAt: new Date(),
-            reviewOutcome: 'Approved',
-            updatedAt: new Date()
-          }
-        });
-        // Redirect to the approve endpoint
-        return res.redirect(`/bcr-submission/${submissionId}/approve`);
+        return approve(req, res);
         
       case 'reject':
-        // Update submission as rejected
-        await prisma.Submission.update({
-          where: { id: submissionId },
-          data: {
-            reviewedAt: new Date(),
-            reviewOutcome: 'Rejected',
-            reviewComments: comments || null,
-            updatedAt: new Date()
-          }
-        });
+        return reject(req, res);
         
-        // Refresh counters to update the dashboard
-        await refreshCounters();
+      case 'more-info':
+        return requestMoreInfo(req, res);
         
-        return res.render('bcr-submission/review-complete', {
-          title: 'Submission Rejected',
-          message: 'The submission has been rejected',
-          submission,
-          reviewOutcome: 'Rejected',
-          user: req.user
-        });
-        
-      case 'request-more-info':
-        // Update submission to request more info
-        await prisma.Submission.update({
-          where: { id: submissionId },
-          data: {
-            reviewedAt: new Date(),
-            reviewOutcome: 'More Info',
-            reviewComments: comments || null,
-            updatedAt: new Date()
-          }
-        });
-        
-        // Refresh counters to update the dashboard
-        await refreshCounters();
-        
-        return res.render('bcr-submission/review-complete', {
-          title: 'More Information Requested',
-          message: 'The submission requires more information',
-          submission,
-          reviewOutcome: 'More Info',
-          user: req.user
-        });
+      case 'reject-edit':
+        return rejectAndEdit(req, res);
         
       case 'pause':
         // Update submission as paused
-        await prisma.Submission.update({
-          where: { id: submissionId },
-          data: {
-            reviewedAt: new Date(),
-            reviewOutcome: 'Paused',
-            reviewComments: comments || null,
-            updatedAt: new Date()
-          }
+        await submissionModel.updateSubmission(submissionId, {
+          reviewedAt: new Date(),
+          reviewOutcome: 'Paused',
+          reviewComments: comments || null
         });
         
         // Refresh counters to update the dashboard
@@ -1233,16 +879,14 @@ const reviewAction = async (req, res) => {
 /**
  * Show the review history for a submission
  * @param {import('express').Request} req 
- * @param {import('express').Response} res 
+ * @param {import('express').Response} res
  */
 const submissionReviews = async (req, res) => {
   try {
     const submissionId = req.params.id;
     
     // Get the submission with all its details
-    const submission = await prisma.Submission.findUnique({
-      where: { id: submissionId }
-    });
+    const submission = await submissionModel.getSubmissionById(submissionId);
     
     if (!submission) {
       return res.status(404).render('error', {
@@ -1315,5 +959,6 @@ module.exports = {
   deleteSubmission,
   hardDeleteSubmission,
   editConfirm,
-  reinstate
+  reinstate,
+  review
 };

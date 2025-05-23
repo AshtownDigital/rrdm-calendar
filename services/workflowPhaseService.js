@@ -1,44 +1,44 @@
 // services/workflowPhaseService.js
-// Service for interacting with the WorkflowPhase model (Prisma)
+// Service for interacting with the WorkflowPhase model (MongoDB)
 
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+// Import MongoDB models
+const mongoose = require('mongoose');
+const WorkflowPhase = require('../models/WorkflowPhase');
 
 /**
  * Get all workflow phases, ordered by their order field.
  */
 async function getAllPhases() {
-  return prisma.workflowPhase.findMany({
-    orderBy: { order: 'asc' }
-  });
+  return WorkflowPhase.find({}).sort({ order: 1 });
 }
 
 /**
  * Get a workflow phase by ID.
  */
 async function getPhaseById(id) {
-  return prisma.workflowPhase.findUnique({ where: { id } });
+  return WorkflowPhase.findById(id);
 }
 
 /**
  * Create a new workflow phase.
  */
 async function createPhase(data) {
-  return prisma.workflowPhase.create({ data });
+  const phase = new WorkflowPhase(data);
+  return phase.save();
 }
 
 /**
  * Update a workflow phase by ID.
  */
 async function updatePhase(id, data) {
-  return prisma.workflowPhase.update({ where: { id }, data });
+  return WorkflowPhase.findByIdAndUpdate(id, data, { new: true });
 }
 
 /**
  * Delete a workflow phase by ID.
  */
 async function deletePhase(id) {
-  return prisma.workflowPhase.delete({ where: { id } });
+  return WorkflowPhase.findByIdAndDelete(id);
 }
 
 /**
@@ -48,8 +48,8 @@ async function getAllStatuses() {
   const phases = await getAllPhases();
   // Flatten all statuses into a single array
   return phases.reduce((acc, phase) => {
-    if (phase.currentStatus) acc.push({ phaseId: phase.id, type: 'current', status: phase.currentStatus, phaseName: phase.name });
-    if (phase.completedStatus) acc.push({ phaseId: phase.id, type: 'completed', status: phase.completedStatus, phaseName: phase.name });
+    if (phase.currentStatus) acc.push({ phaseId: phase._id, type: 'current', status: phase.currentStatus, phaseName: phase.name });
+    if (phase.completedStatus) acc.push({ phaseId: phase._id, type: 'completed', status: phase.completedStatus, phaseName: phase.name });
     return acc;
   }, []);
 }
@@ -88,10 +88,10 @@ async function getStatusById(id) {
   const phase = await getPhaseById(id);
   if (!phase) return null;
   return {
-    id: phase.id,
+    id: phase._id,
     name: phase.currentStatus,
     type: 'current',
-    phaseId: phase.id,
+    phaseId: phase._id,
     phaseName: phase.name
   };
 }
