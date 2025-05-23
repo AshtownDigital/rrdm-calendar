@@ -1,0 +1,30 @@
+/* Dashboard-style cards for the home page */
+.app-card--dashboard {
+  border: 1px solid #b1b4b6;
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: #f8f8f8;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #b1b4b6; /* Override the home.css border-left */
+  box-shadow: none; /* Remove the box-shadow from home.css */
+}
+
+.app-card--dashboard h2 {
+  margin-top: 0;
+}
+
+.app-card--dashboard p {
+  margin-bottom: 15px;
+}
+
+.app-card--dashboard .govuk-tag {
+  margin-bottom: 15px;
+}
+
+.app-card--dashboard .govuk-button {
+  margin-top: auto;
+  align-self: flex-start;
+  margin-bottom: 0;
+}

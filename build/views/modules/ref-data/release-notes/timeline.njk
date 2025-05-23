@@ -1,0 +1,143 @@
+{% extends "layouts/base.njk" %}
+{% from "modules/ref-data/release-notes/navigation-tabs/index.njk" import academicYearTabs, viewTypeTabs %}
+
+{% block pageTitle %}
+  Register Initial Teacher Trainees {% if selectedYear %}{{ selectedYear }} academic year{% endif %} reference data - {{ serviceName }}
+{% endblock %}
+
+{% block stylesheets %}
+  <link href="/stylesheets/govuk-frontend.min.css" rel="stylesheet">
+  <link href="/stylesheets/release-notes.css" rel="stylesheet">
+  <style>
+    /* Custom styling for timeline icons */
+    .app-timeline-event.green-icon::before {
+      background-color: #00703c !important; /* Green color for Go Live */
+    }
+    
+    /* Timeline styling */
+    .app-timeline {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    
+    .app-timeline:before {
+      background-color: #1d70b8;
+      content: "";
+      height: 100%;
+      left: 0;
+      position: absolute;
+      top: 12px;
+      width: 3px;
+    }
+    
+    .app-timeline-event {
+      margin-bottom: 20px;
+      padding-left: 20px;
+      position: relative;
+    }
+    
+    .app-timeline-event::before {
+      content: "";
+      position: absolute;
+      left: -8px;
+      top: 15px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #1d70b8;
+      border: 4px solid #ffffff;
+      box-shadow: 0 0 0 1px #b1b4b6;
+    }
+    
+    /* Summary list styling to make deadline fit on one line */
+    .govuk-summary-list__key {
+      width: 20%;
+      font-weight: bold;
+    }
+    
+    .govuk-summary-list__value {
+      width: 80%;
+      word-break: normal;
+    }
+    
+    .govuk-summary-list__row {
+      display: flex;
+      border-bottom: 1px solid #b1b4b6;
+      margin-bottom: 5px;
+      padding-bottom: 5px;
+    }
+    
+    .phase-tag--blue { color: #1d70b8; }
+    .phase-tag--green { color: #00703c; }
+    .phase-tag--purple { color: #4c2c92; }
+    
+
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Register Initial Teacher Trainees {% if selectedYear %}{{ selectedYear }} academic year{% endif %} reference data</h1>
+    
+    {# Skip link for keyboard navigation #}
+    <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
+
+    {# Include the navigation tabs components #}
+    {{ academicYearTabs(academicYears, selectedYear, view) }}
+    {{ viewTypeTabs(selectedYear, view) }}
+
+    <div class="govuk-tabs__panel" id="tab-timeline">
+      <div id="main-content" class="govuk-!-margin-top-6 govuk-!-margin-bottom-6 govuk-!-padding-top-6 govuk-!-padding-left-6 govuk-!-padding-right-6" style="background-color: white;" tabindex="-1">
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-two-thirds">
+            <h2 class="govuk-heading-l">Reference data release timeline for {{ selectedYear }} academic year</h2>
+            <p class="govuk-body">The timeline below shows the standard process for updating reference data for the {{ selectedYear }} academic year.</p>
+          </div>
+        </div>
+        
+        <div class="govuk-inset-text">
+          <p>This timeline covers the entire reference data update cycle from initial submission to post-implementation review.</p>
+        </div>
+        
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-full">
+            <ol class="app-timeline">
+              {% for event in timeline.timeline %}
+                <li class="app-timeline-event{% if event.description == "10. Go Live" %} green-icon{% endif %}">
+                  <h3 class="govuk-heading-s govuk-!-margin-bottom-1 govuk-!-margin-top-2">
+                    {{ event.description }}
+                  </h3>
+                  
+                  <table class="govuk-table govuk-!-margin-bottom-0">
+                    <tbody class="govuk-table__body">
+                      <tr class="govuk-table__row">
+                        <th scope="row" class="govuk-table__header" style="width: 20%; white-space: nowrap;">Timeline</th>
+                        <td class="govuk-table__cell">
+                          {{ event.date | date("D MMMM YYYY") }}{% if event.endDate %} - {{ event.endDate | date("D MMMM YYYY") }}{% endif %}
+                        </td>
+                      </tr>
+                      <tr class="govuk-table__row">
+                        <th scope="row" class="govuk-table__header" style="width: 20%; white-space: nowrap;">Activity</th>
+                        <td class="govuk-table__cell">{{ event.activity }}</td>
+                      </tr>
+                      <tr class="govuk-table__row">
+                        <th scope="row" class="govuk-table__header" style="width: 20%; white-space: nowrap;">Deadline</th>
+                        <td class="govuk-table__cell">{% if event.deadline %}{{ event.deadline }}{% else %}N/A{% endif %}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </li>
+              {% endfor %}
+            </ol>
+          </div>
+        </div>
+      </div>
+
+
+      
+
+    </div>
+  </div>
+</div>
+{% endblock %}

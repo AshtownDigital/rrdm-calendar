@@ -1,0 +1,57 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}BCR Management | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">Business Change Request (BCR) Management</h1>
+      
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+          <p class="govuk-body-l">
+            Manage and track business change requests through the entire lifecycle from submission to implementation.
+          </p>
+        </div>
+      </div>
+
+
+
+      <!-- Dashboard Cards -->
+      <div class="govuk-grid-row">
+        <!-- Card 1: BCR Directory -->
+        <div class="govuk-grid-column-one-third">
+          <div class="app-card">
+            <h2 class="govuk-heading-m">BCR Directory</h2>
+            <p class="govuk-body">View and manage all active BCR submissions.</p>
+            <a href="/bcr/submissions" class="govuk-button">View submissions</a>
+          </div>
+        </div>
+        
+        <!-- Card 2: Submit New BCR -->
+        <div class="govuk-grid-column-one-third">
+          <div class="app-card">
+            <h2 class="govuk-heading-m">Submit New BCR</h2>
+            <p class="govuk-body">Create a new Business Change Request.</p>
+            <a href="/bcr/submit" class="govuk-button">Create BCR</a>
+          </div>
+        </div>
+        
+        <!-- Card 3: Workflow Management -->
+        <div class="govuk-grid-column-one-third">
+          <div class="app-card">
+            <h2 class="govuk-heading-m">Workflow Management</h2>
+            <p class="govuk-body">View and manage the BCR workflow process.</p>
+            <a href="/bcr/workflow" class="govuk-button">View workflow</a>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+{% endblock %}

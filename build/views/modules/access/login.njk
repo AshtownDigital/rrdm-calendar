@@ -1,0 +1,61 @@
+{% extends "layouts/auth.njk" %}
+
+{% block title %}Login | Register Team Internal Services{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      <h1 class="govuk-heading-xl">Sign in</h1>
+
+      <form action="/access/login" method="post" novalidate>
+        {% set emailError = errors | selectattr("field", "equalto", "email") | first %}
+        <div class="govuk-form-group {% if emailError %}govuk-form-group--error{% endif %}">
+          <label class="govuk-label" for="email">
+            Email address
+          </label>
+          {% if emailError %}
+            <p id="email-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ emailError.message }}
+            </p>
+          {% endif %}
+          <input class="govuk-input {% if emailError %}govuk-input--error{% endif %}" 
+                 id="email" 
+                 name="email" 
+                 type="email" 
+                 value="{{ email }}" 
+                 spellcheck="false" 
+                 autocomplete="email"
+                 {% if emailError %}aria-describedby="email-error"{% endif %}>
+        </div>
+
+        {% set passwordError = errors | selectattr("field", "equalto", "password") | first %}
+        <div class="govuk-form-group {% if passwordError %}govuk-form-group--error{% endif %}">
+          <label class="govuk-label" for="password">
+            Password
+          </label>
+          {% if passwordError %}
+            <p id="password-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ passwordError.message }}
+            </p>
+          {% endif %}
+          <input class="govuk-input {% if passwordError %}govuk-input--error{% endif %}" 
+                 id="password" 
+                 name="password" 
+                 type="password" 
+                 autocomplete="current-password"
+                 {% if passwordError %}aria-describedby="password-error"{% endif %}>
+        </div>
+
+        <button class="govuk-button" data-module="govuk-button">
+          Sign in
+        </button>
+      </form>
+
+      <h2 class="govuk-heading-m">Problems signing in</h2>
+      <p class="govuk-body">
+        <a class="govuk-link" href="/access/forgot-password">I've forgotten my password</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}

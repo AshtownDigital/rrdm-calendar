@@ -1,0 +1,87 @@
+{% extends '../layouts/main.njk' %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-panel govuk-panel--confirmation">
+        <h1 class="govuk-panel__title">
+          {{ title }}
+        </h1>
+        <div class="govuk-panel__body">
+          {{ message }}
+        </div>
+      </div>
+
+      <h2 class="govuk-heading-m">Submission details</h2>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Submission Code
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ submission.submissionCode }}
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Brief Description
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ submission.briefDescription }}
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Urgency Level
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {% if submission.urgencyLevel === 'High' %}
+              <strong class="govuk-tag govuk-tag--orange">{{ submission.urgencyLevel }}</strong>
+            {% elif submission.urgencyLevel === 'Medium' %}
+              <strong class="govuk-tag govuk-tag--yellow">{{ submission.urgencyLevel }}</strong>
+            {% elif submission.urgencyLevel === 'Critical' %}
+              <strong class="govuk-tag govuk-tag--red">{{ submission.urgencyLevel }}</strong>
+            {% else %}
+              <strong class="govuk-tag govuk-tag--blue">{{ submission.urgencyLevel }}</strong>
+            {% endif %}
+          </dd>
+        </div>
+      </dl>
+
+      <h2 class="govuk-heading-m">BCR details</h2>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            BCR Code
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ bcr.bcrCode }}
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Current Phase
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ bcr.currentPhase }}
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Status
+          </dt>
+          <dd class="govuk-summary-list__value">
+            <strong class="govuk-tag govuk-tag--light-blue">{{ bcr.status }}</strong>
+          </dd>
+        </div>
+      </dl>
+
+      <div class="govuk-button-group">
+        <a href="/bcr/{{ bcr.id }}" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+          View BCR
+        </a>
+        <a href="/bcr-submission" class="govuk-link">Return to submissions list</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}
+  {{ title }} - RRDM
+{% endblock %}
+
+{% block breadcrumbs %}
+  <li class="govuk-breadcrumbs__list-item">
+    <a class="govuk-breadcrumbs__link" href="/bcr/dashboard">BCR Dashboard</a>
+  </li>
+  <li class="govuk-breadcrumbs__list-item">
+    <a class="govuk-breadcrumbs__link" href="/bcr-submission">BCR Submissions</a>
+  </li>
+  <li class="govuk-breadcrumbs__list-item">
+    Confirmation
+  </li>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-panel govuk-panel--confirmation">
+        <h1 class="govuk-panel__title">
+          {{ title }}
+        </h1>
+        <div class="govuk-panel__body">
+          {{ message }}
+        </div>
+      </div>
+
+      <h2 class="govuk-heading-m">What happens next</h2>
+
+      <p class="govuk-body">
+        {% if action === 'submit' %}
+          Your submission has been received and will be reviewed by an administrator. You will be notified by email when a decision has been made.
+        {% elif action === 'approve' %}
+          The submission has been approved and a new BCR has been created. The submitter will be notified by email.
+        {% elif action === 'reject' %}
+          The submission has been rejected. The submitter will be notified by email with the reason for rejection.
+        {% elif action === 'delete' %}
+          The submission has been deleted and will no longer be available for review.
+        {% else %}
+          The action has been completed successfully.
+        {% endif %}
+      </p>
+
+      <div class="govuk-button-group">
+        {% if action === 'submit' %}
+          <a href="/bcr/dashboard" class="govuk-button">Return to Dashboard</a>
+          <a href="/bcr-submission/new" class="govuk-button govuk-button--secondary">Submit Another BCR</a>
+        {% elif action === 'approve' %}
+          <a href="/bcr/{{ bcrId }}" class="govuk-button">View New BCR</a>
+          <a href="/bcr-submission" class="govuk-button govuk-button--secondary">Return to Submissions</a>
+        {% else %}
+          <a href="/bcr-submission" class="govuk-button">Return to Submissions</a>
+          <a href="/bcr/dashboard" class="govuk-button govuk-button--secondary">Return to Dashboard</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

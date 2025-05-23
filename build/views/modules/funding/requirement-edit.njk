@@ -1,0 +1,94 @@
+{% extends "layouts/base.njk" %}
+
+{% block title %}Edit Funding Requirement | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/funding-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Edit {{ route.name }} Funding</h1>
+    <p class="govuk-body-l">Update funding requirements for {{ academicYear }}</p>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <form action="/funding/requirements/{{ route.id }}/update" method="post">
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--m" for="status">
+          Status
+        </label>
+        <select class="govuk-select" id="status" name="status">
+          <option value="Active" {% if route.status == 'Active' %}selected{% endif %}>Active</option>
+          <option value="Inactive" {% if route.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+          <option value="Pending" {% if route.status == 'Pending' %}selected{% endif %}>Pending</option>
+        </select>
+      </div>
+
+      {% if route.bursaryAmount is not null %}
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--m" for="bursaryAmount">
+          Bursary amount (£)
+        </label>
+        <div class="govuk-input__wrapper">
+          <div class="govuk-input__prefix" aria-hidden="true">£</div>
+          <input class="govuk-input govuk-input--width-10" id="bursaryAmount" name="bursaryAmount" type="number" value="{{ route.bursaryAmount }}">
+        </div>
+      </div>
+      {% endif %}
+
+      {% if route.scholarshipAmount is not null %}
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--m" for="scholarshipAmount">
+          Scholarship amount (£)
+        </label>
+        <div class="govuk-input__wrapper">
+          <div class="govuk-input__prefix" aria-hidden="true">£</div>
+          <input class="govuk-input govuk-input--width-10" id="scholarshipAmount" name="scholarshipAmount" type="number" value="{{ route.scholarshipAmount }}">
+        </div>
+      </div>
+      {% endif %}
+
+      {% if route.grantAmount is not null %}
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--m" for="grantAmount">
+          Grant amount (£)
+        </label>
+        <div class="govuk-input__wrapper">
+          <div class="govuk-input__prefix" aria-hidden="true">£</div>
+          <input class="govuk-input govuk-input--width-10" id="grantAmount" name="grantAmount" type="number" value="{{ route.grantAmount }}">
+        </div>
+      </div>
+      {% endif %}
+
+      <h2 class="govuk-heading-m govuk-!-margin-top-6">Eligible Subjects</h2>
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+            Select subjects eligible for funding
+          </legend>
+          <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+            {% for subject in allSubjects %}
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subject-{{ subject.id }}" name="eligibleSubjects[]" type="checkbox" value="{{ subject.id }}" 
+                {% if subject.id in eligibleSubjectIds %}checked{% endif %}>
+              <label class="govuk-label govuk-checkboxes__label" for="subject-{{ subject.id }}">
+                {{ subject.name }} ({{ subject.priority }} priority)
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="govuk-button-group govuk-!-margin-top-6">
+        <button type="submit" class="govuk-button">Save changes</button>
+        <a href="/funding/requirements/{{ route.id }}" class="govuk-button govuk-button--secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

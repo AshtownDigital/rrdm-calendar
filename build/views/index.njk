@@ -1,0 +1,55 @@
+{% extends "layouts/base.njk" %}
+
+{% block pageTitle %}
+  Home | Register Team Internal Services
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Register Team Internal Services</h1>
+    
+    <div class="govuk-grid-row">
+      <!-- BCR Management Card -->
+      <div class="govuk-grid-column-one-third">
+        <div class="app-card">
+          <h2 class="govuk-heading-m">BCR Management</h2>
+          <p class="govuk-body">Manage Business Change Requests (BCRs) and track their progress.</p>
+          <a href="/bcr/submissions" class="govuk-button">View BCR Submissions</a>
+        </div>
+      </div>
+      
+      <!-- Reference Data Card -->
+      <div class="govuk-grid-column-one-third">
+        <div class="app-card">
+          <h2 class="govuk-heading-m">Reference Data</h2>
+          <p class="govuk-body">Manage reference data items and values.</p>
+          <a href="/items" class="govuk-button">View Reference Data</a>
+        </div>
+      </div>
+      
+      <!-- Dashboard Card -->
+      <div class="govuk-grid-column-one-third">
+        <div class="app-card">
+          <h2 class="govuk-heading-m">Dashboard</h2>
+          <p class="govuk-body">View overall system status and metrics.</p>
+          <a href="/dashboard" class="govuk-button">Go to Dashboard</a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Quick Links Section -->
+    <div class="govuk-!-margin-top-6">
+      <h2 class="govuk-heading-m">Quick Links</h2>
+      <ul class="govuk-list govuk-list--bullet">
+        <li><a href="/bcr/submit" class="govuk-link">Submit New BCR</a></li>
+        <li><a href="/bcr/workflow" class="govuk-link">BCR Workflow</a></li>
+        <li><a href="/release-notes" class="govuk-link">Reference Data - Public facing</a></li>
+        {% if user and user.role === 'admin' %}
+        <li><a href="/access/manage" class="govuk-link">Access Management</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

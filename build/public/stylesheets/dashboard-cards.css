@@ -1,0 +1,62 @@
+/* Dashboard-style cards for the home page with !important declarations */
+.app-card {
+  border: 1px solid #b1b4b6 !important;
+  padding: 20px !important;
+  margin-bottom: 20px !important;
+  background-color: #f8f8f8 !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+}
+
+.app-card h2 {
+  margin-top: 0 !important;
+}
+
+.app-card p {
+  margin-bottom: 15px !important;
+}
+
+.app-card .govuk-button {
+  margin-top: auto !important;
+  align-self: flex-start !important;
+  margin-bottom: 0 !important;
+}
+
+/* Card variations with !important */
+.app-card--blue {
+  border-left: 5px solid #1d70b8 !important;
+}
+
+.app-card--green {
+  border-left: 5px solid #00703c !important;
+}
+
+.app-card--grey {
+  border-left: 5px solid #505a5f !important;
+}
+
+.app-card--yellow {
+  border-left: 5px solid #ffdd00 !important;
+}
+
+.app-card--red {
+  border-left: 5px solid #d4351c !important;
+}
+
+.app-card--purple {
+  border-left: 5px solid #4c2c92 !important;
+}
+
+.app-card--turquoise {
+  border-left: 5px solid #10403c !important;
+}
+
+.app-card--orange {
+  border-left: 5px solid #6e3619 !important;
+}
+
+.app-card--light-blue {
+  border-left: 5px solid #1d70b8 !important;
+}

@@ -1,0 +1,42 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block pageTitle %}
+  New Impact Area - RRDM
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">New Impact Area</h1>
+      
+      <form action="/bcr/impacted-areas" method="post" class="govuk-form">
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--m" for="name">
+            Name
+          </label>
+          <input class="govuk-input" id="name" name="name" type="text" required>
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--m" for="description">
+            Description
+          </label>
+          <textarea class="govuk-textarea" id="description" name="description" rows="5"></textarea>
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--m" for="displayOrder">
+            Display Order
+          </label>
+          <input class="govuk-input govuk-input--width-5" id="displayOrder" name="displayOrder" type="number" value="10">
+          <div class="govuk-hint">
+            Lower numbers appear first in lists
+          </div>
+        </div>
+
+        <button type="submit" class="govuk-button">Create Impact Area</button>
+        <a href="/bcr/impacted-areas" class="govuk-button govuk-button--secondary">Cancel</a>
+      </form>
+    </div>
+  </div>
+{% endblock %}

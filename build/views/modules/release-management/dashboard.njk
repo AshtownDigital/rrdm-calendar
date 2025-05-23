@@ -1,0 +1,109 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block pageTitle %}
+  Release Management Dashboard - RRDM
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Release Management Dashboard</h1>
+    <p class="govuk-body-l">Plan and track system releases and deployments</p>
+  </div>
+</div>
+
+<!-- Overview Section -->
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6 govuk-!-margin-bottom-4">Overview</h2>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-one-quarter">
+    <div class="app-card app-card--green">
+      <h2 class="govuk-heading-m">0</h2>
+      <p class="govuk-body">Planned Releases</p>
+    </div>
+  </div>
+  <div class="govuk-grid-column-one-quarter">
+    <div class="app-card app-card--blue">
+      <h2 class="govuk-heading-m">0</h2>
+      <p class="govuk-body">In Development</p>
+    </div>
+  </div>
+  <div class="govuk-grid-column-one-quarter">
+    <div class="app-card app-card--turquoise">
+      <h2 class="govuk-heading-m">0</h2>
+      <p class="govuk-body">Ready for Testing</p>
+    </div>
+  </div>
+  <div class="govuk-grid-column-one-quarter">
+    <div class="app-card app-card--purple">
+      <h2 class="govuk-heading-m">0</h2>
+      <p class="govuk-body">Deployed</p>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions Section -->
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6 govuk-!-margin-bottom-4">Quick Actions</h2>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card app-card--blue">
+      <h2 class="govuk-heading-m">Plan New Release</h2>
+      <p class="govuk-body">Create a new release plan with features and timeline.</p>
+      <a href="#" class="govuk-button">Create Release</a>
+    </div>
+  </div>
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card app-card--turquoise">
+      <h2 class="govuk-heading-m">View Release Calendar</h2>
+      <p class="govuk-body">See upcoming releases and important dates.</p>
+      <a href="#" class="govuk-button">View Calendar</a>
+    </div>
+  </div>
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card app-card--purple">
+      <h2 class="govuk-heading-m">Deployment History</h2>
+      <p class="govuk-body">View past deployments and their status.</p>
+      <a href="#" class="govuk-button">View History</a>
+    </div>
+  </div>
+</div>
+
+<!-- Upcoming Releases Section -->
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6 govuk-!-margin-bottom-4">Upcoming Releases</h2>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-visually-hidden">Upcoming Releases</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Release Name</th>
+          <th scope="col" class="govuk-table__header">Version</th>
+          <th scope="col" class="govuk-table__header">Planned Date</th>
+          <th scope="col" class="govuk-table__header">Status</th>
+          <th scope="col" class="govuk-table__header">Features</th>
+          <th scope="col" class="govuk-table__header">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell" colspan="6">No upcoming releases scheduled</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

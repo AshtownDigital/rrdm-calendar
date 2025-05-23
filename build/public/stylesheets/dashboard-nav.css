@@ -1,0 +1,29 @@
+/* Custom styles for dashboard navigation */
+.dashboard-nav .govuk-service-navigation__container {
+  max-width: 100%;
+  margin: 0;
+  padding: 0 15px;
+}
+
+.dashboard-nav .govuk-width-container {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.dashboard-nav .govuk-service-navigation__list {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 100%;
+}
+
+.dashboard-nav .govuk-service-navigation__item {
+  flex: 1;
+  text-align: center;
+}
+
+.dashboard-nav .govuk-service-navigation__link {
+  display: block;
+  width: 100%;
+}

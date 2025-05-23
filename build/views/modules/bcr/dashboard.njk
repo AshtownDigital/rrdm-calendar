@@ -1,0 +1,230 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block pageTitle %}
+  BCR Dashboard - RRDM
+{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <style>
+    .loading-spinner {
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid #1d70b8;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .loading-overlay {
+      position: relative;
+    }
+    .loading-overlay::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Business Change Request Dashboard</h1>
+    <p class="govuk-body-l">Manage and track business change requests</p>
+  </div>
+</div>
+
+<!-- Overview Section -->
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6 govuk-!-margin-bottom-4">Overview</h2>
+  </div>
+</div>
+
+<div class="govuk-grid-row" id="stats-container">
+  <div class="govuk-grid-column-one-quarter">
+    <div class="app-card app-card--green">
+      <h2 class="govuk-heading-m" id="total-bcrs">
+        {{ stats.total }}
+      </h2>
+      <p class="govuk-body">Total BCRs</p>
+    </div>
+  </div>
+  <div class="govuk-grid-column-one-quarter">
+    <div class="app-card app-card--blue">
+      <h2 class="govuk-heading-m" id="pending-bcrs">
+        {{ stats.pending }}
+      </h2>
+      <p class="govuk-body">Pending</p>
+    </div>
+  </div>
+  <div class="govuk-grid-column-one-quarter">
+    <div class="app-card app-card--turquoise">
+      <h2 class="govuk-heading-m" id="approved-bcrs">
+        {{ stats.approved }}
+      </h2>
+      <p class="govuk-body">Approved</p>
+    </div>
+  </div>
+  <div class="govuk-grid-column-one-quarter">
+    <div class="app-card app-card--red">
+      <h2 class="govuk-heading-m" id="rejected-bcrs">
+        {{ stats.rejected }}
+      </h2>
+      <p class="govuk-body">Rejected</p>
+    </div>
+  </div>
+</div>
+
+<div class="govuk-grid-row govuk-!-margin-top-4">
+  <div class="govuk-grid-column-one-quarter">
+    <div class="app-card app-card--purple">
+      <h2 class="govuk-heading-m" id="implemented-bcrs">
+        {{ stats.implemented }}
+      </h2>
+      <p class="govuk-body">Implemented</p>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions Section -->
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6 govuk-!-margin-bottom-4">Quick Actions</h2>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-one-third">
+    <a href="/bcr-submission/new" class="app-card-link">
+      <div class="app-card app-card--blue">
+        <h2 class="govuk-heading-m">Create New BCR</h2>
+        <p class="govuk-body">Submit a new business change request.</p>
+      </div>
+    </a>
+  </div>
+  <div class="govuk-grid-column-one-third">
+    <a href="/bcr/submissions" class="app-card-link">
+      <div class="app-card app-card--turquoise">
+        <h2 class="govuk-heading-m">View All BCRs</h2>
+        <p class="govuk-body">Browse and search all business change requests.</p>
+      </div>
+    </a>
+  </div>
+  <div class="govuk-grid-column-one-third">
+    <a href="/bcr/workflow" class="app-card-link">
+      <div class="app-card app-card--purple">
+        <h2 class="govuk-heading-m">View Workflow</h2>
+        <p class="govuk-body">See the BCR workflow process diagram.</p>
+      </div>
+    </a>
+  </div>
+</div>
+
+
+
+<!-- BCRs by Priority Level Section -->
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6 govuk-!-margin-bottom-4">BCRs by Priority Level</h2>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  {% for level in urgencyLevels %}
+    <div class="govuk-grid-column-one-quarter">
+      <div class="app-card
+        {% if level.value === 'low' %}
+          app-card--green
+        {% elif level.value === 'medium' %}
+          app-card--yellow
+        {% elif level.value === 'high' %}
+          app-card--orange
+        {% elif level.value === 'critical' %}
+          app-card--red
+        {% else %}
+          app-card--grey
+        {% endif %}">
+        <h2 class="govuk-heading-m">{{ level.name }}</h2>
+        <p class="govuk-body">{{ bcrsByUrgency[level.value] or 0 }} BCRs</p>
+        <p class="govuk-body">
+          {% if level.value === 'low' %}
+            <strong class="govuk-tag govuk-tag--green">Low Priority</strong>
+          {% elif level.value === 'medium' %}
+            <strong class="govuk-tag govuk-tag--yellow">Medium Priority</strong>
+          {% elif level.value === 'high' %}
+            <strong class="govuk-tag govuk-tag--orange">High Priority</strong>
+          {% elif level.value === 'critical' %}
+            <strong class="govuk-tag govuk-tag--red">Critical Priority</strong>
+          {% else %}
+            <strong class="govuk-tag govuk-tag--grey">{{ level.name }}</strong>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Recent BCRs Section -->
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6 govuk-!-margin-bottom-4">Recent BCRs</h2>
+  </div>
+</div>
+
+{% if recentBcrs and recentBcrs.length > 0 %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-visually-hidden">Recent BCRs</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">BCR Number</th>
+            <th scope="col" class="govuk-table__header">Title</th>
+            <th scope="col" class="govuk-table__header">Status</th>
+            <th scope="col" class="govuk-table__header">Created</th>
+            <th scope="col" class="govuk-table__header">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for bcr in recentBcrs %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell">{{ bcr.bcrNumber }}</td>
+              <td class="govuk-table__cell">{{ bcr.description | truncate(60) }}</td>
+              <td class="govuk-table__cell">
+                <strong class="{{ bcr.statusClass }}">{{ bcr.statusText }}</strong>
+              </td>
+              <td class="govuk-table__cell">{{ bcr.createdAt }}</td>
+              <td class="govuk-table__cell">
+                <a href="/bcr/submissions/{{ bcr.id }}" class="govuk-link">View</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <p class="govuk-body">No BCRs found.</p>
+    </div>
+  </div>
+{% endif %}
+
+
+{% endblock %}

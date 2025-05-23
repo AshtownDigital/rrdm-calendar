@@ -1,0 +1,96 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block pageTitle %}
+  {{ title }} - RRDM
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">{{ bcr.title }}</h1>
+      
+      <div class="govuk-inset-text">
+        <h2 class="govuk-heading-m">Overview</h2>
+        <dl class="govuk-summary-list">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">BCR Number</dt>
+            <dd class="govuk-summary-list__value">{{ bcr.bcrNumber }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Status</dt>
+            <dd class="govuk-summary-list__value">
+              <strong class="govuk-tag govuk-tag--blue">{{ bcr.statusDisplay }}</strong>
+            </dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Current Phase</dt>
+            <dd class="govuk-summary-list__value">
+              <strong class="govuk-tag">{{ bcr.currentPhaseName }}</strong>
+            </dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Requested By</dt>
+            <dd class="govuk-summary-list__value">{{ bcr.Users_Bcrs_requestedByToUsers.name }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Assigned To</dt>
+            <dd class="govuk-summary-list__value">{{ bcr.Users_Bcrs_assignedToToUsers.name }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Submitted</dt>
+            <dd class="govuk-summary-list__value">{{ bcr.createdAt | date }}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="govuk-inset-text">
+        <h2 class="govuk-heading-m">Description</h2>
+        <p class="govuk-body">{{ bcr.description }}</p>
+      </div>
+
+      {% if slaStatus %}
+      <div class="govuk-inset-text">
+        <h2 class="govuk-heading-m">Service Level Agreements</h2>
+        <dl class="govuk-summary-list">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Target Response Time</dt>
+            <dd class="govuk-summary-list__value">
+              {% if slaStatus.responseStatus === 'on-track' %}
+                <strong class="govuk-tag govuk-tag--green">On Track</strong>
+              {% elif slaStatus.responseStatus === 'at-risk' %}
+                <strong class="govuk-tag govuk-tag--yellow">At Risk</strong>
+              {% elif slaStatus.responseStatus === 'overdue' %}
+                <strong class="govuk-tag govuk-tag--red">Overdue</strong>
+              {% else %}
+                <strong class="govuk-tag govuk-tag--grey">Not Set</strong>
+              {% endif %}
+              {{ slaStatus.targetResponseDate | date }}
+            </dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Target Resolution Time</dt>
+            <dd class="govuk-summary-list__value">
+              {% if slaStatus.resolutionStatus === 'on-track' %}
+                <strong class="govuk-tag govuk-tag--green">On Track</strong>
+              {% elif slaStatus.resolutionStatus === 'at-risk' %}
+                <strong class="govuk-tag govuk-tag--yellow">At Risk</strong>
+              {% elif slaStatus.resolutionStatus === 'overdue' %}
+                <strong class="govuk-tag govuk-tag--red">Overdue</strong>
+              {% else %}
+                <strong class="govuk-tag govuk-tag--grey">Not Set</strong>
+              {% endif %}
+              {{ slaStatus.targetResolutionDate | date }}
+            </dd>
+          </div>
+        </dl>
+      </div>
+      {% endif %}
+
+      <div class="govuk-button-group">
+        <a href="/bcr/bcr/{{ bcr.id }}/update" class="govuk-button">Update BCR</a>
+        <a href="/bcr/bcr-submission/{{ bcr.id }}/review" class="govuk-button govuk-button--secondary">Review Submission</a>
+        <a href="/bcr/bcr/{{ bcr.id }}/warning?action=delete" class="govuk-button govuk-button--warning">Delete BCR</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}
