@@ -6,7 +6,8 @@
  * Run with: node scripts/update-bcr-workflow.js
  */
 require('dotenv').config();
-const { prisma } = require('../config/database');
+const { BcrConfig, Bcr } = require('../models');
+require('../config/database.mongo');
 const { v4: uuidv4 } = require('uuid');
 
 /**
@@ -17,10 +18,7 @@ async function updateBcrWorkflow() {
     console.log('Starting BCR workflow update...');
     
     // Get phases in order
-    const phases = await prisma.bcrConfigs.findMany({
-      where: { type: 'phase' },
-      orderBy: { displayOrder: 'asc' }
-    });
+    const phases = await BcrConfig.find({ type: 'phase' }).sort({ value: 1 });
     
     if (phases.length === 0) {
       console.error('No phases found in the database. Cannot update BCRs.');
@@ -30,9 +28,7 @@ async function updateBcrWorkflow() {
     console.log(`Found ${phases.length} phases in workflow order.`);
     
     // Get all statuses
-    const allStatuses = await prisma.bcrConfigs.findMany({
-      where: { type: 'status' }
-    });
+    const allStatuses = await BcrConfig.find({ type: 'status' });
     
     // Create a mapping of phase IDs to their in-progress status
     const phaseToStatusMap = {};
@@ -55,7 +51,7 @@ async function updateBcrWorkflow() {
     console.log(phaseToStatusMap);
     
     // Get all BCRs
-    const bcrs = await prisma.bcrs.findMany();
+    const bcrs = await Bcr.find();
     console.log(`Found ${bcrs.length} BCR submissions to update.`);
     
     // Distribute BCRs across phases
@@ -76,16 +72,12 @@ async function updateBcrWorkflow() {
       }
       
       // Update the BCR with the appropriate status and add phase info to notes
-      await prisma.bcrs.update({
-        where: { id: bcr.id },
-        data: {
-          // We can't directly set the status field to the phase status name because it uses an enum
-          // So we'll store the phase status in the notes field
-          notes: `${bcr.notes || ''}\n\nCurrent Phase: ${phase.name}\nPhase Status: ${status}\nPhase Order: ${phase.displayOrder}`,
-          // For the status field, we'll map to one of the enum values based on phase
-          status: mapPhaseToEnumStatus(phaseIndex, phases.length)
-        }
-      });
+      const newStatus = mapPhaseToEnumStatus(phaseIndex, phases.length);
+      await Bcr.findByIdAndUpdate(bcr._id, {
+        status: newStatus,
+        notes: `${bcr.notes || ''}\n\nCurrent Phase: ${phase.name}\nPhase Status: ${status}\nPhase Order: ${phase.value}`,
+        updatedAt: new Date()
+      }, { new: true });
       
       console.log(`Updated BCR ${bcr.bcrNumber} (${bcr.title}) to phase ${phase.name} with status info in notes`);
     }
@@ -95,7 +87,7 @@ async function updateBcrWorkflow() {
   } catch (error) {
     console.error('Error updating BCR workflow:', error);
   } finally {
-    await prisma.$disconnect();
+    await mongoose.disconnect();
   }
 }
 

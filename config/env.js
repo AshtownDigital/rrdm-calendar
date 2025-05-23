@@ -66,7 +66,7 @@ const config = {
   // Database
   database: {
     url: process.env.DATABASE_URL,
-    engineType: process.env.PRISMA_CLIENT_ENGINE_TYPE || 'binary'
+    // No engine type needed for Mongoose
   },
   
   // Redis

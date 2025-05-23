@@ -5,7 +5,7 @@
     "models/**/*.js",
     "views/**/*.njk",
     "controllers/**/*.js",
-    "prisma/**/*.js",
+    "models/**/*.js",
     "api/**/*.js",
     "middleware/**/*.js",
     "utils/**/*.js",

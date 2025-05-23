@@ -5,14 +5,12 @@
  * Redis status, and session information.
  */
 const os = require('os');
-// Using centralized Prisma client
-const { prisma } = require('../config/prisma');
+// Using centralized Mongoose client
+const { mongoose } = require('../../config/database.mongo');
 const { getRedisManager } = require('../../utils/redis-manager');
 const { getSessionManager } = require('../../utils/session-manager');
 const { createError, ErrorTypes } = require('../../utils/error-handler');
-
-// Initialize Prisma client
-// Prisma client is imported from centralized config
+const { Session } = require('../../models');
 
 // Initialize Redis manager
 const redisManager = getRedisManager();
@@ -138,7 +136,7 @@ async function checkDatabaseHealth() {
   
   try {
     // Simple query to test database connection
-    await prisma.$queryRaw`SELECT 1 as result`;
+    await mongoose.connection.db.admin().ping();
     
     const responseTime = formatTime(Date.now() - startTime);
     
@@ -209,7 +207,7 @@ async function checkRedisHealth() {
 async function getSessionInfo() {
   try {
     // Get all sessions
-    const sessions = await prisma.session.findMany();
+    const sessions = await Session.find();
     
     // Count active users (sessions with a user ID)
     const activeUsers = sessions.filter(session => {

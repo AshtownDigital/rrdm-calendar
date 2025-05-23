@@ -6,7 +6,8 @@
  */
 const LocalStrategy = require('passport-local').Strategy;
 const userUtils = require('../utils/user-utils');
-const { prisma } = require('./database');
+const User = require('../models/User');
+require('./database.mongo');
 
 module.exports = function(passport) {
   // Configure local strategy

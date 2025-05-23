@@ -1,10 +1,24 @@
 /**
  * Script to populate the BCR Impact Areas in the database
- * This script creates the necessary impact areas in the ImpactedArea model
+ * This script creates the necessary impact areas in the BcrConfig collection
  */
-const { PrismaClient } = require('@prisma/client');
+require('dotenv').config();
+const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
-const prisma = new PrismaClient();
+
+// Connect to MongoDB
+const connectToMongoDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    console.log('Connected to MongoDB');
+  } catch (error) {
+    console.error('Failed to connect to MongoDB:', error);
+    process.exit(1);
+  }
+};
 
 // Define standard impact areas
 const impactAreas = [
@@ -57,31 +71,52 @@ const impactAreas = [
  */
 async function createImpactArea(impactArea) {
   const now = new Date();
-  // Create the impact area entry using the new ImpactedArea model
-  const createdImpactArea = await prisma.impactedArea.create({
-    data: {
-      id: uuidv4(),
-      name: impactArea.name,
-      description: impactArea.description,
-      order: impactArea.order,
-      createdAt: now,
-      updatedAt: now
-    }
+  
+  // Create the impact area entry in the BcrConfig collection
+  const BcrConfig = mongoose.model('BcrConfig');
+  
+  const createdImpactArea = await BcrConfig.create({
+    type: 'impactArea',
+    value: impactArea.name.toLowerCase().replace(/\s+/g, '_'),
+    displayName: impactArea.name,
+    displayOrder: impactArea.order,
+    description: impactArea.description,
+    createdAt: now,
+    updatedAt: now
   });
   
   return createdImpactArea;
 }
 
 /**
- * Populate the database with impact areas using the new ImpactedArea model
+ * Populate the database with impact areas using the BcrConfig collection
  */
 async function populateImpactAreas() {
   try {
+    await connectToMongoDB();
+    
     console.log('Starting to populate impact areas...');
+    
+    // Define the BcrConfig schema if it doesn't exist
+    if (!mongoose.models.BcrConfig) {
+      const bcrConfigSchema = new mongoose.Schema({
+        type: { type: String, required: true },
+        value: { type: String, required: true },
+        displayName: { type: String },
+        displayOrder: { type: Number, default: 0 },
+        description: { type: String },
+        deleted: { type: Boolean, default: false },
+        createdAt: { type: Date, default: Date.now },
+        updatedAt: { type: Date, default: Date.now }
+      });
+      mongoose.model('BcrConfig', bcrConfigSchema);
+    }
+    
+    const BcrConfig = mongoose.model('BcrConfig');
     
     // First, clear existing impact areas
     console.log('Clearing existing impact areas...');
-    await prisma.impactedArea.deleteMany({});
+    await BcrConfig.deleteMany({ type: 'impactArea' });
     
     // Create impact areas
     console.log('Creating impact areas...');
@@ -89,39 +124,18 @@ async function populateImpactAreas() {
       await createImpactArea(impactArea);
     }
     
-    // Also maintain backward compatibility with BcrConfigs
-    console.log('Maintaining backward compatibility with BcrConfigs...');
-    await prisma.bcrConfigs.deleteMany({
-      where: {
-        type: {
-          in: ['impact_area', 'impact_area_description']
-        }
-      }
-    });
-    
-    // Create entries in BcrConfigs for backward compatibility
-    for (const impactArea of impactAreas) {
-      const now = new Date();
-      await prisma.bcrConfigs.create({
-        data: {
-          id: uuidv4(),
-          type: 'impact_area',
-          name: impactArea.name,
-          value: impactArea.name.toLowerCase().replace(/\s+/g, '_'),
-          displayOrder: impactArea.order,
-          createdAt: now,
-          updatedAt: now
-        }
-      });
-    }
-    
     console.log('Impact areas populated successfully!');
   } catch (error) {
     console.error('Error populating impact areas:', error);
   } finally {
-    await prisma.$disconnect();
+    await mongoose.disconnect();
+    console.log('Disconnected from MongoDB');
   }
 }
 
 // Run the script
-populateImpactAreas();
+populateImpactAreas().then(() => {
+  console.log('Script execution completed');
+}).catch(err => {
+  console.error('Script execution failed:', err);
+});

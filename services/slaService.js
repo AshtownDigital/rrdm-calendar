@@ -2,9 +2,9 @@
  * SLA Service
  * Handles Service Level Agreement tracking for BCRs
  */
-// Using centralized Prisma client
-const { prisma } = require('../config/prisma');
-// Prisma client is imported from centralized config
+const mongoose = require('mongoose');
+const { Bcr } = require('../models');
+require('../config/database.mongo');
 const { logger } = require('../utils/logger');
 
 // Define SLA thresholds in milliseconds
@@ -98,12 +98,7 @@ const calculateSlaStatus = (bcr) => {
  */
 const getSlaStatus = async (bcrId) => {
   try {
-    const bcr = await prisma.bcrs.findUnique({
-      where: { id: bcrId },
-      include: {
-        Users_Bcrs_assignedToToUsers: true
-      }
-    });
+    const bcr = await Bcr.findById(bcrId).populate('assignedTo');
     
     if (!bcr) {
       logger.warn(`BCR not found for SLA calculation: ${bcrId}`);
@@ -123,11 +118,9 @@ const getSlaStatus = async (bcrId) => {
  */
 const getAllSlaStatuses = async () => {
   try {
-    const bcrs = await prisma.bcrs.findMany({
-      include: {
-        Users_Bcrs_assignedToToUsers: true
-      }
-    });
+    const bcrs = await Bcr.find({
+      status: { $in: ['pending', 'in_progress'] }
+    }).populate('assignedTo');
     
     const result = {};
     
@@ -148,12 +141,9 @@ const getAllSlaStatuses = async () => {
  */
 const getOverdueBcrs = async () => {
   try {
-    const allBcrs = await prisma.bcrs.findMany({
-      include: {
-        Users_Bcrs_assignedToToUsers: true,
-        Users_Bcrs_requestedByToUsers: true
-      }
-    });
+    const allBcrs = await Bcr.find({
+      status: { $in: ['pending', 'in_progress'] }
+    }).populate('assignedTo');
     
     const overdueBcrs = [];
     

@@ -4,7 +4,8 @@
  * 
  * IMPORTANT: This file uses CommonJS module syntax to ensure compatibility
  */
-const { prisma } = require('../../config/database');
+const mongoose = require('mongoose');
+require('../../config/database.mongo');
 
 /**
  * Health check handler for Vercel
@@ -17,7 +18,7 @@ module.exports = async (req, res) => {
   let dbStatus = 'unknown';
   try {
     // Simple database query to check connection
-    await prisma.$queryRaw`SELECT 1`;
+    await mongoose.connection.db.admin().ping();
     dbStatus = 'connected';
   } catch (dbError) {
     dbStatus = 'disconnected';

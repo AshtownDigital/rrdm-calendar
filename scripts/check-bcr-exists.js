@@ -1,8 +1,9 @@
 /**
  * Script to check if a BCR exists by ID
  */
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const mongoose = require('mongoose');
+const { Bcr } = require('../models');
+require('../config/database.mongo');
 
 async function checkBcr() {
   try {
@@ -10,10 +11,7 @@ async function checkBcr() {
     
     const bcrId = 'ed33ca62-d724-4948-9001-2e1012c774e0';
     
-    const bcr = await prisma.Bcr.findUnique({
-      where: { id: bcrId },
-      include: { submission: true }
-    });
+    const bcr = await Bcr.findById(bcrId).populate('submission');
     
     console.log('BCR found:', bcr ? 'Yes' : 'No');
     
@@ -24,7 +22,7 @@ async function checkBcr() {
   } catch (error) {
     console.error('Error checking BCR:', error);
   } finally {
-    await prisma.$disconnect();
+    await mongoose.disconnect();
   }
 }
 

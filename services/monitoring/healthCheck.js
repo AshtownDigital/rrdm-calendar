@@ -26,21 +26,9 @@ try {
   };
 }
 
-// Initialize Prisma client lazily to avoid connection issues in serverless
-let prisma;
-function getPrismaClient() {
-  if (!prisma) {
-    try {
-      // Using centralized Prisma client
-const { prisma } = require('../config/prisma');
-      prisma = new PrismaClient();
-    } catch (error) {
-      logger.error('Failed to initialize Prisma client', { error: error.message });
-      return null;
-    }
-  }
-  return prisma;
-}
+const mongoose = require('mongoose');
+require('../../config/database.mongo');
+
 
 // Health check statuses
 const STATUS = {
@@ -55,19 +43,18 @@ const STATUS = {
  */
 async function checkDatabase() {
   try {
-    // Get Prisma client
-    const client = getPrismaClient();
-    if (!client) {
+    // Check MongoDB connection
+    if (mongoose.connection.readyState !== 1) {
       return {
         status: STATUS.DOWN,
-        error: 'Prisma client initialization failed',
+        error: 'MongoDB connection not established',
         message: 'Database connection failed'
       };
     }
     
-    // Execute a simple query to check connectivity
+    // Try to ping the database
     const startTime = process.hrtime();
-    await client.$queryRaw`SELECT 1`;
+    await mongoose.connection.db.admin().ping();
     const diff = process.hrtime(startTime);
     const responseTime = (diff[0] * 1e9 + diff[1]) / 1e6; // Convert to milliseconds
     

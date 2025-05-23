@@ -4,9 +4,8 @@
  * This service provides comprehensive audit logging for tracking user actions.
  * It records who did what, when, and to which resource for compliance and security.
  */
-// Using centralized Prisma client
-const { prisma } = require('../config/prisma');
-// Prisma client is imported from centralized config
+const { AuditLog } = require('../../models');
+require('../../config/database.mongo');
 const { logger } = require('../logger');
 
 /**
@@ -30,16 +29,14 @@ async function createAuditLog({
 }) {
   try {
     // Create the audit log entry in the database
-    const auditLog = await prisma.auditLog.create({
-      data: {
-        action,
-        userId,
-        resourceType,
-        resourceId,
-        details,
-        ipAddress,
-        timestamp: new Date()
-      }
+    const auditLog = await AuditLog.create({
+      userId,
+      action,
+      resourceType,
+      resourceId,
+      details,
+      timestamp: new Date(),
+      ipAddress
     });
     
     // Log the audit event
@@ -77,26 +74,10 @@ async function createAuditLog({
  */
 async function getResourceAuditLogs(resourceType, resourceId, { limit = 50, offset = 0 } = {}) {
   try {
-    const auditLogs = await prisma.auditLog.findMany({
-      where: {
-        resourceType,
-        resourceId
-      },
-      orderBy: {
-        timestamp: 'desc'
-      },
-      take: limit,
-      skip: offset,
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            name: true
-          }
-        }
-      }
-    });
+    const auditLogs = await AuditLog.find({
+      resourceType,
+      resourceId
+    }).sort({ timestamp: -1 }).skip(offset).limit(limit);
     
     return auditLogs;
   } catch (error) {
@@ -120,25 +101,9 @@ async function getResourceAuditLogs(resourceType, resourceId, { limit = 50, offs
  */
 async function getUserAuditLogs(userId, { limit = 50, offset = 0 } = {}) {
   try {
-    const auditLogs = await prisma.auditLog.findMany({
-      where: {
-        userId
-      },
-      orderBy: {
-        timestamp: 'desc'
-      },
-      take: limit,
-      skip: offset,
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            name: true
-          }
-        }
-      }
-    });
+    const auditLogs = await AuditLog.find({
+      userId
+    }).sort({ timestamp: -1 }).skip(offset).limit(limit);
     
     return auditLogs;
   } catch (error) {
@@ -168,55 +133,44 @@ async function getUserAuditLogs(userId, { limit = 50, offset = 0 } = {}) {
 async function searchAuditLogs(filters = {}, { limit = 50, offset = 0 } = {}) {
   try {
     // Build the where clause based on filters
-    const where = {};
+    const whereClause = {};
     
     if (filters.action) {
-      where.action = filters.action;
+      whereClause.action = filters.action;
     }
     
     if (filters.userId) {
-      where.userId = filters.userId;
+      whereClause.userId = filters.userId;
     }
     
     if (filters.resourceType) {
-      where.resourceType = filters.resourceType;
+      whereClause.resourceType = filters.resourceType;
     }
     
     if (filters.resourceId) {
-      where.resourceId = filters.resourceId;
+      whereClause.resourceId = filters.resourceId;
     }
     
     // Add date range filter if provided
     if (filters.startDate || filters.endDate) {
-      where.timestamp = {};
+      whereClause.timestamp = {};
       
       if (filters.startDate) {
-        where.timestamp.gte = new Date(filters.startDate);
+        whereClause.timestamp.$gte = new Date(filters.startDate);
       }
       
       if (filters.endDate) {
-        where.timestamp.lte = new Date(filters.endDate);
+        whereClause.timestamp.$lte = new Date(filters.endDate);
       }
     }
     
     // Query the database
-    const auditLogs = await prisma.auditLog.findMany({
-      where,
-      orderBy: {
-        timestamp: 'desc'
-      },
-      take: limit,
-      skip: offset,
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            name: true
-          }
-        }
-      }
-    });
+    const auditLogs = await AuditLog.find(whereClause)
+      .sort({ timestamp: -1 })
+      .skip(offset)
+      .limit(limit);
+
+    return auditLogs;
     
     return auditLogs;
   } catch (error) {

@@ -2,7 +2,8 @@
  * API Reference Data Items Controller
  * Handles API endpoints for reference data items
  */
-const { prisma } = require('../../config/database');
+const { ReferenceData, ReferenceValue } = require('../../models');
+require('../../config/database.mongo');
 
 /**
  * Get all reference data items
@@ -11,7 +12,7 @@ const { prisma } = require('../../config/database');
  */
 const getItems = async (req, res) => {
   try {
-    const items = await prisma.referenceData.findMany();
+    const items = await ReferenceData.find();
     res.status(200).json(items);
   } catch (error) {
     console.error('Error fetching reference data items:', error);
@@ -26,9 +27,7 @@ const getItems = async (req, res) => {
  */
 const getItemById = async (req, res) => {
   try {
-    const item = await prisma.referenceData.findUnique({
-      where: { id: req.params.id }
-    });
+    const item = await ReferenceData.findById(req.params.id);
     if (!item) {
       return res.status(404).json({ error: 'Item not found' });
     }
@@ -46,9 +45,7 @@ const getItemById = async (req, res) => {
  */
 const getItemValues = async (req, res) => {
   try {
-    const values = await prisma.referenceValue.findMany({
-      where: { referenceDataId: req.params.id }
-    });
+    const values = await ReferenceValue.find({ referenceDataId: req.params.id });
     res.status(200).json(values);
   } catch (error) {
     console.error('Error fetching reference data values:', error);

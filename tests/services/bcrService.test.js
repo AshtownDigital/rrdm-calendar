@@ -1,35 +1,32 @@
 /**
  * Unit tests for BCR Service
  */
-const { PrismaClient } = require('@prisma/client');
+const mongoose = require('mongoose');
+const Bcr = require('../../models/Bcr');
+const BcrWorkflowActivity = require('../../models/BcrWorkflowActivity');
 const bcrService = require('../../services/bcrService');
 const { shortCache, mediumCache } = require('../../utils/cache');
 
 // Create mock functions
 const mockFindMany = jest.fn();
 const mockFindFirst = jest.fn();
-const mockFindUnique = jest.fn();
 const mockCreate = jest.fn();
-const mockUpdate = jest.fn();
-const mockDelete = jest.fn();
-const mockDisconnect = jest.fn();
+const mockFindByIdAndUpdate = jest.fn();
+const mockFindByIdAndDelete = jest.fn();
 
-// Mock the Prisma client
-jest.mock('@prisma/client', () => {
-  return {
-    PrismaClient: jest.fn().mockImplementation(() => ({
-      bcrs: {
-        findMany: mockFindMany,
-        findFirst: mockFindFirst,
-        findUnique: mockFindUnique,
-        create: mockCreate,
-        update: mockUpdate,
-        delete: mockDelete
-      },
-      $disconnect: mockDisconnect
-    }))
-  };
-});
+// Mock Mongoose models
+jest.mock('../../models/Bcr', () => ({
+  find: mockFind,
+  findById: mockFindById,
+  create: mockCreate,
+  findByIdAndUpdate: mockFindByIdAndUpdate,
+  findByIdAndDelete: mockFindByIdAndDelete
+}));
+
+jest.mock('../../models/BcrWorkflowActivity', () => ({
+  find: jest.fn(),
+  create: jest.fn()
+}));
 
 // Mock the cache module
 jest.mock('../../utils/cache', () => {

@@ -10,25 +10,19 @@ const mockDelete = jest.fn();
 const mockDisconnect = jest.fn();
 
 // Import after mock declarations
-const { PrismaClient } = require('@prisma/client');
+const mongoose = require('mongoose');
+const BcrConfig = require('../../models/BcrConfig');
 // Import the service after mocks are defined
 const bcrConfigService = require('../../services/bcrConfigService');
 
-// Mock the Prisma client
-jest.mock('@prisma/client', () => {
-  return {
-    PrismaClient: jest.fn().mockImplementation(() => ({
-      bcrConfigs: {
-        findMany: mockFindMany,
-        findUnique: mockFindUnique,
-        create: mockCreate,
-        update: mockUpdate,
-        delete: mockDelete
-      },
-      $disconnect: mockDisconnect
-    }))
-  };
-});
+// Mock Mongoose model
+jest.mock('../../models/BcrConfig', () => ({
+  find: mockFind,
+  findById: mockFindById,
+  create: mockCreate,
+  findByIdAndUpdate: mockFindByIdAndUpdate,
+  findByIdAndDelete: mockFindByIdAndDelete
+}));
 
 // Mock the uuid module
 jest.mock('uuid', () => ({

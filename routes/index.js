@@ -1,23 +1,34 @@
 /**
  * Route Loader
- * Loads all routes for the application
+ * Loads all routes for the application in a modular way
  */
-const bcrRoutes = require('./bcr/routes');
-const submissionRoutes = require('./bcr-submission/routes');
-const impactedAreasRoutes = require('./impacted-areas/routes');
+
+// Core modules
+const bcrRoutes = require('./modules/bcr/routes');
+const referenceDataRoutes = require('./modules/reference-data/routes');
+const dashboardRoutes = require('./modules/dashboard/routes');
+const accessRoutes = require('./modules/access/routes');
+
+// Supporting modules
+const homeRoutes = require('./modules/home/routes');
 
 module.exports = (app) => {
-  // Mount BCR routes
+  // === Core Application Modules ===
+  
+  // BCR Management module (includes submissions and impacted areas)
   app.use('/bcr', bcrRoutes);
   
-  // Mount BCR submission routes
-  app.use('/bcr-submission', submissionRoutes);
+  // Reference Data module
+  app.use('/reference-data', referenceDataRoutes);
   
-  // Mount impacted areas routes
-  app.use('/impacted-areas', impactedAreasRoutes);
+  // Dashboard module
+  app.use('/dashboard', dashboardRoutes);
   
-  // Root path handler - redirect to BCR dashboard
-  app.get('/', (req, res) => {
-    res.redirect('/bcr/dashboard');
-  });
+  // Access Management module
+  app.use('/access', accessRoutes);
+  
+  // === Supporting Modules ===
+  
+  // Home module (landing page)
+  app.use('/', homeRoutes);
 };

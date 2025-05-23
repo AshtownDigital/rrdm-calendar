@@ -4,12 +4,28 @@ const path = require('path');
 // Load test environment variables
 require('dotenv').config({ path: './tests/.env.test' });
 
-// Mock @prisma/client and session store
-jest.mock('../config/prisma', () => {
-  const { PrismaClient } = require('./mocks/prisma');
+// Mock Mongoose and session store
+jest.mock('mongoose', () => {
+  const mongoose = jest.requireActual('mongoose');
+  return {
+    ...mongoose,
+    connect: jest.fn().mockResolvedValue(),
+    connection: {
+      ...mongoose.connection,
+      close: jest.fn().mockResolvedValue()
+    }
+  };
+});
+
+jest.mock('../config/mongoose', () => {
+  const mongoose = jest.requireActual('mongoose');
   let connected = true;
-  const prisma = new PrismaClient();
-  prisma.session = {
+  const mockSessionStore = {
+    all: jest.fn(),
+    destroy: jest.fn(),
+    clear: jest.fn()
+  };
+  const session = {
     create: jest.fn((args) => Promise.resolve({ id: 'session-123', ...args.data })),
     findUnique: jest.fn((args) => Promise.resolve({ id: args.where.id, data: { cookie: {}, passport: { user: 'admin-123' } } })),
     findFirst: jest.fn((args) => Promise.resolve({ id: 'session-123', data: { cookie: {}, passport: { user: 'admin-123' } } })),
