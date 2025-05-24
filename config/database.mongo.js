@@ -35,17 +35,30 @@ async function connect() {
       // Configure connection options based on environment
       const isServerless = process.env.VERCEL === '1';
       const options = {
-        serverSelectionTimeoutMS: isServerless ? 3000 : 5000,
-        socketTimeoutMS: isServerless ? 30000 : 45000,
-        connectTimeoutMS: isServerless ? 5000 : 10000,
+        // Timeouts
+        serverSelectionTimeoutMS: isServerless ? 10000 : 30000,
+        socketTimeoutMS: isServerless ? 45000 : 60000,
+        connectTimeoutMS: isServerless ? 10000 : 30000,
+        // Connection pool settings
         maxPoolSize: isServerless ? 5 : 10,
-        minPoolSize: isServerless ? 1 : 2,
-        // Add these options for better serverless performance
-        autoCreate: false,
-        autoIndex: false,
-        bufferCommands: false,
-        family: 4,  // Use IPv4, skip trying IPv6
-        ssl: process.env.NODE_ENV === 'production'  // Enable SSL in production
+        minPoolSize: 0, // Allow the pool to shrink to 0 connections
+        // Performance settings
+        autoCreate: true,
+        autoIndex: true,
+        // Command buffering
+        bufferCommands: true,
+        bufferTimeoutMS: 30000,
+        // Network settings
+        family: 4, // Use IPv4, skip trying IPv6
+        ssl: process.env.NODE_ENV === 'production',
+        // Write concern
+        retryWrites: true,
+        w: 'majority',
+        // Connection pool monitoring
+        monitorCommands: true,
+        // Heartbeat - how often to check server status
+        heartbeatFrequencyMS: 10000
+        // Note: reconnectTries and reconnectInterval are removed as they're deprecated
       };
       
       // Connect to MongoDB

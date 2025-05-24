@@ -3,6 +3,7 @@
  * Consolidated controller for BCR functionality
  */
 
+const mongoose = require('mongoose');
 const counterService = require('../../../services/modules/bcr/counterService');
 const workflowService = require('../../../services/modules/bcr/workflowService');
 const bcrModel = require('../../../models/modules/bcr/model');
@@ -12,13 +13,49 @@ const bcrModel = require('../../../models/modules/bcr/model');
  */
 exports.dashboard = async (req, res) => {
   try {
-    // Get impact areas and urgency levels for the dashboard
-    // These are lightweight queries that shouldn't cause timeouts
-    const impactAreas = await bcrModel.getAllImpactAreas();
-    const urgencyLevels = await bcrModel.getAllUrgencyLevels();
+    // Use Promise.allSettled to handle partial failures
+    const [impactAreasResult, urgencyLevelsResult, countersResult, recentBcrsResult] = 
+      await Promise.allSettled([
+        bcrModel.getAllImpactAreas(),
+        bcrModel.getAllUrgencyLevels(),
+        counterService.getCounters(),
+        // Wrap this in a try/catch with timeout to prevent hanging
+        (async () => {
+          try {
+            // Check if MongoDB connection is ready
+            if (mongoose.connection.readyState !== 1) {
+              console.warn('MongoDB connection not ready when fetching recent BCRs');
+              return [];
+            }
+            
+            // Set a timeout for this operation
+            const timeoutPromise = new Promise((_, reject) => {
+              setTimeout(() => reject(new Error('Timeout fetching recent BCRs')), 5000);
+            });
+            
+            // Race the query against the timeout
+            return await Promise.race([
+              bcrModel.getAllSubmissions({ limit: 5 }),
+              timeoutPromise
+            ]);
+          } catch (error) {
+            console.error('Error fetching recent BCRs:', error);
+            return []; // Return empty array on error
+          }
+        })()
+      ]);
     
-    // Fetch actual counters using the counter service
-    const counters = await counterService.getCounters();
+    // Extract results or use defaults
+    const impactAreas = impactAreasResult.status === 'fulfilled' ? impactAreasResult.value : [];
+    const urgencyLevels = urgencyLevelsResult.status === 'fulfilled' ? urgencyLevelsResult.value : [];
+    const counters = countersResult.status === 'fulfilled' ? countersResult.value : {
+      total: 0,
+      pending: 0,
+      approved: 0,
+      rejected: 0,
+      phases: {}
+    };
+    const recentBcrs = recentBcrsResult.status === 'fulfilled' ? recentBcrsResult.value : [];
     
     // Format stats for the dashboard
     const stats = {
@@ -29,8 +66,7 @@ exports.dashboard = async (req, res) => {
       implemented: 0 // This will be calculated from phases if available
     };
     
-    // Get recent BCRs (limited to 5)
-    const recentBcrs = await bcrModel.getAllSubmissions({ limit: 5 });
+    // Format recent BCRs
     const formattedRecentBcrs = recentBcrs.map(submission => {
       const statusTag = getSubmissionStatusTag(submission);
       return {

@@ -195,15 +195,29 @@ exports.createSubmission = async (submissionData) => {
  */
 exports.getAllImpactAreas = async () => {
   try {
-    const impactAreas = await BcrConfig.find({ 
+    // Check if the collection exists and has documents
+    const collectionExists = mongoose.connection.readyState === 1;
+    
+    if (!collectionExists) {
+      console.warn('MongoDB connection not ready when querying impact areas');
+      return []; // Return empty array instead of failing
+    }
+    
+    // Set a timeout for the query
+    const impactAreas = await BcrConfig.find({
       type: 'impactArea',
       deleted: { $ne: true }
-    }).sort({ displayOrder: 1 }).exec();
+    })
+      .sort({ displayOrder: 1 })
+      .maxTimeMS(5000) // Set a 5-second timeout for this query
+      .exec();
     
-    return impactAreas;
+    return impactAreas || [];
   } catch (error) {
     console.error('Error in getAllImpactAreas:', error);
-    throw error;
+    // Return empty array instead of throwing error
+    console.warn('Returning empty impact areas array due to error');
+    return [];
   }
 };
 
@@ -212,15 +226,29 @@ exports.getAllImpactAreas = async () => {
  */
 exports.getAllUrgencyLevels = async () => {
   try {
-    const urgencyLevels = await BcrConfig.find({ 
+    // Check if the collection exists and has documents
+    const collectionExists = mongoose.connection.readyState === 1;
+    
+    if (!collectionExists) {
+      console.warn('MongoDB connection not ready when querying urgency levels');
+      return []; // Return empty array instead of failing
+    }
+    
+    // Set a timeout for the query
+    const urgencyLevels = await BcrConfig.find({
       type: 'urgencyLevel',
       deleted: { $ne: true }
-    }).sort({ displayOrder: 1 }).exec();
+    })
+      .sort({ displayOrder: 1 })
+      .maxTimeMS(5000) // Set a 5-second timeout for this query
+      .exec();
     
-    return urgencyLevels;
+    return urgencyLevels || [];
   } catch (error) {
     console.error('Error in getAllUrgencyLevels:', error);
-    throw error;
+    // Return empty array instead of throwing error
+    console.warn('Returning empty urgency levels array due to error');
+    return [];
   }
 };
 
