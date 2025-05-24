@@ -36,16 +36,20 @@ const fundingRouter = require('./routes/modules/funding/routes');
 // Load environment variables
 require('dotenv').config();
 
-// Connect to MongoDB
-if (!process.env.VERCEL) {
-  // In non-serverless environments, connect immediately
-  connect().catch(error => {
+// Connect to MongoDB with automatic reconnection
+const connectWithRetry = async () => {
+  try {
+    await connect();
+    console.log('MongoDB connected successfully');
+  } catch (error) {
     console.error('Failed to connect to MongoDB:', error);
-  });
-} else {
-  // In serverless environments, connection will be handled per-request
-  console.log('Serverless environment detected, deferring MongoDB connection');
-}
+    console.log('Retrying connection in 5 seconds...');
+    setTimeout(connectWithRetry, 5000);
+  }
+};
+
+// Initial connection attempt
+connectWithRetry();
 
 // Configure session middleware with MongoDB store
 const MongoStore = require('connect-mongo');
@@ -63,7 +67,7 @@ app.use(session({
       secret: process.env.SESSION_SECRET || 'your-secret-key'
     },
     mongoOptions: {
-      serverSelectionTimeoutMS: process.env.VERCEL === '1' ? 3000 : 5000
+      serverSelectionTimeoutMS: 5000
     }
   }),
   cookie: {
@@ -477,16 +481,13 @@ app.use((err, req, res, next) => {
 });
 
 // === Server startup ===
-const isServerless = process.env.VERCEL === '1';
+console.log('Starting HTTP server');
 
-if (!isServerless) {
-  console.log('Running in standard mode - starting HTTP server');
-  
-  const port = process.env.PORT || 3000;
-  let server;
-  
-  // Function to kill process on a specific port
-  const killPortProcess = async (port) => {
+const port = process.env.PORT || 3000;
+let server;
+
+// Function to kill process on a specific port
+const killPortProcess = async (port) => {
     try {
       // Use different commands based on platform
       let command;
@@ -540,92 +541,6 @@ if (!isServerless) {
       process.exit(1);
     }
   })();
-} else {
-  console.log('Running in serverless mode - no HTTP server started');
-}
 
-// For Vercel serverless functions, we need to export a handler function
-if (isServerless) {
-  console.log('Running in serverless mode - exporting handler function');
-  
-  // Export a request handler function for serverless environments
-  const handler = async (req, res) => {
-    console.log(`[${new Date().toISOString()}] Serverless function invoked: ${req.method} ${req.url}`);
-    
-    try {
-      // Log environment info for debugging
-      console.log('Environment:', {
-        NODE_ENV: process.env.NODE_ENV,
-        VERCEL: process.env.VERCEL,
-        MONGODB_URI: process.env.MONGODB_URI ? '***' : 'Not set'
-      });
-      
-      // Ensure database is connected
-      if (mongoose.connection.readyState !== 1) {
-        console.log('Attempting to connect to MongoDB...');
-        try {
-          await connect();
-          console.log('MongoDB connection established successfully');
-        } catch (dbError) {
-          console.error('Failed to connect to MongoDB:', dbError);
-          // Don't fail the request if we can't connect to MongoDB
-          // The routes will handle the missing connection
-        }
-      }
-      
-      // Add a timeout for the request
-      const requestTimeout = setTimeout(() => {
-        if (!res.headersSent) {
-          console.error('Request timed out');
-          res.status(504).json({ error: 'Gateway Timeout', message: 'Request took too long to process' });
-        }
-      }, 10000); // 10 second timeout
-      
-      try {
-        // Handle the request
-        await new Promise((resolve, reject) => {
-          res.on('finish', resolve);
-          res.on('error', reject);
-          app(req, res, (err) => {
-            if (err) reject(err);
-            else resolve();
-          });
-        });
-      } finally {
-        clearTimeout(requestTimeout);
-      }
-      
-    } catch (error) {
-      console.error('Serverless function error:', {
-        message: error.message,
-        stack: error.stack,
-        code: error.code,
-        name: error.name
-      });
-      
-      // If headers are already sent, we can't send another response
-      if (res.headersSent) {
-        console.error('Headers already sent, could not send error response');
-        return;
-      }
-      
-      // Send error response
-      res.status(500).json({ 
-        error: 'Internal Server Error',
-        message: 'An unexpected error occurred',
-        ...(process.env.NODE_ENV === 'development' ? { 
-          details: error.message,
-          stack: error.stack 
-        } : {})
-      });
-    }
-  };
-  
-  // Export the handler with the app attached for testing
-  module.exports = handler;
-  module.exports.app = app;
-} else {
-  console.log('Running in standard mode - starting HTTP server');
-  // Export the Express app for standard environments
-  module.exports = app;
-}
+// Export the Express app
+module.exports = app;

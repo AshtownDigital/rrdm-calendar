@@ -1,9 +1,9 @@
 /**
  * Local Database Setup Script
  * 
- * This script helps set up a local PostgreSQL database for development.
- * It creates the database if it doesn't exist and runs Prisma migrations.
- * Updated to work with the new environment structure.
+ * This script helps set up a local MongoDB database for development.
+ * It creates the database if it doesn't exist and sets up initial data.
+ * Updated to work with MongoDB instead of PostgreSQL/Prisma.
  */
 const { execSync } = require('child_process');
 const path = require('path');
@@ -33,17 +33,18 @@ console.log(`Environment: ${config.env}`);
 console.log(`Database URL: ${config.database.url ? config.database.url : 'Not set'}`);
 
 
-// Function to check if PostgreSQL is installed
-function checkPostgresInstallation() {
+// Function to check if MongoDB is installed
+function checkMongoInstallation() {
   try {
-    execSync('which psql', { stdio: 'pipe' });
-    console.log('✅ PostgreSQL is installed');
+    execSync('which mongod', { stdio: 'pipe' });
+    console.log('✅ MongoDB is installed');
     return true;
   } catch (error) {
-    console.error('❌ PostgreSQL is not installed. Please install PostgreSQL first.');
+    console.error('❌ MongoDB is not installed. Please install MongoDB first.');
     console.log('You can install it using Homebrew:');
-    console.log('  brew install postgresql@14');
-    console.log('  brew services start postgresql@14');
+    console.log('  brew tap mongodb/brew');
+    console.log('  brew install mongodb-community');
+    console.log('  brew services start mongodb-community');
     return false;
   }
 }
@@ -51,32 +52,34 @@ function checkPostgresInstallation() {
 // Function to check if the database exists
 function checkDatabaseExists() {
   try {
-    // Parse DATABASE_URL to get database name
-    const dbUrl = config.database.url;
+    // Parse MONGODB_URI to get database name
+    const dbUrl = process.env.MONGODB_URI || config.database.url;
     if (!dbUrl) {
-      console.error('❌ DATABASE_URL is not set in the environment');
+      console.error('❌ MONGODB_URI is not set in the environment');
       return false;
     }
     
+    // Extract database name from MongoDB URI
     const dbName = dbUrl.split('/').pop().split('?')[0];
-    console.log(`Checking if database '${dbName}' exists...`);
+    console.log(`Checking if MongoDB database '${dbName}' exists...`);
     
-    // Check if database exists
+    // Use mongo command to check if database exists
     const result = execSync(
-      `psql -lqt | cut -d \| -f 1 | grep -w ${dbName} | wc -l`,
+      `mongo --eval "db = db.getSiblingDB('${dbName}'); db.stats().ok" --quiet`,
       { stdio: 'pipe' }
     ).toString().trim();
     
-    const exists = parseInt(result) > 0;
+    const exists = result === '1';
     if (exists) {
-      console.log(`✅ Database '${dbName}' already exists`);
+      console.log(`✅ MongoDB database '${dbName}' already exists`);
     } else {
-      console.log(`❌ Database '${dbName}' does not exist`);
+      console.log(`❌ MongoDB database '${dbName}' does not exist`);
     }
     
     return exists;
   } catch (error) {
-    console.error('Error checking if database exists:', error.message);
+    console.error('Error checking if MongoDB database exists:', error.message);
+    console.log('This is normal if the database does not exist yet. Proceeding with creation.');
     return false;
   }
 }
@@ -84,49 +87,71 @@ function checkDatabaseExists() {
 // Function to create the database
 function createDatabase() {
   try {
-    // Parse DATABASE_URL to get database name, user, and password
-    const dbUrl = config.database.url;
+    // Parse MONGODB_URI to get database name
+    const dbUrl = process.env.MONGODB_URI || config.database.url;
     if (!dbUrl) {
-      console.error('❌ DATABASE_URL is not set in the environment');
+      console.error('❌ MONGODB_URI is not set in the environment');
       return false;
     }
     
     const dbName = dbUrl.split('/').pop().split('?')[0];
     
-    console.log(`Creating database: ${dbName}`);
+    console.log(`Creating MongoDB database: ${dbName}`);
     
-    // Create the database
-    execSync(`createdb ${dbName}`, { stdio: 'inherit' });
+    // Create the database by simply connecting to it
+    // MongoDB creates databases automatically when you first store data
+    execSync(
+      `mongo --eval "db = db.getSiblingDB('${dbName}'); db.createCollection('system_init')" --quiet`,
+      { stdio: 'inherit' }
+    );
     
-    console.log(`✅ Database '${dbName}' created successfully`);
+    console.log(`✅ MongoDB database '${dbName}' created successfully`);
     return true;
   } catch (error) {
-    console.error('Error creating database:', error.message);
+    console.error('Error creating MongoDB database:', error.message);
     return false;
   }
 }
 
-// Function to push the schema directly to the database
-function pushPrismaSchema() {
+// Function to initialize MongoDB collections
+function initializeMongoCollections() {
   try {
-    console.log('Pushing Prisma schema to database...');
+    console.log('Initializing MongoDB collections...');
     
-    // Generate Prisma client
-    execSync('npx prisma generate', { 
-      stdio: 'inherit',
-      cwd: path.join(__dirname, '..')
+    // Parse MONGODB_URI to get database name
+    const dbUrl = process.env.MONGODB_URI || config.database.url;
+    if (!dbUrl) {
+      console.error('❌ MONGODB_URI is not set in the environment');
+      return false;
+    }
+    
+    const dbName = dbUrl.split('/').pop().split('?')[0];
+    
+    // Create collections for the application
+    const collections = [
+      'users',
+      'bcrs',
+      'bcrConfigs',
+      'sessions'
+    ];
+    
+    collections.forEach(collection => {
+      try {
+        execSync(
+          `mongo --eval "db = db.getSiblingDB('${dbName}'); db.createCollection('${collection}')" --quiet`,
+          { stdio: 'pipe' }
+        );
+        console.log(`✅ Collection '${collection}' initialized`);
+      } catch (err) {
+        // Collection might already exist, which is fine
+        console.log(`Collection '${collection}' already exists or could not be created`);
+      }
     });
     
-    // Push schema to database (this is more reliable for initial setup than migrate dev)
-    execSync('npx prisma db push', { 
-      stdio: 'inherit',
-      cwd: path.join(__dirname, '..')
-    });
-    
-    console.log('✅ Prisma schema pushed to database successfully');
+    console.log('✅ MongoDB collections initialized successfully');
     return true;
   } catch (error) {
-    console.error('Error pushing Prisma schema:', error.message);
+    console.error('Error initializing MongoDB collections:', error.message);
     return false;
   }
 }
@@ -134,115 +159,91 @@ function pushPrismaSchema() {
 // Function to seed the database with initial data
 function seedDatabase() {
   try {
-    console.log('Seeding database with initial data...');
+    console.log('Seeding MongoDB database with initial data...');
     
-    // Parse DATABASE_URL to get database name
-    const dbUrl = config.database.url;
+    // Parse MONGODB_URI to get database name
+    const dbUrl = process.env.MONGODB_URI || config.database.url;
     if (!dbUrl) {
-      console.error('❌ DATABASE_URL is not set in the environment');
+      console.error('❌ MONGODB_URI is not set in the environment');
       return false;
     }
     
     const dbName = dbUrl.split('/').pop().split('?')[0];
     
     // Create admin user
-    const seedQuery = `
-      INSERT INTO "Users" (id, email, password, name, role, active, "createdAt", "updatedAt")
-      VALUES (
-        '00000000-0000-0000-0000-000000000000',
-        'admin@example.com',
-        '$2a$10$JcV6Y0UYqbXnGR.pGxXeV.9jGOA.9HnAYfQtKbAjg0yWMvxSHdpZe', -- password: admin123
-        'Admin User',
-        'admin',
-        true,
-        NOW(),
-        NOW()
+    const adminUser = {
+      _id: '00000000-0000-0000-0000-000000000000',
+      email: 'admin@example.com',
+      password: '$2a$10$JcV6Y0UYqbXnGR.pGxXeV.9jGOA.9HnAYfQtKbAjg0yWMvxSHdpZe', // password: admin123
+      name: 'Admin User',
+      role: 'admin',
+      active: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    // MongoDB command to insert admin user if it doesn't exist
+    const adminUserCommand = `
+      db.getSiblingDB('${dbName}').users.updateOne(
+        { _id: '${adminUser._id}' },
+        { $setOnInsert: ${JSON.stringify(adminUser)} },
+        { upsert: true }
       )
-      ON CONFLICT (id) DO NOTHING;
     `;
     
-    // Write the seed query to a temporary file
-    const tempDir = path.join(__dirname, '..', 'temp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
+    // Execute the MongoDB command
+    execSync(`mongo --eval "${adminUserCommand}"`, { stdio: 'inherit' });
     
-    const seedFile = path.join(tempDir, 'seed.sql');
-    fs.writeFileSync(seedFile, seedQuery);
-    
-    // Execute the seed query
-    execSync(`psql -d ${dbName} -f ${seedFile}`, { stdio: 'inherit' });
-    
-    // Clean up
-    fs.unlinkSync(seedFile);
-    
-    console.log('✅ Database seeded successfully');
+    console.log('✅ MongoDB database seeded successfully');
     console.log('Default admin credentials:');
     console.log('  Email: admin@example.com');
     console.log('  Password: admin123');
     
     return true;
   } catch (error) {
-    console.error('Error seeding database:', error.message);
+    console.error('Error seeding MongoDB database:', error.message);
     return false;
   }
 }
 
-// Function to create a Session table for Prisma Session Store
-function createSessionTable() {
+// Function to set up MongoDB session collection
+function setupSessionCollection() {
   try {
-    console.log('Creating Session table...');
+    console.log('Setting up MongoDB session collection...');
     
-    // Parse DATABASE_URL to get database name
-    const dbUrl = config.database.url;
+    // Parse MONGODB_URI to get database name
+    const dbUrl = process.env.MONGODB_URI || config.database.url;
     if (!dbUrl) {
-      console.error('❌ DATABASE_URL is not set in the environment');
+      console.error('❌ MONGODB_URI is not set in the environment');
       return false;
     }
     
     const dbName = dbUrl.split('/').pop().split('?')[0];
     
-    // SQL to create the Session table
-    const sessionTableQuery = `
-      CREATE TABLE IF NOT EXISTS "Session" (
-        id TEXT PRIMARY KEY,
-        sid TEXT UNIQUE NOT NULL,
-        data TEXT NOT NULL,
-        "expiresAt" TIMESTAMP(3) NOT NULL,
-        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+    // MongoDB command to create sessions collection and add TTL index
+    const sessionCommand = `
+      db.getSiblingDB('${dbName}').createCollection('sessions');
+      db.getSiblingDB('${dbName}').sessions.createIndex(
+        { expires: 1 },
+        { expireAfterSeconds: 0 }
       );
-      
-      CREATE INDEX IF NOT EXISTS "Session_expiresAt_idx" ON "Session"("expiresAt");
     `;
     
-    // Write the query to a temporary file
-    const tempDir = path.join(__dirname, '..', 'temp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
+    // Execute the MongoDB command
+    execSync(`mongo --eval "${sessionCommand}"`, { stdio: 'inherit' });
     
-    const sessionFile = path.join(tempDir, 'session.sql');
-    fs.writeFileSync(sessionFile, sessionTableQuery);
-    
-    // Execute the query
-    execSync(`psql -d ${dbName} -f ${sessionFile}`, { stdio: 'inherit' });
-    
-    // Clean up
-    fs.unlinkSync(sessionFile);
-    
-    console.log('✅ Session table created successfully');
+    console.log('✅ MongoDB session collection set up successfully');
     return true;
   } catch (error) {
-    console.error('Error creating Session table:', error.message);
+    console.error('Error setting up MongoDB session collection:', error.message);
     return false;
   }
 }
 
 // Main function
 async function main() {
-  // Check if PostgreSQL is installed
-  if (!checkPostgresInstallation()) {
+  // Check if MongoDB is installed
+  if (!checkMongoInstallation()) {
     process.exit(1);
   }
   
@@ -255,16 +256,16 @@ async function main() {
       process.exit(1);
     }
   } else {
-    console.log('Database already exists, skipping creation.');
+    console.log('MongoDB database already exists, skipping creation.');
   }
   
-  // Push Prisma schema to database
-  if (!pushPrismaSchema()) {
+  // Initialize MongoDB collections
+  if (!initializeMongoCollections()) {
     process.exit(1);
   }
   
-  // Create Session table
-  if (!createSessionTable()) {
+  // Set up MongoDB session collection
+  if (!setupSessionCollection()) {
     process.exit(1);
   }
   
@@ -273,7 +274,7 @@ async function main() {
     process.exit(1);
   }
   
-  console.log('🎉 Local development database setup complete!');
+  console.log('🎉 Local MongoDB development database setup complete!');
   console.log('You can now run the application with:');
   console.log('  npm run dev');
 }

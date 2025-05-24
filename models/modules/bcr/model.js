@@ -149,12 +149,20 @@ exports.getAllSubmissions = async (filters = {}) => {
       ];
     }
     
-    // Execute the query with population
-    return await Submission.find(query)
+    // Add limit if provided or default to a reasonable number to prevent large result sets
+    const limit = filters.limit ? parseInt(filters.limit, 10) : 100;
+    
+    // Execute the query with population and timeout option
+    const submissionsQuery = Submission.find(query)
       .populate('submittedById', 'name email role')
       .populate('bcrId')
       .sort({ createdAt: -1 })
-      .exec();
+      .limit(limit);
+    
+    // Set a timeout for the query to prevent long-running operations
+    submissionsQuery.maxTimeMS(5000); // 5 second timeout
+    
+    return await submissionsQuery.exec();
   } catch (error) {
     console.error('Error in getAllSubmissions:', error);
     throw error;
@@ -166,10 +174,15 @@ exports.getAllSubmissions = async (filters = {}) => {
  */
 exports.getSubmissionById = async (id) => {
   try {
-    return await Submission.findById(id)
+    // Create the query with population
+    const query = Submission.findById(id)
       .populate('submittedById', 'name email role')
-      .populate('bcrId')
-      .exec();
+      .populate('bcrId');
+    
+    // Set a timeout for the query to prevent long-running operations
+    query.maxTimeMS(5000); // 5 second timeout
+    
+    return await query.exec();
   } catch (error) {
     console.error('Error in getSubmissionById:', error);
     throw error;

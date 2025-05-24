@@ -13,21 +13,29 @@ const bcrModel = require('../../../models/modules/bcr/model');
  */
 exports.dashboard = async (req, res) => {
   try {
+    // Check MongoDB connection state
+    const isDbConnected = mongoose.connection.readyState === 1;
+    
     // Use Promise.allSettled to handle partial failures
     const [impactAreasResult, urgencyLevelsResult, countersResult, recentBcrsResult] = 
       await Promise.allSettled([
-        bcrModel.getAllImpactAreas(),
-        bcrModel.getAllUrgencyLevels(),
-        counterService.getCounters(),
+        // Only attempt to fetch data if database is connected
+        isDbConnected ? bcrModel.getAllImpactAreas() : Promise.resolve([]),
+        isDbConnected ? bcrModel.getAllUrgencyLevels() : Promise.resolve([]),
+        isDbConnected ? counterService.getCounters() : Promise.resolve({
+          total: 0,
+          pending: 0,
+          approved: 0,
+          rejected: 0,
+          phases: {}
+        }),
         // Wrap this in a try/catch with timeout to prevent hanging
         (async () => {
+          if (!isDbConnected) {
+            return []; // Skip database query if not connected
+          }
+          
           try {
-            // Check if MongoDB connection is ready
-            if (mongoose.connection.readyState !== 1) {
-              console.warn('MongoDB connection not ready when fetching recent BCRs');
-              return [];
-            }
-            
             // Set a timeout for this operation
             const timeoutPromise = new Promise((_, reject) => {
               setTimeout(() => reject(new Error('Timeout fetching recent BCRs')), 5000);
@@ -63,7 +71,7 @@ exports.dashboard = async (req, res) => {
       pending: counters.pending || 0,
       approved: counters.approved || 0,
       rejected: counters.rejected || 0,
-      implemented: 0 // This will be calculated from phases if available
+      implemented: (counters.phases && counters.phases['Implementation']) || 0 // Get implementation phase count
     };
     
     // Format recent BCRs
@@ -89,6 +97,7 @@ exports.dashboard = async (req, res) => {
       urgencyLevels: urgencyLevels,
       bcrsByUrgency: {}, // This would need additional queries to populate
       recentBcrs: formattedRecentBcrs,
+      connectionIssue: !isDbConnected, // Pass connection state to the template
       user: req.user
     });
   } catch (error) {
@@ -189,10 +198,38 @@ exports.createSubmission = async (req, res) => {
  */
 exports.listSubmissions = async (req, res) => {
   try {
-    const submissions = await bcrModel.getAllSubmissions(req.query);
+    // Check MongoDB connection state
+    const isDbConnected = mongoose.connection.readyState === 1;
+    let timedOut = false;
+    let submissions = [];
+    
+    if (isDbConnected) {
+      try {
+        // Set a timeout for this operation to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => {
+            timedOut = true;
+            reject(new Error('Timeout fetching submissions'));
+          }, 8000);
+        });
+        
+        // Race the query against the timeout
+        submissions = await Promise.race([
+          bcrModel.getAllSubmissions(req.query),
+          timeoutPromise
+        ]);
+      } catch (queryError) {
+        console.error('Error fetching submissions:', queryError);
+        // Don't rethrow, just continue with empty submissions
+        submissions = [];
+      }
+    }
+    
+    // If we got no submissions, ensure we have an empty array
+    const submissionsToDisplay = Array.isArray(submissions) ? submissions : [];
     
     // Format submissions for display
-    const formattedSubmissions = submissions.map(submission => {
+    const formattedSubmissions = submissionsToDisplay.map(submission => {
       // Get status tag for display
       const statusTag = getSubmissionStatusTag(submission);
       
@@ -217,21 +254,24 @@ exports.listSubmissions = async (req, res) => {
       };
     });
     
-    // Log the formatted submissions for debugging
-    console.log('Formatted submissions:', JSON.stringify(formattedSubmissions, null, 2));
-    
     res.render('modules/bcr/submissions/index', {
       title: 'BCR Submissions',
       submissions: formattedSubmissions,
       filters: req.query,
+      connectionIssue: !isDbConnected,
+      timedOut: timedOut,
       user: req.user
     });
   } catch (error) {
     console.error('Error in list submissions controller:', error);
-    res.status(500).render('error', {
-      title: 'Error',
-      message: 'An error occurred while loading the submissions list',
-      error: process.env.NODE_ENV === 'development' ? error : {},
+    // Instead of showing an error page, render the submissions page with a warning
+    res.render('modules/bcr/submissions/index', {
+      title: 'BCR Submissions',
+      submissions: [],
+      filters: req.query,
+      connectionIssue: true,
+      timedOut: true,
+      error: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred while loading submissions',
       user: req.user
     });
   }
@@ -242,13 +282,45 @@ exports.listSubmissions = async (req, res) => {
  */
 exports.viewSubmission = async (req, res) => {
   try {
-    const submission = await bcrModel.getSubmissionById(req.params.id);
+    // Check MongoDB connection state
+    const isDbConnected = mongoose.connection.readyState === 1;
+    let timedOut = false;
+    let submission = null;
+    
+    if (isDbConnected) {
+      try {
+        // Set a timeout for this operation to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => {
+            timedOut = true;
+            reject(new Error('Timeout fetching submission details'));
+          }, 8000);
+        });
+        
+        // Race the query against the timeout
+        submission = await Promise.race([
+          bcrModel.getSubmissionById(req.params.id),
+          timeoutPromise
+        ]);
+      } catch (queryError) {
+        console.error('Error fetching submission details:', queryError);
+        // Don't rethrow, continue with submission = null
+      }
+    }
     
     if (!submission) {
+      // If we couldn't find the submission due to connection issues or timeout,
+      // show a more helpful error page with connection status
       return res.status(404).render('error', {
-        title: 'Not Found',
-        message: 'The requested submission was not found',
+        title: 'Submission Not Available',
+        message: timedOut ? 
+          'The request to fetch the submission timed out. Please try again later.' : 
+          (!isDbConnected ? 
+            'Database connection issue detected. Please try again when the database is available.' : 
+            'The requested submission was not found'),
         error: {},
+        connectionIssue: !isDbConnected,
+        timedOut: timedOut,
         user: req.user
       });
     }
@@ -257,6 +329,8 @@ exports.viewSubmission = async (req, res) => {
       title: `BCR Submission ${submission.id}`,
       submission,
       statusTag: getSubmissionStatusTag(submission),
+      connectionIssue: !isDbConnected,
+      timedOut: timedOut,
       user: req.user
     });
   } catch (error) {
@@ -265,6 +339,7 @@ exports.viewSubmission = async (req, res) => {
       title: 'Error',
       message: 'An error occurred while loading the submission details',
       error: process.env.NODE_ENV === 'development' ? error : {},
+      connectionIssue: mongoose.connection.readyState !== 1,
       user: req.user
     });
   }
