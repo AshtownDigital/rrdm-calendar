@@ -3,7 +3,8 @@
  * Handles workflow phases, statuses, and transitions for the BCR process
  * Implements the BPMN process diagram workflow
  */
-const { Phase, Status, Bcr } = require('../../../models/modules/bcr/model');
+const { Phase, Status, Bcr, Submission } = require('../../../models/modules/bcr/model');
+const mongoose = require('mongoose');
 
 /**
  * Get all workflow phases with their associated statuses
@@ -98,6 +99,80 @@ exports.getInitialPhase = async () => {
   } catch (error) {
     console.error('Error in getInitialPhase:', error);
     throw error;
+  }
+};
+
+/**
+ * Update a submission's status and create a BCR if approved
+ * @param {string} submissionId - The ID of the submission to update
+ * @param {string} status - The new status for the submission
+ * @param {Object} options - Additional options
+ * @param {string} options.comments - Review comments
+ * @param {string} options.reviewerId - ID of the reviewer
+ * @returns {Object} - The updated submission and BCR if created
+ */
+exports.updateSubmissionStatus = async (submissionId, status, options = {}) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  
+  try {
+    // Find the submission
+    const submission = await Submission.findById(submissionId).session(session);
+    if (!submission) {
+      throw new Error('Submission not found');
+    }
+    
+    // Update submission status and review info
+    submission.status = status;
+    submission.reviewComments = options.comments || '';
+    submission.reviewedAt = new Date();
+    
+    // If approved, create a BCR
+    let bcr = null;
+    if (status === 'Approved') {
+      // Get the initial phase and status
+      const initialPhase = await exports.getInitialPhase();
+      if (!initialPhase) {
+        throw new Error('Initial workflow phase not found');
+      }
+      
+      // Generate a BCR number
+      const year = new Date().getFullYear();
+      const recordNumber = String(submission.recordNumber).padStart(4, '0');
+      const bcrNumber = `BCR-${year}-${recordNumber}`;
+      
+      // Update submission with BCR number
+      submission.bcrNumber = bcrNumber;
+      
+      // Create the BCR
+      bcr = new Bcr({
+        submissionId: submission._id,
+        bcrNumber: bcrNumber,
+        title: submission.briefDescription,
+        description: submission.justification,
+        currentPhaseId: initialPhase._id,
+        currentStatusId: initialPhase.inProgressStatusId._id,
+        status: 'New Submission',
+        createdById: options.reviewerId || submission.submittedById,
+        updatedById: options.reviewerId || submission.submittedById
+      });
+      
+      await bcr.save({ session });
+      
+      // Link the BCR to the submission
+      submission.bcrId = bcr._id;
+    }
+    
+    await submission.save({ session });
+    await session.commitTransaction();
+    
+    return { submission, bcr };
+  } catch (error) {
+    await session.abortTransaction();
+    console.error('Error in updateSubmissionStatus:', error);
+    throw error;
+  } finally {
+    session.endSession();
   }
 };
 

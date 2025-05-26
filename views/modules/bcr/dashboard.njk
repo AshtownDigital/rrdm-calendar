@@ -271,8 +271,9 @@
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
             <th scope="col" class="govuk-table__header">BCR Number</th>
+            <th scope="col" class="govuk-table__header">Submission Code</th>
             <th scope="col" class="govuk-table__header">Title</th>
-            <th scope="col" class="govuk-table__header">Status</th>
+            <th scope="col" class="govuk-table__header">Workflow Status</th>
             <th scope="col" class="govuk-table__header">Created</th>
             <th scope="col" class="govuk-table__header">Actions</th>
           </tr>
@@ -281,6 +282,7 @@
           {% for bcr in recentBcrs %}
             <tr class="govuk-table__row">
               <td class="govuk-table__cell">{{ bcr.bcrNumber }}</td>
+              <td class="govuk-table__cell">{{ bcr.submissionCode }}</td>
               <td class="govuk-table__cell">{{ bcr.description }}</td>
               <td class="govuk-table__cell">
                 <strong class="{{ bcr.statusClass }}">{{ bcr.statusText }}</strong>
