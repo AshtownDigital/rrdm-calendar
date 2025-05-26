@@ -4,6 +4,7 @@
  */
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const { generateSubmissionCode, getSubmitterTypeCode } = require('../utils/submissionCodeGenerator');
 
 const SubmissionSchema = new Schema({
   recordNumber: {
@@ -13,7 +14,11 @@ const SubmissionSchema = new Schema({
   submissionCode: {
     type: String,
     unique: true,
-    required: true
+    required: true,
+    default: function() {
+      // This will be overridden in the pre-save hook with a proper code
+      return `SUB-${Date.now()}`;
+    }
   },
   fullName: {
     type: String,
@@ -44,6 +49,10 @@ const SubmissionSchema = new Schema({
   urgencyLevel: {
     type: String,
     required: true
+  },
+  otherUrgencyDescription: {
+    type: String,
+    // Only required if urgencyLevel is 'Other'
   },
   impactAreas: {
     type: [String],
@@ -94,9 +103,21 @@ const SubmissionSchema = new Schema({
     ref: 'User',
     required: true
   },
+  status: {
+    type: String,
+    required: true,
+    enum: ['Pending', 'Approved', 'Rejected', 'Paused', 'Closed', 'More Info Required'],
+    default: 'Pending'
+  },
   bcrId: {
     type: Schema.Types.ObjectId,
     ref: 'Bcr'
+  },
+  bcrNumber: {
+    type: String,
+    sparse: true,
+    // This will store the actual BCR number when a submission is approved
+    // Format: BCR-YYYY-XXXX
   }
 });
 
@@ -106,12 +127,25 @@ SubmissionSchema.pre('save', function(next) {
   next();
 });
 
-// Auto-increment recordNumber
+// Auto-increment recordNumber and generate submission code
 SubmissionSchema.pre('save', async function(next) {
   if (this.isNew) {
     try {
+      // Get the last submission to determine the next record number
       const lastSubmission = await this.constructor.findOne({}, {}, { sort: { 'recordNumber': -1 } });
-      this.recordNumber = lastSubmission ? lastSubmission.recordNumber + 1 : 1;
+      const nextRecordNumber = lastSubmission ? lastSubmission.recordNumber + 1 : 1;
+      this.recordNumber = nextRecordNumber;
+      
+      // Always generate a proper submission code in the format SUB-24/25-001-INT
+      // Get submitter type code based on submission source
+      const submitterType = getSubmitterTypeCode(this.submissionSource);
+      
+      // Generate the submission code
+      this.submissionCode = generateSubmissionCode({
+        submitterType: submitterType,
+        sequentialNumber: nextRecordNumber
+      });
+      
       next();
     } catch (error) {
       next(error);
@@ -121,6 +155,14 @@ SubmissionSchema.pre('save', async function(next) {
   }
 });
 
-const Submission = mongoose.model('Submission', SubmissionSchema);
+// Use a safer approach to prevent model compilation errors
+let Submission;
+try {
+  // Try to get the existing model
+  Submission = mongoose.model('Submission');
+} catch (error) {
+  // If the model doesn't exist, create it
+  Submission = mongoose.model('Submission', SubmissionSchema);
+}
 
 module.exports = Submission;

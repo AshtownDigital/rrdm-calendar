@@ -41,6 +41,14 @@ BcrConfigSchema.pre('save', function(next) {
   next();
 });
 
-const BcrConfig = mongoose.model('BcrConfig', BcrConfigSchema);
+// Use a safer approach to prevent model compilation errors
+let BcrConfig;
+try {
+  // Try to get the existing model
+  BcrConfig = mongoose.model('BcrConfig');
+} catch (error) {
+  // If the model doesn't exist, create it
+  BcrConfig = mongoose.model('BcrConfig', BcrConfigSchema);
+}
 
 module.exports = BcrConfig;

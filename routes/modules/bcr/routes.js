@@ -6,8 +6,9 @@ const express = require('express');
 const router = express.Router();
 const csrfProtection = require('../../../middleware/csrf');
 
-// Import consolidated BCR controller
+// Import controllers
 const bcrController = require('../../../controllers/modules/bcr/controller');
+const reviewController = require('../../../controllers/modules/bcr/reviewController');
 
 // Root route - redirect to dashboard
 router.get('/', (req, res) => {
@@ -25,8 +26,8 @@ router.get('/submit', bcrController.newSubmissionForm);
 router.post('/submit', csrfProtection, bcrController.createSubmission);
 router.get('/submissions', bcrController.listSubmissions);
 router.get('/submissions/:id', bcrController.viewSubmission);
-router.get('/submissions/:id/review', bcrController.viewSubmission);
-router.post('/submissions/:id/review', csrfProtection, bcrController.viewSubmission);
+router.get('/submissions/:id/review', csrfProtection, reviewController.renderReviewForm);
+router.post('/submissions/:id/review', csrfProtection, reviewController.processReview);
 
 // === Impact Areas Routes ===
 // Main impact areas route to list all impact areas

@@ -16,6 +16,9 @@ const { connect, mongoose } = require('./config/database.mongo');
 // BCR module routes - preserve all BCR functionality including workflows, urgency levels, and impact areas
 const bcrRouter = require('./routes/modules/bcr/routes'); 
 
+// BCR controllers
+const bcrController = require('./controllers/modules/bcr/controller');
+
 // Reference Data module routes
 const refDataRouter = require('./routes/modules/reference-data/routes');
 
@@ -382,9 +385,99 @@ app.get('/bcr/workflow', (req, res) => {
   res.redirect('/bcr/workflow/phases');
 });
 
-// Redirect legacy BCR submissions list
+// BCR submissions routes
 app.get('/bcr/submissions', (req, res) => {
-  res.redirect('/bcr/submissions/list');
+  // Directly render the submissions page with our test data
+  const Submission = require('./models/Submission');
+  
+  // Helper function to get status tag
+  const getSubmissionStatusTag = (submission) => {
+    const status = submission.status || 'Pending';
+    
+    switch (status) {
+      case 'Approved':
+        return { text: 'Approved', class: 'govuk-tag govuk-tag--green' };
+      case 'Rejected':
+        return { text: 'Rejected', class: 'govuk-tag govuk-tag--red' };
+      case 'Paused':
+        return { text: 'Paused', class: 'govuk-tag govuk-tag--yellow' };
+      case 'Closed':
+        return { text: 'Closed', class: 'govuk-tag govuk-tag--grey' };
+      case 'More Info Required':
+        return { text: 'More Info Required', class: 'govuk-tag govuk-tag--blue' };
+      case 'Pending':
+      default:
+        return { text: 'Pending', class: 'govuk-tag govuk-tag--purple' };
+    }
+  };
+  
+  // Get all submissions
+  Submission.find().sort({ createdAt: -1 })
+    .then(submissions => {
+      // Format submissions for display
+      const formattedSubmissions = submissions.map(submission => {
+        const statusTag = getSubmissionStatusTag(submission);
+        
+        return {
+          id: submission._id || submission.id,
+          submissionCode: submission.submissionCode || 'N/A',
+          briefDescription: submission.briefDescription || 'No description provided',
+          fullName: submission.fullName || 'Unknown',
+          emailAddress: submission.emailAddress || 'No email provided',
+          submissionSource: submission.submissionSource || 'Unknown',
+          organisation: submission.organisation || 'Not specified',
+          urgencyLevel: submission.urgencyLevel || 'Not specified',
+          impactAreas: Array.isArray(submission.impactAreas) ? submission.impactAreas.join(', ') : 'None',
+          displayStatus: statusTag.text,
+          statusClass: statusTag.class,
+          createdAt: submission.createdAt ? 
+            new Date(submission.createdAt).toLocaleDateString('en-GB', { 
+              day: 'numeric', 
+              month: 'long', 
+              year: 'numeric' 
+            }) : 'Unknown',
+          updatedAt: submission.updatedAt ? 
+            new Date(submission.updatedAt).toLocaleDateString('en-GB', { 
+              day: 'numeric', 
+              month: 'long', 
+              year: 'numeric' 
+            }) : 'Unknown',
+          reviewedAt: submission.reviewedAt ? 
+            new Date(submission.reviewedAt).toLocaleDateString('en-GB', { 
+              day: 'numeric', 
+              month: 'long', 
+              year: 'numeric' 
+            }) : 'Not reviewed'
+        };
+      });
+      
+      // Render the submissions page
+      res.render('modules/bcr/submissions/index', {
+        title: 'BCR Submissions',
+        submissions: formattedSubmissions,
+        filters: req.query,
+        connectionIssue: false,
+        timedOut: false,
+        user: req.user
+      });
+    })
+    .catch(error => {
+      console.error('Error loading submissions:', error);
+      res.render('modules/bcr/submissions/index', {
+        title: 'BCR Submissions',
+        submissions: [],
+        filters: req.query,
+        connectionIssue: true,
+        timedOut: false,
+        error: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred while loading submissions',
+        user: req.user
+      });
+    });
+});
+
+// For backward compatibility
+app.get('/bcr/submissions/list', (req, res) => {
+  res.redirect('/bcr/submissions');
 });
 
 // Redirect legacy BCR Impact Areas routes

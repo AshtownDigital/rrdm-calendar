@@ -65,7 +65,7 @@ function checkDatabaseExists() {
     
     // Use mongo command to check if database exists
     const result = execSync(
-      `mongo --eval "db = db.getSiblingDB('${dbName}'); db.stats().ok" --quiet`,
+      `mongosh --eval "db = db.getSiblingDB('${dbName}'); db.stats().ok" --quiet`,
       { stdio: 'pipe' }
     ).toString().trim();
     
@@ -101,7 +101,7 @@ function createDatabase() {
     // Create the database by simply connecting to it
     // MongoDB creates databases automatically when you first store data
     execSync(
-      `mongo --eval "db = db.getSiblingDB('${dbName}'); db.createCollection('system_init')" --quiet`,
+      `mongosh --eval "db = db.getSiblingDB('${dbName}'); db.createCollection('system_init')" --quiet`,
       { stdio: 'inherit' }
     );
     
@@ -138,7 +138,7 @@ function initializeMongoCollections() {
     collections.forEach(collection => {
       try {
         execSync(
-          `mongo --eval "db = db.getSiblingDB('${dbName}'); db.createCollection('${collection}')" --quiet`,
+          `mongosh --eval "db = db.getSiblingDB('${dbName}'); db.createCollection('${collection}')" --quiet`,
           { stdio: 'pipe' }
         );
         console.log(`✅ Collection '${collection}' initialized`);
@@ -170,35 +170,45 @@ function seedDatabase() {
     
     const dbName = dbUrl.split('/').pop().split('?')[0];
     
-    // Create admin user
-    const adminUser = {
-      _id: '00000000-0000-0000-0000-000000000000',
-      email: 'admin@example.com',
-      password: '$2a$10$JcV6Y0UYqbXnGR.pGxXeV.9jGOA.9HnAYfQtKbAjg0yWMvxSHdpZe', // password: admin123
-      name: 'Admin User',
-      role: 'admin',
-      active: true,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
+    // Create a temporary file with the MongoDB commands
+    const tempScriptPath = path.join(process.cwd(), 'temp-mongo-seed.js');
     
-    // MongoDB command to insert admin user if it doesn't exist
-    const adminUserCommand = `
-      db.getSiblingDB('${dbName}').users.updateOne(
-        { _id: '${adminUser._id}' },
-        { $setOnInsert: ${JSON.stringify(adminUser)} },
+    // Write MongoDB commands to the temporary file
+    fs.writeFileSync(
+      tempScriptPath,
+      `
+      db = db.getSiblingDB('${dbName}');
+      
+      // Create admin user if it doesn't exist
+      db.users.updateOne(
+        { _id: '00000000-0000-0000-0000-000000000000' },
+        { $setOnInsert: {
+          _id: '00000000-0000-0000-0000-000000000000',
+          email: 'admin@example.com',
+          password: '$2a$10$JcV6Y0UYqbXnGR.pGxXeV.9jGOA.9HnAYfQtKbAjg0yWMvxSHdpZe', // password: admin123
+          name: 'Admin User',
+          role: 'admin',
+          active: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }},
         { upsert: true }
-      )
-    `;
+      );
+      
+      print('Admin user created or verified');
+      `
+    );
     
-    // Execute the MongoDB command
-    execSync(`mongo --eval "${adminUserCommand}"`, { stdio: 'inherit' });
+    // Execute the MongoDB script file
+    execSync(`mongosh --file ${tempScriptPath}`, { stdio: 'inherit' });
+    
+    // Clean up the temporary file
+    fs.unlinkSync(tempScriptPath);
     
     console.log('✅ MongoDB database seeded successfully');
     console.log('Default admin credentials:');
     console.log('  Email: admin@example.com');
     console.log('  Password: admin123');
-    
     return true;
   } catch (error) {
     console.error('Error seeding MongoDB database:', error.message);
@@ -230,7 +240,7 @@ function setupSessionCollection() {
     `;
     
     // Execute the MongoDB command
-    execSync(`mongo --eval "${sessionCommand}"`, { stdio: 'inherit' });
+    execSync(`mongosh --eval "${sessionCommand}"`, { stdio: 'inherit' });
     
     console.log('✅ MongoDB session collection set up successfully');
     return true;
