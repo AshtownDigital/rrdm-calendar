@@ -18,14 +18,14 @@ try {
   }
 }
 
-const { PrismaClient } = require('@prisma/client');
+const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
+const { User, Session } = require('../models');
+require('../config/database.mongo');
 
-// Initialize Prisma client with connection pooling optimized for serverless
-const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error']
-});
+// Initialize Mongoose connection with connection pooling
+mongoose.set('debug', true);
 
 // Default admin user to create if none exists
 const DEFAULT_ADMIN = {
@@ -46,7 +46,7 @@ async function verifyDatabaseConnection() {
   
   while (!connected && retries < maxRetries) {
     try {
-      await prisma.$queryRaw`SELECT 1 as result`;
+      await mongoose.connection.db.admin().ping();
       connected = true;
       console.log('✅ Database connection successful');
     } catch (error) {
@@ -287,7 +287,7 @@ async function verifyUserAccounts() {
   let userCount = 0;
   
   try {
-    userCount = await prisma.users.count();
+    userCount = await User.countDocuments();
   } catch (error) {
     console.error('Error counting users:', error.message);
     
@@ -311,7 +311,7 @@ async function verifyUserAccounts() {
     
     // Create admin user
     try {
-      await prisma.users.create({
+      await User.create({
         data: {
           id: uuidv4(),
           email: DEFAULT_ADMIN.email.toLowerCase(),
@@ -347,7 +347,7 @@ async function verifyUserAccounts() {
     
     let users = [];
     try {
-      users = await prisma.users.findMany({
+      users = await User.find({
         select: {
           id: true,
           email: true,
@@ -377,7 +377,7 @@ async function verifyUserAccounts() {
         
         // Update the user with the new password hash
         try {
-          await prisma.users.update({
+          await User.findByIdAndUpdate(user.id, {
             where: { id: user.id },
             data: { 
               password: hashedPassword,
@@ -447,7 +447,7 @@ async function fixDeployedAuth() {
   } catch (error) {
     console.error('❌ Error fixing authentication:', error);
   } finally {
-    await prisma.$disconnect();
+    await mongoose.disconnect();
   }
 }
 

@@ -4,6 +4,42 @@
   BCR Dashboard - RRDM
 {% endblock %}
 
+{% block head %}
+  {{ super() }}
+  <style>
+    .loading-spinner {
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid #1d70b8;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .loading-overlay {
+      position: relative;
+    }
+    .loading-overlay::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+  </style>
+{% endblock %}
+
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
@@ -19,28 +55,36 @@
   </div>
 </div>
 
-<div class="govuk-grid-row">
+<div class="govuk-grid-row" id="stats-container">
   <div class="govuk-grid-column-one-quarter">
     <div class="app-card app-card--green">
-      <h2 class="govuk-heading-m">{{ stats.total }}</h2>
+      <h2 class="govuk-heading-m" id="total-bcrs">
+        {{ stats.total }}
+      </h2>
       <p class="govuk-body">Total BCRs</p>
     </div>
   </div>
   <div class="govuk-grid-column-one-quarter">
     <div class="app-card app-card--blue">
-      <h2 class="govuk-heading-m">{{ stats.pending }}</h2>
+      <h2 class="govuk-heading-m" id="pending-bcrs">
+        {{ stats.pending }}
+      </h2>
       <p class="govuk-body">Pending</p>
     </div>
   </div>
   <div class="govuk-grid-column-one-quarter">
     <div class="app-card app-card--turquoise">
-      <h2 class="govuk-heading-m">{{ stats.approved }}</h2>
+      <h2 class="govuk-heading-m" id="approved-bcrs">
+        {{ stats.approved }}
+      </h2>
       <p class="govuk-body">Approved</p>
     </div>
   </div>
   <div class="govuk-grid-column-one-quarter">
     <div class="app-card app-card--red">
-      <h2 class="govuk-heading-m">{{ stats.rejected }}</h2>
+      <h2 class="govuk-heading-m" id="rejected-bcrs">
+        {{ stats.rejected }}
+      </h2>
       <p class="govuk-body">Rejected</p>
     </div>
   </div>
@@ -49,7 +93,9 @@
 <div class="govuk-grid-row govuk-!-margin-top-4">
   <div class="govuk-grid-column-one-quarter">
     <div class="app-card app-card--purple">
-      <h2 class="govuk-heading-m">{{ stats.implemented }}</h2>
+      <h2 class="govuk-heading-m" id="implemented-bcrs">
+        {{ stats.implemented }}
+      </h2>
       <p class="govuk-body">Implemented</p>
     </div>
   </div>
@@ -148,8 +194,7 @@
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
             <th scope="col" class="govuk-table__header">BCR Number</th>
-            <th scope="col" class="govuk-table__header">Description</th>
-            <th scope="col" class="govuk-table__header">Requested by</th>
+            <th scope="col" class="govuk-table__header">Title</th>
             <th scope="col" class="govuk-table__header">Status</th>
             <th scope="col" class="govuk-table__header">Created</th>
             <th scope="col" class="govuk-table__header">Actions</th>
@@ -161,32 +206,11 @@
               <td class="govuk-table__cell">{{ bcr.bcrNumber }}</td>
               <td class="govuk-table__cell">{{ bcr.description | truncate(60) }}</td>
               <td class="govuk-table__cell">
-                {% if bcr.Users_Bcrs_requestedByToUsers %}
-                  {{ bcr.Users_Bcrs_requestedByToUsers.name }}
-                {% else %}
-                  Unknown
-                {% endif %}
+                <strong class="{{ bcr.statusClass }}">{{ bcr.statusText }}</strong>
               </td>
+              <td class="govuk-table__cell">{{ bcr.createdAt }}</td>
               <td class="govuk-table__cell">
-                {% if bcr.status.includes('in_progress') %}
-                  <strong class="govuk-tag govuk-tag--light-blue">In Progress</strong>
-                {% elif bcr.status.includes('completed') %}
-                  <strong class="govuk-tag govuk-tag--green">Completed</strong>
-                {% elif bcr.status === 'new_submission' %}
-                  <strong class="govuk-tag govuk-tag--blue">New</strong>
-                {% elif bcr.status === 'rejected' %}
-                  <strong class="govuk-tag govuk-tag--red">Rejected</strong>
-                {% elif bcr.status === 'approved' %}
-                  <strong class="govuk-tag govuk-tag--green">Approved</strong>
-                {% elif bcr.status === 'implemented' %}
-                  <strong class="govuk-tag govuk-tag--turquoise">Implemented</strong>
-                {% else %}
-                  <strong class="govuk-tag">{{ bcr.status | replace('_', ' ') | title }}</strong>
-                {% endif %}
-              </td>
-              <td class="govuk-table__cell">{{ bcr.createdAt | date }}</td>
-              <td class="govuk-table__cell">
-                <a href="/bcr/{{ bcr.id }}" class="govuk-link">View</a>
+                <a href="/bcr/submissions/{{ bcr.id }}" class="govuk-link">View</a>
               </td>
             </tr>
           {% endfor %}
@@ -202,21 +226,5 @@
   </div>
 {% endif %}
 
-<!-- BCRs by Impact Area Section -->
-<div class="govuk-grid-row">
-  <div class="govuk-grid-column-full">
-    <h2 class="govuk-heading-l govuk-!-margin-top-6 govuk-!-margin-bottom-4">BCRs by Impact Area</h2>
-  </div>
-</div>
 
-<div class="govuk-grid-row">
-  {% for area in impactAreas %}
-    <div class="govuk-grid-column-one-third">
-      <div class="app-card app-card--blue">
-        <h2 class="govuk-heading-m">{{ area.name }}</h2>
-        <p class="govuk-body">{{ bcrsByImpactArea[area.value] or 0 }} BCRs affected</p>
-      </div>
-    </div>
-  {% endfor %}
-</div>
 {% endblock %}

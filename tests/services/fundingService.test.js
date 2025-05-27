@@ -1,36 +1,24 @@
 /**
  * Unit tests for the Funding Service
  */
-const { PrismaClient } = require('@prisma/client');
+const mongoose = require('mongoose');
+const FundingRequirement = require('../../models/FundingRequirement');
+const FundingHistory = require('../../models/FundingHistory');
 const fundingService = require('../../services/fundingService');
 
-// Mock the Prisma client
-jest.mock('@prisma/client', () => {
-  const mockFindMany = jest.fn();
-  const mockFindUnique = jest.fn();
-  const mockCreate = jest.fn();
-  const mockUpdate = jest.fn();
-  const mockDelete = jest.fn();
-  
-  return {
-    PrismaClient: jest.fn().mockImplementation(() => ({
-      fundingRequirements: {
-        findMany: mockFindMany,
-        findUnique: mockFindUnique,
-        create: mockCreate,
-        update: mockUpdate,
-        delete: mockDelete
-      },
-      fundingHistories: {
-        findMany: mockFindMany,
-        findUnique: mockFindUnique,
-        create: mockCreate,
-        delete: mockDelete
-      },
-      $disconnect: jest.fn()
-    }))
-  };
-});
+// Mock Mongoose models
+jest.mock('../../models/FundingRequirement', () => ({
+  find: jest.fn(),
+  findById: jest.fn(),
+  create: jest.fn(),
+  findByIdAndUpdate: jest.fn(),
+  findByIdAndDelete: jest.fn()
+}));
+
+jest.mock('../../models/FundingHistory', () => ({
+  find: jest.fn(),
+  create: jest.fn()
+}));
 
 // Mock the uuid module
 jest.mock('uuid', () => ({

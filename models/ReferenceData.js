@@ -64,7 +64,6 @@ const ReferenceDataSchema = new Schema({
 
 // Create indexes for efficient querying
 ReferenceDataSchema.index({ category: 1 });
-ReferenceDataSchema.index({ code: 1 });
 
 // Update the updatedAt field on save
 ReferenceDataSchema.pre('save', function(next) {

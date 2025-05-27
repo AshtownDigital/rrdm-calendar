@@ -16,10 +16,10 @@
       </p>
       
       <div class="govuk-button-group">
-        <a href="/bcr/impact-areas/create" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+        <a href="/bcr/impact-areas/new" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
           Add new impact area
         </a>
-        <a href="/bcr" class="govuk-link govuk-link--no-visited-state">Return to BCR management</a>
+        <a href="/bcr/dashboard" class="govuk-link govuk-link--no-visited-state">Return to BCR management</a>
       </div>
       
       {% if impactAreas and impactAreas.length > 0 %}
@@ -37,7 +37,7 @@
             {% for area in impactAreas %}
               <tr class="govuk-table__row">
                 <td class="govuk-table__cell">
-                  <strong>{{ area.name }}</strong>
+                  <strong>{{ area.displayName }}</strong>
                 </td>
                 <td class="govuk-table__cell">
                   {{ area.description }}
@@ -46,8 +46,8 @@
                   {{ area.displayOrder }}
                 </td>
                 <td class="govuk-table__cell">
-                  <a href="/bcr/impact-areas/edit/{{ area.id }}" class="govuk-link govuk-link--no-visited-state">Edit</a>
-                  <a href="/bcr/impact-areas/delete/{{ area.id }}" class="govuk-link govuk-link--no-visited-state govuk-!-margin-left-2">Delete</a>
+                  <a href="/bcr/impact-areas/{{ area.id }}/edit" class="govuk-link govuk-link--no-visited-state">Edit</a>
+                  <a href="/bcr/impact-areas/{{ area.id }}/delete" class="govuk-link govuk-link--no-visited-state govuk-!-margin-left-2">Delete</a>
                 </td>
               </tr>
             {% endfor %}

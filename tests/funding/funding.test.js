@@ -15,26 +15,19 @@ jest.mock('path', () => ({
   resolve: jest.fn().mockReturnValue('/mock/path')
 }));
 
-// Mock Prisma client
-jest.mock('@prisma/client', () => {
-  return {
-    PrismaClient: jest.fn().mockImplementation(() => ({
-      fundingRequirements: {
-        findMany: jest.fn().mockResolvedValue([
-          { id: 'req-1', route: 'primary', year: 2023, amount: 10000 },
-          { id: 'req-2', route: 'secondary', year: 2023, amount: 15000 }
-        ])
-      },
-      fundingHistories: {
-        findMany: jest.fn().mockResolvedValue([
-          { id: 'hist-1', year: 2022, route: 'primary', amount: 9500, change: 'increase' },
-          { id: 'hist-2', year: 2023, route: 'primary', amount: 10000, change: 'increase' }
-        ])
-      },
-      $disconnect: jest.fn()
-    }))
-  };
-});
+// Mock Mongoose models
+jest.mock('../../models/FundingRequirement', () => ({
+  find: jest.fn(),
+  findById: jest.fn(),
+  create: jest.fn(),
+  findByIdAndUpdate: jest.fn(),
+  findByIdAndDelete: jest.fn()
+}));
+
+jest.mock('../../models/FundingHistory', () => ({
+  find: jest.fn(),
+  create: jest.fn()
+}));
 
 // Mock the authentication middleware
 jest.mock('../../middleware/auth', () => {

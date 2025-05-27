@@ -4,7 +4,9 @@
  * This script tests the database connection in both standard and simulated serverless environments.
  * It helps identify and diagnose database connection issues that might occur in Vercel deployment.
  */
-const { PrismaClient } = require('@prisma/client');
+const mongoose = require('mongoose');
+const { Bcr } = require('../models');
+require('../config/database.mongo');
 const dotenv = require('dotenv');
 
 // Load environment variables
@@ -25,61 +27,50 @@ async function testDatabaseConnection() {
   await testServerlessConnection();
 }
 
-// Test standard Prisma connection
+// Test standard Mongoose connection
 async function testStandardConnection() {
-  const prisma = new PrismaClient({
-    log: ['query', 'info', 'warn', 'error'],
-  });
+  console.log('\nTesting standard connection...');
   
   try {
-    console.log('Connecting to database using standard connection...');
-    await prisma.$connect();
-    console.log('✅ Standard connection successful!');
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('Connected to database successfully');
     
-    // Try a simple query
-    const count = await prisma.bcrSubmission.count();
-    console.log(`✅ Query successful: Found ${count} BCR submissions`);
+    // Test a simple query
+    const count = await Bcr.countDocuments();
+    console.log(`Found ${count} BCR submissions`);
     
-    await prisma.$disconnect();
+    await mongoose.disconnect();
+    console.log('Disconnected from database successfully');
+    return true;
   } catch (error) {
-    console.error('❌ Standard connection failed:', error.message);
+    console.error('Error connecting to database:', error);
     if (error.message.includes('localhost') || error.message.includes('127.0.0.1')) {
       console.error('   This error suggests you are trying to connect to a local database.');
-      console.error('   For Vercel deployment, you need a cloud-hosted database like Neon PostgreSQL.');
+      console.error('   For Vercel deployment, you need a cloud-hosted database like MongoDB Atlas.');
     }
+    return false;
   }
 }
 
-// Test serverless Prisma connection (simulating Vercel environment)
+// Test serverless Mongoose connection (simulating Vercel environment)
 async function testServerlessConnection() {
-  // Simulate serverless environment
-  process.env.VERCEL = '1';
-  process.env.PRISMA_CLIENT_ENGINE_TYPE = 'dataproxy';
-  
-  const prisma = new PrismaClient({
-    log: ['error'],
-  });
+  console.log('\nTesting serverless connection...');
   
   try {
-    console.log('Connecting to database using serverless connection...');
-    await prisma.$connect();
-    console.log('✅ Serverless connection successful!');
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('Connected to database successfully');
     
-    // Try a simple query
-    const count = await prisma.bcrSubmission.count();
-    console.log(`✅ Query successful: Found ${count} BCR submissions`);
+    // Test a simple query
+    const count = await Bcr.countDocuments();
+    console.log(`Found ${count} BCR submissions`);
     
-    await prisma.$disconnect();
+    await mongoose.disconnect();
+    console.log('Disconnected from database successfully');
+    return true;
   } catch (error) {
-    console.error('❌ Serverless connection failed:', error.message);
+    console.error('Error connecting to database:', error);
     console.error('   This is likely what is failing in your Vercel deployment.');
-    
-    if (error.message.includes('P1001')) {
-      console.error('   Error P1001 indicates the database server cannot be reached.');
-      console.error('   Check that your DATABASE_URL is correctly set in Vercel environment variables.');
-    } else if (error.message.includes('P1003')) {
-      console.error('   Error P1003 indicates a database does not exist or you don\'t have access.');
-    }
+    return false;
   }
 }
 
@@ -138,8 +129,8 @@ function provideRecommendations() {
   console.log('1. Ensure your DATABASE_URL is set in Vercel environment variables');
   console.log('2. For Neon PostgreSQL, use the format:');
   console.log('   postgresql://user:password@db.neon.tech/dbname?pgbouncer=true&pool_timeout=10');
-  console.log('3. Make sure PRISMA_CLIENT_ENGINE_TYPE=dataproxy is set in Vercel');
-  console.log('4. Verify that your schema.prisma file has the correct provider and URL');
+  console.log('3. Make sure your MongoDB connection string is properly set in your environment variables');
+  console.log('4. Verify that your Mongoose models are properly defined');
   console.log('5. After deploying, check Vercel logs for any database connection errors');
 }
 

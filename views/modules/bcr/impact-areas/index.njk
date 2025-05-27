@@ -37,10 +37,10 @@
             {% for area in impactAreas %}
               <tr class="govuk-table__row">
                 <td class="govuk-table__cell">
-                  <strong>{{ area.name }}</strong>
+                  <strong>{{ area.name | title }}</strong>
                 </td>
                 <td class="govuk-table__cell">
-                  {{ area.description }}
+                  Impact on {{ area.name | lower }}
                 </td>
                 <td class="govuk-table__cell">
                   {{ area.displayOrder }}

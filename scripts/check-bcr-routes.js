@@ -6,8 +6,9 @@
  */
 
 require('dotenv').config({ path: '.env.development' });
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const mongoose = require('mongoose');
+const { Bcr, BcrConfig } = require('../models');
+require('../config/database.mongo');
 
 async function checkBcrRoutes() {
   console.log('Starting BCR routes check...');
@@ -17,17 +18,20 @@ async function checkBcrRoutes() {
   try {
     // Check database connection
     console.log('Checking database connection...');
-    await prisma.$connect();
-    console.log('✅ Database connection successful');
+    if (mongoose.connection.readyState === 1) {
+      console.log('✅ Database connection successful');
+    } else {
+      throw new Error('Database not connected');
+    }
     
-    // Check if BCR table exists and has records
+    // Check if BCR collection exists and has records
     console.log('Checking BCR records...');
-    const bcrCount = await prisma.bcrs.count();
+    const bcrCount = await Bcr.countDocuments();
     console.log(`✅ Found ${bcrCount} BCRs in the database`);
     
     if (bcrCount > 0) {
       // Get a sample BCR
-      const sampleBcr = await prisma.bcrs.findFirst();
+      const sampleBcr = await Bcr.findOne();
       console.log('Sample BCR:', {
         id: sampleBcr.id,
         bcrNumber: sampleBcr.bcrNumber,
@@ -49,20 +53,16 @@ async function checkBcrRoutes() {
     
     // Check BCR configurations
     console.log('\nChecking BCR configurations...');
-    const configCount = await prisma.bcrConfigs.count();
+    const configCount = await BcrConfig.countDocuments();
     console.log(`✅ Found ${configCount} BCR configurations in the database`);
     
     if (configCount > 0) {
       // Get impact areas
-      const impactAreas = await prisma.bcrConfigs.findMany({
-        where: { type: 'impactArea' }
-      });
+      const impactAreas = await BcrConfig.find({ type: 'impactArea' });
       console.log(`✅ Found ${impactAreas.length} impact areas`);
       
       // Get statuses
-      const statuses = await prisma.bcrConfigs.findMany({
-        where: { type: 'status' }
-      });
+      const statuses = await BcrConfig.find({ type: 'status' });
       console.log(`✅ Found ${statuses.length} statuses`);
     } else {
       console.log('⚠️ No BCR configurations found. Please run the seed script first.');
@@ -72,7 +72,7 @@ async function checkBcrRoutes() {
   } catch (error) {
     console.error('❌ Error checking BCR routes:', error);
   } finally {
-    await prisma.$disconnect();
+    await mongoose.disconnect();
   }
 }
 

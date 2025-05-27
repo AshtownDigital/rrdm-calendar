@@ -5,57 +5,57 @@
  * 2. The current BCRs with their status values
  * 3. The enum values if it's an enum type
  */
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const mongoose = require('mongoose');
+const { Bcr } = require('../models/Bcr');
+require('../config/database.mongo');
 
 async function showBcrStatusData() {
   console.log('Checking BCR status column and data...');
   
   try {
-    // Step 1: Check the column type for status
-    console.log('\n1. COLUMN TYPE INFORMATION:');
-    const columnInfo = await prisma.$queryRaw`
-      SELECT column_name, data_type, column_default, is_nullable
-      FROM information_schema.columns
-      WHERE table_name = 'Bcrs' AND column_name = 'status'
-    `;
+    // Step 1: Show schema information for status field
+    console.log('\n1. SCHEMA INFORMATION:');
+    const statusPath = Bcr.schema.path('status');
+    console.log(JSON.stringify({
+      field: 'status',
+      type: statusPath.instance,
+      required: statusPath.isRequired,
+      enum: statusPath.enumValues,
+      default: statusPath.defaultValue
+    }, null, 2));
     
-    console.log(JSON.stringify(columnInfo, null, 2));
-    
-    // Step 2: If it's an enum type, show the enum values
-    if (columnInfo[0]?.data_type === 'USER-DEFINED') {
-      console.log('\n2. ENUM VALUES (if applicable):');
-      const enumValues = await prisma.$queryRaw`
-        SELECT e.enumlabel
-        FROM pg_type t 
-        JOIN pg_enum e ON t.oid = e.enumtypid  
-        JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
-        WHERE t.typname = 'enum_Bcrs_status'
-        ORDER BY e.enumsortorder
-      `;
-      console.log(JSON.stringify(enumValues, null, 2));
-    } else {
-      console.log('\n2. ENUM VALUES: Not applicable (column is not an enum type)');
-    }
+    // Step 2: Show enum values
+    console.log('\n2. ENUM VALUES:');
+    console.log(JSON.stringify(Bcr.schema.path('status').enumValues, null, 2));
     
     // Step 3: Show the current BCRs with their status values
     console.log('\n3. CURRENT BCR STATUS DATA:');
-    const bcrs = await prisma.$queryRaw`
-      SELECT id, "bcrNumber", title, status, "createdAt"
-      FROM "Bcrs"
-      ORDER BY "createdAt" DESC
-    `;
+    const bcrs = await Bcr.find()
+      .select('bcrNumber title status createdAt')
+      .sort('-createdAt');
     
     console.log(JSON.stringify(bcrs, null, 2));
     
     // Step 4: Show distinct status values in use
     console.log('\n4. DISTINCT STATUS VALUES IN USE:');
-    const distinctStatuses = await prisma.$queryRaw`
-      SELECT DISTINCT status, COUNT(*)::text as count
-      FROM "Bcrs"
-      GROUP BY status
-      ORDER BY count DESC
-    `;
+    const distinctStatuses = await Bcr.aggregate([
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { count: -1 }
+      },
+      {
+        $project: {
+          status: '$_id',
+          count: { $toString: '$count' },
+          _id: 0
+        }
+      }
+    ]);
     
     console.log(JSON.stringify(distinctStatuses, null, 2));
     
@@ -64,7 +64,7 @@ async function showBcrStatusData() {
     console.error('Error retrieving BCR status data:', error);
     return false;
   } finally {
-    await prisma.$disconnect();
+    await mongoose.disconnect();
   }
 }
 

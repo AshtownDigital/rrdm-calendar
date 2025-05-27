@@ -1,9 +1,10 @@
 /**
  * Passport configuration for RRDM application with database integration
- * Sets up local strategy for authentication using Neon PostgreSQL database via Prisma
+ * Sets up local strategy for authentication using MongoDB via Mongoose
  */
 const LocalStrategy = require('passport-local').Strategy;
-const userUtils = require('../utils/prisma-user-utils');
+const userUtils = require('../utils/user-utils');
+require('./database.mongo');
 
 module.exports = function(passport) {
   // Configure local strategy

@@ -9,26 +9,20 @@ const mockUpdate = jest.fn();
 const mockDelete = jest.fn();
 const mockDisconnect = jest.fn();
 
-const { PrismaClient } = require('@prisma/client');
+const mongoose = require('mongoose');
+const ReferenceData = require('../../models/ReferenceData');
 const { mediumCache } = require('../../utils/cache');
 // Import the service after mocks are defined
 const referenceDataService = require('../../services/referenceDataService');
 
-// Mock the Prisma client
-jest.mock('@prisma/client', () => {
-  return {
-    PrismaClient: jest.fn().mockImplementation(() => ({
-      referenceData: {
-        findMany: mockFindMany,
-        findUnique: mockFindUnique,
-        create: mockCreate,
-        update: mockUpdate,
-        delete: mockDelete
-      },
-      $disconnect: mockDisconnect
-    }))
-  };
-});
+// Mock Mongoose model
+jest.mock('../../models/ReferenceData', () => ({
+  find: mockFind,
+  findById: mockFindById,
+  create: mockCreate,
+  findByIdAndUpdate: mockFindByIdAndUpdate,
+  findByIdAndDelete: mockFindByIdAndDelete
+}));
 
 // Mock the cache module
 jest.mock('../../utils/cache', () => {

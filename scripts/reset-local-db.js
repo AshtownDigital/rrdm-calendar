@@ -77,26 +77,17 @@ function createDatabase() {
 }
 
 // Function to push the schema directly to the database
-function pushPrismaSchema() {
+function setupMongooseSchema() {
   try {
-    console.log('Pushing Prisma schema to database...');
+    console.log('Setting up Mongoose schema...');
     
-    // Generate Prisma client
-    execSync('npx prisma generate', { 
-      stdio: 'inherit',
-      cwd: path.join(__dirname, '..')
-    });
+    // Import and initialize Mongoose models
+    require('../models');
     
-    // Push schema to database
-    execSync('npx prisma db push --force-reset', { 
-      stdio: 'inherit',
-      cwd: path.join(__dirname, '..')
-    });
-    
-    console.log('✅ Prisma schema pushed to database successfully');
+    console.log('✅ Mongoose schema setup successfully');
     return true;
   } catch (error) {
-    console.error('Error pushing Prisma schema:', error.message);
+    console.error('Error setting up Mongoose schema:', error.message);
     return false;
   }
 }
@@ -170,9 +161,10 @@ async function main() {
     process.exit(1);
   }
   
-  // Push Prisma schema to database
-  if (!pushPrismaSchema()) {
-    process.exit(1);
+  // Setup Mongoose schema
+  if (!setupMongooseSchema()) {
+    console.error('❌ Failed to setup Mongoose schema');
+    return false;
   }
   
   // Seed the database

@@ -1,26 +1,22 @@
 /**
  * Script to create a test admin user for debugging purposes
  */
-const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
-const prisma = new PrismaClient();
+const { User } = require('../models');
+require('../config/database.mongo');
 
 async function createTestAdmin() {
   try {
     console.log('Checking for existing admin users...');
     
     // Check if admin user already exists
-    const existingAdmin = await prisma.users.findFirst({
-      where: {
-        role: 'admin'
-      }
-    });
+    const existingAdmin = await User.findOne({ email: 'admin@test.com' });
     
     if (existingAdmin) {
       console.log('Admin user already exists:');
       console.log(`- Email: ${existingAdmin.email}`);
       console.log(`- Name: ${existingAdmin.name}`);
-      console.log(`- ID: ${existingAdmin.id}`);
+      console.log(`- ID: ${existingAdmin._id}`);
       console.log('\nYou can use this account to log in for testing.');
       console.log('Default password for testing: "password123" (unless changed)');
       return;
@@ -34,20 +30,20 @@ async function createTestAdmin() {
     const hashedPassword = await bcrypt.hash('password123', salt);
     
     // Create the user
-    const newAdmin = await prisma.users.create({
-      data: {
-        email: 'admin@example.com',
-        password: hashedPassword,
-        name: 'Test Admin',
-        role: 'admin',
-        active: true
-      }
+    const newAdmin = await User.create({
+      name: 'Test Admin',
+      email: 'admin@test.com',
+      password: hashedPassword,
+      role: 'admin',
+      active: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
     });
     
     console.log('Test admin user created successfully:');
     console.log(`- Email: ${newAdmin.email}`);
     console.log(`- Name: ${newAdmin.name}`);
-    console.log(`- ID: ${newAdmin.id}`);
+    console.log(`- ID: ${newAdmin._id}`);
     console.log('\nYou can now log in with:');
     console.log('Email: admin@example.com');
     console.log('Password: password123');
@@ -55,7 +51,7 @@ async function createTestAdmin() {
   } catch (error) {
     console.error('Error creating test admin user:', error);
   } finally {
-    await prisma.$disconnect();
+    await mongoose.disconnect();
   }
 }
 
