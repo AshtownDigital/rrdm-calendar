@@ -29,7 +29,7 @@ exports.renderReviewForm = async (req, res) => {
       title: 'Review Submission',
       submission,
       statusOptions: [
-        { value: 'Approved', text: 'Approve (Create BCR)', color: 'green' },
+        { value: 'Approved', text: 'Approve (Convert to Business Change Request)', color: 'green' },
         { value: 'Rejected', text: 'Reject', color: 'red' },
         { value: 'Paused', text: 'Pause', color: 'yellow' },
         { value: 'Closed', text: 'Close', color: 'grey' },
@@ -63,9 +63,9 @@ exports.processReview = async (req, res) => {
       reviewerId: req.user ? req.user.id : null
     });
     
-    // If approved and BCR created, redirect to the BCR page
+    // If approved and BCR created, redirect to the Business Change Request page
     if (status === 'Approved' && result.bcr) {
-      return res.redirect(`/bcr/${result.bcr._id}`);
+      return res.redirect(`/bcr/business-change-requests/${result.bcr._id}`);
     }
     
     // Otherwise redirect to the submission page

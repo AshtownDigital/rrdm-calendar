@@ -22,45 +22,62 @@
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-xl">New BCR Submission</h1>
       
+      {% if errors %}
+      <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+        <h2 class="govuk-error-summary__title" id="error-summary-title">
+          {{ errorSummary | default('There is a problem') }}
+        </h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            {% for field, message in errors %}
+              <li>
+                <a href="#{{ field }}">{{ message }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      {% endif %}
+      
       <p class="govuk-body">Use this form to submit a new Business Change Request (BCR). All fields marked with an asterisk (*) are required.</p>
       
-      <form action="/bcr-submission" method="post" novalidate>
+      <form action="/bcr/submit" method="post" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         
-        <div class="govuk-form-group {% if error and not formData.fullName %}govuk-form-group--error{% endif %}">
+        <div class="govuk-form-group {% if errors.fullName %}govuk-form-group--error{% endif %}">
           <label class="govuk-label" for="fullName">
             Full Name *
           </label>
-          {% if error and not formData.fullName %}
+          {% if errors.fullName %}
             <p id="fullName-error" class="govuk-error-message">
-              <span class="govuk-visually-hidden">Error:</span> Full name is required
+              <span class="govuk-visually-hidden">Error:</span> {{ errors.fullName }}
             </p>
           {% endif %}
-          <input class="govuk-input {% if error and not formData.fullName %}govuk-input--error{% endif %}" id="fullName" name="fullName" type="text" value="{{ formData.fullName if formData else '' }}">
+          <input class="govuk-input {% if errors.fullName %}govuk-input--error{% endif %}" id="fullName" name="fullName" type="text" value="{{ formData.fullName if formData else '' }}" aria-describedby="{% if errors.fullName %}fullName-error{% endif %}">
         </div>
         
-        <div class="govuk-form-group {% if error and not formData.emailAddress %}govuk-form-group--error{% endif %}">
+        <div class="govuk-form-group {% if errors.emailAddress %}govuk-form-group--error{% endif %}">
           <label class="govuk-label" for="emailAddress">
             Email Address *
           </label>
-          {% if error and not formData.emailAddress %}
+          {% if errors.emailAddress %}
             <p id="emailAddress-error" class="govuk-error-message">
-              <span class="govuk-visually-hidden">Error:</span> Email address is required
+              <span class="govuk-visually-hidden">Error:</span> {{ errors.emailAddress }}
             </p>
           {% endif %}
-          <input class="govuk-input {% if error and not formData.emailAddress %}govuk-input--error{% endif %}" id="emailAddress" name="emailAddress" type="email" value="{{ formData.emailAddress if formData else '' }}">
+          <input class="govuk-input {% if errors.emailAddress %}govuk-input--error{% endif %}" id="emailAddress" name="emailAddress" type="email" value="{{ formData.emailAddress if formData else '' }}" aria-describedby="{% if errors.emailAddress %}emailAddress-error{% endif %}">
         </div>
         
-        <div class="govuk-form-group {% if error and not formData.submissionSource %}govuk-form-group--error{% endif %}">
+        <div class="govuk-form-group {% if errors.submissionSource %}govuk-form-group--error{% endif %}">
           <label class="govuk-label" for="submissionSource">
             Submission Source *
           </label>
-          {% if error and not formData.submissionSource %}
+          {% if errors.submissionSource %}
             <p id="submissionSource-error" class="govuk-error-message">
-              <span class="govuk-visually-hidden">Error:</span> Submission source is required
+              <span class="govuk-visually-hidden">Error:</span> {{ errors.submissionSource }}
             </p>
           {% endif %}
-          <select class="govuk-select {% if error and not formData.submissionSource %}govuk-select--error{% endif %}" id="submissionSource" name="submissionSource">
+          <select class="govuk-select {% if errors.submissionSource %}govuk-select--error{% endif %}" id="submissionSource" name="submissionSource" aria-describedby="{% if errors.submissionSource %}submissionSource-error{% endif %}">
             <option value="">Please select</option>
             {% for source in submissionSources %}
               <option value="{{ source }}" {% if formData and formData.submissionSource === source %}selected{% endif %}>
@@ -70,59 +87,60 @@
           </select>
         </div>
         
-        <div class="govuk-form-group {% if error and formData.submissionSource === 'Other' and not formData.organisation %}govuk-form-group--error{% endif %}" id="organisationGroup">
+        <div class="govuk-form-group {% if errors.organisation %}govuk-form-group--error{% endif %}" id="organisationGroup">
           <label class="govuk-label" for="organisation">
             Organisation
+            {% if formData and formData.submissionSource === 'Other' %} *{% endif %}
           </label>
           <div class="govuk-hint">
-            Required if submission source is 'Other'
+            Required if 'Other' is selected as submission source
           </div>
-          {% if error and formData.submissionSource === 'Other' and not formData.organisation %}
+          {% if errors.organisation %}
             <p id="organisation-error" class="govuk-error-message">
-              <span class="govuk-visually-hidden">Error:</span> Organisation is required when submission source is Other
+              <span class="govuk-visually-hidden">Error:</span> {{ errors.organisation }}
             </p>
           {% endif %}
-          <input class="govuk-input {% if error and formData.submissionSource === 'Other' and not formData.organisation %}govuk-input--error{% endif %}" id="organisation" name="organisation" type="text" value="{{ formData.organisation if formData else '' }}">
+          <input class="govuk-input {% if errors.organisation %}govuk-input--error{% endif %}" id="organisation" name="organisation" type="text" value="{{ formData.organisation if formData else '' }}" aria-describedby="{% if errors.organisation %}organisation-error{% endif %}">
         </div>
         
-        <div class="govuk-form-group {% if error and not formData.briefDescription %}govuk-form-group--error{% endif %}">
+        <div class="govuk-form-group {% if errors.briefDescription %}govuk-form-group--error{% endif %}">
           <label class="govuk-label" for="briefDescription">
             Brief Description *
           </label>
           <div class="govuk-hint">
-            A short title or summary of the change request (max 500 characters)
+            A short description of the requested change
           </div>
-          {% if error and not formData.briefDescription %}
+          {% if errors.briefDescription %}
             <p id="briefDescription-error" class="govuk-error-message">
-              <span class="govuk-visually-hidden">Error:</span> Brief description is required
+              <span class="govuk-visually-hidden">Error:</span> {{ errors.briefDescription }}
             </p>
           {% endif %}
-          <textarea class="govuk-textarea {% if error and not formData.briefDescription %}govuk-textarea--error{% endif %}" id="briefDescription" name="briefDescription" rows="2" maxlength="500">{{ formData.briefDescription if formData else '' }}</textarea>
+          <textarea class="govuk-textarea {% if errors.briefDescription %}govuk-textarea--error{% endif %}" id="briefDescription" name="briefDescription" rows="3" aria-describedby="{% if errors.briefDescription %}briefDescription-error{% endif %}">{{ formData.briefDescription if formData else '' }}</textarea>
         </div>
         
-        <div class="govuk-form-group {% if error and not formData.justification %}govuk-form-group--error{% endif %}">
+        <div class="govuk-form-group {% if errors.justification %}govuk-form-group--error{% endif %}">
           <label class="govuk-label" for="justification">
             Justification *
           </label>
           <div class="govuk-hint">
             Explain why this change is needed and what benefits it will bring
           </div>
-          {% if error and not formData.justification %}
+          {% if errors.justification %}
             <p id="justification-error" class="govuk-error-message">
-              <span class="govuk-visually-hidden">Error:</span> Justification is required
+              <span class="govuk-visually-hidden">Error:</span> {{ errors.justification }}
             </p>
           {% endif %}
-          <textarea class="govuk-textarea {% if error and not formData.justification %}govuk-textarea--error{% endif %}" id="justification" name="justification" rows="5">{{ formData.justification if formData else '' }}</textarea>
+          <textarea class="govuk-textarea {% if errors.justification %}govuk-textarea--error{% endif %}" id="justification" name="justification" rows="5" aria-describedby="{% if errors.justification %}justification-error{% endif %}">{{ formData.justification if formData else '' }}</textarea>
         </div>
         
-        <div class="govuk-form-group {% if error and not formData.urgencyLevel %}govuk-form-group--error{% endif %}">
-          <fieldset class="govuk-fieldset">
+        <div class="govuk-form-group {% if errors.urgencyLevel %}govuk-form-group--error{% endif %}">
+          <fieldset class="govuk-fieldset" aria-describedby="{% if errors.urgencyLevel %}urgencyLevel-error{% endif %}">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
               Urgency Level *
             </legend>
-            {% if error and not formData.urgencyLevel %}
+            {% if errors.urgencyLevel %}
               <p id="urgencyLevel-error" class="govuk-error-message">
-                <span class="govuk-visually-hidden">Error:</span> Urgency level is required
+                <span class="govuk-visually-hidden">Error:</span> {{ errors.urgencyLevel }}
               </p>
             {% endif %}
             <div class="govuk-radios govuk-radios--conditional" data-module="govuk-radios">
@@ -138,21 +156,22 @@
                 </div>
 
                 {% if level.name === 'Other' %}
-                <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-other-urgency">
-                  <div class="govuk-form-group {% if errors and errors.otherUrgencyDescription %}govuk-form-group--error{% endif %}">
+                <div class="govuk-radios__conditional {% if formData and formData.urgencyLevel === 'Other' %}{% else %}govuk-radios__conditional--hidden{% endif %}" id="conditional-other-urgency">
+                  <div class="govuk-form-group {% if errors.otherUrgencyDescription %}govuk-form-group--error{% endif %}">
                     <label class="govuk-label" for="otherUrgencyDescription">
-                      Please specify the urgency level
+                      Please specify
                     </label>
-                    {% if errors and errors.otherUrgencyDescription %}
+                    {% if errors.otherUrgencyDescription %}
                       <p id="otherUrgencyDescription-error" class="govuk-error-message">
                         <span class="govuk-visually-hidden">Error:</span> {{ errors.otherUrgencyDescription }}
                       </p>
                     {% endif %}
-                    <input class="govuk-input govuk-!-width-two-thirds {% if errors and errors.otherUrgencyDescription %}govuk-input--error{% endif %}" 
+                    <input class="govuk-input govuk-!-width-two-thirds {% if errors.otherUrgencyDescription %}govuk-input--error{% endif %}" 
                            id="otherUrgencyDescription" 
                            name="otherUrgencyDescription" 
                            type="text" 
-                           value="{{ formData.otherUrgencyDescription if formData else '' }}">
+                           value="{{ formData.otherUrgencyDescription if formData else '' }}"
+                           aria-describedby="{% if errors.otherUrgencyDescription %}otherUrgencyDescription-error{% endif %}">
                   </div>
                 </div>
                 {% endif %}
@@ -161,23 +180,45 @@
           </fieldset>
         </div>
         
-        <div class="govuk-form-group {% if error and not formData.impactAreas %}govuk-form-group--error{% endif %}">
-          <fieldset class="govuk-fieldset">
+        <div class="govuk-form-group {% if errors.impactAreas %}govuk-form-group--error{% endif %}">
+          <fieldset class="govuk-fieldset" aria-describedby="{% if errors.impactAreas %}impactAreas-error{% endif %}">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
               Impacted Areas *
             </legend>
             <div class="govuk-hint">
               Select all areas that will be impacted by this change
             </div>
-            {% if error and not formData.impactAreas %}
+            {% if errors.impactAreas %}
               <p id="impactAreas-error" class="govuk-error-message">
-                <span class="govuk-visually-hidden">Error:</span> At least one impacted area must be selected
+                <span class="govuk-visually-hidden">Error:</span> {{ errors.impactAreas }}
               </p>
             {% endif %}
-            <div class="govuk-checkboxes">
+            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+              <!-- Debug info for impactAreas (hidden in production) -->
+              {% if formData and formData.impactAreas %}
+              <div class="govuk-hint" style="display: none;">
+                Impact Areas Data: {{ formData.impactAreas | dump }}
+              </div>
+              {% endif %}
+              
               {% for area in impactAreas %}
                 <div class="govuk-checkboxes__item">
-                  <input class="govuk-checkboxes__input" id="impactAreas-{{ area.id }}" name="impactAreas" type="checkbox" value="{{ area.id }}" {% if formData and formData.impactAreas and (formData.impactAreas === area.id or area.id in formData.impactAreas) %}checked{% endif %}>
+                  <input class="govuk-checkboxes__input" 
+                         id="impactAreas-{{ area.id }}" 
+                         name="impactAreas" 
+                         type="checkbox" 
+                         value="{{ area.id }}" 
+                         {% if formData and formData.impactAreas %}
+                           {% if formData.impactAreas == area.id %}
+                             checked
+                           {% elif formData.impactAreas[0] == area.id %}
+                             checked
+                           {% elif formData.impactAreas.includes(area.id) %}
+                             checked
+                           {% elif (formData.impactAreas | string).indexOf(area.id) > -1 %}
+                             checked
+                           {% endif %}
+                         {% endif %}>
                   <label class="govuk-label govuk-checkboxes__label" for="impactAreas-{{ area.id }}">
                     {{ area.name }}
                   </label>
@@ -222,20 +263,36 @@
           <textarea class="govuk-textarea" id="relatedDocuments" name="relatedDocuments" rows="2">{{ formData.relatedDocuments if formData else '' }}</textarea>
         </div>
         
-        <div class="govuk-form-group {% if error and not formData.attachments %}govuk-form-group--error{% endif %}">
-          <fieldset class="govuk-fieldset">
+        <div class="govuk-form-group {% if errors.attachments %}govuk-form-group--error{% endif %}">
+          <fieldset class="govuk-fieldset" aria-describedby="{% if errors.attachments %}attachments-error{% endif %}">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
               Will you be providing attachments? *
             </legend>
-            {% if error and not formData.attachments %}
+            {% if errors.attachments %}
               <p id="attachments-error" class="govuk-error-message">
-                <span class="govuk-visually-hidden">Error:</span> Please indicate if you will be providing attachments
+                <span class="govuk-visually-hidden">Error:</span> {{ errors.attachments }}
               </p>
             {% endif %}
+            <!-- Debug info for attachments (hidden in production) -->
+            {% if formData and formData.attachments %}
+            <div class="govuk-hint" style="display: none;">
+              Attachments Data: {{ formData.attachments | dump }}
+            </div>
+            {% endif %}
+            
             <div class="govuk-radios">
               {% for option in attachmentsOptions %}
                 <div class="govuk-radios__item">
-                  <input class="govuk-radios__input" id="attachments-{{ option }}" name="attachments" type="radio" value="{{ option }}" {% if formData and formData.attachments === option %}checked{% endif %}>
+                  <input class="govuk-radios__input" 
+                         id="attachments-{{ option }}" 
+                         name="attachments" 
+                         type="radio" 
+                         value="{{ option }}" 
+                         {% if formData and formData.attachments %}
+                           {% if formData.attachments == option %}
+                             checked
+                           {% endif %}
+                         {% endif %}>
                   <label class="govuk-label govuk-radios__label" for="attachments-{{ option }}">
                     {{ option }}
                   </label>
@@ -255,20 +312,20 @@
           <textarea class="govuk-textarea" id="additionalNotes" name="additionalNotes" rows="3">{{ formData.additionalNotes if formData else '' }}</textarea>
         </div>
         
-        <div class="govuk-form-group {% if error and not formData.declaration %}govuk-form-group--error{% endif %}">
-          <div class="govuk-checkboxes">
+        <div class="govuk-form-group {% if errors.declaration %}govuk-form-group--error{% endif %}">
+          {% if errors.declaration %}
+            <p id="declaration-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ errors.declaration }}
+            </p>
+          {% endif %}
+          <div class="govuk-checkboxes" data-module="govuk-checkboxes">
             <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="declaration" name="declaration" type="checkbox" value="true" {% if formData and formData.declaration %}checked{% endif %}>
+              <input class="govuk-checkboxes__input" id="declaration" name="declaration" type="checkbox" value="true" {% if formData and formData.declaration %}checked{% endif %} aria-describedby="{% if errors.declaration %}declaration-error{% endif %}">
               <label class="govuk-label govuk-checkboxes__label" for="declaration">
                 I confirm that the information provided is accurate and complete *
               </label>
             </div>
           </div>
-          {% if error and not formData.declaration %}
-            <p id="declaration-error" class="govuk-error-message">
-              <span class="govuk-visually-hidden">Error:</span> You must confirm that the information is accurate
-            </p>
-          {% endif %}
         </div>
         
         <button type="submit" class="govuk-button" data-module="govuk-button">

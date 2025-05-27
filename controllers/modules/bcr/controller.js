@@ -249,11 +249,15 @@ exports.newSubmissionForm = async (req, res) => {
     // Define submission source options
     const submissionSources = ['Internal', 'External', 'Other'];
     
+    // Define attachments options
+    const attachmentsOptions = ['Yes', 'No'];
+    
     res.render('bcr-submission/new', {
       title: 'New BCR Submission',
       impactAreas: mappedImpactAreas,
       urgencyLevels: mappedUrgencyLevels,
       submissionSources: submissionSources,
+      attachmentsOptions: attachmentsOptions,
       csrfToken: req.csrfToken ? req.csrfToken() : '',
       user: req.user
     });
@@ -276,82 +280,216 @@ exports.createSubmission = async (req, res) => {
     // Initialize errors object
     const errors = {};
     
+    // Add detailed logging for debugging
+    console.log('============= BCR SUBMISSION START =============');
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('User:', req.user);
+
+    // Special handling for impactAreas before validation
+    if (Array.isArray(req.body.impactAreas)) {
+      // Filter out empty values from the array
+      req.body.impactAreas = req.body.impactAreas.filter(area => area !== '');
+      console.log('Filtered impactAreas array:', req.body.impactAreas);
+    }
+
+    // Required fields validation
+    const requiredFields = [
+      { field: 'fullName', message: 'Enter your full name' },
+      { field: 'emailAddress', message: 'Enter your email address' },
+      { field: 'submissionSource', message: 'Select a submission source' },
+      { field: 'briefDescription', message: 'Enter a brief description' },
+      { field: 'justification', message: 'Enter a justification' },
+      { field: 'urgencyLevel', message: 'Select an urgency level' },
+      { field: 'impactAreas', message: 'Select at least one impacted area' },
+      { field: 'attachments', message: 'Select whether you will be providing attachments' },
+      { field: 'declaration', message: 'You must confirm that the information is accurate' }
+    ];
+
+    // Check each required field
+    requiredFields.forEach(({ field, message }) => {
+      if (field === 'impactAreas') {
+        // Special validation for impactAreas
+        if (!req.body.impactAreas || (Array.isArray(req.body.impactAreas) && req.body.impactAreas.length === 0)) {
+          errors[field] = message;
+          console.log('Validation failed for impactAreas');
+        }
+      } else if (!req.body[field]) {
+        errors[field] = message;
+      }
+    });
+
+    // Email format validation
+    if (req.body.emailAddress && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(req.body.emailAddress)) {
+      errors.emailAddress = 'Enter a valid email address';
+    }
+
     // Validate that otherUrgencyDescription is provided when 'Other' is selected
     if (req.body.urgencyLevel === 'Other' && !req.body.otherUrgencyDescription) {
       errors.otherUrgencyDescription = 'Please specify the urgency level when selecting "Other"';
     }
-    
+
     // Validate that organisation is provided when submission source is 'Other'
     if (req.body.submissionSource === 'Other' && !req.body.organisation) {
       errors.organisation = 'Please specify the organisation when selecting "Other" as submission source';
     }
-    
+
+    // Get data needed for rendering the form
+    const impactAreas = await bcrModel.getAllImpactAreas();
+    const urgencyLevels = await bcrModel.getAllUrgencyLevels();
+    const submissionSources = ['Internal', 'External', 'Other'];
+    const attachmentsOptions = ['Yes', 'No'];
+
+    // Map impact areas to the format expected by the form
+    const mappedImpactAreas = impactAreas.map(area => {
+      // Use the name from the database, or extract it from the description if not available
+      let areaName = area.name;
+      if (!areaName) {
+        // If we have a description that matches one of our known areas, use that name
+        const descriptions = {
+          'Changes to databases, schema design, internal data handling, or system logic.': 'Backend',
+          'Updates to UI components, form elements, filters, labels, or layout.': 'Frontend',
+          'Creation, modification, or removal of API endpoints or request/response formats.': 'API',
+          'Changes to data import/export templates, field order, column definitions.': 'CSV',
+          'Additions, updates, or removals of reference data values (e.g., dropdown options).': 'Reference Data',
+          'Updates to internal guidance, user manuals, technical specs, or public-facing help.': 'Documentation & Guidance',
+          'Changes required due to external policy or legal/regulatory compliance updates.': 'Policy',
+          'Modifications impacting funding calculations, eligibility, or reporting models.': 'Funding'
+        };
+        areaName = descriptions[area.value] || 'Unknown Area';
+      }
+
+      return {
+        id: area._id,
+        name: areaName,
+        description: area.value || ''
+      };
+    });
+
+    // Map urgency levels to the format expected by the form
+    const mappedUrgencyLevels = urgencyLevels.map(level => {
+      const name = level.name || '';
+      const description = level.description || '';
+      const color = level.color || 'grey';
+
+      return {
+        name: name,
+        value: name,
+        description: description,
+        color: color
+      };
+    });
+
     // If there are validation errors, re-render the form
     if (Object.keys(errors).length > 0) {
-      const impactAreas = await bcrModel.getAllImpactAreas();
-      const urgencyLevels = await bcrModel.getAllUrgencyLevels();
-      const submissionSources = ['Internal', 'External', 'Other'];
-      
+      console.log('Validation errors found:', errors);
       return res.status(400).render('bcr-submission/new', {
         title: 'New BCR Submission',
-        impactAreas: impactAreas.map(area => ({
-          name: area.name || '',
-          value: area.name || '',
-          description: area.value || ''
-        })),
-        urgencyLevels: urgencyLevels.map(level => ({
-          name: level.name || '',
-          value: level.name || '',
-          description: level.description || '',
-          color: level.color || 'grey'
-        })),
+        impactAreas: mappedImpactAreas,
+        urgencyLevels: mappedUrgencyLevels,
         submissionSources: submissionSources,
+        attachmentsOptions: attachmentsOptions,
         formData: req.body,
         errors: errors,
+        errorSummary: 'There is a problem with your submission',
         csrfToken: req.csrfToken ? req.csrfToken() : '',
         user: req.user
       });
     }
+
+    // Process form data for submission
+    // Create a clean copy of the form data, excluding the CSRF token
+    let submissionData = {};
     
-    const submission = await bcrModel.createSubmission({
-      ...req.body,
-      submittedById: req.user ? req.user.id : null
+    // Copy all fields except _csrf
+    Object.keys(req.body).forEach(key => {
+      if (key !== '_csrf') {
+        submissionData[key] = req.body[key];
+      }
     });
     
-    // Fix the redirect URL to match the defined route
-    res.redirect(`/bcr/submissions/${submission._id}`);
-  } catch (error) {
-    console.error('Error in create submission controller:', error);
+    // Convert declaration checkbox value to boolean
+    if (submissionData.declaration === 'true') {
+      submissionData.declaration = true;
+    }
     
-    // Get impact areas and urgency levels for re-rendering the form
-    const impactAreas = await bcrModel.getAllImpactAreas();
-    const urgencyLevels = await bcrModel.getAllUrgencyLevels();
-    const submissionSources = ['Internal', 'External', 'Other'];
+    // Log the cleaned submission data
+    console.log('Cleaned submission data:', JSON.stringify(submissionData, null, 2));
     
-    res.status(500).render('bcr-submission/new', {
-      title: 'New BCR Submission',
-      impactAreas: impactAreas.map(area => ({
-        name: area.name || '',
-        value: area.name || '',
-        description: area.value || ''
-      })),
-      urgencyLevels: urgencyLevels.map(level => ({
-        name: level.name || '',
-        value: level.name || '',
-        description: level.description || '',
-        color: level.color || 'grey'
-      })),
-      submissionSources: submissionSources,
-      formData: req.body,
-      error: 'Failed to create submission',
-      csrfToken: req.csrfToken ? req.csrfToken() : '',
+    // The Submission model will handle the conversion of impactAreas to proper format
+    // and the submittedById field is optional, so we don't need to set it for unauthenticated users
+
+    console.log('Final submission data:', JSON.stringify(submissionData, null, 2));
+
+    // Create the submission
+    const submission = await bcrModel.createSubmission(submissionData);
+    console.log('Submission created successfully:', submission._id);
+
+    // Render the confirmation page
+    return res.render('bcr-submission/confirmation', {
+      title: 'Submission Confirmation',
+      submissionCode: submission.submissionCode,
+      submissionId: submission._id,
+      submissionLink: `${req.protocol}://${req.get('host')}/bcr/submissions/${submission._id}`,
       user: req.user
     });
+  } catch (error) {
+    console.error('============= BCR SUBMISSION ERROR =============');
+    console.error('Error in create submission controller:', error);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Request body:', JSON.stringify(req.body, null, 2));
+
+    try {
+      // Get data needed for rendering the form
+      const impactAreas = await bcrModel.getAllImpactAreas();
+      const urgencyLevels = await bcrModel.getAllUrgencyLevels();
+      const submissionSources = ['Internal', 'External', 'Other'];
+      const attachmentsOptions = ['Yes', 'No'];
+      
+      // Map impact areas to the format expected by the form
+      const mappedImpactAreas = impactAreas.map(area => {
+        let areaName = area.name || '';
+        return {
+          id: area._id,
+          name: areaName,
+          description: area.value || ''
+        };
+      });
+      
+      // Map urgency levels to the format expected by the form
+      const mappedUrgencyLevels = urgencyLevels.map(level => {
+        return {
+          name: level.name || '',
+          value: level.name || '',
+          description: level.description || '',
+          color: level.color || 'grey'
+        };
+      });
+      
+      // Render the form with an error message
+      return res.status(500).render('bcr-submission/new', {
+        title: 'New BCR Submission',
+        impactAreas: mappedImpactAreas,
+        urgencyLevels: mappedUrgencyLevels,
+        submissionSources: submissionSources,
+        attachmentsOptions: attachmentsOptions,
+        formData: req.body,
+        errors: { general: 'An error occurred while processing your submission. Please try again.' },
+        errorSummary: 'Failed to create submission',
+        csrfToken: req.csrfToken ? req.csrfToken() : '',
+        user: req.user
+      });
+    } catch (renderError) {
+      // If we can't even render the form with an error, send a basic error response
+      console.error('Error rendering error page:', renderError);
+      return res.status(500).send('An error occurred while processing your submission. Please try again later.');
+    }
   }
 };
 
 /**
- * List all BCR submissions
+ * List all submissions (not yet approved as BCRs)
  */
 exports.listSubmissions = async (req, res) => {
   try {
@@ -370,9 +508,15 @@ exports.listSubmissions = async (req, res) => {
           }, 8000);
         });
         
+        // Modify query to exclude approved submissions with BCR numbers
+        const submissionsQuery = { ...req.query };
+        if (!submissionsQuery.includeApproved) {
+          submissionsQuery.excludeApproved = true;
+        }
+        
         // Race the query against the timeout
         submissions = await Promise.race([
-          bcrModel.getAllSubmissions(req.query),
+          bcrModel.getAllSubmissions(submissionsQuery),
           timeoutPromise
         ]);
       } catch (queryError) {
@@ -390,9 +534,36 @@ exports.listSubmissions = async (req, res) => {
       // Get status tag for display
       const statusTag = getSubmissionStatusTag(submission);
       
+      // Extract phase information if available
+      let currentPhase = 'N/A';
+      let workflowStatus = statusTag.text;
+      let workflowStatusClass = statusTag.class;
+      
+      if (submission.bcrId && submission.bcrId.currentPhaseId) {
+        // If we have a BCR with phase info, use that
+        currentPhase = submission.bcrId.currentPhaseId.name || 'Phase 1';
+        
+        // If we have status info from the BCR, use that
+        if (submission.bcrId.status) {
+          workflowStatus = submission.bcrId.status;
+        }
+        
+        // If we have a status class from the BCR, use that
+        if (submission.bcrId.currentStatusId && submission.bcrId.currentStatusId.color) {
+          workflowStatusClass = `govuk-tag govuk-tag--${submission.bcrId.currentStatusId.color}`;
+        }
+      } else if (submission.status === 'Approved' && submission.bcrNumber) {
+        // Default for approved submissions with BCR numbers but no phase info
+        currentPhase = 'Phase 1: Complete and Submit BCR form';
+        workflowStatus = 'New Submission';
+        workflowStatusClass = 'govuk-tag'; // Default tag style for Phase 1
+      }
+      
       return {
         id: submission._id || submission.id,
         submissionCode: submission.submissionCode || 'N/A',
+        bcrNumber: submission.bcrNumber || 'N/A',
+        currentPhase: currentPhase,
         briefDescription: submission.briefDescription || 'No description provided',
         fullName: submission.fullName || 'Unknown',
         emailAddress: submission.emailAddress || 'No email provided',
@@ -400,8 +571,8 @@ exports.listSubmissions = async (req, res) => {
         organisation: submission.organisation || 'Not specified',
         urgencyLevel: submission.urgencyLevel || 'Not specified',
         impactAreas: Array.isArray(submission.impactAreas) ? submission.impactAreas.join(', ') : 'None',
-        displayStatus: statusTag.text,
-        statusClass: statusTag.class,
+        displayStatus: workflowStatus,
+        statusClass: workflowStatusClass,
         createdAt: submission.createdAt ? 
           new Date(submission.createdAt).toLocaleDateString('en-GB', { 
             day: 'numeric', 
@@ -424,7 +595,7 @@ exports.listSubmissions = async (req, res) => {
     });
     
     res.render('modules/bcr/submissions/index', {
-      title: 'BCR Submissions',
+      title: 'Submissions',
       submissions: formattedSubmissions,
       filters: req.query,
       connectionIssue: !isDbConnected,
@@ -435,7 +606,7 @@ exports.listSubmissions = async (req, res) => {
     console.error('Error in list submissions controller:', error);
     // Instead of showing an error page, render the submissions page with a warning
     res.render('modules/bcr/submissions/index', {
-      title: 'BCR Submissions',
+      title: 'Submissions',
       submissions: [],
       filters: req.query,
       connectionIssue: true,
@@ -445,6 +616,223 @@ exports.listSubmissions = async (req, res) => {
     });
   }
 };
+
+/**
+ * List all approved Business Change Requests (post-approval)
+ */
+exports.listApprovedBcrs = async (req, res) => {
+  try {
+    // Check for error message in query parameters
+    const errorMessage = req.query.error;
+    
+    // Check MongoDB connection state
+    const isDbConnected = mongoose.connection.readyState === 1;
+    let timedOut = false;
+    let bcrs = [];
+    
+    if (isDbConnected) {
+      try {
+        // Set a timeout for this operation to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => {
+            timedOut = true;
+            reject(new Error('Timeout fetching BCRs'));
+          }, 8000);
+        });
+        
+        // Query to only get approved submissions with BCR numbers
+        const bcrQuery = { 
+          ...req.query,
+          status: 'Approved',
+          hasBcrNumber: true 
+        };
+        
+        // Race the query against the timeout
+        bcrs = await Promise.race([
+          bcrModel.getAllSubmissions(bcrQuery),
+          timeoutPromise
+        ]);
+      } catch (queryError) {
+        console.error('Error fetching BCRs:', queryError);
+        // Don't rethrow, just continue with empty bcrs
+        bcrs = [];
+      }
+    }
+    
+    // If we got no BCRs, ensure we have an empty array
+    const bcrsToDisplay = Array.isArray(bcrs) ? bcrs : [];
+    
+    // Format BCRs for display
+    const formattedBcrs = bcrsToDisplay.map(bcr => {
+      // Get status tag for display
+      let workflowStatus = 'New Submission';
+      let workflowStatusClass = 'govuk-tag';
+      let currentPhase = 'Phase 1: Complete and Submit BCR form';
+      
+      // Extract phase information if available
+      if (bcr.bcrId && bcr.bcrId.currentPhaseId) {
+        // If we have a BCR with phase info, use that
+        currentPhase = bcr.bcrId.currentPhaseId.name || 'Phase 1';
+        
+        // If we have status info from the BCR, use that
+        if (bcr.bcrId.status) {
+          workflowStatus = bcr.bcrId.status;
+        }
+        
+        // If we have a status class from the BCR, use that
+        if (bcr.bcrId.currentStatusId && bcr.bcrId.currentStatusId.color) {
+          workflowStatusClass = `govuk-tag govuk-tag--${bcr.bcrId.currentStatusId.color}`;
+        }
+      }
+      
+      return {
+        id: bcr._id || bcr.id,
+        submissionCode: bcr.submissionCode || 'N/A',
+        bcrNumber: bcr.bcrNumber || 'N/A',
+        currentPhase: currentPhase,
+        briefDescription: bcr.briefDescription || 'No description provided',
+        fullName: bcr.fullName || 'Unknown',
+        emailAddress: bcr.emailAddress || 'No email provided',
+        submissionSource: bcr.submissionSource || 'Unknown',
+        organisation: bcr.organisation || 'Not specified',
+        urgencyLevel: bcr.urgencyLevel || 'Not specified',
+        impactAreas: Array.isArray(bcr.impactAreas) ? bcr.impactAreas.join(', ') : 'None',
+        displayStatus: workflowStatus,
+        statusClass: workflowStatusClass,
+        createdAt: bcr.createdAt ? 
+          new Date(bcr.createdAt).toLocaleDateString('en-GB', { 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+          }) : 'Unknown',
+        updatedAt: bcr.updatedAt ? 
+          new Date(bcr.updatedAt).toLocaleDateString('en-GB', { 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+          }) : 'Unknown',
+        reviewedAt: bcr.reviewedAt ? 
+          new Date(bcr.reviewedAt).toLocaleDateString('en-GB', { 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+          }) : 'Not reviewed'
+      };
+    });
+    
+    res.render('modules/bcr/bcrs/index', {
+      title: 'Business Change Requests',
+      bcrs: formattedBcrs,
+      filters: req.query,
+      connectionIssue: !isDbConnected,
+      timedOut: timedOut,
+      error: errorMessage || null,
+      user: req.user
+    });
+  } catch (error) {
+    console.error('Error in list BCRs controller:', error);
+    // Instead of showing an error page, render the BCRs page with a warning
+    res.render('modules/bcr/bcrs/index', {
+      title: 'Business Change Requests',
+      bcrs: [],
+      filters: req.query,
+      connectionIssue: true,
+      timedOut: true,
+      error: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred while loading Business Change Requests',
+      user: req.user
+    });
+  }
+};
+
+/**
+ * View a specific Business Change Request
+ */
+exports.viewBcr = async (req, res) => {
+  try {
+    const bcrId = req.params.id;
+    
+    // Check if the ID is a valid MongoDB ObjectId
+    if (!bcrId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).render('error', {
+        title: 'Invalid Request',
+        message: 'The provided BCR ID is not valid',
+        error: { status: 400 },
+        user: req.user
+      });
+    }
+    
+    // Find the BCR
+    const bcr = await bcrModel.getBcrById(bcrId);
+    if (!bcr) {
+      // If BCR not found, redirect to the list page with a message
+      return res.redirect('/bcr/business-change-requests?error=Business+Change+Request+not+found');
+    }
+    
+    // Get the submission associated with this BCR
+    let submission = null;
+    if (bcr.submissionId) {
+      submission = await bcrModel.getSubmissionById(bcr.submissionId);
+    }
+    
+    // Create phase and status objects from the BCR data
+    // This is a temporary solution until the BCR model is updated to use references
+    const currentPhase = {
+      name: bcr.currentPhase || 'Phase 1',
+      description: 'Current workflow phase'
+    };
+    
+    const currentStatus = {
+      name: bcr.status || 'New',
+      color: getStatusColor(bcr.status)
+    };
+    
+    // Prepare BCR data for the view
+    const bcrData = {
+      ...bcr._doc || bcr,
+      bcrNumber: bcr.bcrCode || bcr.bcrNumber || `BCR-${bcr.recordNumber || 'Unknown'}`,
+      title: submission ? submission.briefDescription : (bcr.title || 'No title available'),
+      description: submission ? submission.justification : (bcr.description || 'No description available')
+    };
+    
+    // Render the BCR view
+    res.render('modules/bcr/bcrs/view', {
+      title: `BCR: ${bcrData.bcrNumber}`,
+      bcr: bcrData,
+      submission,
+      currentPhase,
+      currentStatus,
+      user: req.user
+    });
+  } catch (error) {
+    console.error('Error in viewBcr controller:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An error occurred while loading the Business Change Request',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+};
+
+/**
+ * Helper function to get a color for a status
+ */
+function getStatusColor(status) {
+  switch (status) {
+    case 'Active':
+      return 'blue';
+    case 'In Progress':
+      return 'purple';
+    case 'Completed':
+      return 'green';
+    case 'On Hold':
+      return 'yellow';
+    case 'Cancelled':
+      return 'red';
+    default:
+      return 'grey';
+  }
+}
 
 /**
  * View a specific BCR submission
@@ -494,8 +882,8 @@ exports.viewSubmission = async (req, res) => {
       });
     }
     
-    res.render('bcr/submission/view', {
-      title: `BCR Submission ${submission.id}`,
+    res.render('modules/bcr/submissions/view', {
+      title: `Submission ${submission.submissionCode}`,
       submission,
       statusTag: getSubmissionStatusTag(submission),
       connectionIssue: !isDbConnected,

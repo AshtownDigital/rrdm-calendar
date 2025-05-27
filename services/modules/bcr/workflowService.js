@@ -127,7 +127,7 @@ exports.updateSubmissionStatus = async (submissionId, status, options = {}) => {
     submission.reviewComments = options.comments || '';
     submission.reviewedAt = new Date();
     
-    // If approved, create a BCR
+    // If approved, convert the submission to a Business Change Request
     let bcr = null;
     if (status === 'Approved') {
       // Get the initial phase and status
@@ -144,12 +144,14 @@ exports.updateSubmissionStatus = async (submissionId, status, options = {}) => {
       // Update submission with BCR number
       submission.bcrNumber = bcrNumber;
       
-      // Create the BCR
+      // Create the Business Change Request
       bcr = new Bcr({
         submissionId: submission._id,
         bcrNumber: bcrNumber,
         title: submission.briefDescription,
         description: submission.justification,
+        urgencyLevel: submission.urgencyLevel,
+        impactedAreas: submission.impactAreas || [],
         currentPhaseId: initialPhase._id,
         currentStatusId: initialPhase.inProgressStatusId._id,
         status: 'New Submission',
@@ -157,10 +159,22 @@ exports.updateSubmissionStatus = async (submissionId, status, options = {}) => {
         updatedById: options.reviewerId || submission.submittedById
       });
       
+      // Add an audit log entry for the transition
+      bcr.workflowHistory = [{
+        date: new Date(),
+        action: 'Submission Approved and Converted to BCR',
+        userId: options.reviewerId || submission.submittedById,
+        details: 'Submission was approved and converted to a Business Change Request',
+        phaseId: initialPhase._id,
+        statusId: initialPhase.inProgressStatusId._id
+      }];
+      
       await bcr.save({ session });
       
       // Link the BCR to the submission
       submission.bcrId = bcr._id;
+      
+      console.log(`Submission ${submission._id} approved and converted to BCR ${bcrNumber}`);
     }
     
     await submission.save({ session });

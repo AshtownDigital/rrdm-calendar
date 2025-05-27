@@ -8,8 +8,9 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const { PrismaClient } = require('@prisma/client');
+const mongoose = require('mongoose');
 const readline = require('readline');
+const dotenv = require('dotenv');
 
 // Create readline interface for user input
 const rl = readline.createInterface({
@@ -47,25 +48,31 @@ async function testDatabaseConnection(environment) {
     // Load environment configuration
     const envFile = path.join(ROOT_DIR, `.env.${environment}`);
     if (fs.existsSync(envFile)) {
-      const envConfig = require('dotenv').parse(fs.readFileSync(envFile));
+      const envConfig = dotenv.parse(fs.readFileSync(envFile));
       Object.keys(envConfig).forEach(key => {
         process.env[key] = envConfig[key];
       });
     }
     
-    // Create Prisma client
-    const prisma = new PrismaClient();
+    // Get MongoDB URI from environment
+    const mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+      console.error('❌ MONGODB_URI not found in environment configuration');
+      return false;
+    }
     
     // Test connection
-    console.log(`Testing database connection for ${environment} environment...`);
-    await prisma.$connect();
-    console.log('✅ Database connection successful');
+    console.log(`Testing MongoDB connection for ${environment} environment...`);
+    await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 5000 // 5 second timeout
+    });
+    console.log('✅ MongoDB connection successful');
     
     // Disconnect
-    await prisma.$disconnect();
+    await mongoose.disconnect();
     return true;
   } catch (error) {
-    console.error('❌ Database connection failed:', error.message);
+    console.error('❌ MongoDB connection failed:', error.message);
     return false;
   }
 }

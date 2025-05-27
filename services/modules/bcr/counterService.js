@@ -102,7 +102,7 @@ exports.countTotalSubmissions = async () => {
     
     const count = await Submission.countDocuments({ 
       deleted: { $ne: true } 
-    }).maxTimeMS(5000); // Set a 5-second timeout for this query
+    }); // Remove maxTimeMS as it's not supported in this version
     
     return count;
   } catch (error) {
@@ -135,7 +135,7 @@ exports.countPendingSubmissions = async () => {
       {
         $count: 'pending'
       }
-    ]).maxTimeMS(5000); // Set a 5-second timeout for this query
+    ]); // Remove maxTimeMS as it's not supported in this version
     
     return result.length > 0 ? result[0].pending : 0;
   } catch (error) {
@@ -167,7 +167,7 @@ exports.countApprovedSubmissions = async () => {
       {
         $count: 'approved'
       }
-    ]).maxTimeMS(5000); // Set a 5-second timeout for this query
+    ]); // Remove maxTimeMS as it's not supported in this version
     
     return result.length > 0 ? result[0].approved : 0;
   } catch (error) {
@@ -198,7 +198,7 @@ exports.countRejectedSubmissions = async () => {
       {
         $count: 'rejected'
       }
-    ]).maxTimeMS(5000); // Set a 5-second timeout for this query
+    ]); // Remove maxTimeMS as it's not supported in this version
     
     return result.length > 0 ? result[0].rejected : 0;
   } catch (error) {

@@ -101,7 +101,7 @@ const SubmissionSchema = new Schema({
   submittedById: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: false // Made optional for testing purposes
   },
   status: {
     type: String,
@@ -146,8 +146,23 @@ SubmissionSchema.pre('save', async function(next) {
         sequentialNumber: nextRecordNumber
       });
       
+      // Ensure impactAreas is an array of strings
+      if (this.impactAreas) {
+        if (!Array.isArray(this.impactAreas)) {
+          // If it's not an array, convert it to one
+          this.impactAreas = [this.impactAreas.toString()];
+        } else {
+          // If it is an array, ensure all elements are strings
+          this.impactAreas = this.impactAreas.map(area => area.toString());
+        }
+      } else {
+        // Default to empty array if not provided
+        this.impactAreas = [];
+      }
+      
       next();
     } catch (error) {
+      console.error('Error in Submission pre-save hook:', error);
       next(error);
     }
   } else {

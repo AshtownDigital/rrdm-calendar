@@ -41,58 +41,94 @@
     {% endif %}
 
     {% if submissions.length > 0 %}
-      <table class="govuk-table">
-        <caption class="govuk-table__caption govuk-table__caption--m">BCR Submissions</caption>
-        <thead class="govuk-table__head">
-          <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">Submission Code</th>
-            <th scope="col" class="govuk-table__header">Description</th>
-            <th scope="col" class="govuk-table__header">Submitter</th>
-            <th scope="col" class="govuk-table__header">Source</th>
-            <th scope="col" class="govuk-table__header">Urgency</th>
-            <th scope="col" class="govuk-table__header">Submission Status</th>
-            <th scope="col" class="govuk-table__header">Submitted</th>
-            <th scope="col" class="govuk-table__header">Reviewed</th>
-            <th scope="col" class="govuk-table__header">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="govuk-table__body">
-          {% for submission in submissions %}
+      {% if filters.status === 'approved' and filters.hasBcrNumber === 'true' %}
+        <table class="govuk-table">
+          <caption class="govuk-table__caption govuk-table__caption--m">Business Change Request</caption>
+          <thead class="govuk-table__head">
             <tr class="govuk-table__row">
-              <td class="govuk-table__cell">{{ submission.submissionCode }}</td>
-              <td class="govuk-table__cell">{{ submission.briefDescription | truncate(30) }}</td>
-              <td class="govuk-table__cell">{{ submission.fullName }}</td>
-              <td class="govuk-table__cell">{{ submission.submissionSource }}</td>
-              <td class="govuk-table__cell">
-                {% if submission.urgencyLevel === 'Critical' %}
-                  <strong class="govuk-tag govuk-tag--red">{{ submission.urgencyLevel }}</strong>
-                {% elif submission.urgencyLevel === 'High' %}
-                  <strong class="govuk-tag govuk-tag--orange">{{ submission.urgencyLevel }}</strong>
-                {% elif submission.urgencyLevel === 'Medium' %}
-                  <strong class="govuk-tag govuk-tag--yellow">{{ submission.urgencyLevel }}</strong>
-                {% elif submission.urgencyLevel === 'Low' %}
-                  <strong class="govuk-tag govuk-tag--green">{{ submission.urgencyLevel }}</strong>
-                {% elif submission.urgencyLevel === 'Planning' %}
-                  <strong class="govuk-tag govuk-tag--blue">{{ submission.urgencyLevel }}</strong>
-                {% else %}
-                  <strong class="govuk-tag govuk-tag--grey">{{ submission.urgencyLevel }}</strong>
-                {% endif %}
-              </td>
-              <td class="govuk-table__cell">
-                <strong class="{{ submission.statusClass }}">{{ submission.displayStatus }}</strong>
-              </td>
-              <td class="govuk-table__cell">{{ submission.createdAt }}</td>
-              <td class="govuk-table__cell">{{ submission.reviewedAt }}</td>
-              <td class="govuk-table__cell">
-                <a href="/bcr/submissions/{{ submission.id }}" class="govuk-link">View</a>
-                {% if submission.status === 'Pending' %}
-                  <a href="/bcr/submissions/{{ submission.id }}/review" class="govuk-link govuk-!-margin-left-2">Review</a>
-                {% endif %}
-              </td>
+              <th scope="col" class="govuk-table__header">BCR Number</th>
+              <th scope="col" class="govuk-table__header">Submission Code</th>
+              <th scope="col" class="govuk-table__header">Title</th>
+              <th scope="col" class="govuk-table__header">Current Workflow Phase</th>
+              <th scope="col" class="govuk-table__header">Workflow Status</th>
+              <th scope="col" class="govuk-table__header">Created</th>
+              <th scope="col" class="govuk-table__header">Actions</th>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for submission in submissions %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">{{ submission.bcrNumber }}</td>
+                <td class="govuk-table__cell">{{ submission.submissionCode }}</td>
+                <td class="govuk-table__cell">{{ submission.briefDescription | truncate(30) }}</td>
+                <td class="govuk-table__cell">
+                  <strong class="govuk-tag govuk-tag--blue">{{ submission.currentPhase }}</strong>
+                </td>
+                <td class="govuk-table__cell">
+                  <strong class="{{ submission.statusClass }}">{{ submission.displayStatus }}</strong>
+                </td>
+                <td class="govuk-table__cell">{{ submission.createdAt }}</td>
+                <td class="govuk-table__cell">
+                  <a href="/bcr/submissions/{{ submission.id }}" class="govuk-link">View</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <table class="govuk-table">
+          <caption class="govuk-table__caption govuk-table__caption--m">Business Change Request</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">Submission Code</th>
+              <th scope="col" class="govuk-table__header">Description</th>
+              <th scope="col" class="govuk-table__header">Submitter</th>
+              <th scope="col" class="govuk-table__header">Source</th>
+              <th scope="col" class="govuk-table__header">Urgency</th>
+              <th scope="col" class="govuk-table__header">Submission Status</th>
+              <th scope="col" class="govuk-table__header">Submitted</th>
+              <th scope="col" class="govuk-table__header">Reviewed</th>
+              <th scope="col" class="govuk-table__header">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for submission in submissions %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">{{ submission.submissionCode }}</td>
+                <td class="govuk-table__cell">{{ submission.briefDescription | truncate(30) }}</td>
+                <td class="govuk-table__cell">{{ submission.fullName }}</td>
+                <td class="govuk-table__cell">{{ submission.submissionSource }}</td>
+                <td class="govuk-table__cell">
+                  {% if submission.urgencyLevel === 'Critical' %}
+                    <strong class="govuk-tag govuk-tag--red">{{ submission.urgencyLevel }}</strong>
+                  {% elif submission.urgencyLevel === 'High' %}
+                    <strong class="govuk-tag govuk-tag--orange">{{ submission.urgencyLevel }}</strong>
+                  {% elif submission.urgencyLevel === 'Medium' %}
+                    <strong class="govuk-tag govuk-tag--yellow">{{ submission.urgencyLevel }}</strong>
+                  {% elif submission.urgencyLevel === 'Low' %}
+                    <strong class="govuk-tag govuk-tag--green">{{ submission.urgencyLevel }}</strong>
+                  {% elif submission.urgencyLevel === 'Planning' %}
+                    <strong class="govuk-tag govuk-tag--blue">{{ submission.urgencyLevel }}</strong>
+                  {% else %}
+                    <strong class="govuk-tag govuk-tag--grey">{{ submission.urgencyLevel }}</strong>
+                  {% endif %}
+                </td>
+                <td class="govuk-table__cell">
+                  <strong class="{{ submission.statusClass }}">{{ submission.displayStatus }}</strong>
+                </td>
+                <td class="govuk-table__cell">{{ submission.createdAt }}</td>
+                <td class="govuk-table__cell">{{ submission.reviewedAt }}</td>
+                <td class="govuk-table__cell">
+                  <a href="/bcr/submissions/{{ submission.id }}" class="govuk-link">View</a>
+                  {% if submission.status === 'Pending' %}
+                    <a href="/bcr/submissions/{{ submission.id }}/review" class="govuk-link govuk-!-margin-left-2">Review</a>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
     {% else %}
       <div class="govuk-inset-text">
         No BCR submissions found.

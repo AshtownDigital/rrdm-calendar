@@ -7,6 +7,7 @@ const app = express();
 const path = require('path');
 const nunjucks = require('nunjucks');
 const session = require('express-session');
+const cookieParser = require('cookie-parser');
 const { connect, mongoose } = require('./config/database.mongo');
 
 // === Core Module Routes ===
@@ -57,12 +58,19 @@ connectWithRetry();
 // Configure session middleware with MongoDB store
 const MongoStore = require('connect-mongo');
 
+// Initialize cookie-parser middleware (required for CSRF)
+app.use(cookieParser(process.env.SESSION_SECRET || 'your-secret-key'));
+
+// Ensure we have a valid MongoDB URI for the session store
+const mongoUrl = process.env.MONGODB_URI || 'mongodb://localhost:27017/rrdm';
+console.log(`Setting up session store with MongoDB at ${mongoUrl.replace(/mongodb\+srv:\/\/([^:]+):[^@]+@/, 'mongodb+srv://$1:***@')}`);
+
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI,
+    mongoUrl: mongoUrl,
     ttl: 24 * 60 * 60, // Session TTL (1 day)
     autoRemove: 'native', // Use MongoDB's TTL index
     touchAfter: 24 * 3600, // Only update session every 24 hours unless data changes
@@ -70,7 +78,7 @@ app.use(session({
       secret: process.env.SESSION_SECRET || 'your-secret-key'
     },
     mongoOptions: {
-      serverSelectionTimeoutMS: 5000
+      serverSelectionTimeoutMS: 10000 // Increased timeout for staging/production environments
     }
   }),
   cookie: {
@@ -508,6 +516,16 @@ app.get('/bcr/impact-areas/edit-confirmation', (req, res) => {
 // Redirect BCR submission form to the new modular path
 app.get('/bcr-submission/new', (req, res) => {
   res.redirect('/bcr/submit');
+});
+
+// Add redirect for the main bcr-submission URL
+app.get('/bcr-submission', (req, res) => {
+  res.redirect('/bcr/submit');
+});
+
+// Handle POST requests to bcr-submission
+app.post('/bcr-submission', (req, res) => {
+  res.redirect(307, '/bcr/submit');
 });
 
 // Redirect legacy BCR delete impact area confirmation

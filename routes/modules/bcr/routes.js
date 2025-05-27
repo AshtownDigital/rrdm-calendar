@@ -21,7 +21,7 @@ router.get('/dashboard', bcrController.dashboard);
 // === Workflow Management Routes ===
 router.get('/workflow', bcrController.showWorkflow);
 
-// === BCR Submission Routes ===
+// === Submission Routes (Pre-BCR) ===
 router.get('/submit', bcrController.newSubmissionForm);
 router.post('/submit', csrfProtection, bcrController.createSubmission);
 router.get('/submissions', bcrController.listSubmissions);
@@ -40,8 +40,10 @@ router.post('/impact-areas/:id/edit', csrfProtection, bcrController.updateImpact
 router.get('/impact-areas/:id/delete', csrfProtection, bcrController.deleteImpactAreaConfirm);
 router.post('/impact-areas/:id/delete', csrfProtection, bcrController.deleteImpactArea);
 
-// === BCR Management Routes ===
-router.get('/:id', bcrController.viewSubmission);
+// === Business Change Request Routes (Post-Approval) ===
+router.get('/business-change-requests', bcrController.listApprovedBcrs); // New route for listing only BCRs
+router.get('/business-change-requests/:id', bcrController.viewBcr); // New route for viewing a specific BCR
+router.get('/:id', bcrController.viewSubmission); // Keep for backward compatibility
 router.get('/:id/update', bcrController.viewSubmission);
 router.post('/:id/update', csrfProtection, bcrController.viewSubmission);
 

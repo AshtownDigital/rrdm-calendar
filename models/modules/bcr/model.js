@@ -103,13 +103,27 @@ exports.getAllSubmissions = async (filters = {}) => {
     const query = { deletedAt: { $eq: null } };
     
     // If hasBcrNumber is true, only include submissions with a BCR number
-    if (filters.hasBcrNumber) {
+    if (filters.hasBcrNumber === true || filters.hasBcrNumber === 'true') {
       query.bcrNumber = { $exists: true, $ne: null };
+      console.log('Filtering for submissions with BCR numbers');
+    }
+    
+    // If excludeApproved is true, exclude submissions that have been approved and have BCR numbers
+    // This is used to separate submissions from BCRs
+    if (filters.excludeApproved === true || filters.excludeApproved === 'true') {
+      query.$or = [
+        { status: { $ne: 'Approved' } },
+        { bcrNumber: { $exists: false } },
+        { bcrNumber: null }
+      ];
+      console.log('Excluding approved submissions with BCR numbers');
     }
     
     // Apply filters if provided
     if (filters.status) {
-      query.status = filters.status;
+      // Handle case-insensitive status matching
+      query.status = new RegExp('^' + filters.status + '$', 'i');
+      console.log(`Filtering for status: ${filters.status}`);
     }
     
     if (filters.urgencyLevel) {
