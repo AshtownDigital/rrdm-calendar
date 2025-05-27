@@ -29,8 +29,24 @@ async function connect() {
   isConnecting = true;
   connectionPromise = new Promise(async (resolve, reject) => {
     try {
-      const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/rrdm';
-      console.log(`Connecting to MongoDB at ${uri.substring(0, uri.indexOf('://') + 3)}***`);
+      // Determine the appropriate MongoDB URI based on environment
+      let uri = process.env.MONGODB_URI;
+      
+      // For Heroku or production environments, ensure we're using the correct MongoDB URI
+      if (process.env.NODE_ENV === 'production' && !uri) {
+        console.error('ERROR: MONGODB_URI environment variable is not set in production!');
+        // Fallback to a dummy URI that will fail gracefully
+        uri = 'mongodb://atlas-placeholder-uri/rrdm';
+      } else if (!uri) {
+        // For local development, use localhost
+        uri = 'mongodb://localhost:27017/rrdm';
+      }
+      
+      // Mask sensitive parts of the connection string for logging
+      const maskedUri = uri.includes('@') 
+        ? `${uri.substring(0, uri.indexOf('://') + 3)}***` 
+        : uri;
+      console.log(`Connecting to MongoDB at ${maskedUri}`);
       
       // Configure connection options with better defaults for stability
       const options = {

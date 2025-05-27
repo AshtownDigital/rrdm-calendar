@@ -61,9 +61,22 @@ const MongoStore = require('connect-mongo');
 // Initialize cookie-parser middleware (required for CSRF)
 app.use(cookieParser(process.env.SESSION_SECRET || 'your-secret-key'));
 
-// Ensure we have a valid MongoDB URI for the session store
-const mongoUrl = process.env.MONGODB_URI || 'mongodb://localhost:27017/rrdm';
-console.log(`Setting up session store with MongoDB at ${mongoUrl.replace(/mongodb\+srv:\/\/([^:]+):[^@]+@/, 'mongodb+srv://$1:***@')}`);
+// Determine the appropriate MongoDB URI based on environment
+let mongoUrl = process.env.MONGODB_URI;
+
+// For Heroku, ensure we're using the correct MongoDB URI
+if (process.env.NODE_ENV === 'production' && !mongoUrl) {
+  console.error('ERROR: MONGODB_URI environment variable is not set in production!');
+  // Fallback to a dummy URI that will fail gracefully
+  mongoUrl = 'mongodb://atlas-placeholder-uri/rrdm';
+} else if (!mongoUrl) {
+  // For local development, use localhost
+  mongoUrl = 'mongodb://localhost:27017/rrdm';
+}
+
+// Mask sensitive parts of the connection string for logging
+const maskedUrl = mongoUrl.replace(/mongodb\+srv:\/\/([^:]+):[^@]+@/, 'mongodb+srv://$1:***@');
+console.log(`Setting up session store with MongoDB at ${maskedUrl}`);
 
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
