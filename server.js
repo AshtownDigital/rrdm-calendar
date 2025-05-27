@@ -7,6 +7,7 @@ const app = express();
 const path = require('path');
 const nunjucks = require('nunjucks');
 const session = require('express-session');
+const cookieParser = require('cookie-parser');
 const { connect, mongoose } = require('./config/database.mongo');
 
 // === Core Module Routes ===
@@ -15,6 +16,9 @@ const { connect, mongoose } = require('./config/database.mongo');
 
 // BCR module routes - preserve all BCR functionality including workflows, urgency levels, and impact areas
 const bcrRouter = require('./routes/modules/bcr/routes'); 
+
+// BCR controllers
+const bcrController = require('./controllers/modules/bcr/controller');
 
 // Reference Data module routes
 const refDataRouter = require('./routes/modules/reference-data/routes');
@@ -36,26 +40,37 @@ const fundingRouter = require('./routes/modules/funding/routes');
 // Load environment variables
 require('dotenv').config();
 
-// Connect to MongoDB
-if (!process.env.VERCEL) {
-  // In non-serverless environments, connect immediately
-  connect().catch(error => {
+// Connect to MongoDB with automatic reconnection
+const connectWithRetry = async () => {
+  try {
+    await connect();
+    console.log('MongoDB connected successfully');
+  } catch (error) {
     console.error('Failed to connect to MongoDB:', error);
-  });
-} else {
-  // In serverless environments, connection will be handled per-request
-  console.log('Serverless environment detected, deferring MongoDB connection');
-}
+    console.log('Retrying connection in 5 seconds...');
+    setTimeout(connectWithRetry, 5000);
+  }
+};
+
+// Initial connection attempt
+connectWithRetry();
 
 // Configure session middleware with MongoDB store
 const MongoStore = require('connect-mongo');
+
+// Initialize cookie-parser middleware (required for CSRF)
+app.use(cookieParser(process.env.SESSION_SECRET || 'your-secret-key'));
+
+// Ensure we have a valid MongoDB URI for the session store
+const mongoUrl = process.env.MONGODB_URI || 'mongodb://localhost:27017/rrdm';
+console.log(`Setting up session store with MongoDB at ${mongoUrl.replace(/mongodb\+srv:\/\/([^:]+):[^@]+@/, 'mongodb+srv://$1:***@')}`);
 
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI,
+    mongoUrl: mongoUrl,
     ttl: 24 * 60 * 60, // Session TTL (1 day)
     autoRemove: 'native', // Use MongoDB's TTL index
     touchAfter: 24 * 3600, // Only update session every 24 hours unless data changes
@@ -63,7 +78,7 @@ app.use(session({
       secret: process.env.SESSION_SECRET || 'your-secret-key'
     },
     mongoOptions: {
-      serverSelectionTimeoutMS: process.env.VERCEL === '1' ? 3000 : 5000
+      serverSelectionTimeoutMS: 10000 // Increased timeout for staging/production environments
     }
   }),
   cookie: {
@@ -378,9 +393,99 @@ app.get('/bcr/workflow', (req, res) => {
   res.redirect('/bcr/workflow/phases');
 });
 
-// Redirect legacy BCR submissions list
+// BCR submissions routes
 app.get('/bcr/submissions', (req, res) => {
-  res.redirect('/bcr/submissions/list');
+  // Directly render the submissions page with our test data
+  const Submission = require('./models/Submission');
+  
+  // Helper function to get status tag
+  const getSubmissionStatusTag = (submission) => {
+    const status = submission.status || 'Pending';
+    
+    switch (status) {
+      case 'Approved':
+        return { text: 'Approved', class: 'govuk-tag govuk-tag--green' };
+      case 'Rejected':
+        return { text: 'Rejected', class: 'govuk-tag govuk-tag--red' };
+      case 'Paused':
+        return { text: 'Paused', class: 'govuk-tag govuk-tag--yellow' };
+      case 'Closed':
+        return { text: 'Closed', class: 'govuk-tag govuk-tag--grey' };
+      case 'More Info Required':
+        return { text: 'More Info Required', class: 'govuk-tag govuk-tag--blue' };
+      case 'Pending':
+      default:
+        return { text: 'Pending', class: 'govuk-tag govuk-tag--purple' };
+    }
+  };
+  
+  // Get all submissions
+  Submission.find().sort({ createdAt: -1 })
+    .then(submissions => {
+      // Format submissions for display
+      const formattedSubmissions = submissions.map(submission => {
+        const statusTag = getSubmissionStatusTag(submission);
+        
+        return {
+          id: submission._id || submission.id,
+          submissionCode: submission.submissionCode || 'N/A',
+          briefDescription: submission.briefDescription || 'No description provided',
+          fullName: submission.fullName || 'Unknown',
+          emailAddress: submission.emailAddress || 'No email provided',
+          submissionSource: submission.submissionSource || 'Unknown',
+          organisation: submission.organisation || 'Not specified',
+          urgencyLevel: submission.urgencyLevel || 'Not specified',
+          impactAreas: Array.isArray(submission.impactAreas) ? submission.impactAreas.join(', ') : 'None',
+          displayStatus: statusTag.text,
+          statusClass: statusTag.class,
+          createdAt: submission.createdAt ? 
+            new Date(submission.createdAt).toLocaleDateString('en-GB', { 
+              day: 'numeric', 
+              month: 'long', 
+              year: 'numeric' 
+            }) : 'Unknown',
+          updatedAt: submission.updatedAt ? 
+            new Date(submission.updatedAt).toLocaleDateString('en-GB', { 
+              day: 'numeric', 
+              month: 'long', 
+              year: 'numeric' 
+            }) : 'Unknown',
+          reviewedAt: submission.reviewedAt ? 
+            new Date(submission.reviewedAt).toLocaleDateString('en-GB', { 
+              day: 'numeric', 
+              month: 'long', 
+              year: 'numeric' 
+            }) : 'Not reviewed'
+        };
+      });
+      
+      // Render the submissions page
+      res.render('modules/bcr/submissions/index', {
+        title: 'BCR Submissions',
+        submissions: formattedSubmissions,
+        filters: req.query,
+        connectionIssue: false,
+        timedOut: false,
+        user: req.user
+      });
+    })
+    .catch(error => {
+      console.error('Error loading submissions:', error);
+      res.render('modules/bcr/submissions/index', {
+        title: 'BCR Submissions',
+        submissions: [],
+        filters: req.query,
+        connectionIssue: true,
+        timedOut: false,
+        error: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred while loading submissions',
+        user: req.user
+      });
+    });
+});
+
+// For backward compatibility
+app.get('/bcr/submissions/list', (req, res) => {
+  res.redirect('/bcr/submissions');
 });
 
 // Redirect legacy BCR Impact Areas routes
@@ -411,6 +516,16 @@ app.get('/bcr/impact-areas/edit-confirmation', (req, res) => {
 // Redirect BCR submission form to the new modular path
 app.get('/bcr-submission/new', (req, res) => {
   res.redirect('/bcr/submit');
+});
+
+// Add redirect for the main bcr-submission URL
+app.get('/bcr-submission', (req, res) => {
+  res.redirect('/bcr/submit');
+});
+
+// Handle POST requests to bcr-submission
+app.post('/bcr-submission', (req, res) => {
+  res.redirect(307, '/bcr/submit');
 });
 
 // Redirect legacy BCR delete impact area confirmation
@@ -477,16 +592,13 @@ app.use((err, req, res, next) => {
 });
 
 // === Server startup ===
-const isServerless = process.env.VERCEL === '1';
+console.log('Starting HTTP server');
 
-if (!isServerless) {
-  console.log('Running in standard mode - starting HTTP server');
-  
-  const port = process.env.PORT || 3000;
-  let server;
-  
-  // Function to kill process on a specific port
-  const killPortProcess = async (port) => {
+const port = process.env.PORT || 3000;
+let server;
+
+// Function to kill process on a specific port
+const killPortProcess = async (port) => {
     try {
       // Use different commands based on platform
       let command;
@@ -540,92 +652,6 @@ if (!isServerless) {
       process.exit(1);
     }
   })();
-} else {
-  console.log('Running in serverless mode - no HTTP server started');
-}
 
-// For Vercel serverless functions, we need to export a handler function
-if (isServerless) {
-  console.log('Running in serverless mode - exporting handler function');
-  
-  // Export a request handler function for serverless environments
-  const handler = async (req, res) => {
-    console.log(`[${new Date().toISOString()}] Serverless function invoked: ${req.method} ${req.url}`);
-    
-    try {
-      // Log environment info for debugging
-      console.log('Environment:', {
-        NODE_ENV: process.env.NODE_ENV,
-        VERCEL: process.env.VERCEL,
-        MONGODB_URI: process.env.MONGODB_URI ? '***' : 'Not set'
-      });
-      
-      // Ensure database is connected
-      if (mongoose.connection.readyState !== 1) {
-        console.log('Attempting to connect to MongoDB...');
-        try {
-          await connect();
-          console.log('MongoDB connection established successfully');
-        } catch (dbError) {
-          console.error('Failed to connect to MongoDB:', dbError);
-          // Don't fail the request if we can't connect to MongoDB
-          // The routes will handle the missing connection
-        }
-      }
-      
-      // Add a timeout for the request
-      const requestTimeout = setTimeout(() => {
-        if (!res.headersSent) {
-          console.error('Request timed out');
-          res.status(504).json({ error: 'Gateway Timeout', message: 'Request took too long to process' });
-        }
-      }, 10000); // 10 second timeout
-      
-      try {
-        // Handle the request
-        await new Promise((resolve, reject) => {
-          res.on('finish', resolve);
-          res.on('error', reject);
-          app(req, res, (err) => {
-            if (err) reject(err);
-            else resolve();
-          });
-        });
-      } finally {
-        clearTimeout(requestTimeout);
-      }
-      
-    } catch (error) {
-      console.error('Serverless function error:', {
-        message: error.message,
-        stack: error.stack,
-        code: error.code,
-        name: error.name
-      });
-      
-      // If headers are already sent, we can't send another response
-      if (res.headersSent) {
-        console.error('Headers already sent, could not send error response');
-        return;
-      }
-      
-      // Send error response
-      res.status(500).json({ 
-        error: 'Internal Server Error',
-        message: 'An unexpected error occurred',
-        ...(process.env.NODE_ENV === 'development' ? { 
-          details: error.message,
-          stack: error.stack 
-        } : {})
-      });
-    }
-  };
-  
-  // Export the handler with the app attached for testing
-  module.exports = handler;
-  module.exports.app = app;
-} else {
-  console.log('Running in standard mode - starting HTTP server');
-  // Export the Express app for standard environments
-  module.exports = app;
-}
+// Export the Express app
+module.exports = app;

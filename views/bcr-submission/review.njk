@@ -27,17 +27,17 @@
             Submission Reviewed
           </h1>
           <div class="govuk-panel__body">
-            Review outcome: 
-            {% if submission.reviewOutcome === 'Approved' %}
+            Status: 
+            {% if submission.status === 'Approved' %}
               <strong class="govuk-tag govuk-tag--green">Approved</strong>
-            {% elif submission.reviewOutcome === 'Rejected' %}
+            {% elif submission.status === 'Rejected' %}
               <strong class="govuk-tag govuk-tag--red">Rejected</strong>
-            {% elif submission.reviewOutcome === 'More Info' %}
-              <strong class="govuk-tag govuk-tag--yellow">More Info Requested</strong>
-            {% elif submission.reviewOutcome === 'Rejected & Edit' %}
-              <strong class="govuk-tag govuk-tag--orange">Rejected & Edit</strong>
-            {% elif submission.reviewOutcome === 'Paused' %}
-              <strong class="govuk-tag govuk-tag--blue">Paused</strong>
+            {% elif submission.status === 'More Info Required' %}
+              <strong class="govuk-tag govuk-tag--blue">More Info Required</strong>
+            {% elif submission.status === 'Closed' %}
+              <strong class="govuk-tag govuk-tag--grey">Closed</strong>
+            {% elif submission.status === 'Paused' %}
+              <strong class="govuk-tag govuk-tag--yellow">Paused</strong>
             {% endif %}
           </div>
         </div>
@@ -250,7 +250,7 @@
         <div class="govuk-!-margin-top-6 govuk-!-margin-bottom-6">
           <h2 class="govuk-heading-m">Review Decision</h2>
           <div class="govuk-inset-text">
-            <form action="/bcr-submission/{{ submission.id }}/review-action" method="post" novalidate>
+            <form action="/bcr/submissions/{{ submission._id }}/review" method="post" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               
               <div class="govuk-form-group">
@@ -261,42 +261,14 @@
                     </h3>
                   </legend>
                   <div class="govuk-radios" data-module="govuk-radios">
-                    <div class="govuk-radios__item">
-                      <input class="govuk-radios__input" id="review-outcome-approve" name="reviewOutcome" type="radio" value="approve" required>
-                      <label class="govuk-label govuk-radios__label" for="review-outcome-approve">
-                        Approve
-                      </label>
-                      <div id="review-outcome-approve-hint" class="govuk-hint govuk-radios__hint">
-                        Approve the submission and create a BCR
+                    {% for option in statusOptions %}
+                      <div class="govuk-radios__item">
+                        <input class="govuk-radios__input" id="status-{{ option.value | lower }}" name="status" type="radio" value="{{ option.value }}" required>
+                        <label class="govuk-label govuk-radios__label" for="status-{{ option.value | lower }}">
+                          <strong class="govuk-tag govuk-tag--{{ option.color }}">{{ option.text }}</strong>
+                        </label>
                       </div>
-                    </div>
-                    <div class="govuk-radios__item">
-                      <input class="govuk-radios__input" id="review-outcome-reject" name="reviewOutcome" type="radio" value="reject">
-                      <label class="govuk-label govuk-radios__label" for="review-outcome-reject">
-                        Reject
-                      </label>
-                      <div id="review-outcome-reject-hint" class="govuk-hint govuk-radios__hint">
-                        Reject the submission
-                      </div>
-                    </div>
-                    <div class="govuk-radios__item">
-                      <input class="govuk-radios__input" id="review-outcome-more-info" name="reviewOutcome" type="radio" value="request-more-info">
-                      <label class="govuk-label govuk-radios__label" for="review-outcome-more-info">
-                        Request More Information
-                      </label>
-                      <div id="review-outcome-more-info-hint" class="govuk-hint govuk-radios__hint">
-                        Request additional information from the submitter
-                      </div>
-                    </div>
-                    <div class="govuk-radios__item">
-                      <input class="govuk-radios__input" id="review-outcome-pause" name="reviewOutcome" type="radio" value="pause">
-                      <label class="govuk-label govuk-radios__label" for="review-outcome-pause">
-                        Paused
-                      </label>
-                      <div id="review-outcome-pause-hint" class="govuk-hint govuk-radios__hint">
-                        Pause the review process temporarily
-                      </div>
-                    </div>
+                    {% endfor %}
                   </div>
                 </fieldset>
               </div>

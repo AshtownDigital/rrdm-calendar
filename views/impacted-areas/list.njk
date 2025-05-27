@@ -34,10 +34,10 @@
       {% endif %}
       
       <div class="govuk-button-group">
-        <a href="/impacted-areas/new" class="govuk-button">Add New Area</a>
+        <a href="/bcr/impact-areas/new" class="govuk-button">Add New Area</a>
       </div>
       
-      {% if areas.length === 0 %}
+      {% if impactAreas.length === 0 %}
         <div class="govuk-inset-text">
           <p class="govuk-body">There are no impacted areas defined. Please add some using the button above.</p>
         </div>
@@ -54,7 +54,7 @@
             </tr>
           </thead>
           <tbody class="govuk-table__body">
-            {% for area in areas %}
+            {% for area in impactAreas %}
               <tr class="govuk-table__row">
                 <td class="govuk-table__cell">{{ area.name }}</td>
                 <td class="govuk-table__cell">{{ area.description | truncate(100) }}</td>
@@ -67,9 +67,9 @@
                 </td>
                 <td class="govuk-table__cell">{{ area.bcrCount }}</td>
                 <td class="govuk-table__cell">
-                  <a href="/impacted-areas/{{ area.id }}/edit" class="govuk-link govuk-!-margin-right-3">Edit</a>
-                  {% if area.bcrCount === 0 %}
-                    <a href="/impacted-areas/{{ area.id }}/warning?action=delete" class="govuk-link govuk-link--warning">Delete</a>
+                  <a href="/bcr/impact-areas/{{ area.id }}/edit" class="govuk-link govuk-!-margin-right-3">Edit</a>
+                  {% if area.bcrCount === 0 or true %}
+                    <a href="/bcr/impact-areas/{{ area.id }}/delete" class="govuk-link govuk-link--warning">Delete</a>
                   {% endif %}
                 </td>
               </tr>

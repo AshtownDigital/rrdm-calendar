@@ -12,6 +12,7 @@ const ImpactedArea = require('./ImpactedArea');
 const Funding = require('./Funding');
 const ReferenceData = require('./ReferenceData');
 const AuditLog = require('./AuditLog');
+const UrgencyLevel = require('./UrgencyLevel');
 
 module.exports = {
   User,
@@ -23,5 +24,6 @@ module.exports = {
   ImpactedArea,
   Funding,
   ReferenceData,
-  AuditLog
+  AuditLog,
+  UrgencyLevel
 };

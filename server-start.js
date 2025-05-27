@@ -1,16 +1,19 @@
 /**
  * Server startup script for RRDM application
- * This file handles the startup of the Express server in both
- * standard and serverless environments
+ * This file handles the startup of the Express server
  */
 const app = require('./server');
 const mongoose = require('mongoose');
 
-// Detect if we're running in a serverless environment (Vercel, AWS Lambda)
-const isServerless = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME;
+// No serverless environment detection needed
 
 // Default port for local development
-const port = parseInt(process.env.PORT || '3000', 10);
+// Try port 3000 first, but allow fallback to another port if necessary
+const desiredPort = parseInt(process.env.PORT || '3000', 10);
+let port = desiredPort;
+
+// Flag to track if we're using the fallback port
+let usingFallbackPort = false;
 
 // Server instance (will remain undefined in serverless environments)
 let server;
@@ -26,9 +29,14 @@ const startServer = (portToUse) => {
       
       server.on('error', (error) => {
         if (error.code === 'EADDRINUSE') {
-          console.warn(`Port ${portToUse} is already in use, trying ${portToUse + 1}`);
-          // Try the next port
-          resolve(startServer(portToUse + 1));
+          if (portToUse === desiredPort) {
+            console.warn(`\n\nWARNING: Port ${portToUse} is already in use.\nAttempting to use alternative port 3001...\n`);
+            usingFallbackPort = true;
+            resolve(startServer(3001));
+          } else {
+            console.warn(`\n\nWARNING: Alternative port ${portToUse} is also in use.\nAttempting to use port 3002...\n`);
+            resolve(startServer(3002));
+          }
         } else {
           reject(error);
         }
@@ -39,19 +47,19 @@ const startServer = (portToUse) => {
   });
 };
 
-// Only start the server if we're not in a serverless environment
-if (!isServerless) {
-  startServer(port)
-    .then(() => {
-      console.log(`RRDM application started in standard mode on port ${port}`);
-    })
-    .catch((error) => {
-      console.error('Failed to start server:', error);
-      process.exit(1);
-    });
-} else {
-  console.log('RRDM application running in serverless mode');
-}
+// Start the server
+startServer(port)
+  .then(() => {
+    if (usingFallbackPort) {
+      console.log(`\n\nNOTE: RRDM application is running on an alternative port because port 3000 was unavailable.`);
+      console.log(`Please access the application at the URL shown above.\n`);
+    }
+    console.log(`RRDM application started successfully.`);
+  })
+  .catch((error) => {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  });
 
 // Handle graceful shutdown
 const gracefulShutdown = async () => {

@@ -4,66 +4,39 @@
  */
 const mongoose = require('mongoose');
 
-// Define schemas directly in this file since the previous files have been removed
-const submissionSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-  urgencyLevel: { type: String },
-  impactAreas: [{ type: String }],
-  submittedById: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  bcrId: { type: mongoose.Schema.Types.ObjectId, ref: 'Bcr' },
-  status: { type: String, default: 'Pending' },
-  deleted: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-});
+// Import the actual Submission and BCR models
+const Submission = require('../../../models/Submission');
+const Bcr = require('../../../models/Bcr');
+const BcrConfig = require('../../../models/BcrConfig');
+const User = require('../../../models/User');
+const Phase = require('../../../models/Phase');
+const Status = require('../../../models/Status');
 
-const bcrSchema = new mongoose.Schema({
-  bcrNumber: { type: String, required: true },
-  title: { type: String, required: true },
-  description: { type: String },
-  submissionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Submission' },
-  currentPhaseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Phase' },
-  currentStatusId: { type: mongoose.Schema.Types.ObjectId, ref: 'Status' },
-  deleted: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-});
+// Helper function to get a status tag for display based on submission status
+const getSubmissionStatusTag = (submission) => {
+  const status = submission.status || 'Pending';
+  
+  switch (status) {
+    case 'Approved':
+      return { text: 'Approved', class: 'govuk-tag govuk-tag--green' };
+    case 'Rejected':
+      return { text: 'Rejected', class: 'govuk-tag govuk-tag--red' };
+    case 'Paused':
+      return { text: 'Paused', class: 'govuk-tag govuk-tag--yellow' };
+    case 'Closed':
+      return { text: 'Closed', class: 'govuk-tag govuk-tag--grey' };
+    case 'More Info Required':
+      return { text: 'More Info Required', class: 'govuk-tag govuk-tag--blue' };
+    case 'Pending':
+    default:
+      return { text: 'Pending', class: 'govuk-tag govuk-tag--purple' };
+  }
+};
 
-const bcrConfigSchema = new mongoose.Schema({
-  type: { type: String, required: true },
-  value: { type: String, required: true },
-  displayName: { type: String },
-  displayOrder: { type: Number, default: 0 },
-  deleted: { type: Boolean, default: false }
-});
+// Export the helper function
+exports.getSubmissionStatusTag = getSubmissionStatusTag;
 
-const phaseSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  value: { type: String, required: true },
-  displayOrder: { type: Number, default: 0 },
-  inProgressStatusId: { type: mongoose.Schema.Types.ObjectId, ref: 'Status' },
-  completedStatusId: { type: mongoose.Schema.Types.ObjectId, ref: 'Status' },
-  trelloStatusId: { type: mongoose.Schema.Types.ObjectId, ref: 'Status' },
-  deleted: { type: Boolean, default: false }
-});
-
-const statusSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  value: { type: String, required: true },
-  displayOrder: { type: Number, default: 0 },
-  type: { type: String },
-  deleted: { type: Boolean, default: false }
-});
-
-// Check if models already exist before creating them to avoid "Cannot overwrite model" errors
-const Submission = mongoose.models.Submission || mongoose.model('Submission', submissionSchema);
-const Bcr = mongoose.models.Bcr || mongoose.model('Bcr', bcrSchema);
-const BcrConfig = mongoose.models.BcrConfig || mongoose.model('BcrConfig', bcrConfigSchema);
-const Phase = mongoose.models.Phase || mongoose.model('Phase', phaseSchema);
-const Status = mongoose.models.Status || mongoose.model('Status', statusSchema);
-
-// Export models
+// Export models for use in controllers
 exports.Submission = Submission;
 exports.Bcr = Bcr;
 exports.BcrConfig = BcrConfig;
@@ -127,11 +100,30 @@ exports.getAllBcrs = async (filters = {}) => {
 exports.getAllSubmissions = async (filters = {}) => {
   try {
     // Create base query to exclude deleted submissions
-    const query = { deleted: { $ne: true } };
+    const query = { deletedAt: { $eq: null } };
+    
+    // If hasBcrNumber is true, only include submissions with a BCR number
+    if (filters.hasBcrNumber === true || filters.hasBcrNumber === 'true') {
+      query.bcrNumber = { $exists: true, $ne: null };
+      console.log('Filtering for submissions with BCR numbers');
+    }
+    
+    // If excludeApproved is true, exclude submissions that have been approved and have BCR numbers
+    // This is used to separate submissions from BCRs
+    if (filters.excludeApproved === true || filters.excludeApproved === 'true') {
+      query.$or = [
+        { status: { $ne: 'Approved' } },
+        { bcrNumber: { $exists: false } },
+        { bcrNumber: null }
+      ];
+      console.log('Excluding approved submissions with BCR numbers');
+    }
     
     // Apply filters if provided
     if (filters.status) {
-      query.status = filters.status;
+      // Handle case-insensitive status matching
+      query.status = new RegExp('^' + filters.status + '$', 'i');
+      console.log(`Filtering for status: ${filters.status}`);
     }
     
     if (filters.urgencyLevel) {
@@ -144,17 +136,34 @@ exports.getAllSubmissions = async (filters = {}) => {
     
     if (filters.search) {
       query.$or = [
-        { title: { $regex: filters.search, $options: 'i' } },
-        { description: { $regex: filters.search, $options: 'i' } }
+        { submissionCode: { $regex: filters.search, $options: 'i' } },
+        { fullName: { $regex: filters.search, $options: 'i' } },
+        { briefDescription: { $regex: filters.search, $options: 'i' } },
+        { justification: { $regex: filters.search, $options: 'i' } }
       ];
     }
     
-    // Execute the query with population
-    return await Submission.find(query)
+    // Set default limit or use provided limit
+    const limit = filters.limit ? parseInt(filters.limit, 10) : 100;
+    
+    console.log('Querying submissions with:', query);
+    
+    const submissionsQuery = Submission.find(query)
       .populate('submittedById', 'name email role')
-      .populate('bcrId')
+      .populate({
+        path: 'bcrId',
+        populate: [
+          { path: 'currentPhaseId' },
+          { path: 'currentStatusId' }
+        ]
+      })
       .sort({ createdAt: -1 })
-      .exec();
+      .limit(limit);
+    
+    // Set a timeout for the query to prevent long-running operations
+    submissionsQuery.maxTimeMS(5000); // 5 second timeout
+    
+    return await submissionsQuery.exec();
   } catch (error) {
     console.error('Error in getAllSubmissions:', error);
     throw error;
@@ -166,10 +175,15 @@ exports.getAllSubmissions = async (filters = {}) => {
  */
 exports.getSubmissionById = async (id) => {
   try {
-    return await Submission.findById(id)
+    // Create the query with population
+    const query = Submission.findById(id)
       .populate('submittedById', 'name email role')
-      .populate('bcrId')
-      .exec();
+      .populate('bcrId');
+    
+    // Set a timeout for the query to prevent long-running operations
+    query.maxTimeMS(5000); // 5 second timeout
+    
+    return await query.exec();
   } catch (error) {
     console.error('Error in getSubmissionById:', error);
     throw error;
@@ -195,32 +209,61 @@ exports.createSubmission = async (submissionData) => {
  */
 exports.getAllImpactAreas = async () => {
   try {
-    const impactAreas = await BcrConfig.find({ 
+    // Check if the collection exists and has documents
+    const collectionExists = mongoose.connection.readyState === 1;
+    
+    if (!collectionExists) {
+      console.warn('MongoDB connection not ready when querying impact areas');
+      return []; // Return empty array instead of failing
+    }
+    
+    // Set a timeout for the query
+    const impactAreas = await BcrConfig.find({
       type: 'impactArea',
       deleted: { $ne: true }
-    }).sort({ displayOrder: 1 }).exec();
+    })
+      .sort({ displayOrder: 1 })
+      .maxTimeMS(5000) // Set a 5-second timeout for this query
+      .exec();
     
-    return impactAreas;
+    return impactAreas || [];
   } catch (error) {
     console.error('Error in getAllImpactAreas:', error);
-    throw error;
+    // Return empty array instead of throwing error
+    console.warn('Returning empty impact areas array due to error');
+    return [];
   }
 };
 
 /**
- * Get all urgency levels from BcrConfig
+ * Get all urgency levels from the UrgencyLevel model
  */
 exports.getAllUrgencyLevels = async () => {
   try {
-    const urgencyLevels = await BcrConfig.find({ 
-      type: 'urgencyLevel',
-      deleted: { $ne: true }
-    }).sort({ displayOrder: 1 }).exec();
+    // Check if the connection is ready
+    const collectionExists = mongoose.connection.readyState === 1;
     
-    return urgencyLevels;
+    if (!collectionExists) {
+      console.warn('MongoDB connection not ready when querying urgency levels');
+      return []; // Return empty array instead of failing
+    }
+    
+    // Import the UrgencyLevel model
+    const UrgencyLevel = require('../../UrgencyLevel');
+    
+    // Query urgency levels from the dedicated model
+    const urgencyLevels = await UrgencyLevel.find({ isActive: true })
+      .sort({ displayOrder: 1 })
+      .maxTimeMS(5000) // Set a 5-second timeout for this query
+      .exec();
+    
+    console.log('Found urgency levels from UrgencyLevel model:', urgencyLevels);
+    return urgencyLevels || [];
   } catch (error) {
     console.error('Error in getAllUrgencyLevels:', error);
-    throw error;
+    // Return empty array instead of throwing error
+    console.warn('Returning empty urgency levels array due to error');
+    return [];
   }
 };
 

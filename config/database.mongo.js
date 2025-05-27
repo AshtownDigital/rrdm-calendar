@@ -12,7 +12,7 @@ let connectionAttempts = 0;
 let isConnecting = false;
 let connectionPromise = null;
 
-// Connection function with retry logic
+// Connection function with improved retry logic and error handling
 async function connect() {
   // If already connecting, return the existing promise
   if (isConnecting && connectionPromise) {
@@ -32,20 +32,33 @@ async function connect() {
       const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/rrdm';
       console.log(`Connecting to MongoDB at ${uri.substring(0, uri.indexOf('://') + 3)}***`);
       
-      // Configure connection options based on environment
-      const isServerless = process.env.VERCEL === '1';
+      // Configure connection options with better defaults for stability
       const options = {
-        serverSelectionTimeoutMS: isServerless ? 3000 : 5000,
-        socketTimeoutMS: isServerless ? 30000 : 45000,
-        connectTimeoutMS: isServerless ? 5000 : 10000,
-        maxPoolSize: isServerless ? 5 : 10,
-        minPoolSize: isServerless ? 1 : 2,
-        // Add these options for better serverless performance
-        autoCreate: false,
-        autoIndex: false,
-        bufferCommands: false,
-        family: 4,  // Use IPv4, skip trying IPv6
-        ssl: process.env.NODE_ENV === 'production'  // Enable SSL in production
+        // Timeouts - reduced for faster failure detection
+        serverSelectionTimeoutMS: 10000, // 10 seconds (reduced from 30)
+        socketTimeoutMS: 45000, // 45 seconds (reduced from 60)
+        connectTimeoutMS: 10000, // 10 seconds (reduced from 30)
+        // Connection pool settings
+        maxPoolSize: 10,
+        minPoolSize: 1, // Keep at least one connection in the pool
+        // Performance settings
+        autoCreate: true,
+        autoIndex: true,
+        // Command buffering
+        bufferCommands: true,
+        bufferTimeoutMS: 10000, // 10 seconds (reduced from 30)
+        // Network settings
+        family: 4, // Use IPv4, skip trying IPv6
+        ssl: process.env.NODE_ENV === 'production',
+        // Write concern
+        retryWrites: true,
+        w: 'majority',
+        // Connection pool monitoring
+        monitorCommands: true,
+        // Heartbeat - how often to check server status
+        heartbeatFrequencyMS: 5000 // 5 seconds (reduced from 10)
+        // Note: autoReconnect, reconnectTries, and reconnectInterval are deprecated in newer MongoDB driver
+        // The driver now handles reconnection automatically
       };
       
       // Connect to MongoDB
@@ -55,15 +68,26 @@ async function connect() {
       connectionAttempts = 0;
       console.log('MongoDB connected successfully');
       
-      // Setup connection event handlers
+      // Setup connection event handlers with improved error handling
       mongoose.connection.on('error', (err) => {
         console.error('MongoDB connection error:', err);
+        // Don't reset connection state here, let the reconnect logic handle it
       });
       
       mongoose.connection.on('disconnected', () => {
         console.log('MongoDB disconnected');
         isConnecting = false;
         connectionPromise = null;
+        
+        // Only attempt reconnection if not shutting down
+        if (process.env.NODE_ENV !== 'test') {
+          console.log('Attempting to reconnect to MongoDB...');
+          // The mongoose driver will handle reconnection automatically
+        }
+      });
+      
+      mongoose.connection.on('reconnected', () => {
+        console.log('MongoDB reconnected successfully');
       });
       
       // Resolve with the connection

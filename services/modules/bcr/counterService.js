@@ -38,13 +38,35 @@ exports.getCounters = async () => {
  */
 exports.refreshAllCounters = async () => {
   try {
+    // Check if MongoDB connection is ready
+    if (mongoose.connection.readyState !== 1) {
+      console.warn('MongoDB connection not ready when refreshing counters');
+      return {
+        pending: 0,
+        approved: 0,
+        rejected: 0,
+        total: 0,
+        phases: {}
+      };
+    }
+    
     // Count all submissions with different statuses
+    // Use Promise.allSettled to handle partial failures
+    const [pendingResult, approvedResult, rejectedResult, totalResult, phasesResult] = 
+      await Promise.allSettled([
+        exports.countPendingSubmissions(),
+        exports.countApprovedSubmissions(),
+        exports.countRejectedSubmissions(),
+        exports.countTotalSubmissions(),
+        exports.countBcrsByPhase()
+      ]);
+    
     const counters = {
-      pending: await exports.countPendingSubmissions(),
-      approved: await exports.countApprovedSubmissions(),
-      rejected: await exports.countRejectedSubmissions(),
-      total: await exports.countTotalSubmissions(),
-      phases: await exports.countBcrsByPhase()
+      pending: pendingResult.status === 'fulfilled' ? pendingResult.value : 0,
+      approved: approvedResult.status === 'fulfilled' ? approvedResult.value : 0,
+      rejected: rejectedResult.status === 'fulfilled' ? rejectedResult.value : 0,
+      total: totalResult.status === 'fulfilled' ? totalResult.value : 0,
+      phases: phasesResult.status === 'fulfilled' ? phasesResult.value : {}
     };
     
     // Update cache
@@ -56,7 +78,14 @@ exports.refreshAllCounters = async () => {
     return counters;
   } catch (error) {
     console.error('Error refreshing counters:', error);
-    throw error;
+    // Return default values instead of throwing
+    return {
+      pending: 0,
+      approved: 0,
+      rejected: 0,
+      total: 0,
+      phases: {}
+    };
   }
 };
 
@@ -65,12 +94,20 @@ exports.refreshAllCounters = async () => {
  */
 exports.countTotalSubmissions = async () => {
   try {
-    return await Submission.countDocuments({ 
+    // Check if MongoDB connection is ready
+    if (mongoose.connection.readyState !== 1) {
+      console.warn('MongoDB connection not ready when counting total submissions');
+      return 0;
+    }
+    
+    const count = await Submission.countDocuments({ 
       deleted: { $ne: true } 
-    });
+    }); // Remove maxTimeMS as it's not supported in this version
+    
+    return count;
   } catch (error) {
     console.error('Error counting total submissions:', error);
-    throw error;
+    return 0; // Return 0 instead of throwing error
   }
 };
 
@@ -80,6 +117,12 @@ exports.countTotalSubmissions = async () => {
  */
 exports.countPendingSubmissions = async () => {
   try {
+    // Check if MongoDB connection is ready
+    if (mongoose.connection.readyState !== 1) {
+      console.warn('MongoDB connection not ready when counting pending submissions');
+      return 0;
+    }
+    
     // Use aggregation pipeline for efficient counting
     const result = await Submission.aggregate([
       {
@@ -92,12 +135,12 @@ exports.countPendingSubmissions = async () => {
       {
         $count: 'pending'
       }
-    ]);
+    ]); // Remove maxTimeMS as it's not supported in this version
     
     return result.length > 0 ? result[0].pending : 0;
   } catch (error) {
     console.error('Error counting pending submissions:', error);
-    throw error;
+    return 0; // Return 0 instead of throwing error
   }
 };
 
@@ -107,6 +150,12 @@ exports.countPendingSubmissions = async () => {
  */
 exports.countApprovedSubmissions = async () => {
   try {
+    // Check if MongoDB connection is ready
+    if (mongoose.connection.readyState !== 1) {
+      console.warn('MongoDB connection not ready when counting approved submissions');
+      return 0;
+    }
+    
     // Use aggregation pipeline for efficient counting
     const result = await Submission.aggregate([
       {
@@ -118,12 +167,12 @@ exports.countApprovedSubmissions = async () => {
       {
         $count: 'approved'
       }
-    ]);
+    ]); // Remove maxTimeMS as it's not supported in this version
     
     return result.length > 0 ? result[0].approved : 0;
   } catch (error) {
     console.error('Error counting approved submissions:', error);
-    throw error;
+    return 0; // Return 0 instead of throwing error
   }
 };
 
@@ -132,6 +181,12 @@ exports.countApprovedSubmissions = async () => {
  */
 exports.countRejectedSubmissions = async () => {
   try {
+    // Check if MongoDB connection is ready
+    if (mongoose.connection.readyState !== 1) {
+      console.warn('MongoDB connection not ready when counting rejected submissions');
+      return 0;
+    }
+    
     // Use aggregation pipeline for efficient counting
     const result = await Submission.aggregate([
       {
@@ -143,12 +198,12 @@ exports.countRejectedSubmissions = async () => {
       {
         $count: 'rejected'
       }
-    ]);
+    ]); // Remove maxTimeMS as it's not supported in this version
     
     return result.length > 0 ? result[0].rejected : 0;
   } catch (error) {
     console.error('Error counting rejected submissions:', error);
-    throw error;
+    return 0; // Return 0 instead of throwing error
   }
 };
 

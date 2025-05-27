@@ -45,6 +45,16 @@
   <div class="govuk-grid-column-full">
     <h1 class="govuk-heading-xl">Business Change Request Dashboard</h1>
     <p class="govuk-body-l">Manage and track business change requests</p>
+    
+    {% if connectionIssue %}
+    <div class="govuk-warning-text">
+      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+      <strong class="govuk-warning-text__text">
+        <span class="govuk-warning-text__assistive">Warning</span>
+        Database connection issue detected. Some data may not be available. The system will automatically reconnect when the database is available.
+      </strong>
+    </div>
+    {% endif %}
   </div>
 </div>
 
@@ -101,6 +111,73 @@
   </div>
 </div>
 
+<!-- Submissions by Status Section -->
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6 govuk-!-margin-bottom-4">Submissions by Status</h2>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-one-third">
+    <a href="/bcr/submissions?status=pending" class="app-card-link">
+      <div class="app-card app-card--blue">
+        <h2 class="govuk-heading-m">{{ stats.pending }}</h2>
+        <p class="govuk-body">Pending Submissions</p>
+        <strong class="govuk-tag govuk-tag--blue">Pending</strong>
+      </div>
+    </a>
+  </div>
+  <div class="govuk-grid-column-one-third">
+    <a href="/bcr/submissions?status=approved" class="app-card-link">
+      <div class="app-card app-card--green">
+        <h2 class="govuk-heading-m">{{ stats.approved }}</h2>
+        <p class="govuk-body">Approved Submissions</p>
+        <strong class="govuk-tag govuk-tag--green">Approved</strong>
+      </div>
+    </a>
+  </div>
+  <div class="govuk-grid-column-one-third">
+    <a href="/bcr/submissions?status=rejected" class="app-card-link">
+      <div class="app-card app-card--red">
+        <h2 class="govuk-heading-m">{{ stats.rejected }}</h2>
+        <p class="govuk-body">Rejected Submissions</p>
+        <strong class="govuk-tag govuk-tag--red">Rejected</strong>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="govuk-grid-row govuk-!-margin-top-4">
+  <div class="govuk-grid-column-one-third">
+    <a href="/bcr/submissions?status=in%20review" class="app-card-link">
+      <div class="app-card app-card--purple">
+        <h2 class="govuk-heading-m">{% if phases['In Review'] %}{{ phases['In Review'] }}{% else %}0{% endif %}</h2>
+        <p class="govuk-body">In Review</p>
+        <strong class="govuk-tag govuk-tag--purple">In Review</strong>
+      </div>
+    </a>
+  </div>
+  <div class="govuk-grid-column-one-third">
+    <a href="/bcr/submissions?status=implementation" class="app-card-link">
+      <div class="app-card app-card--orange">
+        <h2 class="govuk-heading-m">{% if phases['Implementation'] %}{{ phases['Implementation'] }}{% else %}0{% endif %}</h2>
+        <p class="govuk-body">In Implementation</p>
+        <strong class="govuk-tag govuk-tag--orange">Implementation</strong>
+      </div>
+    </a>
+  </div>
+  <div class="govuk-grid-column-one-third">
+    <a href="/bcr/submissions?status=completed" class="app-card-link">
+      <div class="app-card app-card--turquoise">
+        <h2 class="govuk-heading-m">{{ stats.implemented }}</h2>
+        <p class="govuk-body">Completed</p>
+        <strong class="govuk-tag govuk-tag--green">Completed</strong>
+      </div>
+    </a>
+  </div>
+</div>
+
 <!-- Quick Actions Section -->
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
@@ -120,8 +197,8 @@
   <div class="govuk-grid-column-one-third">
     <a href="/bcr/submissions" class="app-card-link">
       <div class="app-card app-card--turquoise">
-        <h2 class="govuk-heading-m">View All BCRs</h2>
-        <p class="govuk-body">Browse and search all business change requests.</p>
+        <h2 class="govuk-heading-m">View Submissions</h2>
+        <p class="govuk-body">Browse and search all submissions.</p>
       </div>
     </a>
   </div>
@@ -135,7 +212,16 @@
   </div>
 </div>
 
-
+<div class="govuk-grid-row govuk-!-margin-top-4">
+  <div class="govuk-grid-column-one-third">
+    <a href="/bcr/business-change-requests" class="app-card-link">
+      <div class="app-card app-card--green">
+        <h2 class="govuk-heading-m">View Business Change Requests</h2>
+        <p class="govuk-body">View approved submissions that have become Business Change Requests.</p>
+      </div>
+    </a>
+  </div>
+</div>
 
 <!-- BCRs by Priority Level Section -->
 <div class="govuk-grid-row">
@@ -194,8 +280,9 @@
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
             <th scope="col" class="govuk-table__header">BCR Number</th>
+            <th scope="col" class="govuk-table__header">Submission Code</th>
             <th scope="col" class="govuk-table__header">Title</th>
-            <th scope="col" class="govuk-table__header">Status</th>
+            <th scope="col" class="govuk-table__header">Workflow Status</th>
             <th scope="col" class="govuk-table__header">Created</th>
             <th scope="col" class="govuk-table__header">Actions</th>
           </tr>
@@ -204,7 +291,8 @@
           {% for bcr in recentBcrs %}
             <tr class="govuk-table__row">
               <td class="govuk-table__cell">{{ bcr.bcrNumber }}</td>
-              <td class="govuk-table__cell">{{ bcr.description | truncate(60) }}</td>
+              <td class="govuk-table__cell">{{ bcr.submissionCode }}</td>
+              <td class="govuk-table__cell">{{ bcr.description }}</td>
               <td class="govuk-table__cell">
                 <strong class="{{ bcr.statusClass }}">{{ bcr.statusText }}</strong>
               </td>

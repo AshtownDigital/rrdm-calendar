@@ -1,0 +1,235 @@
+{% extends "layouts/base.njk" %}
+
+{% block pageTitle %}
+  {{ title }} - RRDM
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">{{ title }}</h1>
+    
+    {% if connectionIssue %}
+    <div class="govuk-warning-text">
+      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+      <strong class="govuk-warning-text__text">
+        <span class="govuk-warning-text__assistive">Warning</span>
+        Database connection issue detected. Some data may not be available. The system will automatically reconnect when the database is available.
+      </strong>
+    </div>
+    {% endif %}
+    
+    {% if timedOut %}
+    <div class="govuk-warning-text">
+      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+      <strong class="govuk-warning-text__text">
+        <span class="govuk-warning-text__assistive">Warning</span>
+        The request to fetch submission details timed out. This could be due to database performance issues. Please try again later.
+      </strong>
+    </div>
+    {% endif %}
+    
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        <span class="govuk-caption-xl">Submission Reference</span>
+        <h2 class="govuk-heading-l">{{ submission.submissionCode }}</h2>
+      </div>
+    </div>
+
+    <!-- History moved to the bottom of the page -->
+    
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-one-half">
+        <div class="govuk-inset-text">
+          <h2 class="govuk-heading-m">Current Status</h2>
+          <p class="govuk-body">
+            <strong class="{{ statusTag.class }}">{{ statusTag.text }}</strong>
+          </p>
+        </div>
+      </div>
+      {% if submission.status === 'Approved' and submission.bcrNumber %}
+      <div class="govuk-grid-column-one-half">
+        <div class="govuk-inset-text">
+          <h2 class="govuk-heading-m">Associated Business Change Request</h2>
+          <p class="govuk-body">
+            <a href="/bcr/business-change-requests/{{ submission.bcrId }}" class="govuk-link">{{ submission.bcrNumber }}</a>
+          </p>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">Actions</h2>
+      <div class="govuk-button-group">
+        {% if submission.status === 'Pending' %}
+          <a href="/bcr/submissions/{{ submission._id }}/review" class="govuk-button">Review Submission</a>
+        {% elif submission.status === 'Approved' and submission.bcrNumber %}
+          <a href="/bcr/business-change-requests/{{ submission.bcrId }}" class="govuk-button">View Business Change Request</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="govuk-tabs" data-module="govuk-tabs">
+      <h2 class="govuk-tabs__title">Submission Information</h2>
+      <ul class="govuk-tabs__list">
+        <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+          <a class="govuk-tabs__tab" href="#details">Details</a>
+        </li>
+        <li class="govuk-tabs__list-item">
+          <a class="govuk-tabs__tab" href="#submitter">Submitter</a>
+        </li>
+      </ul>
+
+      <div class="govuk-tabs__panel" id="details">
+        <h2 class="govuk-heading-m">Submission Details</h2>
+        <div class="govuk-inset-text">
+          <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Brief Description
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ submission.briefDescription }}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Justification
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ submission.justification }}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Urgency Level
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {% if submission.urgencyLevel === 'Critical' %}
+                  <strong class="govuk-tag govuk-tag--red">{{ submission.urgencyLevel }}</strong>
+                {% elif submission.urgencyLevel === 'High' %}
+                  <strong class="govuk-tag govuk-tag--orange">{{ submission.urgencyLevel }}</strong>
+                {% elif submission.urgencyLevel === 'Medium' %}
+                  <strong class="govuk-tag govuk-tag--yellow">{{ submission.urgencyLevel }}</strong>
+                {% elif submission.urgencyLevel === 'Low' %}
+                  <strong class="govuk-tag govuk-tag--green">{{ submission.urgencyLevel }}</strong>
+                {% elif submission.urgencyLevel === 'Planning' %}
+                  <strong class="govuk-tag govuk-tag--blue">{{ submission.urgencyLevel }}</strong>
+                {% else %}
+                  <strong class="govuk-tag govuk-tag--grey">{{ submission.urgencyLevel }}</strong>
+                {% endif %}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Impact Areas
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {% if submission.impactAreas and submission.impactAreas.length > 0 %}
+                  <ul class="govuk-list">
+                    {% for area in submission.impactAreas %}
+                      <li>{{ area }}</li>
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  None specified
+                {% endif %}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="submitter">
+        <h2 class="govuk-heading-m">Submitter Information</h2>
+        <div class="govuk-inset-text">
+          <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Full Name
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ submission.fullName }}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Email Address
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ submission.emailAddress }}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Submission Source
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ submission.submissionSource }}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Organisation
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ submission.organisation }}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="govuk-heading-m">Submission History</h2>
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--m">Timeline of events</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Date</th>
+          <th scope="col" class="govuk-table__header">Event</th>
+          <th scope="col" class="govuk-table__header">Details</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">{{ submission.createdAt | date('DD MMMM YYYY') }}</td>
+          <td class="govuk-table__cell"><strong>Submission Created</strong></td>
+          <td class="govuk-table__cell">Submission {{ submission.submissionCode }} was created</td>
+        </tr>
+        {% if submission.reviewedAt %}
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">{{ submission.reviewedAt | date('DD MMMM YYYY') }}</td>
+          <td class="govuk-table__cell"><strong>Submission Reviewed</strong></td>
+          <td class="govuk-table__cell">
+            Status changed to <strong class="{{ statusTag.class }}">{{ statusTag.text }}</strong>
+            {% if submission.reviewComments %}
+              <br><span class="govuk-body-s">Comments: {{ submission.reviewComments }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endif %}
+        {% if submission.status === 'Approved' and submission.bcrNumber %}
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">{{ submission.reviewedAt | date('DD MMMM YYYY') }}</td>
+          <td class="govuk-table__cell"><strong>Business Change Request Created</strong></td>
+          <td class="govuk-table__cell">
+            BCR number assigned: <a href="/bcr/business-change-requests/{{ submission.bcrId }}" class="govuk-link">{{ submission.bcrNumber }}</a>
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+
+    <div class="govuk-button-group">
+      {% if submission.status === 'Approved' and submission.bcrNumber %}
+        <a href="/bcr/business-change-requests" class="govuk-button govuk-button--secondary">Back to Business Change Requests</a>
+      {% else %}
+        <a href="/bcr/submissions" class="govuk-button govuk-button--secondary">Back to Submissions</a>
+      {% endif %}
+      <a href="/bcr/dashboard" class="govuk-link">Back to Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

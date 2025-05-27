@@ -15,23 +15,30 @@ const BcrSchema = new Schema({
     type: Number,
     required: true
   },
-  bcrCode: {
-    type: String,
-    required: true,
-    unique: true
-  },
   submissionId: {
     type: Schema.Types.ObjectId,
     ref: 'Submission',
     required: true
   },
-  currentPhase: {
-    type: String,
+  currentPhaseId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Phase',
+    required: true
+  },
+  currentStatusId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Status',
     required: true
   },
   status: {
     type: String,
-    required: true
+    required: true,
+    default: 'New Submission'
+  },
+  bcrNumber: {
+    type: String,
+    required: true,
+    unique: true
   },
   urgencyLevel: {
     type: String,
