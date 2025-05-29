@@ -30,7 +30,26 @@ async function connect() {
   connectionPromise = new Promise(async (resolve, reject) => {
     try {
       const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/rrdm';
-      console.log(`Connecting to MongoDB at ${uri.substring(0, uri.indexOf('://') + 3)}***`);
+      let displayUri = uri;
+      if (uri.startsWith('mongodb://') || uri.startsWith('mongodb+srv://')) {
+        try {
+          // URL is a global object in Node.js, no import needed for basic use here.
+          const parsedUrl = new URL(uri);
+          if (parsedUrl.password) parsedUrl.password = '***';
+          if (parsedUrl.username) parsedUrl.username = '***';
+          displayUri = parsedUrl.toString();
+        } catch (e) {
+          console.error('Could not parse MongoDB URI for safe logging:', e.message);
+          // Fallback for malformed URIs, log a generic message or a safe part
+          const protocolEndIndex = uri.indexOf('://');
+          const safePrefix = protocolEndIndex !== -1 ? uri.substring(0, protocolEndIndex + 3) : '';
+          displayUri = `${safePrefix}***[rest_of_uri_omitted_due_to_parsing_error]`;
+        }
+      } else {
+        // If not a mongo URI, maybe a local path or something unexpected
+        displayUri = '[Non-standard URI format, logging as is, check for sensitive data] ' + uri;
+      }
+      console.log(`Attempting to connect to MongoDB with URI: ${displayUri}`);
       
       // Configure connection options with better defaults for stability
       const options = {
