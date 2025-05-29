@@ -1,0 +1,180 @@
+{% extends "layouts/base.njk" %}
+
+{% block pageTitle %}
+  {{ title }} - RRDM
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">{{ title }}</h1>
+    
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        <span class="govuk-caption-xl">Business Change Request</span>
+        <h2 class="govuk-heading-l">{{ bcr.bcrNumber }}</h2>
+      </div>
+    </div>
+
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-one-half">
+        <div class="govuk-inset-text">
+          <h2 class="govuk-heading-m">Current Workflow Phase</h2>
+          <p class="govuk-body">
+            <strong class="govuk-tag govuk-tag--blue">{{ currentPhase }}</strong>
+          </p>
+        </div>
+      </div>
+      <div class="govuk-grid-column-one-half">
+        <div class="govuk-inset-text">
+          <h2 class="govuk-heading-m">Workflow Status</h2>
+          <p class="govuk-body">
+            <strong class="{{ workflowStatusClass }}">{{ workflowStatus }}</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">Actions</h2>
+      <div class="govuk-button-group">
+        <a href="/bcr/business-change-requests/{{ bcr._id }}/update-workflow" class="govuk-button">Update Workflow</a>
+        <a href="/bcr/bcr-view/{{ bcr._id }}" class="govuk-button govuk-button--secondary">Back to BCR Details</a>
+      </div>
+    </div>
+
+    <h2 class="govuk-heading-l">Workflow Progress Visualization</h2>
+    
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        {% if workflowProgress and workflowProgress.length > 0 %}
+          <ol class="workflow-progress">
+            {% for phase in workflowProgress %}
+              <li class="workflow-progress__item">
+                <h3 class="govuk-heading-s">{{ phase.name }}</h3>
+                <span class="govuk-tag {{ phase.statusClass }}">{{ phase.status }}</span>
+              </li>
+            {% endfor %}
+          </ol>
+        {% else %}
+          <p class="govuk-body">No workflow progress information available.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <h2 class="govuk-heading-l">Workflow History</h2>
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--m">Timeline of events</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Date</th>
+          <th scope="col" class="govuk-table__header">Event</th>
+          <th scope="col" class="govuk-table__header">Phase/Status</th>
+          <th scope="col" class="govuk-table__header">Comments</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">{{ bcr.createdAt | date('DD MMMM YYYY') }}</td>
+          <td class="govuk-table__cell"><strong>BCR Created</strong></td>
+          <td class="govuk-table__cell">
+            {% if bcr.initialPhase %}
+              <span class="govuk-tag govuk-tag--blue">{{ bcr.initialPhase }}</span>
+            {% else %}
+              <span class="govuk-tag govuk-tag--blue">Initial Phase</span>
+            {% endif %}
+          </td>
+          <td class="govuk-table__cell">
+            Business Change Request {{ bcr.bcrNumber }} was created
+            {% if submission %}
+              from submission {{ submission.submissionCode }}
+            {% endif %}
+          </td>
+        </tr>
+        {% if bcr.workflowHistory and bcr.workflowHistory.length > 0 %}
+          {% for historyItem in bcr.workflowHistory | sort(false, false, 'date') %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell">{{ historyItem.date | date('DD MMMM YYYY HH:mm') }}</td>
+              <td class="govuk-table__cell"><strong>{{ historyItem.action }}</strong></td>
+              <td class="govuk-table__cell">
+                {% if historyItem.phaseId %}
+                  {% for phase in allPhases %}
+                    {% if phase._id.toString() == historyItem.phaseId.toString() %}
+                      <span class="govuk-tag govuk-tag--blue">{{ phase.name }}</span>
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+                
+                {% if historyItem.statusId %}
+                  {% for status in allStatuses %}
+                    {% if status._id.toString() == historyItem.statusId.toString() %}
+                      <span class="govuk-tag {% if status.color %}govuk-tag--{{ status.color }}{% endif %}">{{ status.name }}</span>
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+              </td>
+              <td class="govuk-table__cell">{{ historyItem.details }}</td>
+            </tr>
+          {% endfor %}
+        {% endif %}
+      </tbody>
+    </table>
+
+    <div class="govuk-button-group">
+      <a href="/bcr/bcr-view/{{ bcr._id }}" class="govuk-button">Back to BCR Details</a>
+      <a href="/bcr/business-change-requests" class="govuk-button govuk-button--secondary">Back to Business Change Requests</a>
+    </div>
+  </div>
+</div>
+
+<style>
+  .workflow-progress {
+    list-style: none;
+    padding: 0;
+    margin: 2em 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    position: relative;
+  }
+  
+  .workflow-progress:before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background-color: #b1b4b6;
+    z-index: 1;
+  }
+  
+  .workflow-progress__item {
+    flex: 1;
+    text-align: center;
+    padding: 0 1em;
+    position: relative;
+    z-index: 2;
+    background-color: #fff;
+    margin-bottom: 1.5em;
+  }
+  
+  .workflow-progress__item:before {
+    content: '';
+    display: block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #b1b4b6;
+    margin: 0 auto 0.5em;
+  }
+  
+  .workflow-progress__item:has(.govuk-tag--green):before {
+    background-color: #00703c;
+  }
+  
+  .workflow-progress__item:has(.govuk-tag--blue):before {
+    background-color: #1d70b8;
+  }
+</style>
+{% endblock %}

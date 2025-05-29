@@ -18,16 +18,16 @@ const addCsrfToken = (req, res, next) => {
 
 // Export the middleware
 module.exports = (req, res, next) => {
-  // Temporarily bypass CSRF protection for testing
-  console.log('CSRF protection temporarily disabled for testing');
+  // Check if we're in a test environment where we want to bypass CSRF
+  if (process.env.NODE_ENV === 'test') {
+    console.log('CSRF protection disabled for testing environment');
+    // Add a dummy CSRF token to response locals
+    res.locals.csrfToken = 'dummy-csrf-token-for-testing';
+    // Continue to the next middleware
+    return next();
+  }
   
-  // Add a dummy CSRF token to response locals
-  res.locals.csrfToken = 'dummy-csrf-token-for-testing';
-  
-  // Continue to the next middleware
-  next();
-  
-  /* Original CSRF protection code (commented out for now)
+  // Use proper CSRF protection for development and production
   csrfProtection(req, res, (err) => {
     if (err) {
       // Handle CSRF errors
@@ -48,5 +48,4 @@ module.exports = (req, res, next) => {
     // Add CSRF token to response locals
     addCsrfToken(req, res, next);
   });
-  */
 };

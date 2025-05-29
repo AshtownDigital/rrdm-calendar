@@ -14,6 +14,10 @@ router.get('/list', bcrController.listSubmissions); // For backward compatibilit
 // View a specific submission
 router.get('/:id', bcrController.viewSubmission);
 
+// Edit a submission
+router.get('/:id/edit', bcrController.editSubmissionForm);
+router.post('/:id/edit', bcrController.updateSubmission);
+
 // Review a submission (this is where a submission can be approved and become a BCR)
 router.get('/:id/review', reviewController.renderReviewForm);
 router.post('/:id/review', reviewController.processReview);

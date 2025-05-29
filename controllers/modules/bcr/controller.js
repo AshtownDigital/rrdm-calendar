@@ -4,9 +4,10 @@
  */
 
 const mongoose = require('mongoose');
-const counterService = require('../../../services/modules/bcr/counterService');
-const workflowService = require('../../../services/modules/bcr/workflowService');
 const bcrModel = require('../../../models/modules/bcr/model');
+const { Submission } = require('../../../models');
+const workflowService = require('../../../services/modules/bcr/workflowService');
+const { formatBcr } = require('../../../utils/formatters');
 
 /**
  * Render BCR dashboard with counters and phases
@@ -42,8 +43,9 @@ exports.dashboard = async (req, res) => {
             });
             
             // Race the query against the timeout
+            // Get BCRs directly instead of submissions to access the workflowStatus field
             return await Promise.race([
-              bcrModel.getAllSubmissions({ status: 'Approved', limit: 5, hasBcrNumber: true }),
+              bcrModel.getAllBcrs({ limit: 5 }),
               timeoutPromise
             ]);
           } catch (error) {
@@ -75,69 +77,60 @@ exports.dashboard = async (req, res) => {
     };
     
     // Format recent BCRs
-    const formattedRecentBcrs = recentBcrs.map(submission => {
+    const formattedRecentBcrs = recentBcrs.map(bcr => {
       // Get workflow status tag based on phase and status
       let statusClass = 'govuk-tag';
       let statusText = 'New Submission';
+      let phaseName = '';
       
-      // If this is a BCR with a workflow status, use that instead
-      if (submission.bcrId) {
-        // Use the BCR's status if available
-        if (submission.bcrId.status) {
-          statusText = submission.bcrId.status;
-          
-          // If we have phase information, include it in the status text
-          if (submission.bcrId.currentPhaseId && submission.bcrId.currentPhaseId.name) {
-            const phaseName = submission.bcrId.currentPhaseId.name;
-            statusText = `${phaseName}: ${statusText}`;
-          }
-          
-          // Assign appropriate class based on status
-          if (submission.bcrId.currentStatusId && submission.bcrId.currentStatusId.color) {
-            // Use the color from the status if available
-            statusClass = `govuk-tag govuk-tag--${submission.bcrId.currentStatusId.color}`;
-          } else {
-            // Fallback to default color mapping
-            switch (submission.bcrId.status) {
-              case 'New Submission':
-                statusClass = 'govuk-tag govuk-tag--blue';
-                break;
-              case 'In Review':
-                statusClass = 'govuk-tag govuk-tag--purple';
-                break;
-              case 'Implementation Started':
-                statusClass = 'govuk-tag govuk-tag--orange';
-                break;
-              case 'Implementation Complete':
-                statusClass = 'govuk-tag govuk-tag--turquoise';
-                break;
-              case 'Deployed to Production':
-                statusClass = 'govuk-tag govuk-tag--green';
-                break;
-              case 'Closed':
-                statusClass = 'govuk-tag govuk-tag--grey';
-                break;
-              default:
-                statusClass = 'govuk-tag';
-            }
-          }
-        }
-      } else {
-        // If no BCR ID, use the submission status
-        const statusTag = getSubmissionStatusTag(submission);
-        statusClass = statusTag.class;
-        statusText = statusTag.text;
+      // First check for the workflowStatus field (new field)
+      if (bcr.workflowStatus) {
+        statusText = bcr.workflowStatus;
+      }
+      // Then check for currentStatusId (populated reference)
+      else if (bcr.currentStatusId && bcr.currentStatusId.name) {
+        statusText = bcr.currentStatusId.name;
+      }
+      // Finally fall back to the legacy status field
+      else if (bcr.status) {
+        statusText = bcr.status;
       }
       
+      // Get the phase name if available
+      if (bcr.currentPhaseId && bcr.currentPhaseId.name) {
+        phaseName = bcr.currentPhaseId.name;
+      }
+      
+      // If we have phase information, include it in the status text
+      if (phaseName) {
+        statusText = `${phaseName}: ${statusText}`;
+      }
+      
+      // Determine the status class (color)
+      if (bcr.currentStatusId && bcr.currentStatusId.color) {
+        // Use the color from the status if available
+        statusClass = `govuk-tag govuk-tag--${bcr.currentStatusId.color}`;
+      } else {
+        // Use the workflowService to get the appropriate tag styling
+        const statusTag = workflowService.getStatusTag({
+          name: statusText,
+          value: statusText.toLowerCase().replace(/\s+/g, '-')
+        });
+        statusClass = statusTag.class;
+      }
+      
+      // Get the submission code if available
+      const submissionCode = bcr.submissionId?.submissionCode || 'N/A';
+      
       return {
-        id: submission._id || submission.id,
-        bcrNumber: submission.bcrNumber || submission.submissionCode || 'N/A',
-        submissionCode: submission.submissionCode || 'N/A',
-        description: submission.briefDescription || submission.title || 'Untitled',
+        id: bcr._id || bcr.id,
+        bcrNumber: bcr.bcrNumber || 'N/A',
+        submissionCode: submissionCode,
+        description: bcr.title || bcr.description || (bcr.submissionId?.briefDescription) || 'Untitled',
         status: statusText,
         statusClass: statusClass,
         statusText: statusText,
-        createdAt: submission.createdAt ? new Date(submission.createdAt).toLocaleDateString('en-GB') : 'Unknown'
+        createdAt: bcr.createdAt ? new Date(bcr.createdAt).toLocaleDateString('en-GB') : 'Unknown'
       };
     });
     
@@ -172,10 +165,37 @@ exports.showWorkflow = async (req, res) => {
     const phases = await workflowService.getAllPhases();
     const statuses = await workflowService.getAllStatuses();
     
-    res.render('modules/bcr/workflow', {
+    // Helper functions for the template
+    const helpers = {
+      getPhaseByDisplayOrder: (phases, displayOrder) => {
+        return phases.find(p => p.displayOrder === displayOrder);
+      },
+      
+      getStatusById: (statuses, statusId) => {
+        if (!statusId) return null;
+        const statusIdStr = statusId.toString();
+        return statuses.find(s => s._id.toString() === statusIdStr);
+      },
+      
+      getGroupDescription: (groupName) => {
+        const descriptions = {
+          "Submission & Initial Review": "The initial phases of the BCR process involve submission, review, and prioritization.",
+          "Requirements & Analysis": "These phases focus on documenting and analyzing the requirements for the business change.",
+          "Development & Testing": "These phases cover the implementation and testing of the business change.",
+          "Documentation & Communication": "These phases ensure proper documentation and communication of the business change.",
+          "Deployment & Closure": "These phases manage the deployment and closure of the business change."
+        };
+        return descriptions[groupName] || "This group of phases manages a specific aspect of the BCR process.";
+      }
+    };
+    
+    res.render('modules/bcr/workflow-dynamic', {
       title: 'BCR Workflow',
       phases,
       statuses,
+      getPhaseByDisplayOrder: helpers.getPhaseByDisplayOrder,
+      getStatusById: helpers.getStatusById,
+      getGroupDescription: helpers.getGroupDescription,
       user: req.user
     });
   } catch (error) {
@@ -622,13 +642,18 @@ exports.listSubmissions = async (req, res) => {
  */
 exports.listApprovedBcrs = async (req, res) => {
   try {
-    // Check for error message in query parameters
-    const errorMessage = req.query.error;
+    // Ignore any error messages about BCRs not found
+    let errorMessage = req.query.error;
+    if (errorMessage === 'Business+Change+Request+not+found') {
+      errorMessage = null;
+    }
     
     // Check MongoDB connection state
     const isDbConnected = mongoose.connection.readyState === 1;
     let timedOut = false;
     let bcrs = [];
+    let phases = [];
+    let statuses = [];
     
     if (isDbConnected) {
       try {
@@ -640,22 +665,20 @@ exports.listApprovedBcrs = async (req, res) => {
           }, 8000);
         });
         
-        // Query to only get approved submissions with BCR numbers
-        const bcrQuery = { 
-          ...req.query,
-          status: 'Approved',
-          hasBcrNumber: true 
-        };
+        // Get all phases and statuses for reference
+        phases = await workflowService.getAllPhases();
+        statuses = await workflowService.getAllStatuses();
         
-        // Race the query against the timeout
+        // Get BCRs with optional filtering
         bcrs = await Promise.race([
-          bcrModel.getAllSubmissions(bcrQuery),
+          bcrModel.getAllBcrs(req.query),
           timeoutPromise
         ]);
-      } catch (queryError) {
-        console.error('Error fetching BCRs:', queryError);
-        // Don't rethrow, just continue with empty bcrs
-        bcrs = [];
+        
+        console.log(`Retrieved ${bcrs.length} BCRs, ${phases.length} phases, and ${statuses.length} statuses`);
+      } catch (error) {
+        console.error('Error fetching BCRs:', error);
+        // Don't rethrow, continue with bcrs = []
       }
     }
     
@@ -664,40 +687,75 @@ exports.listApprovedBcrs = async (req, res) => {
     
     // Format BCRs for display
     const formattedBcrs = bcrsToDisplay.map(bcr => {
-      // Get status tag for display
-      let workflowStatus = 'New Submission';
-      let workflowStatusClass = 'govuk-tag';
+      // Default values for phase and status
       let currentPhase = 'Phase 1: Complete and Submit BCR form';
+      let workflowStatus = 'New Submission';
+      let workflowStatusClass = 'govuk-tag govuk-tag--blue';
+      let currentPhaseId = null;
+      let currentStatusId = null;
       
-      // Extract phase information if available
-      if (bcr.bcrId && bcr.bcrId.currentPhaseId) {
-        // If we have a BCR with phase info, use that
-        currentPhase = bcr.bcrId.currentPhaseId.name || 'Phase 1';
+      // Get the current phase and status from the BCR
+      if (bcr.currentPhaseId) {
+        currentPhaseId = bcr.currentPhaseId._id || bcr.currentPhaseId;
+        currentPhase = bcr.currentPhaseId.name || 'Unknown Phase';
+      }
+      
+      // First check for the workflowStatus field (new field)
+      if (bcr.workflowStatus) {
+        workflowStatus = bcr.workflowStatus;
         
-        // If we have status info from the BCR, use that
-        if (bcr.bcrId.status) {
-          workflowStatus = bcr.bcrId.status;
+        // Try to find the matching status in our statuses list
+        const matchingStatus = statuses.find(s => s.name === bcr.workflowStatus);
+        if (matchingStatus && matchingStatus.color) {
+          workflowStatusClass = `govuk-tag govuk-tag--${matchingStatus.color}`;
+        } else {
+          // Use the getStatusTag helper for consistent styling
+          const statusTag = workflowService.getStatusTag({
+            name: bcr.workflowStatus,
+            value: bcr.workflowStatus.toLowerCase().replace(/\s+/g, '-')
+          });
+          workflowStatusClass = statusTag.class;
+        }
+      } 
+      // Then check for currentStatusId (populated reference)
+      else if (bcr.currentStatusId) {
+        currentStatusId = bcr.currentStatusId._id || bcr.currentStatusId;
+        workflowStatus = bcr.currentStatusId.name || 'Unknown Status';
+        workflowStatusClass = bcr.currentStatusId.color ? 
+          `govuk-tag govuk-tag--${bcr.currentStatusId.color}` : 'govuk-tag';
+      } 
+      // Finally fall back to the legacy status field
+      else if (bcr.status) {
+        workflowStatus = bcr.status;
+        
+        // Try to find the matching status in our statuses list
+        const matchingStatus = statuses.find(s => s.name === bcr.status);
+        if (matchingStatus && matchingStatus.color) {
+          workflowStatusClass = `govuk-tag govuk-tag--${matchingStatus.color}`;
+        }
+      }
+      
+      // If we have a submissionId reference, extract additional info if needed
+      if (bcr.submissionId) {
+        // Only use these as fallbacks if not already set
+        if (!currentPhase && bcr.submissionId.workflowPhase) {
+          currentPhase = bcr.submissionId.workflowPhase;
         }
         
-        // If we have a status class from the BCR, use that
-        if (bcr.bcrId.currentStatusId && bcr.bcrId.currentStatusId.color) {
-          workflowStatusClass = `govuk-tag govuk-tag--${bcr.bcrId.currentStatusId.color}`;
+        if (!workflowStatus && bcr.submissionId.status) {
+          workflowStatus = bcr.submissionId.status;
         }
       }
       
       return {
         id: bcr._id || bcr.id,
-        submissionCode: bcr.submissionCode || 'N/A',
         bcrNumber: bcr.bcrNumber || 'N/A',
+        submissionCode: bcr.submissionId ? bcr.submissionId.submissionCode : 'N/A',
+        briefDescription: bcr.title || (bcr.submissionId ? bcr.submissionId.briefDescription : 'No description provided'),
         currentPhase: currentPhase,
-        briefDescription: bcr.briefDescription || 'No description provided',
-        fullName: bcr.fullName || 'Unknown',
-        emailAddress: bcr.emailAddress || 'No email provided',
-        submissionSource: bcr.submissionSource || 'Unknown',
-        organisation: bcr.organisation || 'Not specified',
-        urgencyLevel: bcr.urgencyLevel || 'Not specified',
-        impactAreas: Array.isArray(bcr.impactAreas) ? bcr.impactAreas.join(', ') : 'None',
+        currentPhaseId: currentPhaseId,
         displayStatus: workflowStatus,
+        currentStatusId: currentStatusId,
         statusClass: workflowStatusClass,
         createdAt: bcr.createdAt ? 
           new Date(bcr.createdAt).toLocaleDateString('en-GB', { 
@@ -716,13 +774,15 @@ exports.listApprovedBcrs = async (req, res) => {
             day: 'numeric', 
             month: 'long', 
             year: 'numeric' 
-          }) : 'Not reviewed'
+          }) : 'Unknown'
       };
     });
     
     res.render('modules/bcr/bcrs/index', {
       title: 'Business Change Requests',
       bcrs: formattedBcrs,
+      phases,
+      statuses,
       filters: req.query,
       connectionIssue: !isDbConnected,
       timedOut: timedOut,
@@ -735,6 +795,8 @@ exports.listApprovedBcrs = async (req, res) => {
     res.render('modules/bcr/bcrs/index', {
       title: 'Business Change Requests',
       bcrs: [],
+      phases: [],
+      statuses: [],
       filters: req.query,
       connectionIssue: true,
       timedOut: true,
@@ -745,46 +807,215 @@ exports.listApprovedBcrs = async (req, res) => {
 };
 
 /**
+ * View workflow progress for a specific BCR by ID
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+exports.viewWorkflowProgress = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Get the BCR data
+    const bcr = await bcrModel.getBcrById(id);
+    if (!bcr) {
+      req.flash('error', 'BCR not found');
+      return res.redirect('/bcr/business-change-requests');
+    }
+    
+    // Get the submission data if available
+    let submission = null;
+    if (bcr.submissionId) {
+      submission = await Submission.findById(bcr.submissionId);
+    }
+    
+    // Get the current phase and status
+    const phase = await workflowService.getPhaseById(bcr.currentPhaseId);
+    const status = await workflowService.getStatusById(bcr.currentStatusId);
+    
+    // Set the current phase and status
+    const currentPhase = phase ? phase.name : 'Unknown';
+    const workflowStatus = status ? status.name : 'Unknown';
+    const workflowStatusClass = status && status.color ? `govuk-tag govuk-tag--${status.color}` : 'govuk-tag';
+    
+    // Format the BCR data for the view
+    const bcrData = {
+      ...bcr,
+      createdAt: bcr.createdAt,
+      updatedAt: bcr.updatedAt
+    };
+    
+    // Get all phases for the workflow visualization
+    const allPhases = await bcrModel.getAllPhases();
+    
+    // Get all statuses for the timeline
+    const allStatuses = await bcrModel.getAllStatuses();
+    
+    // Create a simple workflow visualization
+    const workflowProgress = [];
+    
+    // Sort phases by display order
+    allPhases.sort((a, b) => a.displayOrder - b.displayOrder);
+    
+    // Find the current phase index
+    const currentPhaseIndex = allPhases.findIndex(phase => 
+      phase._id.toString() === (bcr.currentPhaseId ? bcr.currentPhaseId._id.toString() : ''));
+    
+    // Get the initial phase for the BCR creation event in the timeline
+    let initialPhase = 'Initial Phase';
+    if (allPhases.length > 0) {
+      initialPhase = allPhases[0].name;
+    }
+    
+    // Create the workflow progress data
+    for (let i = 0; i < allPhases.length; i++) {
+      const phase = allPhases[i];
+      const isCurrentPhase = i === currentPhaseIndex;
+      const isCompleted = i < currentPhaseIndex;
+      
+      workflowProgress.push({
+        id: phase._id,
+        name: phase.name,
+        displayOrder: phase.displayOrder,
+        status: isCompleted ? 'Completed' : (isCurrentPhase ? 'In Progress' : 'Not Started'),
+        statusClass: isCompleted ? 'govuk-tag--green' : (isCurrentPhase ? 'govuk-tag--blue' : 'govuk-tag--grey')
+      });
+    }
+    
+    // Render the workflow progress view
+    res.render('modules/bcr/bcrs/workflow-progress', {
+      title: `Workflow Progress for BCR ${bcrData.bcrNumber}`,
+      bcr: {
+        ...bcrData,
+        initialPhase: initialPhase
+      },
+      submission,
+      currentPhase,
+      workflowStatus,
+      workflowStatusClass,
+      workflowProgress,
+      allPhases,
+      allStatuses,
+      user: req.user,
+      csrfToken: req.csrfToken ? req.csrfToken() : ''
+    });
+  } catch (error) {
+    console.error('Error viewing workflow progress:', error);
+    // Handle error without using flash if it's not available
+    return res.status(500).render('error', {
+      message: 'An error occurred while viewing the workflow progress',
+      error: process.env.NODE_ENV === 'development' ? error : {}
+    });
+  }
+};
+
+/**
  * View a specific Business Change Request
  */
 exports.viewBcr = async (req, res) => {
   try {
-    const bcrId = req.params.id;
+    const id = req.params.id;
     
     // Check if the ID is a valid MongoDB ObjectId
-    if (!bcrId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).render('error', {
         title: 'Invalid Request',
-        message: 'The provided BCR ID is not valid',
+        message: 'The provided ID is not valid',
         error: { status: 400 },
         user: req.user
       });
     }
     
-    // Find the BCR
-    const bcr = await bcrModel.getBcrById(bcrId);
-    if (!bcr) {
-      // If BCR not found, redirect to the list page with a message
-      return res.redirect('/bcr/business-change-requests?error=Business+Change+Request+not+found');
-    }
-    
-    // Get the submission associated with this BCR
+    // First try to find the ID as a BCR
+    let bcr = await bcrModel.getBcrById(id);
     let submission = null;
-    if (bcr.submissionId) {
+    
+    // If not found as a BCR, check if it's a submission ID
+    if (!bcr) {
+      submission = await bcrModel.getSubmissionById(id);
+      
+      if (submission && submission.bcrId) {
+        // If it's a submission with a BCR ID, get the BCR
+        bcr = await bcrModel.getBcrById(submission.bcrId);
+      } else if (submission && submission.bcrNumber) {
+        // If it's a submission with a BCR number but no BCR ID, try to find the BCR by other means
+        // This is a fallback for submissions that were approved before the BCR model was updated
+        const bcrs = await bcrModel.getAllBcrs({ search: submission.bcrNumber });
+        if (bcrs && bcrs.length > 0) {
+          bcr = bcrs[0];
+        }
+      }
+      
+      // If we still couldn't find a BCR, create a simple BCR object from the submission
+      if (!bcr && submission) {
+        // Create a temporary BCR object from the submission data
+        bcr = {
+          _id: submission._id,
+          bcrNumber: submission.bcrNumber || 'BCR-Unknown',
+          title: submission.briefDescription || 'No title available',
+          description: submission.justification || 'No description available',
+          urgencyLevel: submission.urgencyLevel || 'Medium',
+          status: submission.status || 'Approved',
+          createdAt: submission.createdAt,
+          updatedAt: submission.updatedAt
+        };
+      } else if (!bcr) {
+        // If no BCR and no submission found, redirect to the list page
+        return res.redirect('/bcr/business-change-requests');
+      }
+    } else if (bcr.submissionId) {
+      // If we found the BCR directly, get its associated submission
       submission = await bcrModel.getSubmissionById(bcr.submissionId);
     }
     
-    // Create phase and status objects from the BCR data
-    // This is a temporary solution until the BCR model is updated to use references
-    const currentPhase = {
-      name: bcr.currentPhase || 'Phase 1',
-      description: 'Current workflow phase'
-    };
+    // Get the current phase and status from the database
+    let workflowStatus = 'New Submission';
+    let workflowStatusClass = 'govuk-tag';
+    let currentPhase = '';
+    let currentPhaseObj = null;
+    let currentStatusObj = null;
     
-    const currentStatus = {
-      name: bcr.status || 'New',
-      color: getStatusColor(bcr.status)
-    };
+    // Fetch the current phase and status if the BCR has them
+    if (bcr.currentPhaseId) {
+      try {
+        // Get the current phase
+        const phase = await workflowService.getPhaseById(bcr.currentPhaseId);
+        if (phase) {
+          currentPhaseObj = phase;
+          currentPhase = phase.name;
+          console.log('Fetched current phase:', currentPhase);
+        }
+      } catch (error) {
+        console.error('Error fetching current phase:', error);
+      }
+    }
+    
+    if (bcr.currentStatusId) {
+      try {
+        // Get the current status
+        const status = await workflowService.getStatusById(bcr.currentStatusId);
+        if (status) {
+          currentStatusObj = status;
+          workflowStatus = status.name;
+          console.log('Fetched current status:', workflowStatus);
+        }
+      } catch (error) {
+        console.error('Error fetching current status:', error);
+      }
+    } else if (bcr.workflowStatus) {
+      // If we have a workflowStatus field but no currentStatusId, use that
+      workflowStatus = bcr.workflowStatus;
+      console.log('Using workflowStatus field:', workflowStatus);
+    }
+    
+    // Get the status tag styling
+    const statusTag = workflowService.getStatusTag(currentStatusObj || { name: workflowStatus });
+    workflowStatusClass = statusTag.class;
+    
+    // Log the values we're using
+    console.log('Using dynamic values for BCR:', bcr.bcrNumber || bcr.bcrCode);
+    console.log('- Current Phase:', currentPhase);
+    console.log('- Workflow Status:', workflowStatus);
+    console.log('- Status Class:', workflowStatusClass);
     
     // Prepare BCR data for the view
     const bcrData = {
@@ -794,14 +1025,69 @@ exports.viewBcr = async (req, res) => {
       description: submission ? submission.justification : (bcr.description || 'No description available')
     };
     
+    // Debug log to see what values are being passed to the template
+    console.log('Debug - BCR View Data:', {
+      bcrNumber: bcrData.bcrNumber,
+      currentPhase,
+      currentPhaseObj,
+      workflowStatus,
+      workflowStatusClass,
+      currentStatus: currentStatusObj
+    });
+    
+    // Get all phases for the workflow visualization
+    const allPhases = await bcrModel.getAllPhases();
+    
+    // Get all statuses for the timeline
+    const allStatuses = await bcrModel.getAllStatuses();
+    
+    // Create a simple workflow visualization
+    const workflowProgress = [];
+    
+    // Sort phases by display order
+    allPhases.sort((a, b) => a.displayOrder - b.displayOrder);
+    
+    // Find the current phase index
+    const currentPhaseIndex = allPhases.findIndex(phase => 
+      phase._id.toString() === (bcr.currentPhaseId ? bcr.currentPhaseId._id.toString() : ''));
+    
+    // Get the initial phase for the BCR creation event in the timeline
+    let initialPhase = 'Initial Phase';
+    if (allPhases.length > 0) {
+      initialPhase = allPhases[0].name;
+    }
+    
+    // Create the workflow progress data
+    for (let i = 0; i < allPhases.length; i++) {
+      const phase = allPhases[i];
+      const isCurrentPhase = i === currentPhaseIndex;
+      const isCompleted = i < currentPhaseIndex;
+      
+      workflowProgress.push({
+        id: phase._id,
+        name: phase.name,
+        displayOrder: phase.displayOrder,
+        status: isCompleted ? 'Completed' : (isCurrentPhase ? 'In Progress' : 'Not Started'),
+        statusClass: isCompleted ? 'govuk-tag--green' : (isCurrentPhase ? 'govuk-tag--blue' : 'govuk-tag--grey')
+      });
+    }
+    
     // Render the BCR view
     res.render('modules/bcr/bcrs/view', {
-      title: `BCR: ${bcrData.bcrNumber}`,
-      bcr: bcrData,
+      title: `BCR ${bcrData.bcrNumber}`,
+      bcr: {
+        ...bcrData,
+        initialPhase: initialPhase
+      },
       submission,
       currentPhase,
-      currentStatus,
-      user: req.user
+      workflowStatus,
+      workflowStatusClass,
+      workflowProgress,
+      allPhases,
+      allStatuses,
+      user: req.user,
+      csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
   } catch (error) {
     console.error('Error in viewBcr controller:', error);
@@ -1109,6 +1395,133 @@ exports.deleteImpactArea = async (req, res) => {
     res.status(500).render('error', {
       title: 'Error',
       message: 'An error occurred while trying to delete the impact area',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+};
+
+/**
+ * Render the edit submission form
+ */
+exports.editSubmissionForm = async (req, res) => {
+  try {
+    // Check MongoDB connection state
+    const isDbConnected = mongoose.connection.readyState === 1;
+    let timedOut = false;
+    let submission = null;
+    let impactAreas = [];
+    let urgencyLevels = [];
+    
+    if (isDbConnected) {
+      try {
+        // Set a timeout for this operation to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => {
+            timedOut = true;
+            reject(new Error('Timeout fetching submission details'));
+          }, 8000);
+        });
+        
+        // Race the query against the timeout
+        submission = await Promise.race([
+          bcrModel.getSubmissionById(req.params.id),
+          timeoutPromise
+        ]);
+        
+        // Get impact areas and urgency levels for form dropdowns
+        [impactAreas, urgencyLevels] = await Promise.all([
+          bcrModel.getAllImpactAreas(),
+          bcrModel.getAllUrgencyLevels()
+        ]);
+      } catch (queryError) {
+        console.error('Error fetching submission details:', queryError);
+        // Don't rethrow, continue with submission = null
+      }
+    }
+    
+    if (!submission) {
+      // If we couldn't find the submission due to connection issues or timeout,
+      // show a more helpful error page with connection status
+      return res.status(404).render('error', {
+        title: 'Submission Not Available',
+        message: timedOut ? 
+          'The request to fetch the submission timed out. Please try again later.' : 
+          (!isDbConnected ? 
+            'Database connection issue detected. Please try again when the database is available.' : 
+            'The requested submission was not found'),
+        error: {},
+        connectionIssue: !isDbConnected,
+        timedOut: timedOut,
+        user: req.user
+      });
+    }
+    
+    res.render('modules/bcr/submissions/edit', {
+      title: `Edit Submission ${submission.submissionCode}`,
+      submission,
+      impactAreas,
+      urgencyLevels,
+      statusTag: getSubmissionStatusTag(submission),
+      connectionIssue: !isDbConnected,
+      timedOut: timedOut,
+      csrfToken: req.csrfToken ? req.csrfToken() : '',
+      user: req.user
+    });
+  } catch (error) {
+    console.error('Error in edit submission form controller:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An error occurred while loading the edit form',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      connectionIssue: mongoose.connection.readyState !== 1,
+      user: req.user
+    });
+  }
+};
+
+/**
+ * Update a submission
+ */
+exports.updateSubmission = async (req, res) => {
+  try {
+    const submissionId = req.params.id;
+    
+    // Get the current submission
+    const currentSubmission = await bcrModel.getSubmissionById(submissionId);
+    if (!currentSubmission) {
+      return res.status(404).render('error', {
+        title: 'Not Found',
+        message: 'The requested submission was not found',
+        error: {},
+        user: req.user
+      });
+    }
+    
+    // Prepare update data from form
+    const updateData = {
+      fullName: req.body.fullName,
+      emailAddress: req.body.emailAddress,
+      organisation: req.body.organisation,
+      briefDescription: req.body.briefDescription,
+      justification: req.body.justification,
+      urgencyLevel: req.body.urgencyLevel,
+      impactAreas: Array.isArray(req.body.impactAreas) ? req.body.impactAreas : [req.body.impactAreas],
+      technicalDependencies: req.body.technicalDependencies,
+      additionalNotes: req.body.additionalNotes,
+      updatedAt: new Date()
+    };
+    
+    // Update the submission
+    await bcrModel.Submission.findByIdAndUpdate(submissionId, updateData);
+    
+    // Redirect to the submission view page
+    res.redirect(`/bcr/submissions/${submissionId}`);
+  } catch (error) {
+    console.error('Error in update submission controller:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An error occurred while updating the submission',
       error: process.env.NODE_ENV === 'development' ? error : {},
       user: req.user
     });
