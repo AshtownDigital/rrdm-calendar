@@ -1,0 +1,50 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}
+  {{ pageTitle }} - RRDM
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container">
+  <main class="govuk-main-wrapper" id="main-content" role="main">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+        {% if academicYears and academicYears.length > 0 %}
+          <form method="POST" action="/release-management/confirm-generate-releases">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            
+            <div class="govuk-form-group">
+              <fieldset class="govuk-fieldset">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                  Select academic years to generate standard releases for
+                </legend>
+                <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                  {% for year in academicYears %}
+                    <div class="govuk-checkboxes__item">
+                      <input class="govuk-checkboxes__input" id="academic-year-{{ year._id }}" name="selectedAcademicYearIds" type="checkbox" value="{{ year._id }}">
+                      <label class="govuk-label govuk-checkboxes__label" for="academic-year-{{ year._id }}">
+                        {{ year.fullName }} ({{ year.status }})
+                      </label>
+                    </div>
+                  {% endfor %}
+                </div>
+              </fieldset>
+            </div>
+
+            <button type="submit" class="govuk-button" data-module="govuk-button">
+              Review Selections and Generate
+            </button>
+          </form>
+        {% else %}
+          <div class="govuk-inset-text">
+            No current or future academic years are available for release generation.
+          </div>
+          <a href="/academic-years/new" class="govuk-button govuk-button--secondary">Create New Academic Year</a>
+        {% endif %}
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

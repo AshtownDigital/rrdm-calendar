@@ -46,6 +46,16 @@
                 </a>
               </li>
               <li class="govuk-header__navigation-item">
+                <a class="govuk-header__link" href="/academic-years">
+                  Academic Years
+                </a>
+              </li>
+              <li class="govuk-header__navigation-item">
+                <a class="govuk-header__link" href="/release-management">
+                  Release Diary
+                </a>
+              </li>
+              <li class="govuk-header__navigation-item">
                 <a class="govuk-header__link" href="/bcr/dashboard">
                   BCR Dashboard
                 </a>
@@ -89,18 +99,37 @@
         </div>
       {% endblock %}
 
-      <main class="govuk-main-wrapper" id="main-content" role="main">
-        {% if error %}
+      <main class="govuk-main-wrapper govuk-main-wrapper--auto-spacing" id="main-content" role="main">
+        {# Display Success Flash Messages #}
+        {% if flashMessages and flashMessages.success %}
+          <div class="govuk-notification-banner govuk-notification-banner--success" role="alert"
+               aria-labelledby="govuk-notification-banner-title"
+               data-module="govuk-notification-banner">
+            <div class="govuk-notification-banner__header">
+              <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                Success
+              </h2>
+            </div>
+            <div class="govuk-notification-banner__content">
+              <p class="govuk-notification-banner__heading">
+                {{ flashMessages.success }}
+              </p>
+            </div>
+          </div>
+        {% endif %}
+
+        {# Display Error Flash Messages #}
+        {% if flashMessages and flashMessages.error %}
           <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
             <h2 class="govuk-error-summary__title" id="error-summary-title">
               There is a problem
             </h2>
             <div class="govuk-error-summary__body">
-              <ul class="govuk-list govuk-error-summary__list">
-                <li>
-                  <a href="#error">{{ error }}</a>
-                </li>
-              </ul>
+              <p class="govuk-body">
+                {{ flashMessages.error }}
+              </p>
+              {# If flashMessages.error is an object or array, you might need to loop through it #}
+              {# For simplicity, assuming it's a string here. Adjust if needed. #}
             </div>
           </div>
         {% endif %}

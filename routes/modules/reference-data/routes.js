@@ -4,7 +4,7 @@
  */
 const express = require('express');
 const router = express.Router();
-const csrfProtection = require('../../../middleware/csrf');
+const { csrfProtection } = require('../../../middleware/csrf');
 
 // Create sub-routers for different reference data sections
 const itemsRouter = express.Router();

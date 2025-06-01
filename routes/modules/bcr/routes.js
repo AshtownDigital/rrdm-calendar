@@ -4,7 +4,7 @@
  */
 const express = require('express');
 const router = express.Router();
-const csrfProtection = require('../../../middleware/csrf');
+const { csrfProtection } = require('../../../middleware/csrf');
 
 // Import controllers
 const bcrController = require('../../../controllers/modules/bcr/controller');

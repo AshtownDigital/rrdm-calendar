@@ -1,0 +1,167 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}
+  Academic Years - RRDM
+{% endblock %}
+
+{% block content %}
+
+{% if currentAcademicYearForBanner %}
+  <div class="govuk-notification-banner" role="region"
+    aria-labelledby="govuk-notification-banner-title"
+    data-module="govuk-notification-banner">
+    <div class="govuk-notification-banner__header">
+      <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+        Information
+      </h2>
+    </div>
+    <div class="govuk-notification-banner__content">
+      <p class="govuk-notification-banner__heading">
+        The current academic year is {{ currentAcademicYearForBanner.fullName }}.
+        {% if daysRemaining is not null %}
+          <span class="govuk-body-m" style="display: block; margin-top: 0.5rem;">
+            <strong>{{ daysRemaining }}</strong> day{% if daysRemaining != 1 %}s{% endif %} remaining until the end of this academic year.
+          </span>
+        {% endif %}
+      </p>
+    </div>
+  </div>
+{% endif %}
+<div class="govuk-width-container">
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Academic Years</h1>
+    </div>
+    <div class="govuk-grid-column-one-third" style="text-align: right;">
+      <a href="/academic-years/new" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+        Add New Academic Year
+      </a>
+    </div>
+  </div>
+
+  {# Bulk Generate Section #}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+      <h2 class="govuk-heading-m">Bulk Generate Academic Years</h2>
+        <div class="govuk-button-group">
+          <a href="/academic-years/bulk-generate-warning?numberOfYears=1" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+            Generate 1 Year
+          </a>
+          <a href="/academic-years/bulk-generate-warning?numberOfYears=5" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+            Generate 5 Years
+          </a>
+          <a href="/academic-years/bulk-generate-warning?numberOfYears=10" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+            Generate 10 Years
+          </a>
+        </div>
+      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+    </div>
+  </div>
+
+
+  {% if academicYears and academicYears.length > 0 %}
+    <table class="govuk-table">
+      <thead class="govuk-table__head">
+        <tr>
+          <th scope="col" class="govuk-table__header">Name</th>
+          <th scope="col" class="govuk-table__header">Code</th>
+          <th scope="col" class="govuk-table__header">Full Name</th>
+          <th scope="col" class="govuk-table__header">Start Date</th>
+          <th scope="col" class="govuk-table__header">End Date</th>
+          <th scope="col" class="govuk-table__header">Status</th>
+          <th scope="col" class="govuk-table__header">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for year in academicYears %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ year.name }}</td>
+            <td class="govuk-table__cell">{{ year.code }}</td>
+            <td class="govuk-table__cell">{{ year.fullName }}</td>
+            <td class="govuk-table__cell">{{ year.startDate | date('dd/MM/yyyy') }}</td>
+            <td class="govuk-table__cell">{{ year.endDate | date('dd/MM/yyyy') }}</td>
+            <td class="govuk-table__cell">
+              {% set tag_class = '' %}
+              {% set tag_text = year.status %}
+              
+              {% if year.status == 'Current' %}
+                {% set tag_class = 'govuk-tag--green' %}
+              {% elif year.status == 'Past' %}
+                {% set tag_class = 'govuk-tag--red' %}
+              {% elif year.status == 'Future' %}
+                {% set tag_class = 'govuk-tag--grey' %}
+              {% endif %}
+              
+              {# Check if this is the next academic year #}
+              {% if nextAcademicYear and nextAcademicYear.uuid and year.uuid and nextAcademicYear.uuid == year.uuid %}
+                {% set tag_class = 'govuk-tag--blue' %}
+                {% set tag_text = 'Next' %}
+              {% endif %}
+              
+              <strong class="govuk-tag {{ tag_class }}">{{ tag_text }}</strong>
+            </td>
+            <td class="govuk-table__cell">
+              <a href="/academic-years/{{ year.uuid }}/edit" class="govuk-link govuk-link--no-visited-state">Edit</a>
+              {# <a href="/academic-years/{{ year.uuid }}" class="btn btn-sm btn-outline-info">View</a> #}
+              {# Add delete button/form later if needed #}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if pagination and pagination.totalPages > 1 %}
+    <nav class="govuk-pagination" role="navigation" aria-label="results">
+      <ul class="govuk-pagination__list">
+        {% if pagination.currentPage > 1 %}
+          <li class="govuk-pagination__prev">
+            {% set prev_url = '?page=' ~ (pagination.currentPage - 1) %}
+            {% if queryParams.status %}{% set prev_url = prev_url ~ '&status=' ~ queryParams.status %}{% endif %}
+            {% if queryParams.sortBy %}{% set prev_url = prev_url ~ '&sortBy=' ~ queryParams.sortBy %}{% endif %}
+            {% if queryParams.sortOrder %}{% set prev_url = prev_url ~ '&sortOrder=' ~ queryParams.sortOrder %}{% endif %}
+            <a class="govuk-link govuk-pagination__link" href="{{ prev_url }}" rel="prev">
+              <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
+              </svg>
+              <span class="govuk-pagination__link-title">Previous</span>
+            </a>
+          </li>
+        {% endif %}
+        {% for i in range(1, pagination.totalPages + 1) %}
+          <li class="govuk-pagination__item {{ 'govuk-pagination__item--current' if i == pagination.currentPage }}">
+            {% set page_i_url = '?page=' ~ i %}
+            {% if queryParams.status %}{% set page_i_url = page_i_url ~ '&status=' ~ queryParams.status %}{% endif %}
+            {% if queryParams.sortBy %}{% set page_i_url = page_i_url ~ '&sortBy=' ~ queryParams.sortBy %}{% endif %}
+            {% if queryParams.sortOrder %}{% set page_i_url = page_i_url ~ '&sortOrder=' ~ queryParams.sortOrder %}{% endif %}
+            <a class="govuk-link govuk-pagination__link" href="{{ page_i_url }}" aria-label="Page {{ i }}" {{ 'aria-current="page"' if i == pagination.currentPage else '' }}>
+              {{ i }}
+            </a>
+          </li>
+        {% endfor %}
+        {% if pagination.currentPage < pagination.totalPages %}
+          <li class="govuk-pagination__next">
+            {% set next_url = '?page=' ~ (pagination.currentPage + 1) %}
+            {% if queryParams.status %}{% set next_url = next_url ~ '&status=' ~ queryParams.status %}{% endif %}
+            {% if queryParams.sortBy %}{% set next_url = next_url ~ '&sortBy=' ~ queryParams.sortBy %}{% endif %}
+            {% if queryParams.sortOrder %}{% set next_url = next_url ~ '&sortOrder=' ~ queryParams.sortOrder %}{% endif %}
+            <a class="govuk-link govuk-pagination__link" href="{{ next_url }}" rel="next">
+              <span class="govuk-pagination__link-title">Next</span>
+              <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                <path d="m8.4062 0.0078125-1.4141 1.4141 4.293 4.293h-12.984v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7266-6.7266-6.7266-6.4062z"></path>
+              </svg>
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+
+  {% else %}
+    <div class="govuk-inset-text">
+      No academic years found. <a class="govuk-link" href="/academic-years/new">Add one now!</a>
+    </div>
+  {% endif %}
+</main> {# Corresponds to govuk-main-wrapper from the new form #}
+</div>
+{% endblock %}

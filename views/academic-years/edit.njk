@@ -1,0 +1,275 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}
+  Edit Academic Year - RRDM
+{% endblock %}
+
+{% block breadcrumbs %}
+  <li class="govuk-breadcrumbs__list-item">
+    <a class="govuk-breadcrumbs__link" href="/academic-years">Academic Years</a>
+  </li>
+  <li class="govuk-breadcrumbs__list-item" aria-current="page">Edit Academic Year</li>
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-l">Edit Academic Year</h1>
+
+    {# GOV.UK Error Summary #}
+    {% if errors and (errors.general or errors.startDate or errors.status or errors.academicBreaks) %}
+      <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+        <h2 class="govuk-error-summary__title" id="error-summary-title">
+          There is a problem
+        </h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            {% if errors.general %}
+              <li><a href="#">{{ errors.general }}</a></li>
+            {% endif %}
+            {% if errors.startDate %}
+              <li><a href="#startDate">{{ errors.startDate }}</a></li>
+            {% endif %}
+            {% if errors.status %}
+              <li><a href="#status">{{ errors.status }}</a></li>
+            {% endif %}
+            {% if errors.academicBreaks %}
+              <li><a href="#academicBreaks">{{ errors.academicBreaks }}</a></li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    {% endif %}
+
+    <form method="POST" action="/api/v1/academic-years/{{ formData._id }}" id="editForm" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="hidden" name="_method" value="PUT">
+
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors and errors.startDate }}">
+        <label class="govuk-label govuk-label--m" for="startDate">
+          Start Date
+        </label>
+        <div id="startDate-hint" class="govuk-hint">
+          Academic years always start on September 1st.
+        </div>
+        {% if errors and errors.startDate %}
+          <span id="startDate-error" class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span> {{ errors.startDate }}
+          </span>
+        {% endif %}
+        <input class="govuk-input govuk-input--width-10 {{ 'govuk-input--error' if errors and errors.startDate }}" 
+                id="startDate" 
+                name="startDate" 
+                type="date" 
+                value="{{ formData.startDate }}" 
+                aria-describedby="startDate-hint {{ 'startDate-error' if errors and errors.startDate else '' }}" 
+                readonly>
+      </div>
+
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors and errors.status }}">
+        <label class="govuk-label govuk-label--m" for="status">
+          Status
+        </label>
+        <div id="status-hint" class="govuk-hint">
+          The current status of the academic year.
+        </div>
+        {% if errors and errors.status %}
+          <span id="status-error" class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span> {{ errors.status }}
+          </span>
+        {% endif %}
+        <select class="govuk-select {{ 'govuk-select--error' if errors and errors.status }}" 
+                id="status" 
+                name="status" 
+                aria-describedby="status-hint {{ 'status-error' if errors and errors.status else '' }}">
+          <option value="Future" {% if formData.status == 'Future' %}selected{% endif %}>Future</option>
+          <option value="Next" {% if formData.status == 'Next' %}selected{% endif %}>Next</option>
+          <option value="Current" {% if formData.status == 'Current' %}selected{% endif %}>Current</option>
+          <option value="Past" {% if formData.status == 'Past' %}selected{% endif %}>Past</option>
+          <option value="Archived" {% if formData.status == 'Archived' %}selected{% endif %}>Archived</option>
+        </select>
+      </div>
+
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors and errors.academicBreaks }}">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            Academic Breaks
+            <div id="academicBreaks-hint" class="govuk-hint">
+              Add periods when no releases should be scheduled (e.g., winter holidays, term breaks)
+            </div>
+          </legend>
+          
+          {% if errors and errors.academicBreaks %}
+            <span id="academicBreaks-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ errors.academicBreaks }}
+            </span>
+          {% endif %}
+          
+          <div id="academicBreaksContainer">
+            {% if formData.academicBreaks and formData.academicBreaks.length > 0 %}
+              {% for break in formData.academicBreaks %}
+                <div class="govuk-grid-row academic-break-row" id="break-{{ loop.index0 }}">
+                  <div class="govuk-grid-column-one-third">
+                    <div class="govuk-form-group">
+                      <label class="govuk-label" for="academicBreaks[{{ loop.index0 }}][startDate]">
+                        Start Date
+                      </label>
+                      <input class="govuk-input" 
+                             id="academicBreaks[{{ loop.index0 }}][startDate]" 
+                             name="academicBreaks[{{ loop.index0 }}][startDate]" 
+                             type="date" 
+                             value="{{ break.startDate | date('YYYY-MM-DD') if break.startDate else '' }}" 
+                             required>
+                    </div>
+                  </div>
+                  <div class="govuk-grid-column-one-third">
+                    <div class="govuk-form-group">
+                      <label class="govuk-label" for="academicBreaks[{{ loop.index0 }}][endDate]">
+                        End Date
+                      </label>
+                      <input class="govuk-input" 
+                             id="academicBreaks[{{ loop.index0 }}][endDate]" 
+                             name="academicBreaks[{{ loop.index0 }}][endDate]" 
+                             type="date" 
+                             value="{{ break.endDate | date('YYYY-MM-DD') if break.endDate else '' }}" 
+                             required>
+                    </div>
+                  </div>
+                  <div class="govuk-grid-column-one-third">
+                    <div class="govuk-form-group">
+                      <label class="govuk-label" for="academicBreaks[{{ loop.index0 }}][description]">
+                        Description
+                      </label>
+                      <input class="govuk-input" 
+                             id="academicBreaks[{{ loop.index0 }}][description]" 
+                             name="academicBreaks[{{ loop.index0 }}][description]" 
+                             type="text" 
+                             value="{{ break.description }}">
+                      <button type="button" class="govuk-button govuk-button--warning govuk-!-margin-top-2 remove-break-btn" data-index="{{ loop.index0 }}">
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            {% endif %}
+          </div>
+          
+          <button type="button" class="govuk-button govuk-button--secondary" id="addBreakBtn">
+            Add Academic Break
+          </button>
+        </fieldset>
+      </div>
+
+      <div class="govuk-button-group">
+        <button type="submit" class="govuk-button" data-module="govuk-button">
+          Save Changes
+        </button>
+        <a class="govuk-link govuk-link--no-visited-state" href="/academic-years">Cancel</a>
+      </div>
+    </form>
+  </div>
+  
+  <div class="govuk-grid-column-one-third">
+    <div class="govuk-panel govuk-panel--sidebar">
+      <h2 class="govuk-heading-m">Academic Year Details</h2>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Code</dt>
+          <dd class="govuk-summary-list__value">{{ formData.code }}</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Full Name</dt>
+          <dd class="govuk-summary-list__value">{{ formData.fullName }}</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">End Date</dt>
+          <dd class="govuk-summary-list__value">{{ formData.endDate | date('DD/MM/YYYY') if formData.endDate else 'Not set' }}</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const container = document.getElementById('academicBreaksContainer');
+  const addButton = document.getElementById('addBreakBtn');
+  let breakCount = {{ formData.academicBreaks.length if formData.academicBreaks else 0 }};
+  
+  // Function to add a new break row
+  addButton.addEventListener('click', function() {
+    const newRow = document.createElement('div');
+    newRow.className = 'govuk-grid-row academic-break-row';
+    newRow.id = `break-${breakCount}`;
+    
+    newRow.innerHTML = `
+      <div class="govuk-grid-column-one-third">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="academicBreaks[${breakCount}][startDate]">
+            Start Date
+          </label>
+          <input class="govuk-input" 
+                 id="academicBreaks[${breakCount}][startDate]" 
+                 name="academicBreaks[${breakCount}][startDate]" 
+                 type="date" 
+                 required>
+        </div>
+      </div>
+      <div class="govuk-grid-column-one-third">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="academicBreaks[${breakCount}][endDate]">
+            End Date
+          </label>
+          <input class="govuk-input" 
+                 id="academicBreaks[${breakCount}][endDate]" 
+                 name="academicBreaks[${breakCount}][endDate]" 
+                 type="date" 
+                 required>
+        </div>
+      </div>
+      <div class="govuk-grid-column-one-third">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="academicBreaks[${breakCount}][description]">
+            Description
+          </label>
+          <input class="govuk-input" 
+                 id="academicBreaks[${breakCount}][description]" 
+                 name="academicBreaks[${breakCount}][description]" 
+                 type="text">
+          <button type="button" class="govuk-button govuk-button--warning govuk-!-margin-top-2 remove-break-btn" data-index="${breakCount}">
+            Remove
+          </button>
+        </div>
+      </div>
+    `;
+    
+    container.appendChild(newRow);
+    breakCount++;
+    
+    // Add event listener to the new remove button
+    addRemoveEventListeners();
+  });
+  
+  // Function to handle remove button clicks
+  function addRemoveEventListeners() {
+    const removeButtons = document.querySelectorAll('.remove-break-btn');
+    removeButtons.forEach(button => {
+      button.removeEventListener('click', removeBreakRow);
+      button.addEventListener('click', removeBreakRow);
+    });
+  }
+  
+  function removeBreakRow(event) {
+    const index = event.target.dataset.index;
+    const rowToRemove = document.getElementById(`break-${index}`);
+    if (rowToRemove) {
+      rowToRemove.remove();
+    }
+  }
+  
+  // Initialize remove buttons for existing rows
+  addRemoveEventListeners();
+});
+</script>
+{% endblock %}

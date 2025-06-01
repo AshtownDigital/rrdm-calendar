@@ -1,0 +1,44 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}
+  Confirm Bulk Generation - RRDM
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container">
+  <main class="govuk-main-wrapper govuk-main-wrapper--l" id="main-content" role="main">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Confirm Bulk Generation of Academic Years</h1>
+
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-warning-text__assistive">Warning</span>
+            You are about to generate <strong>{{ numberOfYears }}</strong> academic year(s), starting from the academic year <strong>{{ nextPotentialStartYear }}/{{ nextPotentialStartYear + 1 }}</strong>.
+            <br><br>
+            Please ensure this is correct before proceeding. This action cannot be easily undone.
+          </strong>
+        </div>
+
+        <form method="POST" action="/api/academic-years/bulk" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {# The startYear will be determined by the controller based on nextPotentialStartYear #}
+          {# We still pass numberOfYears to the API endpoint #}
+          <input type="hidden" name="numberOfYears" value="{{ numberOfYears }}">
+          
+          <div class="govuk-button-group">
+            <button class="govuk-button" data-module="govuk-button" type="submit">
+              Confirm and Generate {{ numberOfYears }} Year(s)
+            </button>
+            <a href="/academic-years" class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button">
+              Cancel
+            </a>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

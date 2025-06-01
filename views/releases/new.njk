@@ -1,0 +1,274 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}
+  Add New Release Entry - RRDM
+{% endblock %}
+
+{% block breadcrumbs %}
+  <li class="govuk-breadcrumbs__list-item">
+    <a class="govuk-breadcrumbs__link" href="/release-management">Release Diary</a>
+  </li>
+  <li class="govuk-breadcrumbs__list-item" aria-current="page">Add New Release</li>
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-l">Add New Release Entry</h1>
+
+    <form action="/api/v1/releases" method="POST" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+      {# ReleaseNameDetails #}
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors.ReleaseNameDetails }}">
+        <label class="govuk-label govuk-label--s" for="ReleaseNameDetails">
+          Release Name/Details
+        </label>
+        {% if errors.ReleaseNameDetails %}
+        <span id="ReleaseNameDetails-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{ errors.ReleaseNameDetails.msg }}
+        </span>
+        {% endif %}
+        <input class="govuk-input {{ 'govuk-input--error' if errors.ReleaseNameDetails }}" id="ReleaseNameDetails" name="ReleaseNameDetails" type="text" value="{{ formData.ReleaseNameDetails }}" required>
+      </div>
+
+      {# RecordNumber #}
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors.RecordNumber }}">
+        <label class="govuk-label govuk-label--s" for="RecordNumber">
+          Record Number
+        </label>
+        {% if errors.RecordNumber %}
+        <span id="RecordNumber-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{ errors.RecordNumber.msg }}
+        </span>
+        {% endif %}
+        <input class="govuk-input govuk-input--width-5 {{ 'govuk-input--error' if errors.RecordNumber }}" id="RecordNumber" name="RecordNumber" type="number" value="{{ formData.RecordNumber }}" required>
+      </div>
+
+      {# AcademicYearID (Dropdown) #}
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors.AcademicYearID }}">
+        <label class="govuk-label govuk-label--s" for="AcademicYearID">
+          Academic Year
+        </label>
+        {% if errors.AcademicYearID %}
+        <span id="AcademicYearID-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{ errors.AcademicYearID.msg }}
+        </span>
+        {% endif %}
+        <select class="govuk-select {{ 'govuk-select--error' if errors.AcademicYearID }}" id="AcademicYearID" name="AcademicYearID" required>
+          <option value="" {{ 'selected' if not formData.AcademicYearID }}>Select Academic Year</option>
+          {% for year in academicYears %}
+          <option value="{{ year._id }}" {{ 'selected' if formData.AcademicYearID == year._id }}>{{ year.name }} ({{ year.status }})</option> {# Assuming 'name' is like '23/24' and 'status' is 'Current', 'Future' etc. #}
+          {% endfor %}
+        </select>
+      </div>
+
+      {# AcademicYearName is now derived on the backend based on AcademicYearID, so no input field needed here. #}
+      {# However, the Release model still requires AcademicYearName. This will be populated in the POST route. #}
+      <input type="hidden" name="AcademicYearName" id="AcademicYearName_hidden_placeholder" value="{{ formData.AcademicYearName if formData.AcademicYearName else '' }}">
+
+      {# ReleaseCode #}
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors.ReleaseCode }}">
+        <label class="govuk-label govuk-label--s" for="ReleaseCode">
+          Release Code (e.g., 25/26-001-BS)
+        </label>
+        {% if errors.ReleaseCode %}
+        <span id="ReleaseCode-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{ errors.ReleaseCode.msg }}
+        </span>
+        {% endif %}
+        <input class="govuk-input govuk-input--width-20 {{ 'govuk-input--error' if errors.ReleaseCode }}" id="ReleaseCode" name="ReleaseCode" type="text" value="{{ formData.ReleaseCode }}" required>
+      </div>
+
+      {# ReleaseType #}
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors.ReleaseType }}">
+        <label class="govuk-label govuk-label--s" for="ReleaseType">
+          Release Type
+        </label>
+        {% if errors.ReleaseType %}
+        <span id="ReleaseType-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{ errors.ReleaseType.msg }}
+        </span>
+        {% endif %}
+        <select class="govuk-select {{ 'govuk-select--error' if errors.ReleaseType }}" id="ReleaseType" name="ReleaseType" required>
+          <option value="" {{ 'selected' if not formData.ReleaseType }}>Select type</option>
+          <option value="AcademicYearBaseline" {{ 'selected' if formData.ReleaseType == 'AcademicYearBaseline' }}>Academic Year Baseline</option>
+          <option value="InYearPeriod" {{ 'selected' if formData.ReleaseType == 'InYearPeriod' }}>In-Year Period</option>
+          <option value="Adhoc" {{ 'selected' if formData.ReleaseType == 'Adhoc' }}>Adhoc</option>
+        </select>
+      </div>
+
+      {# Status #}
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors.Status }}">
+        <label class="govuk-label govuk-label--s" for="Status">
+          Status
+        </label>
+        {% if errors.Status %}
+        <span id="Status-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{ errors.Status.msg }}
+        </span>
+        {% endif %}
+        <select class="govuk-select {{ 'govuk-select--error' if errors.Status }}" id="Status" name="Status" required>
+          <option value="Planned" {{ 'selected' if formData.Status == 'Planned' or not formData.Status }}>Planned</option>
+          <option value="In Progress" {{ 'selected' if formData.Status == 'In Progress' }}>In Progress</option>
+          <option value="Ready for Deployment" {{ 'selected' if formData.Status == 'Ready for Deployment' }}>Ready for Deployment</option>
+          <option value="Deployed Successfully" {{ 'selected' if formData.Status == 'Deployed Successfully' }}>Deployed Successfully</option>
+          <option value="Deployed with Issues" {{ 'selected' if formData.Status == 'Deployed with Issues' }}>Deployed with Issues</option>
+          <option value="Postponed" {{ 'selected' if formData.Status == 'Postponed' }}>Postponed</option>
+          <option value="Cancelled" {{ 'selected' if formData.Status == 'Cancelled' }}>Cancelled</option>
+        </select>
+      </div>
+
+      {# GoLiveDate #}
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors.GoLiveDate }}">
+        <label class="govuk-label govuk-label--s" for="GoLiveDate">
+          Go-Live Date
+        </label>
+        {% if errors.GoLiveDate %}
+        <span id="GoLiveDate-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{ errors.GoLiveDate.msg }}
+        </span>
+        {% endif %}
+        <input class="govuk-input govuk-input--width-10 {{ 'govuk-input--error' if errors.GoLiveDate }}" id="GoLiveDate" name="GoLiveDate" type="date" value="{{ formData.GoLiveDate }}" required>
+      </div>
+
+      {# StartDate #}
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors.StartDate }}">
+        <label class="govuk-label govuk-label--s" for="StartDate">
+          Start Date
+        </label>
+        {% if errors.StartDate %}
+        <span id="StartDate-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{ errors.StartDate.msg }}
+        </span>
+        {% endif %}
+        <input class="govuk-input govuk-input--width-10 {{ 'govuk-input--error' if errors.StartDate }}" id="StartDate" name="StartDate" type="date" value="{{ formData.StartDate }}" required>
+      </div>
+
+      {# EndDate #}
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors.EndDate }}">
+        <label class="govuk-label govuk-label--s" for="EndDate">
+          End Date
+        </label>
+        {% if errors.EndDate %}
+        <span id="EndDate-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{ errors.EndDate.msg }}
+        </span>
+        {% endif %}
+        <input class="govuk-input govuk-input--width-10 {{ 'govuk-input--error' if errors.EndDate }}" id="EndDate" name="EndDate" type="date" value="{{ formData.EndDate }}" required>
+      </div>
+
+      {# FreezeCutOffDate #}
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors.FreezeCutOffDate }}">
+        <label class="govuk-label govuk-label--s" for="FreezeCutOffDate">
+          Freeze Cut-Off Date
+        </label>
+        {% if errors.FreezeCutOffDate %}
+        <span id="FreezeCutOffDate-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{ errors.FreezeCutOffDate.msg }}
+        </span>
+        {% endif %}
+        <input class="govuk-input govuk-input--width-10 {{ 'govuk-input--error' if errors.FreezeCutOffDate }}" id="FreezeCutOffDate" name="FreezeCutOffDate" type="date" value="{{ formData.FreezeCutOffDate }}" required>
+      </div>
+
+      {# ResponsibleTeamLead #}
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors.ResponsibleTeamLead }}">
+        <label class="govuk-label govuk-label--s" for="ResponsibleTeamLead">
+          Responsible Team Lead
+        </label>
+        {% if errors.ResponsibleTeamLead %}
+        <span id="ResponsibleTeamLead-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{ errors.ResponsibleTeamLead.msg }}
+        </span>
+        {% endif %}
+        <input class="govuk-input {{ 'govuk-input--error' if errors.ResponsibleTeamLead }}" id="ResponsibleTeamLead" name="ResponsibleTeamLead" type="text" value="{{ formData.ResponsibleTeamLead }}">
+      </div>
+
+      {# ImpactAssessment #}
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors.ImpactAssessment }}">
+        <label class="govuk-label govuk-label--s" for="ImpactAssessment">
+          Impact Assessment
+        </label>
+        {% if errors.ImpactAssessment %}
+        <span id="ImpactAssessment-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{ errors.ImpactAssessment.msg }}
+        </span>
+        {% endif %}
+        <textarea class="govuk-textarea {{ 'govuk-textarea--error' if errors.ImpactAssessment }}" id="ImpactAssessment" name="ImpactAssessment" rows="3">{{ formData.ImpactAssessment }}</textarea>
+      </div>
+
+      {# CommunicationSent #}
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors.CommunicationSent }}">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+            Communication Sent?
+          </legend>
+          {% if errors.CommunicationSent %}
+          <span id="CommunicationSent-error" class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span> {{ errors.CommunicationSent.msg }}
+          </span>
+          {% endif %}
+          <div class="govuk-radios govuk-radios--inline" data-module="govuk-radios">
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="CommunicationSent-yes" name="CommunicationSent" type="radio" value="true" {{ 'checked' if formData.CommunicationSent === true or formData.CommunicationSent === 'true' }}>
+              <label class="govuk-label govuk-radios__label" for="CommunicationSent-yes">
+                Yes
+              </label>
+            </div>
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="CommunicationSent-no" name="CommunicationSent" type="radio" value="false" {{ 'checked' if formData.CommunicationSent === false or formData.CommunicationSent === 'false' or formData.CommunicationSent === undefined }}>
+              <label class="govuk-label govuk-radios__label" for="CommunicationSent-no">
+                No
+              </label>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+
+      {# CommunicationLink (Conditional based on CommunicationSent - basic example) #}
+      {# For a better UX, this field could be shown/hidden with JavaScript based on CommunicationSent radio selection #}
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors.CommunicationLink }}">
+        <label class="govuk-label govuk-label--s" for="CommunicationLink">
+          Communication Link (if applicable)
+        </label>
+        {% if errors.CommunicationLink %}
+        <span id="CommunicationLink-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{ errors.CommunicationLink.msg }}
+        </span>
+        {% endif %}
+        <input class="govuk-input {{ 'govuk-input--error' if errors.CommunicationLink }}" id="CommunicationLink" name="CommunicationLink" type="url" value="{{ formData.CommunicationLink }}">
+      </div>
+
+      {# Notes #}
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errors.Notes }}">
+        <label class="govuk-label govuk-label--s" for="Notes">
+          Notes
+        </label>
+        {% if errors.Notes %}
+        <span id="Notes-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{ errors.Notes.msg }}
+        </span>
+        {% endif %}
+        <textarea class="govuk-textarea {{ 'govuk-textarea--error' if errors.Notes }}" id="Notes" name="Notes" rows="3">{{ formData.Notes }}</textarea>
+      </div>
+
+      {# RelatedDocumentationLinks - Placeholder for now #}
+      <div class="govuk-form-group">
+        <h2 class="govuk-heading-m">Related Documentation Links</h2>
+        <p class="govuk-body">Functionality to add/edit documentation links (label and URL) will be implemented here later.</p>
+        {# Example of how one might look - this part needs dynamic JS to add more #}
+        {# <label class="govuk-label" for="relatedDocLabel1">Label 1</label> #}
+        {# <input class="govuk-input" id="relatedDocLabel1" name="RelatedDocumentationLinks[0][label]" type="text"> #}
+        {# <label class="govuk-label" for="relatedDocUrl1">URL 1</label> #}
+        {# <input class="govuk-input" id="relatedDocUrl1" name="RelatedDocumentationLinks[0][url]" type="url"> #}
+      </div>
+
+      <button class="govuk-button" data-module="govuk-button" type="submit">
+        Save New Release
+      </button>
+      <a href="/release-management" class="govuk-button govuk-button--secondary" data-module="govuk-button">Cancel</a>
+
+    </form>
+  </div>
+</div>
+{% endblock %}

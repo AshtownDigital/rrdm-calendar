@@ -4,7 +4,7 @@
  */
 const express = require('express');
 const router = express.Router();
-const csrfProtection = require('../../../middleware/csrf');
+const { csrfProtection } = require('../../../middleware/csrf');
 const authService = require('../../../services/modules/access/authService');
 const fundingController = require('../../../controllers/modules/funding/controller');
 

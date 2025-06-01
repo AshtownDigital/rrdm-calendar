@@ -1,0 +1,135 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}
+  {{ pageTitle }} - RRDM
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container">
+  <main class="govuk-main-wrapper" id="main-content" role="main">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+        {% if overallWarning %}
+          <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+              <span class="govuk-warning-text__assistive">Warning</span>
+              Standard releases already exist for one or more of the selected academic years. Proceeding will delete and regenerate these releases.
+            </strong>
+          </div>
+        {% endif %}
+
+        {% if academicYearsWithInfo and academicYearsWithInfo.length > 0 %}
+          <p class="govuk-body">You are about to generate standard releases for the following academic years:</p>
+          
+          <dl class="govuk-summary-list">
+            {% for year in academicYearsWithInfo %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ year.fullName }}</dt>
+                <dd class="govuk-summary-list__value">
+                  {% if year.hasExistingReleases %}
+                    <strong class="govuk-tag govuk-tag--yellow">Has existing releases</strong>
+                  {% else %}
+                    <strong class="govuk-tag govuk-tag--green">Ready for generation</strong>
+                  {% endif %}
+                </dd>
+              </div>
+            {% endfor %}
+          </dl>
+
+          <form method="POST" action="/release-management/generate-releases-execute" id="generateReleasesForm">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              {% for year in academicYearsWithInfo %}
+                <input type="hidden" name="academicYearIds" value="{{ year.id }}">
+              {% endfor %}
+              <div class="govuk-button-group govuk-!-margin-top-6">
+                <button type="submit" class="govuk-button {{ 'govuk-button--warning' if overallWarning else '' }}" data-module="govuk-button" id="confirmGenerateButton">
+                  Confirm and Generate Releases
+                </button>
+                <a href="/release-management/select-generate-years" class="govuk-button govuk-button--secondary" role="button">Cancel and Change Selection</a>
+              </div>
+          </form>
+          
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              console.log('=== CONFIRM GENERATE RELEASES PAGE LOADED ===');
+              console.log('Page URL:', window.location.href);
+              
+              // Log CSRF token
+              const csrfToken = document.querySelector('input[name="_csrf"]')?.value;
+              console.log('CSRF Token present:', !!csrfToken);
+              if (csrfToken) {
+                console.log('CSRF token length:', csrfToken.length);
+                console.log('CSRF token first 5 chars:', csrfToken.substring(0, 5) + '...');
+              }
+              
+              // Log academic year IDs
+              const academicYearInputs = document.querySelectorAll('input[name="academicYearIds"]');
+              console.log('Number of academic year IDs:', academicYearInputs.length);
+              
+              const academicYearValues = Array.from(academicYearInputs).map(input => input.value);
+              console.log('Academic year IDs:', academicYearValues);
+              
+              // Get form and add listeners
+              const form = document.getElementById('generateReleasesForm');
+              if (form) {
+                console.log('Form found with action:', form.action);
+                console.log('Form method:', form.method);
+                
+                // Add submit button click listener
+                const submitButton = document.getElementById('confirmGenerateButton');
+                if (submitButton) {
+                  submitButton.addEventListener('click', function(e) {
+                    console.log('Submit button clicked at:', new Date().toISOString());
+                  });
+                }
+                
+                // Add form submit listener
+                form.addEventListener('submit', function(event) {
+                  console.log('=== FORM SUBMISSION STARTED ===');
+                  console.log('Form submission time:', new Date().toISOString());
+                  console.log('Form being submitted to:', this.action);
+                  console.log('Form method:', this.method);
+                  
+                  // Log all form data
+                  const formData = new FormData(this);
+                  console.log('Form data entries:');
+                  for (let [key, value] of formData.entries()) {
+                    console.log(`${key}: ${value}`);
+                  }
+                  
+                  // Check if CSRF token is present
+                  const csrfToken = formData.get('_csrf');
+                  console.log('CSRF token present in form data:', !!csrfToken);
+                  if (csrfToken) {
+                    console.log('CSRF token length in form data:', csrfToken.length);
+                    console.log('CSRF token first 5 chars in form data:', csrfToken.substring(0, 5) + '...');
+                  }
+                  
+                  // Check academic year IDs
+                  const academicYearIds = formData.getAll('academicYearIds');
+                  console.log('Academic year IDs from form data:', academicYearIds);
+                  console.log('Number of academic year IDs in form data:', academicYearIds.length);
+                  
+                  console.log('=== FORM SUBMISSION COMPLETED ===');
+                });
+              } else {
+                console.error('Form element not found!');
+              }
+            });
+          </script>
+        {% else %}
+          <div class="govuk-inset-text">
+            No academic years were processed from your selection. Please try again.
+          </div>
+          <a href="/release-management/select-generate-years" class="govuk-button" data-module="govuk-button">
+            Return to Selection
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

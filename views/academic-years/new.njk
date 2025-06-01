@@ -1,0 +1,72 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}
+  Add New Academic Year - RRDM
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container">
+  <main class="govuk-main-wrapper" id="main-content" role="main">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Add New Academic Year</h1>
+
+        {# GOV.UK Error Summary #}
+        {% if errors and (errors.general or errors.startDate) %}
+          <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+            <h2 class="govuk-error-summary__title" id="error-summary-title">
+              There is a problem
+            </h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                {% if errors.general %}
+                  <li><a href="#">{{ errors.general }}</a></li> {# Link to a general area or first field if no specific field #}
+                {% endif %}
+                {% if errors.startDate %}
+                  <li><a href="#startDate">{{ errors.startDate }}</a></li>
+                {% endif %}
+              </ul>
+            </div>
+          </div>
+        {% endif %}
+
+        <form method="POST" action="/academic-years" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+          <div class="govuk-form-group {{ 'govuk-form-group--error' if errors and errors.startDate }}">
+            <label class="govuk-label govuk-label--m" for="startDate">
+              Start Date
+            </label>
+            <div id="startDate-hint" class="govuk-hint">
+              The academic year must start on September 1st. For example, 01/09/2025.
+            </div>
+            {% if errors and errors.startDate %}
+              <span id="startDate-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span> {{ errors.startDate }}
+              </span>
+            {% endif %}
+            {# For a date input, GOV.UK often uses day, month, year fields separately for accessibility #}
+            {# However, a single type="date" can be used with appropriate polyfills or if browser support is sufficient #}
+            {# For simplicity here, using type="date", but consider GOV.UK date input component for production #}
+            <input class="govuk-input govuk-input--width-10 {{ 'govuk-input--error' if errors and errors.startDate }}" 
+                   id="startDate" 
+                   name="startDate" 
+                   type="date" 
+                   value="{{ values.startDate if values else '' }}" 
+                   aria-describedby="startDate-hint {{ 'startDate-error' if errors and errors.startDate else '' }}" 
+                   required>
+          </div>
+
+          <div class="govuk-button-group">
+            <button type="submit" class="govuk-button" data-module="govuk-button">
+              Create Academic Year
+            </button>
+            <a class="govuk-link govuk-link--no-visited-state" href="/academic-years">Cancel</a>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
