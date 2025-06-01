@@ -10,14 +10,17 @@ const csrfProtection = csrf({
   ignoreMethods: ['GET', 'HEAD', 'OPTIONS'] // Only check CSRF for state-changing methods
 });
 
-// Middleware to add CSRF token to response locals
-const addCsrfToken = (req, res, next) => {
-  res.locals.csrfToken = req.csrfToken();
-  next();
-};
-
-// Export the middleware
-module.exports = (req, res, next) => {
+// Enhanced CSRF protection middleware with detailed logging
+const enhancedCsrfProtection = (req, res, next) => {
+  console.log('=== CSRF PROTECTION MIDDLEWARE STARTED ===');
+  console.log('Request path:', req.path);
+  console.log('Request method:', req.method);
+  console.log('CSRF token in body:', req.body && req.body._csrf ? 'Present' : 'Not present');
+  console.log('CSRF token in query:', req.query && req.query._csrf ? 'Present' : 'Not present');
+  console.log('CSRF token in headers:', req.headers && req.headers['csrf-token'] ? 'Present' : 'Not present');
+  console.log('CSRF token in headers (x-csrf-token):', req.headers && req.headers['x-csrf-token'] ? 'Present' : 'Not present');
+  console.log('CSRF token in headers (x-xsrf-token):', req.headers && req.headers['x-xsrf-token'] ? 'Present' : 'Not present');
+  
   // Check if we're in a test environment where we want to bypass CSRF
   if (process.env.NODE_ENV === 'test') {
     console.log('CSRF protection disabled for testing environment');
@@ -31,6 +34,13 @@ module.exports = (req, res, next) => {
   csrfProtection(req, res, (err) => {
     if (err) {
       // Handle CSRF errors
+      console.error('=== CSRF VALIDATION FAILED ===');
+      console.error('Error code:', err.code);
+      console.error('Error message:', err.message);
+      console.error('Error stack:', err.stack);
+      console.error('Request body:', req.body);
+      console.error('Request headers:', req.headers);
+      
       if (err.code === 'EBADCSRFTOKEN') {
         return res.status(403).render('error', {
           title: 'Forbidden',
@@ -46,6 +56,15 @@ module.exports = (req, res, next) => {
     }
     
     // Add CSRF token to response locals
-    addCsrfToken(req, res, next);
+    res.locals.csrfToken = req.csrfToken();
+    console.log('=== CSRF VALIDATION PASSED ===');
+    console.log('CSRF token generated and added to res.locals');
+    next();
   });
+};
+
+// Export both the raw CSRF protection middleware and the enhanced version
+module.exports = {
+  csrfProtection,
+  enhancedCsrfProtection
 };

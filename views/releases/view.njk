@@ -1,0 +1,250 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}
+  {{ pageTitle }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container">
+  <main class="govuk-main-wrapper" id="main-content" role="main">
+    <!-- Back link -->
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        <a href="/release-management" class="govuk-back-link">Back to Release Diary</a>
+      </div>
+    </div>
+
+    <!-- Page header -->
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        <span class="govuk-caption-xl">Release Details</span>
+        <h1 class="govuk-heading-xl">{{ release.ReleaseCode }}</h1>
+      </div>
+    </div>
+
+    <!-- Release summary -->
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        <div class="govuk-inset-text govuk-!-margin-bottom-6">
+          <h2 class="govuk-heading-m">{{ release.ReleaseNameDetails }}</h2>
+          <p class="govuk-body">
+            <span class="govuk-!-font-weight-bold">Academic Year:</span> {{ release.AcademicYearName }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status and type section -->
+    <div class="govuk-grid-row govuk-!-margin-bottom-6">
+      <div class="govuk-grid-column-one-half">
+        <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-4" style="background-color: #f3f2f1; color: #0b0c0c;">
+          <h2 class="govuk-heading-m">Release Type</h2>
+          {% if release.ReleaseType == 'AcademicYearBaseline' %}
+            <strong class="govuk-tag govuk-tag--turquoise govuk-!-margin-bottom-2">Baseline</strong>
+          {% elif release.ReleaseType == 'InYearPeriod' %}
+            <strong class="govuk-tag govuk-tag--blue govuk-!-margin-bottom-2">In-Year</strong>
+          {% elif release.ReleaseType == 'Adhoc' %}
+            <strong class="govuk-tag govuk-tag--orange govuk-!-margin-bottom-2">Ad Hoc</strong>
+          {% else %}
+            <strong class="govuk-tag govuk-!-margin-bottom-2">{{ release.ReleaseType }}</strong>
+          {% endif %}
+        </div>
+      </div>
+      <div class="govuk-grid-column-one-half">
+        <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-4" style="background-color: #f3f2f1; color: #0b0c0c;">
+          <h2 class="govuk-heading-m">Status</h2>
+          {% set status_class = '' %}
+          {% if release.Status == 'Deployed Successfully' %}
+            {% set status_class = 'govuk-tag--green' %}
+          {% elif release.Status == 'In Progress' %}
+            {% set status_class = 'govuk-tag--blue' %}
+          {% elif release.Status == 'Planned' %}
+            {% set status_class = 'govuk-tag--grey' %}
+          {% elif release.Status == 'Ready for Deployment' %}
+            {% set status_class = 'govuk-tag--purple' %}
+          {% elif release.Status == 'Deployed with Issues' %}
+            {% set status_class = 'govuk-tag--yellow' %}
+          {% elif release.Status == 'Postponed' %}
+            {% set status_class = 'govuk-tag--pink' %}
+          {% elif release.Status == 'Cancelled' %}
+            {% set status_class = 'govuk-tag--red' %}
+          {% endif %}
+          <strong class="govuk-tag {{ status_class }} govuk-!-margin-bottom-2">{{ release.Status }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        <div class="govuk-tabs" data-module="govuk-tabs">
+          <h2 class="govuk-tabs__title">Release information</h2>
+          <ul class="govuk-tabs__list">
+            <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+              <a class="govuk-tabs__tab" href="#key-dates">
+                Key Dates
+              </a>
+            </li>
+            <li class="govuk-tabs__list-item">
+              <a class="govuk-tabs__tab" href="#details">
+                Details
+              </a>
+            </li>
+            <li class="govuk-tabs__list-item">
+              <a class="govuk-tabs__tab" href="#communication">
+                Communication
+              </a>
+            </li>
+            <li class="govuk-tabs__list-item">
+              <a class="govuk-tabs__tab" href="#metadata">
+                Metadata
+              </a>
+            </li>
+          </ul>
+
+          <!-- Key Dates Tab -->
+          <div class="govuk-tabs__panel" id="key-dates">
+            <h2 class="govuk-heading-l">Key Dates</h2>
+            <dl class="govuk-summary-list">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Go Live Date</dt>
+                <dd class="govuk-summary-list__value">{{ release.GoLiveDateFormatted }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Start Date</dt>
+                <dd class="govuk-summary-list__value">{{ release.StartDateFormatted }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">End Date</dt>
+                <dd class="govuk-summary-list__value">{{ release.EndDateFormatted }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Freeze Cut-Off Date</dt>
+                <dd class="govuk-summary-list__value">{{ release.FreezeCutOffDateFormatted }}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <!-- Details Tab -->
+          <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="details">
+            <h2 class="govuk-heading-l">Release Details</h2>
+            <div class="govuk-grid-row">
+              <div class="govuk-grid-column-full">
+                <dl class="govuk-summary-list">
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Academic Year</dt>
+                    <dd class="govuk-summary-list__value">{{ release.AcademicYearName }}</dd>
+                  </div>
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Record Number</dt>
+                    <dd class="govuk-summary-list__value">{{ release.RecordNumber }}</dd>
+                  </div>
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Responsible Team Lead</dt>
+                    <dd class="govuk-summary-list__value">{{ release.ResponsibleTeamLead or 'Not specified' }}</dd>
+                  </div>
+                </dl>
+
+                <h3 class="govuk-heading-m">Impact Assessment</h3>
+                <div class="govuk-inset-text">
+                  {{ release.ImpactAssessment or 'No impact assessment provided.' }}
+                </div>
+                
+                <h3 class="govuk-heading-m">Notes</h3>
+                <div class="govuk-inset-text">
+                  {{ release.Notes or 'No notes provided.' }}
+                </div>
+              </div>
+            </div>
+
+            {% if release.RelatedDocumentationLinks and release.RelatedDocumentationLinks.length > 0 %}
+              <h3 class="govuk-heading-m">Related Documentation</h3>
+              <ul class="govuk-list govuk-list--bullet">
+                {% for doc in release.RelatedDocumentationLinks %}
+                  <li>
+                    <a href="{{ doc.url }}" class="govuk-link" target="_blank">{{ doc.label }}</a>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+          <!-- Communication Tab -->
+          <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="communication">
+            <h2 class="govuk-heading-l">Communication</h2>
+            <div class="govuk-grid-row">
+              <div class="govuk-grid-column-full">
+                <dl class="govuk-summary-list">
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Communication Sent</dt>
+                    <dd class="govuk-summary-list__value">
+                      {% if release.CommunicationSent %}
+                        <strong class="govuk-tag govuk-tag--green">Yes</strong>
+                      {% else %}
+                        <strong class="govuk-tag govuk-tag--grey">No</strong>
+                      {% endif %}
+                    </dd>
+                  </div>
+                  {% if release.CommunicationLink %}
+                    <div class="govuk-summary-list__row">
+                      <dt class="govuk-summary-list__key">Communication Link</dt>
+                      <dd class="govuk-summary-list__value">
+                        <a href="{{ release.CommunicationLink }}" class="govuk-link" target="_blank">View Communication</a>
+                      </dd>
+                    </div>
+                  {% endif %}
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metadata Tab -->
+          <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="metadata">
+            <h2 class="govuk-heading-l">Metadata</h2>
+            <div class="govuk-grid-row">
+              <div class="govuk-grid-column-full">
+                <dl class="govuk-summary-list">
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Release UUID</dt>
+                    <dd class="govuk-summary-list__value">{{ release.ReleaseUUID }}</dd>
+                  </div>
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Created</dt>
+                    <dd class="govuk-summary-list__value">{{ release.CreatedDateTimeFormatted }}</dd>
+                  </div>
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Last Modified</dt>
+                    <dd class="govuk-summary-list__value">{{ release.LastModifiedDateTimeFormatted }}</dd>
+                  </div>
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Archived</dt>
+                    <dd class="govuk-summary-list__value">
+                      {% if release.IsArchived %}
+                        <strong class="govuk-tag govuk-tag--red">Yes</strong>
+                      {% else %}
+                        <strong class="govuk-tag govuk-tag--green">No</strong>
+                      {% endif %}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="govuk-grid-row govuk-!-margin-top-6">
+      <div class="govuk-grid-column-full">
+        <div class="govuk-button-group">
+          <a href="/release-management" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+            Back to Release Diary
+          </a>
+          <!-- Add more action buttons here as needed -->
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

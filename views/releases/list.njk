@@ -1,0 +1,228 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}
+  Release Diary - RRDM
+{% endblock %}
+
+{% block content %}
+<!-- Styles removed -->
+<div class="govuk-width-container">
+  <main class="govuk-main-wrapper" id="main-content" role="main">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Release Diary</h1>
+      </div>
+      <div class="govuk-grid-column-one-third" style="text-align: right;">
+        <div class="govuk-button-group">
+          <a href="/release-management/select-generate-years" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+            Generate Standard Releases
+          </a>
+          <a href="/release-management/new" role="button" draggable="false" class="govuk-button govuk-!-margin-left-2" data-module="govuk-button">
+            Add New Release
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtering controls -->
+    <div class="govuk-grid-row govuk-!-margin-bottom-6">
+      <div class="govuk-grid-column-full">
+        <form method="GET" action="/release-management" class="govuk-!-margin-bottom-4">
+          <div class="govuk-form-group">
+            <fieldset class="govuk-fieldset">
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Filter releases</legend>
+              <div class="govuk-grid-row">
+                <div class="govuk-grid-column-one-quarter">
+                  <div class="govuk-form-group">
+                    <label class="govuk-label" for="releaseType">Release Type</label>
+                    <select class="govuk-select" id="releaseType" name="releaseType">
+                      <option value="">All Types</option>
+                      <option value="AcademicYearBaseline" {% if queryParams.releaseType == 'AcademicYearBaseline' %}selected{% endif %}>Academic Year Baseline</option>
+                      <option value="InYearPeriod" {% if queryParams.releaseType == 'InYearPeriod' %}selected{% endif %}>In-Year Period</option>
+                      <option value="Adhoc" {% if queryParams.releaseType == 'Adhoc' %}selected{% endif %}>Ad Hoc</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="govuk-grid-column-one-quarter">
+                  <div class="govuk-form-group">
+                    <label class="govuk-label" for="status">Status</label>
+                    <select class="govuk-select" id="status" name="status">
+                      <option value="">All Statuses</option>
+                      <option value="Planned" {% if queryParams.status == 'Planned' %}selected{% endif %}>Planned</option>
+                      <option value="In Progress" {% if queryParams.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                      <option value="Ready for Deployment" {% if queryParams.status == 'Ready for Deployment' %}selected{% endif %}>Ready for Deployment</option>
+                      <option value="Deployed Successfully" {% if queryParams.status == 'Deployed Successfully' %}selected{% endif %}>Deployed Successfully</option>
+                      <option value="Deployed with Issues" {% if queryParams.status == 'Deployed with Issues' %}selected{% endif %}>Deployed with Issues</option>
+                      <option value="Postponed" {% if queryParams.status == 'Postponed' %}selected{% endif %}>Postponed</option>
+                      <option value="Cancelled" {% if queryParams.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="govuk-grid-column-one-quarter">
+                  <div class="govuk-form-group">
+                    <label class="govuk-label" for="academicYearId">Academic Year</label>
+                    <select class="govuk-select" id="academicYearId" name="academicYearId">
+                      <option value="">All Academic Years</option>
+                      {% for year in academicYears %}
+                        <option value="{{ year._id }}" {% if queryParams.academicYearId == year._id %}selected{% endif %}>{{ year.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="govuk-grid-column-one-quarter" style="display: flex; align-items: flex-end;">
+                  <button class="govuk-button" data-module="govuk-button">
+                    Apply Filters
+                  </button>
+                  {% if queryParams.releaseType or queryParams.status or queryParams.academicYearId %}
+                    <a href="/release-management" class="govuk-button govuk-button--secondary govuk-!-margin-left-2">Clear</a>
+                  {% endif %}
+                </div>
+              </div>
+            </fieldset>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    {% if releases and releases.length > 0 %}
+      <table class="govuk-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Release Code</th>
+            <th scope="col" class="govuk-table__header">Release Name</th>
+            <th scope="col" class="govuk-table__header">Type</th>
+            <th scope="col" class="govuk-table__header">Release Date</th>
+            <th scope="col" class="govuk-table__header">Academic Year</th>
+            <th scope="col" class="govuk-table__header">Status</th>
+            <th scope="col" class="govuk-table__header">Tags</th>
+            <th scope="col" class="govuk-table__header">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for release in releases %}
+            {% set isAutoGenerated = release.ReleaseType == 'AcademicYearBaseline' or release.ReleaseType == 'InYearPeriod' %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell">
+                <a href="/release-management/view/{{ release._id }}" class="govuk-link govuk-!-font-weight-bold">{{ release.ReleaseCode }}</a>
+              </td>
+              <td class="govuk-table__cell">
+                {{ release.ReleaseNameDetails }}
+              </td>
+              <td class="govuk-table__cell">
+                {% if release.ReleaseType == 'AcademicYearBaseline' %}
+                  <strong class="govuk-tag govuk-tag--turquoise">Baseline</strong>
+                {% elif release.ReleaseType == 'InYearPeriod' %}
+                  <strong class="govuk-tag govuk-tag--blue">In-Year</strong>
+                {% elif release.ReleaseType == 'Adhoc' %}
+                  <strong class="govuk-tag govuk-tag--orange">Ad Hoc</strong>
+                {% else %}
+                  <strong class="govuk-tag">{{ release.ReleaseType }}</strong>
+                {% endif %}
+              </td>
+              <td class="govuk-table__cell">{{ release.GoLiveDate | date('DD/MM/YYYY') }}</td>
+              <td class="govuk-table__cell">{{ release.AcademicYearName }}</td>
+              <td class="govuk-table__cell">
+                {% set status_class = '' %}
+                {% if release.Status == 'Deployed Successfully' %}
+                  {% set status_class = 'govuk-tag--green' %}
+                {% elif release.Status == 'In Progress' %}
+                  {% set status_class = 'govuk-tag--blue' %}
+                {% elif release.Status == 'Planned' %}
+                  {% set status_class = 'govuk-tag--grey' %}
+                {% elif release.Status == 'Ready for Deployment' %}
+                  {% set status_class = 'govuk-tag--purple' %}
+                {% elif release.Status == 'Deployed with Issues' %}
+                  {% set status_class = 'govuk-tag--yellow' %}
+                {% elif release.Status == 'Postponed' %}
+                  {% set status_class = 'govuk-tag--orange' %}
+                {% elif release.Status == 'Cancelled' %}
+                  {% set status_class = 'govuk-tag--red' %}
+                {% endif %}
+                <strong class="govuk-tag {{ status_class }}">{{ release.Status }}</strong>
+              </td>
+              <td class="govuk-table__cell">
+                {% if release.tags and release.tags.length > 0 %}
+                  {{ release.tags | join(', ') }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td class="govuk-table__cell">
+                <a href="/release-management/{{ release._id }}/edit" class="govuk-link govuk-link--no-visited-state">Edit</a>
+                {# <a href="/release-management/{{ release._id }}" class="govuk-link govuk-link--no-visited-state govuk-!-margin-left-2">View</a> #}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {# Pagination (assuming a similar pagination object as academic years) #}
+      {% if pagination and pagination.totalPages > 1 %}
+      <nav class="govuk-pagination" role="navigation" aria-label="results">
+        <ul class="govuk-pagination__list">
+          {% if pagination.currentPage > 1 %}
+            <li class="govuk-pagination__prev">
+              {% set prev_url = '?page=' ~ (pagination.currentPage - 1) %}
+              
+              {# Add all active filters to pagination links #}
+              {% if queryParams.status %}{% set prev_url = prev_url ~ '&status=' ~ queryParams.status %}{% endif %}
+              {% if queryParams.releaseType %}{% set prev_url = prev_url ~ '&releaseType=' ~ queryParams.releaseType %}{% endif %}
+              {% if queryParams.academicYearId %}{% set prev_url = prev_url ~ '&academicYearId=' ~ queryParams.academicYearId %}{% endif %}
+              {% if queryParams.sortBy %}{% set prev_url = prev_url ~ '&sortBy=' ~ queryParams.sortBy %}{% endif %}
+              {% if queryParams.sortOrder %}{% set prev_url = prev_url ~ '&sortOrder=' ~ queryParams.sortOrder %}{% endif %}
+              
+              <a class="govuk-link govuk-pagination__link" href="{{ prev_url }}" rel="prev">
+                <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                  <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
+                </svg>
+                <span class="govuk-pagination__link-title">Previous</span>
+              </a>
+            </li>
+          {% endif %}
+          {% for i in range(1, pagination.totalPages + 1) %}
+            <li class="govuk-pagination__item {{ 'govuk-pagination__item--current' if i == pagination.currentPage }}">
+              {% set page_i_url = '?page=' ~ i %}
+              
+              {# Add all active filters to pagination links #}
+              {% if queryParams.status %}{% set page_i_url = page_i_url ~ '&status=' ~ queryParams.status %}{% endif %}
+              {% if queryParams.releaseType %}{% set page_i_url = page_i_url ~ '&releaseType=' ~ queryParams.releaseType %}{% endif %}
+              {% if queryParams.academicYearId %}{% set page_i_url = page_i_url ~ '&academicYearId=' ~ queryParams.academicYearId %}{% endif %}
+              {% if queryParams.sortBy %}{% set page_i_url = page_i_url ~ '&sortBy=' ~ queryParams.sortBy %}{% endif %}
+              {% if queryParams.sortOrder %}{% set page_i_url = page_i_url ~ '&sortOrder=' ~ queryParams.sortOrder %}{% endif %}
+              
+              <a class="govuk-link govuk-pagination__link" href="{{ page_i_url }}" aria-label="Page {{ i }}" {{ 'aria-current="page"' if i == pagination.currentPage else '' }}>
+                {{ i }}
+              </a>
+            </li>
+          {% endfor %}
+          {% if pagination.currentPage < pagination.totalPages %}
+            <li class="govuk-pagination__next">
+              {% set next_url = '?page=' ~ (pagination.currentPage + 1) %}
+              
+              {# Add all active filters to pagination links #}
+              {% if queryParams.status %}{% set next_url = next_url ~ '&status=' ~ queryParams.status %}{% endif %}
+              {% if queryParams.releaseType %}{% set next_url = next_url ~ '&releaseType=' ~ queryParams.releaseType %}{% endif %}
+              {% if queryParams.isAutoGenerated %}{% set next_url = next_url ~ '&isAutoGenerated=' ~ queryParams.isAutoGenerated %}{% endif %}
+              {% if queryParams.sortBy %}{% set next_url = next_url ~ '&sortBy=' ~ queryParams.sortBy %}{% endif %}
+              {% if queryParams.sortOrder %}{% set next_url = next_url ~ '&sortOrder=' ~ queryParams.sortOrder %}{% endif %}
+              {# Add other query params: {% if queryParams.status %}{% set next_url = next_url ~ '&status=' ~ queryParams.status %}{% endif %} #}
+              <a class="govuk-link govuk-pagination__link" href="{{ next_url }}" rel="next">
+                <span class="govuk-pagination__link-title">Next</span>
+                <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                  <path d="m8.4062 0.0078125-1.4141 1.4141 4.293 4.293h-12.984v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7266-6.7266-6.7266-6.4062z"></path>
+                </svg>
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+
+    {% else %}
+      <div class="govuk-inset-text">
+        No release entries found. <a class="govuk-link" href="/release-management/new">Add one now.</a>
+      </div>
+    {% endif %}
+  </main>
+</div>
+{% endblock %}

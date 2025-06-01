@@ -4,7 +4,7 @@
  */
 const express = require('express');
 const router = express.Router();
-const csrfProtection = require('../../../middleware/csrf');
+const { csrfProtection } = require('../../../middleware/csrf');
 const accessController = require('../../../controllers/modules/access/controller');
 
 // User management routes

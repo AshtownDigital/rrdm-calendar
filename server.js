@@ -9,6 +9,7 @@ const nunjucks = require('nunjucks');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const { connect, mongoose } = require('./config/database.mongo');
+const flash = require('connect-flash');
 
 // === Core Module Routes ===
 
@@ -34,6 +35,14 @@ const homeRouter = require('./routes/modules/home/routes');
 
 // Funding module routes
 const fundingRouter = require('./routes/modules/funding/routes');
+
+// Academic Year module routes
+const academicYearRouter = require('./routes/academicYearRoutes');
+const { updateAcademicYearStatuses } = require('./services/academicYearService'); // Added for one-time status update
+const releaseRoutes = require('./routes/releaseRoutes'); // Added for Release Diary Management
+
+// View routes (for rendering Nunjucks templates)
+const viewRoutes = require('./routes/viewRoutes');
 
 // Note: Legacy modules have been removed as part of modularization
 
@@ -61,9 +70,27 @@ const MongoStore = require('connect-mongo');
 // Initialize cookie-parser middleware (required for CSRF)
 app.use(cookieParser(process.env.SESSION_SECRET || 'your-secret-key'));
 
-// Ensure we have a valid MongoDB URI for the session store
-const mongoUrl = process.env.MONGODB_URI || 'mongodb://localhost:27017/rrdm';
-console.log(`Setting up session store with MongoDB at ${mongoUrl.replace(/mongodb\+srv:\/\/([^:]+):[^@]+@/, 'mongodb+srv://$1:***@')}`);
+// Middleware to parse URL-encoded bodies (as sent by HTML forms)
+app.use(express.urlencoded({ extended: false }));
+// Middleware to parse JSON bodies (as sent by API clients)
+app.use(express.json());
+
+// Determine the appropriate MongoDB URI based on environment
+let mongoUrl = process.env.MONGODB_URI;
+
+// For Heroku, ensure we're using the correct MongoDB URI
+if (process.env.NODE_ENV === 'production' && !mongoUrl) {
+  console.error('ERROR: MONGODB_URI environment variable is not set in production!');
+  // Fallback to a dummy URI that will fail gracefully
+  mongoUrl = 'mongodb://atlas-placeholder-uri/rrdm';
+} else if (!mongoUrl) {
+  // For local development, use localhost
+  mongoUrl = 'mongodb://localhost:27017/rrdm';
+}
+
+// Mask sensitive parts of the connection string for logging
+const maskedUrl = mongoUrl.replace(/mongodb\+srv:\/\/([^:]+):[^@]+@/, 'mongodb+srv://$1:***@');
+console.log(`Setting up session store with MongoDB at ${maskedUrl}`);
 
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
@@ -87,6 +114,9 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000 // 1 day
   }
 }));
+
+// Flash messages middleware - should be after session middleware
+app.use(flash());
 
 // Configure Nunjucks view engine
 const env = nunjucks.configure([
@@ -112,44 +142,56 @@ env.addFilter('json', function(value) {
 });
 
 env.addFilter('date', function(date, format) {
-  if (!date) return '';
+  console.log('[Nunjucks date Filter] Input date:', date, 'Format:', format);
+  if (!date) {
+    console.log('[Nunjucks date Filter] No date provided, returning empty string.');
+    return '';
+  }
   
-  // Convert string to Date object if needed
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  let dateObj;
+  if (typeof date === 'string') {
+    dateObj = new Date(date);
+  } else if (date instanceof Date) {
+    dateObj = date;
+  } else {
+    console.error('[Nunjucks date Filter] Invalid date type provided:', typeof date, date);
+    return date; // Return original input if type is unexpected
+  }
   
-  // Default format
-  if (!format) format = 'DD MMM YYYY';
+  console.log('[Nunjucks date Filter] Parsed dateObj:', dateObj);
+
+  // Check if dateObj is a valid Date
+  if (!(dateObj instanceof Date && !isNaN(dateObj.getTime()))) {
+    console.error('[Nunjucks date Filter] Invalid dateObj after parsing:', dateObj, 'Original input:', date);
+    return date; // Or return an empty string or a specific error message
+  }
+
+  // Default format if not provided
+  const targetFormat = format || 'dd/MM/yyyy'; // Defaulting to dd/MM/yyyy
+  console.log('[Nunjucks date Filter] Target format:', targetFormat);
+
+  if (targetFormat === 'DD/MM/YYYY') {
+    const day = dateObj.getUTCDate().toString().padStart(2, '0');
+    const month = (dateObj.getUTCMonth() + 1).toString().padStart(2, '0'); // UTC months are 0-indexed
+    const year = dateObj.getUTCFullYear();
+    const formattedDate = `${day}/${month}/${year}`;
+    console.log('[Nunjucks date Filter] Formatted date (dd/MM/yyyy):', formattedDate);
+    return formattedDate;
+  } else if (targetFormat === 'DD MMM YYYY') {
+    // Example for another format (Moment.js-like)
+    const day = dateObj.getUTCDate().toString().padStart(2, '0');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthStr = months[dateObj.getUTCMonth()];
+    const year = dateObj.getUTCFullYear();
+    const formattedDate = `${day} ${monthStr} ${year}`;
+    console.log('[Nunjucks date Filter] Formatted date (DD MMM YYYY):', formattedDate);
+    return formattedDate;
+  }
   
-  // Simple date formatter
-  const day = dateObj.getDate().toString().padStart(2, '0');
-  const month = dateObj.getMonth();
-  const year = dateObj.getFullYear();
-  
-  // Month names
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  
-  // Replace format tokens
-  return format
-    .replace('DD', day)
-    .replace('MMM', monthNames[month])
-    .replace('YYYY', year);
+  console.warn('[Nunjucks date Filter] Unsupported format string:', targetFormat, '- returning raw date string.');
+  return dateObj.toISOString(); // Fallback for unhandled formats
 });
 
-env.addFilter('ukDate', function(date) {
-  if (!date) return '';
-  
-  // Convert string to Date object if needed
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
-  // Format as DD/MM/YYYY
-  const day = dateObj.getDate().toString().padStart(2, '0');
-  const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
-  const year = dateObj.getFullYear();
-  
-  return `${day}/${month}/${year}`;
-});
-
-// Add ukDateWithDay filter
 env.addFilter('ukDateWithDay', function(date) {
   if (!date) return '';
   
@@ -198,18 +240,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// CSRF protection middleware
-const csrf = require('csurf');
-const csrfProtection = csrf({ cookie: false });
-
-// Apply CSRF protection globally
-app.use(csrfProtection);
-
-// Add CSRF token to all responses
-app.use((req, res, next) => {
-  res.locals.csrfToken = req.csrfToken();
-  next();
-});
+// CSRF protection is now applied on a per-route basis
+// See middleware/csrf.js for the implementation
+// and individual route files for usage
 
 // Mock authentication middleware for testing
 app.use((req, res, next) => {
@@ -293,6 +326,13 @@ const wrapRouter = (name, router) => {
 
 // Use the home router for root route
 app.use('/', wrapRouter('home', homeRouter));
+
+// Use the view router for frontend pages
+app.use('/', wrapRouter('view', viewRoutes));
+
+// Academic Year API routes
+app.use('/api/v1/academic-years', wrapRouter('academicYearApi', academicYearRouter));
+app.use('/api/v1/releases', wrapRouter('releaseApi', releaseRoutes));
 
 // BCR Module - preserves all BCR functionality including workflows, urgency levels, and impact areas
 app.use('/bcr', wrapRouter('bcr', bcrRouter));
@@ -594,7 +634,7 @@ app.use((err, req, res, next) => {
 // === Server startup ===
 console.log('Starting HTTP server');
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 let server;
 
 // Function to kill process on a specific port
