@@ -1,4 +1,4 @@
-const BCR = require('../models/BCR'); // Fix the import to use the correct BCR model
+const BCR = require('../models/Bcr'); // Fix the import to use the correct BCR model
 const releaseService = require('../services/releaseService');
 
 exports.renderReleaseDiaryPage = async (req, res) => {
