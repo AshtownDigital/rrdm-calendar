@@ -1,4 +1,4 @@
-/**
+console.log('<<<<< Current NODE_ENV is:', process.env.NODE_ENV, '>>>>>');/**
  * Clean server.js for RRDM application
  * Updated to use MongoDB instead of Prisma
  */
@@ -43,6 +43,7 @@ const releaseRoutes = require('./routes/releaseRoutes'); // Added for Release Di
 
 // View routes (for rendering Nunjucks templates)
 const viewRoutes = require('./routes/viewRoutes');
+const debugRoutes = require('./routes/debugRoutes'); // Debug routes for testing
 
 // Note: Legacy modules have been removed as part of modularization
 
@@ -227,6 +228,16 @@ app.use('/assets/images', express.static(path.join(__dirname, 'public/images')))
 // Initialize GOV.UK Frontend
 app.use('/govuk-frontend', express.static(path.join(__dirname, 'node_modules/govuk-frontend')));
 
+// Add missing static routes for scripts and manifest
+app.use('/scripts', express.static(path.join(__dirname, 'public/scripts')));
+app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
+app.use('/assets/images', express.static(path.join(__dirname, 'public/images')));
+// Serve files directly from the public directory
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/assets/manifest.json', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/assets/manifest.json'));
+});
+
 // Add request timestamp for debugging
 app.use((req, res, next) => {
   req.requestTime = new Date();
@@ -324,11 +335,11 @@ const wrapRouter = (name, router) => {
   return router;
 };
 
-// Use the home router for root route
-app.use('/', wrapRouter('home', homeRouter));
-
 // Use the view router for frontend pages
 app.use('/', wrapRouter('view', viewRoutes));
+
+// Debug routes for testing calendar (no authentication required)
+app.use('/debug', debugRoutes);
 
 // Academic Year API routes
 app.use('/api/v1/academic-years', wrapRouter('academicYearApi', academicYearRouter));
@@ -365,6 +376,17 @@ app.get('/home', (req, res) => {
 // Redirect legacy BCR routes to the new modular BCR routes
 app.get('/bcr/submit', (req, res) => {
   res.redirect('/bcr/submissions/new');
+});
+
+// Redirect malformed BCR URLs with double bcr prefix
+app.get('/bcr/bcr-*', (req, res) => {
+  const newPath = req.path.replace('/bcr/bcr-', '/bcr/');
+  res.redirect(newPath + (req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''));
+});
+
+app.get('/bcr/business-change-requests/*', (req, res) => {
+  const newPath = req.path.replace('/bcr/business-change-requests/', '/bcr/business-change-requests/');
+  res.redirect(newPath + (req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''));
 });
 
 // Redirect legacy BCR phase-status mapping route to the new modular BCR routes
@@ -634,7 +656,7 @@ app.use((err, req, res, next) => {
 // === Server startup ===
 console.log('Starting HTTP server');
 
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3000;
 let server;
 
 // Function to kill process on a specific port

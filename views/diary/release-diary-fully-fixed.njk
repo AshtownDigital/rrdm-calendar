@@ -1,0 +1,344 @@
+{% extends "../layouts/base-fixed.njk" %}
+
+{% block title %}Release Diary | GOV.UK{% endblock %}
+
+{% block styles %}
+  {{ super() }}
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css" rel="stylesheet" type="text/css">
+  <style>
+    /* Custom calendar styles */
+    #release-calendar {
+      max-width: 1140px;
+      margin: 0 auto 2em auto;
+      background-color: #fff;
+    }
+    
+    .fc .fc-toolbar-title {
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+    
+    .fc .fc-button {
+      background-color: #1d70b8;
+      border-color: #1d70b8;
+    }
+    
+    .fc .fc-button:hover {
+      background-color: #003078;
+      border-color: #003078;
+    }
+    
+    .fc .fc-button-primary:not(:disabled).fc-button-active,
+    .fc .fc-button-primary:not(:disabled):active {
+      background-color: #144e81;
+      border-color: #144e81;
+    }
+    
+    .fc-event-count {
+      display: inline-block;
+      min-width: 16px;
+      padding: 2px 4px;
+      font-size: 11px;
+      font-weight: bold;
+      line-height: 1;
+      text-align: center;
+      white-space: nowrap;
+      vertical-align: middle;
+      border-radius: 8px;
+      background-color: #1d70b8;
+      color: white;
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+    }
+    
+    .calendar-filter {
+      margin-bottom: 1.5rem;
+    }
+    
+    .calendar-loading {
+      margin: 2rem 0;
+      text-align: center;
+    }
+    
+    .calendar-error {
+      color: #d4351c;
+      font-weight: bold;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">{{ title }}</h1>
+    
+    <!-- Filter controls -->
+    <div class="govuk-grid-row calendar-filter">
+      <div class="govuk-grid-column-one-third">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="filter-release-type">
+            Filter by Release Type
+          </label>
+          <select class="govuk-select" id="filter-release-type">
+            <option value="all" selected>All Release Types</option>
+            <option value="IY">In Year</option>
+            <option value="M">Main</option>
+            <option value="A">Additional</option>
+            <option value="C">Correction</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="govuk-grid-column-one-third">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="filter-academic-year">
+            Filter by Academic Year
+          </label>
+          <select class="govuk-select" id="filter-academic-year">
+            <option value="all" selected>All Academic Years</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="govuk-grid-column-one-third">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="filter-month">
+            Filter by Month
+          </label>
+          <select class="govuk-select" id="filter-month">
+            <option value="all" selected>All Months</option>
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Calendar status message -->
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full calendar-loading">
+        <p class="govuk-body" id="calendar-status">Loading calendar...</p>
+      </div>
+    </div>
+    
+    <!-- Calendar container -->
+    <div id="release-calendar"></div>
+    
+    <!-- Hidden data elements - these will contain JSON data for events and dates -->
+    <textarea id="calendar-events-data" style="display: none;">{{ calendarEvents | safe }}</textarea>
+    <textarea id="release-dates-data" style="display: none;">{{ releaseDateMap | safe }}</textarea>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <!-- FullCalendar JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js"></script>
+  <script>
+    // Wait for DOM to fully load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get the necessary elements
+      const calendarEl = document.getElementById('release-calendar');
+      const statusEl = document.getElementById('calendar-status');
+      const filterReleaseTypeEl = document.getElementById('filter-release-type');
+      const filterAcademicYearEl = document.getElementById('filter-academic-year');
+      const filterMonthEl = document.getElementById('filter-month');
+      
+      if (!calendarEl) {
+        statusEl.textContent = 'Error: Calendar element not found';
+        console.error('Calendar element not found');
+        return;
+      }
+      
+      try {
+        // Verify FullCalendar is loaded
+        if (typeof FullCalendar === 'undefined') {
+          statusEl.textContent = 'Error: FullCalendar library not loaded';
+          console.error('FullCalendar library is not defined. Check if the script is loading correctly.');
+          return;
+        } else {
+          console.log('FullCalendar library is loaded. Version:', FullCalendar.version);
+        }
+        
+        // Get data from hidden textarea elements to avoid parsing issues
+        const calendarEventsEl = document.getElementById('calendar-events-data');
+        const releaseDatesEl = document.getElementById('release-dates-data');
+        
+        if (!calendarEventsEl || !releaseDatesEl) {
+          statusEl.textContent = 'Error: Data elements not found';
+          console.error('Data elements not found:', { 
+            calendarEventsEl: !!calendarEventsEl, 
+            releaseDatesEl: !!releaseDatesEl 
+          });
+          return;
+        }
+        
+        console.log('Found data elements with lengths:', { 
+          events: calendarEventsEl.value.length, 
+          dates: releaseDatesEl.value.length 
+        });
+        
+        const calendarEventsStr = calendarEventsEl.value;
+        const releaseDatesStr = releaseDatesEl.value;
+        
+        let events, releaseDateMap;
+        try {
+          events = JSON.parse(calendarEventsStr);
+          releaseDateMap = JSON.parse(releaseDatesStr);
+          statusEl.textContent = 'Data loaded successfully';
+        } catch (err) {
+          console.error('Error parsing JSON:', err);
+          statusEl.textContent = 'Error parsing calendar data';
+          return;
+        }
+        
+        // Create the calendar instance
+        console.log('Creating calendar with', events.length, 'events');
+        let calendar;
+        try {
+          calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+              left: 'prev,next today',
+              center: 'title',
+              right: 'dayGridMonth,listMonth'
+            },
+            events: events,
+            eventTimeFormat: {
+              hour: 'numeric',
+              minute: '2-digit',
+              meridiem: 'short'
+            },
+            eventDidMount: function(info) {
+              // We could add tooltips or other enhancements here
+            },
+            dayCellDidMount: function(info) {
+              // Add count badges to days with events
+              const date = info.date;
+              const dateStr = date.toISOString().substring(0, 10);
+              
+              if (releaseDateMap[dateStr] && releaseDateMap[dateStr].count > 0) {
+                const eventCount = releaseDateMap[dateStr].count;
+                const eventCountBadge = document.createElement('div');
+                eventCountBadge.className = 'fc-event-count';
+                eventCountBadge.textContent = eventCount;
+                info.el.appendChild(eventCountBadge);
+              }
+            }
+          });
+        } catch (calendarError) {
+          console.error('Error creating calendar instance:', calendarError);
+          statusEl.textContent = 'Error creating calendar: ' + calendarError.message;
+          return;
+        }
+        
+        console.log('Calendar instance created successfully');
+        
+        // Create style for day cells
+        const style = document.createElement('style');
+        document.head.appendChild(style);
+        const styleSheet = style.sheet;
+        
+        // Add custom styles for days with events
+        Object.entries(releaseDateMap).forEach(([date, data]) => {
+          if (data.count > 0) {
+            const rule = `.fc-day[data-date="${date}"] { background-color: ${data.color || '#f8f8f8'}; }`;
+            styleSheet.insertRule(rule, styleSheet.cssRules.length);
+          }
+        });
+        
+        // Function to apply filters
+        function applyFilters() {
+          const releaseType = filterReleaseTypeEl.value;
+          const academicYear = filterAcademicYearEl.value;
+          const month = parseInt(filterMonthEl.value);
+          
+          calendar.getEvents().forEach(function(event) {
+            let show = true;
+            
+            // Apply release type filter
+            if (releaseType !== 'all') {
+              const eventType = event.extendedProps.releaseType;
+              if (eventType !== releaseType) {
+                show = false;
+              }
+            }
+            
+            // Apply academic year filter
+            if (academicYear !== 'all') {
+              const eventAcadYear = event.extendedProps.academicYear;
+              if (eventAcadYear !== academicYear) {
+                show = false;
+              }
+            }
+            
+            // Apply month filter
+            if (!isNaN(month)) {
+              const eventDate = new Date(event.start);
+              const eventMonth = eventDate.getMonth() + 1; // JavaScript months are 0-indexed
+              if (month !== 0 && eventMonth !== month) {
+                show = false;
+              }
+            }
+            
+            event.setProp('display', show ? 'auto' : 'none');
+          });
+        }
+        
+        // Populate academic year filter with available years
+        const academicYears = [...new Set(events.map(event => event.extendedProps?.academicYear).filter(Boolean))];
+        academicYears.sort().forEach(year => {
+          const option = document.createElement('option');
+          option.value = year;
+          option.textContent = year;
+          filterAcademicYearEl.appendChild(option);
+        });
+        
+        // Add event listeners for filters
+        filterReleaseTypeEl.addEventListener('change', applyFilters);
+        filterAcademicYearEl.addEventListener('change', applyFilters);
+        filterMonthEl.addEventListener('change', applyFilters);
+        
+        // Render the calendar
+        console.log('Attempting to render calendar...');
+        try {
+          calendar.render();
+          console.log('Calendar render method completed');
+          
+          // Apply initial filtering
+          console.log('Applying filters after small delay...');
+          setTimeout(() => {
+            try {
+              applyFilters();
+              console.log('Filters applied successfully');
+            } catch(filterError) {
+              console.error('Error applying filters:', filterError);
+            }
+          }, 500);
+          
+          // Update status
+          statusEl.textContent = 'Calendar loaded successfully';
+        } catch(renderError) {
+          console.error('Error rendering calendar:', renderError);
+          statusEl.textContent = 'Error rendering calendar: ' + renderError.message;
+        }
+      } catch (error) {
+        statusEl.textContent = 'Error loading calendar: ' + error.message;
+        console.error('Calendar error:', error);
+      }
+    });
+  </script>
+{% endblock %}

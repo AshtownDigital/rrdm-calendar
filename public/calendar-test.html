@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Release Diary Calendar Test</title>
+  
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css" rel="stylesheet">
+  
+  <!-- FullCalendar JS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js"></script>
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    
+    #loading-status {
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+    }
+    
+    #calendar-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    .test-event {
+      background-color: #1d70b8;
+      color: white;
+      border: none;
+    }
+    
+    .result-box {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Release Diary Calendar Test</h1>
+  
+  <div id="loading-status">Testing FullCalendar initialization...</div>
+  
+  <div id="calendar-container"></div>
+  
+  <div class="result-box">
+    <h3>Test Results:</h3>
+    <pre id="test-results"></pre>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const results = document.getElementById('test-results');
+      const status = document.getElementById('loading-status');
+      const calendarEl = document.getElementById('calendar-container');
+      
+      try {
+        // Log the test start
+        results.textContent += "Test started: " + new Date().toISOString() + "\n";
+        results.textContent += "FullCalendar version: " + FullCalendar.version + "\n";
+        
+        // Try to create a calendar instance
+        status.textContent = "Creating calendar instance...";
+        
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth',
+          headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,listMonth'
+          },
+          events: [
+            {
+              title: 'Test Release 1',
+              start: '2025-06-02',
+              classNames: ['test-event'],
+              extendedProps: {
+                releaseType: 'Baseline'
+              }
+            },
+            {
+              title: 'Test Release 2',
+              start: '2025-06-04',
+              classNames: ['test-event'],
+              extendedProps: {
+                releaseType: 'In-year'
+              }
+            },
+            {
+              title: 'Test BCR Event',
+              start: '2025-06-06',
+              classNames: ['test-event'],
+              extendedProps: {
+                isBCR: true
+              }
+            }
+          ]
+        });
+        
+        // Try to render the calendar
+        status.textContent = "Rendering calendar...";
+        calendar.render();
+        
+        // Update status to success
+        status.textContent = "✅ Calendar loaded successfully!";
+        status.style.backgroundColor = "#e6ffe6";
+        status.style.border = "1px solid #00cc00";
+        
+        results.textContent += "Calendar initialization: SUCCESS\n";
+        results.textContent += "Calendar rendering: SUCCESS\n";
+      } catch (error) {
+        // Handle any errors
+        status.textContent = "❌ Error loading calendar: " + error.message;
+        status.style.backgroundColor = "#ffebeb";
+        status.style.border = "1px solid #ff6666";
+        
+        results.textContent += "Calendar initialization ERROR: " + error.message + "\n";
+        results.textContent += "Stack trace: " + error.stack + "\n";
+        console.error("Calendar error:", error);
+      }
+    });
+  </script>
+</body>
+</html>

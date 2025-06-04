@@ -1,0 +1,121 @@
+{% extends "../layouts/base.njk" %}
+
+{% block styles %}
+  {{ super() }}
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css" rel="stylesheet">
+  <style>
+    /* Simple calendar styles */
+    #calendar {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    .test-event {
+      background-color: #1d70b8;
+      color: white;
+      border: none;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">{{ title }}</h1>
+      
+      <p class="govuk-body">This is a simplified calendar test page.</p>
+      
+      <!-- Debug status -->
+      <div class="govuk-grid-row govuk-!-margin-bottom-4">
+        <div class="govuk-grid-column-full">
+          <p class="govuk-body" id="calendar-status">Loading calendar...</p>
+        </div>
+      </div>
+      
+      <!-- Calendar container - IMPORTANT: Using the standard id 'calendar' -->
+      <div id="calendar"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <!-- FullCalendar JS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js"></script>
+  <script>
+    // Wait for DOM to fully load
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded - Initializing simple calendar');
+      
+      // Get elements
+      const statusEl = document.getElementById('calendar-status');
+      const calendarEl = document.getElementById('calendar');
+      
+      if (!calendarEl) {
+        statusEl.textContent = 'Error: Calendar element not found';
+        console.error('Calendar element #calendar not found');
+        return;
+      }
+      
+      try {
+        // Check if FullCalendar is available
+        if (typeof FullCalendar === 'undefined') {
+          statusEl.textContent = 'Error: FullCalendar library not loaded';
+          console.error('FullCalendar is not defined');
+          return;
+        }
+        
+        console.log('FullCalendar version:', FullCalendar.version);
+        
+        // Create simple test events for the current month
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+        
+        // Create static test events
+        const testEvents = [
+          {
+            title: 'Test Event 1',
+            start: new Date(currentYear, currentMonth, 5),
+            className: 'test-event'
+          },
+          {
+            title: 'Test Event 2',
+            start: new Date(currentYear, currentMonth, 10),
+            className: 'test-event'
+          },
+          {
+            title: 'Test Event 3',
+            start: new Date(currentYear, currentMonth, 15),
+            className: 'test-event'
+          }
+        ];
+        
+        console.log('Creating calendar with', testEvents.length, 'events');
+        
+        // Create calendar instance with minimal options
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth',
+          headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,listMonth'
+          },
+          events: testEvents
+        });
+        
+        console.log('Calendar created, attempting to render...');
+        
+        // Render the calendar
+        calendar.render();
+        
+        console.log('Calendar rendered');
+        statusEl.textContent = 'Calendar loaded successfully';
+      } catch (error) {
+        statusEl.textContent = 'Error: ' + error.message;
+        console.error('Calendar error:', error);
+      }
+    });
+  </script>
+{% endblock %}

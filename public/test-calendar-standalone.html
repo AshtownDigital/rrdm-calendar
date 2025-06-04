@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FullCalendar Standalone Test</title>
+  <!-- Load FullCalendar CSS from CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    #calendar {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .test-event {
+      background-color: #1d70b8;
+      color: white;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>FullCalendar Standalone Test</h1>
+  <p id="status">Loading calendar...</p>
+  
+  <div id="calendar"></div>
+  
+  <!-- Load FullCalendar JS from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js"></script>
+  <script>
+    // Wait for page to load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get the status and calendar elements
+      const statusEl = document.getElementById('status');
+      const calendarEl = document.getElementById('calendar');
+      
+      console.log('DOM loaded - Starting calendar initialization');
+      console.log('Status element:', statusEl ? 'Found' : 'Not found');
+      console.log('Calendar element:', calendarEl ? 'Found' : 'Not found');
+      
+      try {
+        // Check if FullCalendar is available
+        if (typeof FullCalendar === 'undefined') {
+          statusEl.textContent = 'Error: FullCalendar library not loaded';
+          console.error('FullCalendar is not defined. Check script loading.');
+          return;
+        }
+        
+        console.log('FullCalendar loaded. Version:', FullCalendar.version);
+        
+        // Create simple test events for the current month
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+        
+        // Create simple test events
+        const testEvents = [
+          {
+            title: 'Test Event 1',
+            start: new Date(currentYear, currentMonth, 5),
+            className: 'test-event'
+          },
+          {
+            title: 'Test Event 2',
+            start: new Date(currentYear, currentMonth, 10),
+            className: 'test-event'
+          },
+          {
+            title: 'Test Event 3',
+            start: new Date(currentYear, currentMonth, 15),
+            className: 'test-event'
+          }
+        ];
+        
+        console.log('Creating calendar with simple test events');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth',
+          headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,listMonth'
+          },
+          events: testEvents
+        });
+        
+        console.log('Calendar created, rendering...');
+        calendar.render();
+        console.log('Calendar rendered');
+        
+        statusEl.textContent = 'Calendar loaded successfully';
+      } catch (error) {
+        statusEl.textContent = 'Error: ' + error.message;
+        console.error('Calendar error:', error);
+      }
+    });
+  </script>
+</body>
+</html>

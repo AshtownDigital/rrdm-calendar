@@ -1,0 +1,358 @@
+{% extends "../layouts/base.njk" %}
+
+{% block styles %}
+  {{ super() }}
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css" rel="stylesheet">
+  <style>
+    /* GOV.UK Design System colors */
+    .baseline-event {
+      background-color: #1d70b8;
+      border-color: #1d70b8;
+    }
+    
+    .inyear-event {
+      background-color: #00703c;
+      border-color: #00703c;
+    }
+    
+    .adhoc-event {
+      background-color: #f47738;
+      border-color: #f47738;
+    }
+    
+    .bcr-event {
+      background-color: #d4351c;
+      border-color: #d4351c;
+    }
+    
+    #event-details {
+      padding: 1rem;
+      background-color: #f3f2f1;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">{{ title }}</h1>
+      
+      <p class="govuk-body">This calendar shows all releases and BCRs by date.</p>
+      
+      <!-- Filter controls -->
+      <div class="govuk-grid-row govuk-!-margin-bottom-6">
+        <div class="govuk-grid-column-two-thirds">
+          <div class="govuk-form-group">
+            <fieldset class="govuk-fieldset">
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                <h2 class="govuk-fieldset__heading">Filter by type</h2>
+              </legend>
+              <div class="govuk-checkboxes govuk-checkboxes--small">
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="filter-baseline" name="filter-baseline" type="checkbox" value="baseline" checked>
+                  <label class="govuk-label govuk-checkboxes__label" for="filter-baseline">
+                    <span class="govuk-tag baseline-event">Baseline</span>
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="filter-inyear" name="filter-inyear" type="checkbox" value="inyear" checked>
+                  <label class="govuk-label govuk-checkboxes__label" for="filter-inyear">
+                    <span class="govuk-tag inyear-event">In-year</span>
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="filter-adhoc" name="filter-adhoc" type="checkbox" value="adhoc" checked>
+                  <label class="govuk-label govuk-checkboxes__label" for="filter-adhoc">
+                    <span class="govuk-tag adhoc-event">Ad-hoc</span>
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="filter-bcr" name="filter-bcr" type="checkbox" value="bcr" checked>
+                  <label class="govuk-label govuk-checkboxes__label" for="filter-bcr">
+                    <span class="govuk-tag bcr-event">BCRs</span>
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+          </div>
+        </div>
+        <div class="govuk-grid-column-one-third">
+          <button class="govuk-button govuk-!-margin-bottom-0" id="reset-filters">Reset filters</button>
+        </div>
+      </div>
+      
+      <!-- Debug status -->
+      <div class="govuk-grid-row govuk-!-margin-bottom-4">
+        <div class="govuk-grid-column-full">
+          <p class="govuk-body" id="calendar-status">Loading calendar...</p>
+          <p class="govuk-body-s" id="debug-info">Events: <span id="events-count">{{ calendarEventsCount }}</span> | Release Dates: {{ releaseDateMapCount }}</p>
+        </div>
+      </div>
+      
+      <!-- Add hidden data elements to store JSON data securely -->
+      <div style="display: none;">
+        <textarea id="calendar-events-data">{{ calendarEvents | safe }}</textarea>
+        <textarea id="release-dates-data">{{ releaseDateMap | safe }}</textarea>
+      </div>
+      
+      <!-- Calendar container -->
+      <div id="release-calendar"></div>
+      
+      <!-- Event details area that will populate when an event is clicked -->
+      <div id="event-details" style="display: none;" class="govuk-!-margin-bottom-6"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <!-- FullCalendar JS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Direct access to elements
+      const statusEl = document.getElementById('calendar-status');
+      const calendarEl = document.getElementById('release-calendar');
+      const eventsCountEl = document.getElementById('events-count');
+      
+      if (!calendarEl) {
+        statusEl.textContent = 'Error: Calendar element not found';
+        console.error('Calendar element not found');
+        return;
+      }
+      
+      try {
+        // Verify FullCalendar is loaded
+        if (typeof FullCalendar === 'undefined') {
+          statusEl.textContent = 'Error: FullCalendar library not loaded';
+          console.error('FullCalendar library is not defined. Check if the script is loading correctly.');
+          return;
+        } else {
+          console.log('FullCalendar library is loaded. Version:', FullCalendar.version);
+        }
+        
+        // Get data from hidden textarea elements to avoid parsing issues
+        const calendarEventsEl = document.getElementById('calendar-events-data');
+        const releaseDatesEl = document.getElementById('release-dates-data');
+        
+        if (!calendarEventsEl || !releaseDatesEl) {
+          statusEl.textContent = 'Error: Data elements not found';
+          console.error('Data elements not found:', { 
+            calendarEventsEl: !!calendarEventsEl, 
+            releaseDatesEl: !!releaseDatesEl 
+          });
+          return;
+        }
+        
+        console.log('Found data elements with lengths:', { 
+          events: calendarEventsEl.value.length, 
+          dates: releaseDatesEl.value.length 
+        });
+        
+        const calendarEventsStr = calendarEventsEl.value;
+        const releaseDatesStr = releaseDatesEl.value;
+        
+        let events, releaseDateMap;
+        try {
+          events = JSON.parse(calendarEventsStr);
+          releaseDateMap = JSON.parse(releaseDatesStr);
+          statusEl.textContent = 'Data loaded successfully';
+        } catch (err) {
+          console.error('Error parsing JSON:', err);
+          statusEl.textContent = 'Error parsing data: ' + err.message;
+          return;
+        }
+        
+        // Create the calendar instance
+        console.log('Creating calendar with', events.length, 'events');
+        let calendar;
+        try {
+          calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth',
+          headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,listMonth'
+          },
+          events: events,
+          eventDidMount: function(arg) {
+            // Add tooltips
+            if (arg.event.extendedProps && arg.event.extendedProps.description) {
+              arg.el.title = arg.event.extendedProps.description;
+            }
+          },
+          eventContent: function(arg) {
+            // Custom rendering for event content
+            const eventContent = document.createElement('div');
+            eventContent.innerHTML = '<b>' + arg.event.title + '</b>';
+            return { domNodes: [eventContent] };
+          },
+          eventClick: function(info) {
+            // Show details when clicked
+            const detailsEl = document.getElementById('event-details');
+            detailsEl.style.display = 'block';
+            
+            // Format date
+            const date = new Date(info.event.start);
+            const dateStr = date.toLocaleDateString('en-GB');
+            
+            // Get event type and class for styling
+            let eventType = 'Release';
+            let eventClass = '';
+            
+            if (info.event.extendedProps) {
+              if (info.event.extendedProps.isBCR) {
+                eventType = 'BCR';
+                eventClass = 'bcr-event';
+              } else if (info.event.extendedProps.releaseType) {
+                const type = info.event.extendedProps.releaseType;
+                eventType = type.charAt(0).toUpperCase() + type.slice(1) + ' Release';
+                eventClass = type + '-event';
+              }
+            }
+            
+            // Show details
+            detailsEl.innerHTML = `
+              <h3 class="govuk-heading-m">${info.event.title}</h3>
+              <p class="govuk-body"><span class="govuk-tag ${eventClass}">${eventType}</span></p>
+              <p class="govuk-body">${info.event.extendedProps?.description || ''}</p>
+              <p class="govuk-body">Date: ${dateStr}</p>
+            `;
+          },
+          dayCellDidMount: function(info) {
+            // Color calendar cells based on events
+            const dateStr = info.date.toISOString().split('T')[0];
+            
+            // Check if this day has events
+            const dayEvents = events.filter(event => {
+              return event.start === dateStr || 
+                    (event.start && event.start.includes && event.start.includes(dateStr));
+            });
+            
+            if (dayEvents.length > 0) {
+              // Apply background colors based on event types
+              const hasBaseline = dayEvents.some(e => e.extendedProps && e.extendedProps.releaseType === 'baseline');
+              const hasInYear = dayEvents.some(e => e.extendedProps && e.extendedProps.releaseType === 'in-year');
+              const hasAdhoc = dayEvents.some(e => e.extendedProps && e.extendedProps.releaseType === 'adhoc');
+              const hasBCR = dayEvents.some(e => e.extendedProps && e.extendedProps.isBCR);
+              
+              if (hasBaseline) info.el.classList.add('baseline-day');
+              if (hasInYear) info.el.classList.add('inyear-day');
+              if (hasAdhoc) info.el.classList.add('adhoc-day');
+              if (hasBCR) info.el.classList.add('bcr-day');
+              
+              // Add event count badge
+              const eventCountBadge = document.createElement('div');
+              eventCountBadge.className = 'event-count';
+              eventCountBadge.textContent = dayEvents.length;
+              info.el.appendChild(eventCountBadge);
+            }
+          }
+          });
+        } catch (calendarError) {
+          console.error('Error creating calendar instance:', calendarError);
+          statusEl.textContent = 'Error creating calendar: ' + calendarError.message;
+          return;
+        }
+        
+        console.log('Calendar instance created successfully');
+        
+        // Create style for day cells
+        const style = document.createElement('style');
+        style.textContent = `
+          .baseline-day { background-color: rgba(29, 112, 184, 0.1); }
+          .inyear-day { background-color: rgba(0, 112, 60, 0.1); }
+          .adhoc-day { background-color: rgba(244, 119, 56, 0.1); }
+          .bcr-day { background-color: rgba(212, 53, 28, 0.1); }
+          .event-count {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: #1d70b8;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+        `;
+        document.head.appendChild(style);
+        
+        // Setup filter functionality
+        const filterCheckboxes = document.querySelectorAll('.govuk-checkboxes__input');
+        const resetButton = document.getElementById('reset-filters');
+        
+        function applyFilters() {
+          const activeFilters = {
+            baseline: document.getElementById('filter-baseline').checked,
+            inyear: document.getElementById('filter-inyear').checked,
+            adhoc: document.getElementById('filter-adhoc').checked,
+            bcr: document.getElementById('filter-bcr').checked
+          };
+          
+          // Clear all events first
+          calendar.getEvents().forEach(event => event.remove());
+          
+          // Apply filters
+          const filteredEvents = events.filter(event => {
+            const props = event.extendedProps || {};
+            
+            if (props.isBCR && activeFilters.bcr) return true;
+            if (props.releaseType === 'baseline' && activeFilters.baseline) return true;
+            if (props.releaseType === 'in-year' && activeFilters.inyear) return true;
+            if (props.releaseType === 'adhoc' && activeFilters.adhoc) return true;
+            return false;
+          });
+          
+          // Add filtered events back
+          filteredEvents.forEach(event => calendar.addEvent(event));
+          
+          // Update counter
+          eventsCountEl.textContent = filteredEvents.length;
+        }
+        
+        // Add event listeners to checkboxes
+        filterCheckboxes.forEach(checkbox => {
+          checkbox.addEventListener('change', applyFilters);
+        });
+        
+        // Reset button handler
+        resetButton.addEventListener('click', function() {
+          filterCheckboxes.forEach(checkbox => checkbox.checked = true);
+          applyFilters();
+        });
+        
+        // Render the calendar
+        console.log('Attempting to render calendar...');
+        try {
+          calendar.render();
+          console.log('Calendar render method completed');
+          
+          // Apply initial filtering
+          console.log('Applying filters after small delay...');
+          setTimeout(() => {
+            try {
+              applyFilters();
+              console.log('Filters applied successfully');
+            } catch(filterError) {
+              console.error('Error applying filters:', filterError);
+            }
+          }, 500);
+          
+          // Update status
+          statusEl.textContent = 'Calendar loaded successfully';
+        } catch(renderError) {
+          console.error('Error rendering calendar:', renderError);
+          statusEl.textContent = 'Error rendering calendar: ' + renderError.message;
+        }
+      } catch (error) {
+        statusEl.textContent = 'Error loading calendar: ' + error.message;
+        console.error('Calendar error:', error);
+      }
+    });
+  </script>
+{% endblock %}
