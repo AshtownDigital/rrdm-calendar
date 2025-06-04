@@ -6,21 +6,15 @@ const express = require('express');
 const router = express.Router();
 const workflowViewController = require('../../../controllers/modules/bcr/workflowViewController');
 const auth = require('../../../middleware/auth');
-const csrfProtection = require('../../../middleware/csrf');
+const { enhancedCsrfProtection } = require('../../../middleware/csrf');
 
 // Workflow view route
-router.get('/:id', auth.ensureAuthenticated, csrfProtection, (req, res) => {
-  return workflowViewController.showWorkflowView(req, res);
-});
+router.get('/:id', auth.ensureAuthenticated, enhancedCsrfProtection, workflowViewController.showWorkflowView);
 
 // Next phase action route
-router.post('/:id/next-phase', auth.ensureAuthenticated, csrfProtection, (req, res) => {
-  return workflowViewController.handleNextPhase(req, res);
-});
+router.post('/:id/next-phase', auth.ensureAuthenticated, enhancedCsrfProtection, workflowViewController.handleNextPhase);
 
 // Skip to phase action route
-router.post('/:id/skip-to-phase', auth.ensureAuthenticated, csrfProtection, (req, res) => {
-  return workflowViewController.handleSkipToPhase(req, res);
-});
+router.post('/:id/skip-to-phase', auth.ensureAuthenticated, enhancedCsrfProtection, workflowViewController.handleSkipToPhase);
 
 module.exports = router;
