@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-
-// const { isAuthenticated, isSysAdmin } = require('../middleware/authMiddleware'); // Temporarily commented out
-const academicYearService = require('../services/academicYearService'); // For API calls
+const { ensureAuthenticated, ensureAdmin } = require('../middleware/auth');
 const releaseService = require('../services/releaseService'); // For Release Diary views
-const AcademicYear = require('../models/AcademicYear'); // For direct DB queries in view routes if needed
+const releaseDiaryController = require('../controllers/releaseDiaryController');
+const academicYearService = require('../services/academicYearService'); // For API calls
+const debugController = require('../controllers/debugController'); // For debugging and diagnostics
+const AcademicYear = require('../models/academicYear'); // For direct DB queries in view routes if needed
 const { csrfProtection, enhancedCsrfProtection } = require('../middleware/csrf'); // Import CSRF protection middleware
 
 // Apply CSRF protection to all POST requests handled by this router
@@ -25,6 +26,13 @@ router.get('/', (req, res) => {
     pageTitle: 'Home - RRDM',
   });
 });
+
+// --- Release Diary Route --- (No auth required for testing)
+router.get('/release-diary', (req, res, next) => {
+  // Bypass authentication check
+  console.log('Processing Release Diary request');
+  next();
+}, releaseDiaryController.renderReleaseDiaryPage);
 
 // Dashboard
 // router.get('/dashboard', isAuthenticated, (req, res) => { // isAuthenticated temporarily removed
@@ -265,7 +273,7 @@ router.get('/release-management', async (req, res) => {
     }
 
     res.render('releases/list', {
-      pageTitle: 'Release Diary - RRDM',
+      pageTitle: 'Release Directory - RRDM',
       releases: result.releases || [],
       pagination: result.pagination,
       currentSort: { sortBy, sortOrder },
@@ -517,7 +525,7 @@ router.post('/release-management/delete-releases-confirm', csrfProtection, async
     const academicYearIdsArray = Array.isArray(academicYearIds) ? academicYearIds : [academicYearIds];
     
     // Get academic year details for confirmation
-    const AcademicYear = require('../models/AcademicYear');
+    const AcademicYear = require('../models/academicYear');
     const academicYears = await AcademicYear.find({ _id: { $in: academicYearIdsArray } }).lean();
     
     // Get counts of auto-generated releases for each academic year

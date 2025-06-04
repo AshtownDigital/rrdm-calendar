@@ -1,5 +1,5 @@
 const academicYearService = require('../services/academicYearService');
-const AcademicYear = require('../models/AcademicYear'); // Assuming model path. Moved here for clarity if used globally or ensure it's only where needed.
+const AcademicYear = require('../models/academicYear'); // Assuming model path. Moved here for clarity if used globally or ensure it's only where needed.
 
 /**
  * Handles the creation of a new academic year.
