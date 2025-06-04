@@ -3,7 +3,7 @@
  * Provides diagnostic endpoints for troubleshooting
  */
 const Release = require('../models/Release');
-const BCR = require('../models/BCR');
+const BCR = require('../models/Bcr');
 
 // Debug info endpoint
 exports.getDiagnostics = async (req, res) => {
