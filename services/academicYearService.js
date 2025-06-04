@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const AcademicYear = require('../models/AcademicYear');
+const AcademicYear = require('../models/academicYear');
 const releaseService = require('./releaseService'); // For automatic release generation
 const { format } = require('date-fns'); // For date formatting
 
