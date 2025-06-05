@@ -9,66 +9,69 @@ const nunjucks = require('nunjucks');
 console.log('<<<<< Current NODE_ENV is:', process.env.NODE_ENV, '>>>>>');
 console.log('Starting simplified server for deployment testing');
 
-// Configure Nunjucks
-const env = nunjucks.configure(['views', 'node_modules/govuk-frontend'], {
+// Configure Nunjucks with more comprehensive paths
+const viewPaths = [
+  path.join(__dirname, 'views'),
+  path.join(__dirname, 'views/modules'),
+  path.join(__dirname, 'views/layouts'),
+  path.join(__dirname, 'views/partials'),
+  path.join(__dirname, 'node_modules/govuk-frontend')
+];
+
+const env = nunjucks.configure(viewPaths, {
   autoescape: true,
-  express: app
+  express: app,
+  watch: true
 });
 
 app.set('view engine', 'njk');
-app.set('views', [
-  path.join(__dirname, 'views'),
-  path.join(__dirname, 'node_modules', 'govuk-frontend')
-]);
+app.set('views', viewPaths);
 
-// Static files
+// Static files - improve path resolution for CSS and assets
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/govuk-frontend', express.static(path.join(__dirname, 'node_modules/govuk-frontend')));
 app.use('/assets', express.static(path.join(__dirname, 'node_modules/govuk-frontend/assets')));
 
-// Load the home module controller
-const homeController = require('./controllers/modules/home/controller');
+// Additional static routes for nested structures
+app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
+app.use('/javascripts', express.static(path.join(__dirname, 'public/javascripts')));
+app.use('/stylesheets', express.static(path.join(__dirname, 'public/stylesheets')));
 
-// Root route - render the home module view
+// Add CSRF mock for simplified server
+app.use((req, res, next) => {
+  req.csrfToken = () => 'mock-csrf-token';
+  next();
+});
+
+// Root route - render a simplified home page that looks like the home module
 app.get('/', (req, res) => {
-  try {
-    // Setup empty user object since we're in simplified mode without auth
-    req.user = req.user || { name: 'Test User', role: 'viewer' };
-    
-    // Set locals needed for the view
-    res.locals = res.locals || {};
-    res.locals.user = req.user;
-    res.locals.flashMessages = {};
-    
-    // Render the home module view
-    return homeController.index(req, res);
-  } catch (error) {
-    console.error('Error rendering home module:', error);
-    
-    // Fallback to basic HTML if there's an error
-    res.send(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>RRDM Deployment</title>
-          <link href="/govuk-frontend/govuk/all.css" rel="stylesheet">
-          <style>
-            .container { margin: 30px; font-family: "GDS Transport", arial, sans-serif; }
-            .error { color: #d4351c; border: 5px solid #d4351c; padding: 20px; margin-bottom: 20px; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="error">
-              <h1>RRDM Deployment</h1>
-              <p>Error rendering home module. The server is running in simplified mode.</p>
-              <p>Error details: ${error.message}</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `);
-  }
+  // Render directly with a simplified Home page template
+  res.render('home-simple', {
+    title: 'Register Team Internal Services - Deployment Test',
+    user: { name: 'Test User', role: 'viewer' },
+    sections: [
+      {
+        title: 'Release Diary',
+        cards: [
+          { title: 'Calendar View', description: 'View releases in calendar format', color: 'pink', url: '#' }
+        ]
+      },
+      {
+        title: 'Business Change Management',
+        cards: [
+          { title: 'Business Change Requests', description: 'Manage and track business change requests', color: 'yellow', url: '#' },
+          { title: 'Release Management', description: 'Plan and track system releases', color: 'turquoise', url: '#' }
+        ]
+      }
+    ],
+    deploymentStatus: {
+      status: 'successful',
+      env: process.env.NODE_ENV || 'test-deployment',
+      nodeVersion: process.version,
+      serverTime: new Date().toISOString()
+    }
+  });
 });
 
 // Debug route - shows status

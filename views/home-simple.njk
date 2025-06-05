@@ -1,0 +1,90 @@
+{% extends "layouts/base.njk" %}
+
+{% block pageTitle %}
+  {{ title }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Register Team Internal Services</h1>
+    <p class="govuk-body-l">Deployment Successful</p>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <div class="govuk-panel govuk-panel--confirmation">
+      <h2 class="govuk-panel__title">Deployment successful</h2>
+      <div class="govuk-panel__body">
+        The application is running in <strong>{{ deploymentStatus.env }}</strong> mode
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6">Deployment Information</h2>
+    
+    <dl class="govuk-summary-list">
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Environment</dt>
+        <dd class="govuk-summary-list__value">{{ deploymentStatus.env }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Node Version</dt>
+        <dd class="govuk-summary-list__value">{{ deploymentStatus.nodeVersion }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Server Time</dt>
+        <dd class="govuk-summary-list__value">{{ deploymentStatus.serverTime }}</dd>
+      </div>
+    </dl>
+  </div>
+</div>
+
+<!-- Available Features Section -->
+{% for section in sections %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6 govuk-!-margin-bottom-4">{{ section.title }}</h2>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  {% for card in section.cards %}
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card app-card--{{ card.color }}">
+      <h2 class="govuk-heading-m">{{ card.title }}</h2>
+      <p class="govuk-body">{{ card.description }}</p>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endfor %}
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6">Next Steps</h2>
+    <div class="govuk-warning-text">
+      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+      <strong class="govuk-warning-text__text">
+        <span class="govuk-warning-text__assistive">Warning</span>
+        This is a deployment test instance running with a simplified server.
+      </strong>
+    </div>
+    
+    <ol class="govuk-list govuk-list--number">
+      <li>To enable the full application with database connectivity:
+        <ul class="govuk-list govuk-list--bullet">
+          <li>Set <code>USE_SIMPLE_SERVER=false</code> environment variable</li>
+          <li>Set <code>NODE_ENV=production</code> environment variable</li>
+        </ul>
+      </li>
+      <li>Configure the <code>MONGODB_URI</code> environment variable with your MongoDB connection string</li>
+      <li>Restart the Heroku dynos to apply changes</li>
+    </ol>
+  </div>
+</div>
+{% endblock %}
