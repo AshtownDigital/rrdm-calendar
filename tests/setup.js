@@ -17,6 +17,7 @@ jest.mock('mongoose', () => {
   };
 });
 
+// Create a mock for the mongoose config
 jest.mock('../config/mongoose', () => {
   const mongoose = jest.requireActual('mongoose');
   let connected = true;
@@ -25,16 +26,18 @@ jest.mock('../config/mongoose', () => {
     destroy: jest.fn(),
     clear: jest.fn()
   };
-  const session = {
-    create: jest.fn((args) => Promise.resolve({ id: 'session-123', ...args.data })),
-    findUnique: jest.fn((args) => Promise.resolve({ id: args.where.id, data: { cookie: {}, passport: { user: 'admin-123' } } })),
-    findFirst: jest.fn((args) => Promise.resolve({ id: 'session-123', data: { cookie: {}, passport: { user: 'admin-123' } } })),
-    update: jest.fn((args) => Promise.resolve({ id: args.where.id, ...args.data })),
-    delete: jest.fn((args) => Promise.resolve({ id: args.where.id })),
-    deleteMany: jest.fn(() => Promise.resolve({ count: 1 }))
+  const mockPrisma = {
+    session: {
+      create: jest.fn((args) => Promise.resolve({ id: 'session-123', ...args.data })),
+      findUnique: jest.fn((args) => Promise.resolve({ id: args.where.id, data: { cookie: {}, passport: { user: 'admin-123' } } })),
+      findFirst: jest.fn((args) => Promise.resolve({ id: 'session-123', data: { cookie: {}, passport: { user: 'admin-123' } } })),
+      update: jest.fn((args) => Promise.resolve({ id: args.where.id, ...args.data })),
+      delete: jest.fn((args) => Promise.resolve({ id: args.where.id })),
+      deleteMany: jest.fn(() => Promise.resolve({ count: 1 }))
+    }
   };
   return {
-    prisma,
+    prisma: mockPrisma,
     connected
   };
 });
