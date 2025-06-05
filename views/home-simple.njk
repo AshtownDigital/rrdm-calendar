@@ -40,6 +40,17 @@
 </head>
 <body class="govuk-template__body">
 
+{% if deploymentStatus.env == 'test-deployment' %}
+<div style="background-color: #ffdd00; color: #0b0c0c; padding: 10px; text-align: center; font-weight: bold; font-size: 16px;">
+  🔍 STAGING ENVIRONMENT - FOR TESTING ONLY
+</div>
+{% elif deploymentStatus.env == 'production' %}
+<div style="background-color: #00703c; color: white; padding: 10px; text-align: center; font-weight: bold; font-size: 16px;">
+  ✓ PRODUCTION ENVIRONMENT
+</div>
+{% endif %}
+
+
 
 <div class="govuk-width-container">
   <main class="govuk-main-wrapper" id="main-content" role="main">
