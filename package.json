@@ -25,6 +25,7 @@
     "env:staging": "cross-env NODE_ENV=staging node ./scripts/switch-environment.js staging",
     "env:prod": "cross-env NODE_ENV=production node ./scripts/switch-environment.js production",
     "test": "jest",
+    "test:minimal": "jest --config=jest.minimal.config.js",
     "test:unit": "jest tests/unit",
     "test:integration": "jest tests/integration",
     "test:coverage": "jest --coverage",
