@@ -28,15 +28,18 @@ app.set('view engine', 'njk');
 app.set('views', viewPaths);
 
 // Static files - improve path resolution for CSS and assets
-// Serve static files from public directory
+// Primary: serve files from the public directory (includes copied GOV.UK Frontend assets)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// GOV.UK Frontend assets - these need to be served correctly for CSS to work
+// Secondary: fallback to node_modules for GOV.UK Frontend if not found in public
+app.use('/govuk-frontend', express.static(path.join(__dirname, 'public', 'govuk-frontend')));
 app.use('/govuk-frontend', express.static(path.join(__dirname, 'node_modules', 'govuk-frontend')));
+
+// Assets from both locations
+app.use('/assets', express.static(path.join(__dirname, 'public', 'assets')));
 app.use('/assets', express.static(path.join(__dirname, 'node_modules', 'govuk-frontend', 'assets')));
 
 // Additional static routes for nested structures
-app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
 app.use('/javascripts', express.static(path.join(__dirname, 'public/javascripts')));
 app.use('/stylesheets', express.static(path.join(__dirname, 'public/stylesheets')));

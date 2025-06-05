@@ -7,8 +7,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="blue">
   
-  <!-- We're loading the CSS directly here to avoid issues with complex layouts -->
+  <!-- We're loading the CSS directly with multiple fallback paths -->
   <link href="/govuk-frontend/govuk/all.css" rel="stylesheet">
+  <!-- Fallback paths if the main one fails -->
+  <link href="/stylesheets/govuk-frontend.css" rel="stylesheet">
   
   <!-- Fallback inline styles in case the CSS doesn't load -->
   <style>

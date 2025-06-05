@@ -1,0 +1,22 @@
+/* 
+ * Placeholder stylesheet that can be replaced by the build process
+ * This file ensures we have a fallback CSS reference
+ */
+
+@import url('/govuk-frontend/govuk/all.css');
+
+/* Basic styles for fallback */
+body {
+  font-family: "GDS Transport", arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  color: #0b0c0c;
+}
+
+.govuk-panel--confirmation {
+  background: #00703c;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+}
