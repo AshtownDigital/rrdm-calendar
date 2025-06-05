@@ -28,15 +28,31 @@ app.set('view engine', 'njk');
 app.set('views', viewPaths);
 
 // Static files - improve path resolution for CSS and assets
+// Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/govuk-frontend', express.static(path.join(__dirname, 'node_modules/govuk-frontend')));
-app.use('/assets', express.static(path.join(__dirname, 'node_modules/govuk-frontend/assets')));
+
+// GOV.UK Frontend assets - these need to be served correctly for CSS to work
+app.use('/govuk-frontend', express.static(path.join(__dirname, 'node_modules', 'govuk-frontend')));
+app.use('/assets', express.static(path.join(__dirname, 'node_modules', 'govuk-frontend', 'assets')));
 
 // Additional static routes for nested structures
 app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
 app.use('/javascripts', express.static(path.join(__dirname, 'public/javascripts')));
 app.use('/stylesheets', express.static(path.join(__dirname, 'public/stylesheets')));
+
+// Debugging route for static asset resolution
+app.get('/check-assets', (req, res) => {
+  const govukCssPath = path.join(__dirname, 'node_modules', 'govuk-frontend', 'govuk', 'all.css');
+  const exists = require('fs').existsSync(govukCssPath);
+  
+  res.json({
+    govukCssExists: exists,
+    govukCssPath: govukCssPath,
+    nodeModulesExists: require('fs').existsSync(path.join(__dirname, 'node_modules')),
+    govukFrontendExists: require('fs').existsSync(path.join(__dirname, 'node_modules', 'govuk-frontend'))
+  });
+});
 
 // Add CSRF mock for simplified server
 app.use((req, res, next) => {
