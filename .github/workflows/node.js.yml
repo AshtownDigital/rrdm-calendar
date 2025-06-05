@@ -26,8 +26,17 @@ jobs:
       run: npm run copy-govuk-assets
     - name: Build application
       run: npm run build --if-present
-    - name: Run minimal tests
-      run: npm run test:minimal
+    - name: Debug Node.js and npm versions
+      run: |
+        node -v
+        npm -v
+        npm ls jest
+        ls -la
+        cat package.json | grep test:minimal
+    - name: Run minimal tests with debug info
+      run: |
+        echo "Running tests with NODE_ENV=test"
+        NODE_ENV=test npm run test:minimal -- --verbose
 
   deploy-staging:
     name: Deploy to Staging
