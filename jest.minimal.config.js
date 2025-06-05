@@ -15,9 +15,9 @@ module.exports = {
     "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
   },
 
-  // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
+  // Skip transforming node_modules except for specific packages that need to be transpiled
   transformIgnorePatterns: [
-    "/node_modules/(?!@prisma|ioredis)"
+    "/node_modules/(?!(.*\.mjs$|@prisma|ioredis|express|passport|http-errors|connect-mongo|@quixo3/prisma-session-store))"
   ],
 
   // Indicates whether each individual test should be reported during the run
@@ -47,32 +47,12 @@ module.exports = {
     "/tests/(?!(minimal.test.js|utils/basic.test.js|utils/string-utils.test.js|utils/cache.test.js|unit/errorHandler.test.js|integration/redis-manager.test.js|integration/api.test.js))"
   ],
 
-  // Mock modules
+  // Setup file
+  setupFilesAfterEnv: ['<rootDir>/setupTests.js'],
+  
+  // Mock modules - keeping only the most essential mocks
   moduleNameMapper: {
-    // Handle Prisma client imports
-    '^@prisma/client(/.*)?$': '<rootDir>/mocks/prisma-with-errors.js',
-    '^@prisma/client/runtime/library$': '<rootDir>/mocks/prisma-with-errors.js',
-    '^@prisma/client/runtime$': '<rootDir>/mocks/prisma-with-errors.js',
-    '^@prisma/client/runtime/index$': '<rootDir>/mocks/prisma-with-errors.js',
-    '^@prisma/client/index$': '<rootDir>/mocks/prisma-with-errors.js',
-    '^@prisma/client/index.js$': '<rootDir>/mocks/prisma-with-errors.js',
-    '^@prisma/client$': '<rootDir>/mocks/prisma-with-errors.js',
-    
-    // Handle ioredis imports
-    '^ioredis$': '<rootDir>/mocks/ioredis.js',
-    '^ioredis/(.*)$': '<rootDir>/mocks/ioredis.js',
-    
-    // Other mocks
-    '^mongoose$': '<rootDir>/mocks/mongoose.js',
-    '^sequelize$': '<rootDir>/mocks/sequelize.js',
-    '^express$': '<rootDir>/mocks/express.js',
-    '^express-session$': '<rootDir>/mocks/express-session.js',
-    '^passport$': '<rootDir>/mocks/passport.js',
-    '^http-errors$': '<rootDir>/mocks/http-errors.js',
-    '^connect-mongo$': '<rootDir>/mocks/connect-mongo.js',
-    '^@quixo3/prisma-session-store$': '<rootDir>/mocks/prisma-session-store.js',
-    
-    // Config file mocks
+    // Handle config files
     '^.*/config/prisma(.*)$': '<rootDir>/mocks/prisma-config.js',
     '^.*/config/database(.*)$': '<rootDir>/mocks/config-database.js',
     '^.*/config/mongoose(.*)$': '<rootDir>/mocks/mongoose-config.js',
