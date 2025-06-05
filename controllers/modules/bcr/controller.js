@@ -6,7 +6,7 @@
 const mongoose = require('mongoose');
 const bcrModel = require('../../../models/modules/bcr/model');
 const releaseService = require('../../../services/releaseService');
-const AcademicYear = require('../../../models/AcademicYear');
+const AcademicYear = require('../../../models/academicYear');
 const { Submission } = require('../../../models');
 const workflowService = require('../../../services/modules/bcr/workflowService');
 const counterService = require('../../../services/modules/bcr/counterService');
