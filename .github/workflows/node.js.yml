@@ -28,11 +28,11 @@ jobs:
       run: npm run build --if-present
     - name: Debug Node.js and npm versions
       run: |
-        node -v
-        npm -v
-        npm ls jest
-        ls -la
-        cat package.json | grep test:minimal
+        echo "Node.js version: $(node -v)"
+        echo "npm version: $(npm -v)"
+        echo "Jest version: $(npm list jest --depth=0 | grep jest)"
+        echo "Package.json test scripts:"
+        grep -A 5 "test:" package.json
     - name: Run minimal tests with debug info
       run: |
         echo "Running tests with NODE_ENV=test"
