@@ -10,9 +10,12 @@ require('dotenv').config();
 
 // Check if we should use the simplified server
 const useSimpleServer = process.env.USE_SIMPLE_SERVER === 'true' || process.env.NODE_ENV === 'test-deployment';
+console.log(`Using simplified server: ${useSimpleServer ? 'YES' : 'NO'}`);
+console.log(`Current NODE_ENV: ${process.env.NODE_ENV || 'Not specified'}`);
+console.log(`USE_SIMPLE_SERVER: ${process.env.USE_SIMPLE_SERVER || 'Not specified'}`);
 
 if (useSimpleServer) {
-  console.log('Using simplified server configuration for deployment testing');
+  console.log('Starting simplified server for deployment testing');
   // Simplified server directly in this file
   const express = require('express');
   const app = express();
@@ -20,7 +23,7 @@ if (useSimpleServer) {
 
   // Basic configuration
   app.use(express.static(path.join(__dirname, 'public')));
-
+  
   // Root route - simple status message
   app.get('/', (req, res) => {
     res.send(`
