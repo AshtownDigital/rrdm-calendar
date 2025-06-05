@@ -118,14 +118,20 @@ describe('Redis Manager Integration Tests', () => {
       
       // Find and delete keys matching pattern
       const keys = await redisClient.keys('rrdm:test:test-*');
+      expect(keys.length).toBeGreaterThan(0); // Make sure we found some keys
       await redisClient.del(...keys);
       
-      // Verify keys were deleted
-      const remainingKeys = await redisClient.keys('rrdm:test:*');
+      // Verify the specific test keys were deleted
+      const testKey1 = await redisClient.get('test-key-1');
+      const testKey2 = await redisClient.get('test-key-2');
+      const otherKey = await redisClient.get('other-key');
       
-      // We should only have the 'other-key' remaining
-      expect(remainingKeys).toHaveLength(1);
-      expect(remainingKeys[0]).toContain('other-key');
+      expect(testKey1).toBeNull();
+      expect(testKey2).toBeNull();
+      expect(otherKey).toBe('value3');
+      
+      // Clean up
+      await redisClient.del('other-key');
     });
   });
   
