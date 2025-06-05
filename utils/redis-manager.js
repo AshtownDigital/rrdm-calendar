@@ -122,7 +122,10 @@ class RedisMock extends EventEmitter {
   async del(...keys) {
     let count = 0;
     
-    for (const key of keys) {
+    // Handle both direct calls and array arguments
+    const keyArray = keys.flat();
+    
+    for (const key of keyArray) {
       const prefixedKey = this.prefixKey(key);
       if (this.data.has(prefixedKey)) {
         this.data.delete(prefixedKey);
@@ -245,11 +248,15 @@ class RedisMock extends EventEmitter {
    */
   async keys(pattern) {
     const result = [];
-    const regex = new RegExp(pattern.replace(/\*/g, '.*'));
+    // Escape special regex characters except * which we'll convert to .*
+    const escapedPattern = pattern
+      .replace(/[.+?^${}()|[\]\\]/g, '\\$&') // Escape all special regex chars
+      .replace(/\*/g, '.*'); // Convert * to .* for wildcard matching
+    
+    const regex = new RegExp(`^${escapedPattern}$`);
     
     for (const key of this.data.keys()) {
       if (regex.test(key)) {
-        // If the key has a prefix, return it with the prefix
         result.push(key);
       }
     }

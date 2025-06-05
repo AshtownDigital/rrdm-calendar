@@ -111,27 +111,36 @@ describe('Redis Manager Integration Tests', () => {
     });
     
     test('should delete multiple keys by pattern', async () => {
-      // Set up multiple keys
-      await redisClient.set('test-key-1', 'value1');
-      await redisClient.set('test-key-2', 'value2');
-      await redisClient.set('other-key', 'value3');
+      // Set up multiple keys with full key format
+      await redisClient.set('rrdm:test:test-key-1', 'value1');
+      await redisClient.set('rrdm:test:test-key-2', 'value2');
+      await redisClient.set('rrdm:test:other-key', 'value3');
       
-      // Find and delete keys matching pattern
-      const keys = await redisClient.keys('rrdm:test:test-*');
-      expect(keys.length).toBeGreaterThan(0); // Make sure we found some keys
-      await redisClient.del(...keys);
-      
-      // Verify the specific test keys were deleted
-      const testKey1 = await redisClient.get('test-key-1');
-      const testKey2 = await redisClient.get('test-key-2');
-      const otherKey = await redisClient.get('other-key');
-      
-      expect(testKey1).toBeNull();
-      expect(testKey2).toBeNull();
-      expect(otherKey).toBe('value3');
-      
-      // Clean up
-      await redisClient.del('other-key');
+      try {
+        // Find and delete keys matching pattern
+        const keys = await redisClient.keys('rrdm:test:test-*');
+        expect(keys.length).toBeGreaterThan(0); // Make sure we found some keys
+        
+        if (keys.length > 0) {
+          await redisClient.del(keys);
+        }
+        
+        // Verify the specific test keys were deleted
+        const testKey1 = await redisClient.get('rrdm:test:test-key-1');
+        const testKey2 = await redisClient.get('rrdm:test:test-key-2');
+        const otherKey = await redisClient.get('rrdm:test:other-key');
+        
+        expect(testKey1).toBeNull();
+        expect(testKey2).toBeNull();
+        expect(otherKey).toBe('value3');
+      } finally {
+        // Clean up all test keys
+        await redisClient.del([
+          'rrdm:test:test-key-1',
+          'rrdm:test:test-key-2',
+          'rrdm:test:other-key'
+        ]);
+      }
     });
   });
   
