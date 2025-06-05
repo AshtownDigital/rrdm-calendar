@@ -181,3 +181,29 @@ exports.generateAllReleases = async (req, res) => {
     });
   }
 };
+
+// Controller to get academic years that have releases (for dropdowns)
+exports.getAcademicYearsForReleasesDropdown = async (req, res) => {
+  try {
+    const academicYears = await releaseService.getAcademicYearsWithReleases();
+    res.status(200).json({ message: 'Academic years with releases fetched successfully', data: academicYears });
+  } catch (error) {
+    console.error('Error in getAcademicYearsForReleasesDropdown controller:', error);
+    res.status(500).json({ message: 'Error fetching academic years for dropdown', error: error.message });
+  }
+};
+
+// Controller to get releases by academic year ID (for dropdowns)
+exports.getReleasesByAcademicYearDropdown = async (req, res) => {
+  try {
+    const academicYearId = req.params.academicYearId;
+    if (!mongoose.Types.ObjectId.isValid(academicYearId)) {
+        return res.status(400).json({ message: 'Invalid Academic Year ID format.' });
+    }
+    const releases = await releaseService.getReleasesByAcademicYearId(academicYearId);
+    res.status(200).json({ message: `Releases for academic year ${academicYearId} fetched successfully`, data: releases });
+  } catch (error) {
+    console.error('Error in getReleasesByAcademicYearDropdown controller:', error);
+    res.status(500).json({ message: 'Error fetching releases for dropdown', error: error.message });
+  }
+};

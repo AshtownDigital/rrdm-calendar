@@ -1,0 +1,134 @@
+{% extends "layouts/base.njk" %}
+
+{% block pageTitle %}
+  Update Status - BCR {{ bcr.bcrNumber }} - RRDM
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <a href="/bcr/business-change-requests/{{ bcr.id }}" class="govuk-back-link">Back to BCR</a>
+    
+    <h1 class="govuk-heading-xl">
+      <span class="govuk-caption-xl">Update BCR {{ bcr.bcrNumber }}</span>
+      {{ bcr.title }}
+    </h1>
+
+    {% if errorMessage %}
+      <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+        <h2 class="govuk-error-summary__title" id="error-summary-title">
+          There is a problem
+        </h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li>{{ errorMessage }}</li>
+          </ul>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">BCR Details</h2>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Current Phase</dt>
+          <dd class="govuk-summary-list__value">
+            <strong class="govuk-tag govuk-tag--blue">{{ currentPhase.name }}</strong>
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Current Status</dt>
+          <dd class="govuk-summary-list__value">
+            <strong class="govuk-tag govuk-tag--{{ currentStatus.color }}">{{ bcr.status }}</strong>
+          </dd>
+        </div>
+      </dl>
+    </div>
+
+    <!-- Update Form -->
+    <h2 class="govuk-heading-m">Update Status</h2>
+    <form action="/bcr/business-change-requests/{{ bcr.id }}/update-status" method="post" class="govuk-form">
+      <!-- CSRF Token -->
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            Update Options
+          </legend>
+          <div class="govuk-radios" data-module="govuk-radios">
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="updateChoice-status" name="updateChoice" type="radio" value="status" checked data-aria-controls="conditional-status">
+              <label class="govuk-label govuk-radios__label" for="updateChoice-status">
+                Update status only
+              </label>
+            </div>
+            
+            <div class="govuk-radios__conditional" id="conditional-status">
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="status">
+                  Select new status
+                </label>
+                <select class="govuk-select" id="status" name="status">
+                  {% for status in statuses %}
+                    <option value="{{ status._id }}" {% if bcr.status === status.name %}selected{% endif %}>{{ status.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="updateChoice-complete" name="updateChoice" type="radio" value="complete" data-aria-controls="conditional-complete">
+              <label class="govuk-label govuk-radios__label" for="updateChoice-complete">
+                Complete current phase and move to next
+              </label>
+            </div>
+            
+            <div class="govuk-radios__conditional" id="conditional-complete">
+              <div class="govuk-form-group">
+                <p class="govuk-body">Current phase: <strong>{{ currentPhase.name }}</strong></p>
+                <p class="govuk-body">Next phase: <strong>{{ nextPhase.name }}</strong></p>
+              </div>
+            </div>
+            
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="updateChoice-transition" name="updateChoice" type="radio" value="transition" data-aria-controls="conditional-transition">
+              <label class="govuk-label govuk-radios__label" for="updateChoice-transition">
+                Select specific phase and status
+              </label>
+            </div>
+            
+            <div class="govuk-radios__conditional" id="conditional-transition">
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="transitionId">
+                  Select phase and status combination
+                </label>
+                <select class="govuk-select" id="transitionId" name="transitionId">
+                  {% for transition in validTransitions %}
+                    <option value="{{ transition.value }}">{{ transition.label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+      
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--m" for="closureNotes">
+          Update Notes
+        </label>
+        <div id="closureNotes-hint" class="govuk-hint">
+          Provide details about this status update (required)
+        </div>
+        <textarea class="govuk-textarea" id="closureNotes" name="closureNotes" rows="5" aria-describedby="closureNotes-hint" required></textarea>
+      </div>
+      
+      <div class="govuk-button-group govuk-!-margin-top-6">
+        <button type="submit" class="govuk-button" data-module="govuk-button">Update BCR Status</button>
+        <a href="/bcr/business-change-requests/{{ bcr.id }}" class="govuk-button govuk-button--secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

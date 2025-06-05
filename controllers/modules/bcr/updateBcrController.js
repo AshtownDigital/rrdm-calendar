@@ -7,6 +7,9 @@ console.log('Loading updateBcrController.js...');
 const mongoose = require('mongoose');
 const bcrModel = require('../../../models/modules/bcr/model');
 const workflowService = require('../../../services/modules/bcr/workflowService');
+const phaseRulesService = require('../../../services/modules/bcr/phaseRulesService');
+const releaseService = require('../../../services/releaseService');
+const AcademicYear = require('../../../models/AcademicYear');
 
 /**
  * Render the workflow update form
@@ -110,57 +113,96 @@ exports.renderUpdateWorkflowForm = async (req, res) => {
       console.error('Error fetching statuses:', error);
     }
     
-    // Format BCR for display
-    const formattedBcr = {
-      id: bcr._id || bcr.id,
-      bcrNumber: bcr.bcrNumber || 'N/A',
-      submissionCode: bcr.submissionId ? bcr.submissionId.submissionCode : 'N/A',
-      briefDescription: bcr.title || (bcr.submissionId ? bcr.submissionId.briefDescription : 'No description provided'),
-      currentPhase: bcr.currentPhaseId ? bcr.currentPhaseId.name : 'Unknown Phase',
-      currentPhaseId: bcr.currentPhaseId ? bcr.currentPhaseId._id : null,
-      currentStatusId: bcr.currentStatusId ? bcr.currentStatusId._id : null,
-      displayStatus: bcr.status || 'Unknown Status',
-      statusClass: bcr.currentStatusId && bcr.currentStatusId.color ? 
-        `govuk-tag govuk-tag--${bcr.currentStatusId.color}` : 'govuk-tag',
-      workflowHistory: bcr.workflowHistory || []
-    };
+    // Get the current phase and status
+    const currentPhase = bcr.currentPhaseId;
+    const currentStatus = bcr.currentStatusId;
     
-    // Render the update workflow form
-    console.log('Attempting to render update-workflow template...');
-    console.log('Template path: modules/bcr/bcrs/update-workflow');
-    console.log('BCR data:', formattedBcr);
+    console.log('Current phase:', currentPhase ? currentPhase.name : 'None');
+    console.log('Current status:', currentStatus ? currentStatus.name : 'None');
     
-    try {
-      res.render('modules/bcr/bcrs/update-workflow', {
-        title: `Update Workflow for BCR ${formattedBcr.bcrNumber}`,
-        bcr: formattedBcr,
-        phases: phases,
-        statuses: statuses,
-        csrfToken: req.csrfToken ? req.csrfToken() : '',
-        user: req.user
-      });
-      console.log('Template rendered successfully');
-    } catch (renderError) {
-      console.error('Error rendering template:', renderError);
-      // Fall back to a simple response
-      res.send(`
-        <html>
-          <head><title>BCR Update Workflow</title></head>
-          <body>
-            <h1>BCR Update Workflow</h1>
-            <p>BCR ID: ${bcrId}</p>
-            <p>BCR Number: ${formattedBcr.bcrNumber}</p>
-            <p>There was an error rendering the update workflow form.</p>
-            <a href="/bcr/bcr-view/${bcrId}">Back to BCR View</a>
-          </body>
-        </html>
-      `);
+    // Create an array of available transitions based on the workflow rules
+    let availableTransitions = [];
+    
+    // Get all available phases with their respective statuses
+    phases.forEach(phase => {
+      // For each phase, we need the statuses that can be transitioned to
+      if (phase.statuses && phase.statuses.length > 0) {
+        phase.statuses.forEach(statusId => {
+          const status = statuses.find(s => s._id.toString() === statusId.toString());
+          if (status) {
+            // Only include the transition if it's different from the current state
+            const isDifferentState = 
+              !currentPhase || 
+              !currentStatus || 
+              phase._id.toString() !== currentPhase._id.toString() || 
+              status._id.toString() !== currentStatus._id.toString();
+            
+            if (isDifferentState) {
+              availableTransitions.push({
+                id: `${phase._id}_${status._id}`,
+                label: `${phase.name} - ${status.name}`,
+                phaseId: phase._id,
+                statusId: status._id,
+                isPrimaryOption: phase.inProgressStatusId && status._id.toString() === phase.inProgressStatusId.toString()
+              });
+            }
+          }
+        });
+      }
+    });
+    
+    // Sort transitions by phase display order
+    availableTransitions.sort((a, b) => {
+      const phaseA = phases.find(p => p._id.toString() === a.phaseId.toString());
+      const phaseB = phases.find(p => p._id.toString() === b.phaseId.toString());
+      
+      if (phaseA && phaseB) {
+        return phaseA.displayOrder - phaseB.displayOrder;
+      }
+      return 0;
+    });
+    
+    console.log(`Found ${availableTransitions.length} available transitions`);
+    
+    // Get any required checklist items for the current phase
+    const checklistItems = currentPhase && currentPhase.checklistItems ? currentPhase.checklistItems : [];
+    console.log(`Found ${checklistItems.length} checklist items for the current phase`);
+    
+    // Already completed checklist items
+    const completedItems = bcr.completedChecklistItems || [];
+    console.log(`BCR has ${completedItems.length} completed checklist items`);
+    
+    // Get the associated release if there is one
+    let associatedRelease = null;
+    if (bcr.associatedReleaseId) {
+      try {
+        console.log('Fetching associated release:', bcr.associatedReleaseId);
+        associatedRelease = await releaseService.getById(bcr.associatedReleaseId);
+      } catch (error) {
+        console.error('Error fetching associated release:', error);
+      }
     }
+    
+    // Render the workflow update form
+    res.render('modules/bcr/update-workflow', {
+      title: 'Update BCR Workflow',
+      bcr,
+      phases,
+      statuses,
+      currentPhase,
+      currentStatus,
+      availableTransitions,
+      checklistItems,
+      completedItems,
+      associatedRelease,
+      csrfToken: req.csrfToken ? req.csrfToken() : '',
+      user: req.user
+    });
   } catch (error) {
     console.error('Error in renderUpdateWorkflowForm controller:', error);
     res.status(500).render('error', {
       title: 'Error',
-      message: 'An error occurred while loading the update workflow form',
+      message: 'An error occurred while loading the workflow update form',
       error: process.env.NODE_ENV === 'development' ? error : {},
       connectionIssue: mongoose.connection.readyState !== 1,
       user: req.user
@@ -173,13 +215,33 @@ exports.renderUpdateWorkflowForm = async (req, res) => {
  */
 exports.processUpdateWorkflow = async (req, res) => {
   try {
-    console.log('Processing workflow update with body:', JSON.stringify(req.body));
     const bcrId = req.params.id;
-    const { phaseId, statusId, comments } = req.body;
+    const { 
+      updateChoice, 
+      transitionId, 
+      closureNotes, 
+      associatedReleaseId 
+    } = req.body;
     
-    console.log(`Update data: bcrId=${bcrId}, phaseId=${phaseId}, statusId=${statusId}, comments=${comments}`);
+    // Log the request body to help with debugging
+    console.log('Processing workflow update with params:', {
+      bcrId,
+      updateChoice,
+      transitionId,
+      closureNotes: closureNotes ? '(present)' : '(not provided)',
+      associatedReleaseId: associatedReleaseId || '(not provided)'
+    });
     
-    // Check if the BCR exists before trying to update it
+    if (!updateChoice) {
+      return res.status(400).render('error', {
+        title: 'Error',
+        message: 'No update choice specified',
+        error: { status: 400 },
+        user: req.user
+      });
+    }
+    
+    // Verify the BCR exists
     const bcr = await bcrModel.getBcrById(bcrId);
     if (!bcr) {
       console.error(`BCR not found with ID: ${bcrId}`);
@@ -193,37 +255,126 @@ exports.processUpdateWorkflow = async (req, res) => {
     
     console.log(`Found BCR: ${bcr._id}, current status: ${bcr.status}`);
     
-    if (!phaseId || !statusId) {
-      return res.status(400).render('error', {
-        title: 'Error',
-        message: 'Please select both a phase and a status',
-        error: { status: 400 },
-        user: req.user
-      });
+    // If user chose to complete current phase, automatically move to the next phase in sequence
+    let phaseId, statusId;
+    
+    if (updateChoice === 'complete' || !transitionId || transitionId === 'auto') {
+      // Get all phases in order
+      const allPhases = await bcrModel.getAllPhases();
+      allPhases.sort((a, b) => a.displayOrder - b.displayOrder);
+      
+      // Find the current phase
+      const currentPhaseId = bcr.currentPhaseId ? bcr.currentPhaseId._id : null;
+      const currentPhaseIndex = allPhases.findIndex(phase => 
+        phase._id.toString() === (currentPhaseId ? currentPhaseId.toString() : ''));
+      
+      // Get the next phase in sequence
+      const nextPhaseIndex = currentPhaseIndex + 1;
+      if (nextPhaseIndex < allPhases.length) {
+        const nextPhase = allPhases[nextPhaseIndex];
+        phaseId = nextPhase._id;
+        statusId = nextPhase.inProgressStatusId; // Corrected: removed ._id
+        console.log(`Automatically moving to next phase: ${nextPhase.name}`);
+      } else {
+        // If we're at the last phase, stay there but update status to completed
+        phaseId = currentPhaseId;
+        statusId = bcr.currentPhaseId.completedStatusId; // Corrected: removed ._id
+        console.log('Already at last phase, updating to completed status');
+      }
+    } else {
+      // Parse the transition ID to get phaseId and statusId
+      [phaseId, statusId] = transitionId.split('_');
+      
+      if (!phaseId || !statusId) {
+        return res.status(400).render('error', {
+          title: 'Error',
+          message: 'Invalid transition selected',
+          error: { status: 400 },
+          user: req.user
+        });
+      }
+    }
+    
+    // Handle checklist items if present in the form submission
+    let completedItems = [];
+    if (req.body['checklistItems[]']) {
+      // Handle both array and single value cases
+      if (Array.isArray(req.body['checklistItems[]'])) {
+        completedItems = req.body['checklistItems[]'];
+      } else {
+        completedItems = [req.body['checklistItems[]']];
+      }
+    }
+    
+    // Get the current phase name
+    const currentBcr = await bcrModel.getBcrById(bcrId);
+    const fromPhaseName = currentBcr && currentBcr.currentPhaseId ? currentBcr.currentPhaseId.name : 'Initiation';
+    
+    // For phase completion, ensure required checklist items are completed
+    if (updateChoice === 'complete') {
+      // Get the next phase in sequence
+      const allPhases = await bcrModel.getAllPhases();
+      allPhases.sort((a, b) => a.displayOrder - b.displayOrder);
+      
+      const currentPhaseIndex = allPhases.findIndex(phase => 
+        phase._id.toString() === (bcr.currentPhaseId ? bcr.currentPhaseId._id.toString() : ''));
+        
+      if (currentPhaseIndex !== -1 && currentPhaseIndex < allPhases.length - 1) {
+        const nextPhase = allPhases[currentPhaseIndex + 1];
+        const toPhaseName = nextPhase.name;
+        
+        // Validate the phase transition
+        const validation = phaseRulesService.validatePhaseTransition(
+          fromPhaseName, 
+          toPhaseName, 
+          completedItems
+        );
+        
+        // If validation fails, show warning but still allow the update
+        if (!validation.success) {
+          console.log(`Warning: Missing required checklist items for transition to ${toPhaseName}:`, validation.missingItems);
+        }
+      }
     }
     
     // Update the BCR phase and status
-    await bcrModel.updateBcrPhaseStatus(bcrId, phaseId, statusId);
+    await workflowService.updateBcrPhaseStatus(bcrId, phaseId, statusId);
+    
+    // Get a fresh copy of the BCR with the updated phase and status
+    const updatedBcr = await bcrModel.getBcrById(bcrId);
+    if (!updatedBcr) {
+      throw new Error(`Could not retrieve updated BCR with ID: ${bcrId}`);
+    }
+    
+    // Store the completed checklist items with the BCR
+    updatedBcr.completedChecklistItems = completedItems;
+    
+    // Store the associated release ID if provided
+    if (associatedReleaseId) {
+      console.log(`Associating BCR with Release ID: ${associatedReleaseId}`);
+      updatedBcr.associatedReleaseId = associatedReleaseId;
+    }
     
     // Add a workflow history entry
     const historyEntry = {
       date: new Date(),
-      action: 'Workflow Updated',
+      action: updateChoice === 'complete' ? 'Phase Completed' : 'Workflow Updated',
       userId: req.user ? req.user.id : null,
-      details: comments || 'No comments provided',
+      details: closureNotes || `Status updated by ${req.user ? req.user.name || req.user.email : 'system'}`,
       phaseId,
-      statusId
+      statusId,
+      checklistItems: completedItems
     };
     
     // Update the BCR with the new history entry
-    bcr.workflowHistory = bcr.workflowHistory || [];
-    bcr.workflowHistory.push(historyEntry);
-    await bcr.save();
+    updatedBcr.workflowHistory = updatedBcr.workflowHistory || [];
+    updatedBcr.workflowHistory.push(historyEntry);
+    await updatedBcr.save();
     
     console.log(`BCR ${bcrId} workflow updated successfully`);
     
-    // Redirect to the BCR detailed view
-    res.redirect(`/bcr/bcr-view/${bcrId}`);
+    // Redirect to the BCR details page
+    res.redirect(`/bcr/business-change-requests/${bcrId}`);
   } catch (error) {
     console.error('Error in processUpdateWorkflow controller:', error);
     console.error('Error stack:', error.stack);
@@ -235,7 +386,7 @@ exports.processUpdateWorkflow = async (req, res) => {
     
     res.status(500).render('error', {
       title: 'Error',
-      message: 'An error occurred while updating the workflow',
+      message: 'An error occurred while updating the BCR workflow',
       error: process.env.NODE_ENV === 'development' ? {
         message: error.message,
         stack: error.stack,
@@ -250,7 +401,6 @@ exports.processUpdateWorkflow = async (req, res) => {
  * Render the BCR update form
  */
 exports.renderUpdateForm = async (req, res) => {
-  console.log('renderUpdateForm called with params:', req.params);
   try {
     const bcrId = req.params.id;
     
@@ -258,7 +408,6 @@ exports.renderUpdateForm = async (req, res) => {
     const isDbConnected = mongoose.connection.readyState === 1;
     let timedOut = false;
     let bcr = null;
-    let availableTransitions = [];
     
     if (isDbConnected) {
       try {
@@ -270,22 +419,12 @@ exports.renderUpdateForm = async (req, res) => {
           }, 8000);
         });
         
-        // Race the query against the timeout
+        // Try to find the BCR
+        console.log('Trying to find BCR with ID:', bcrId);
         bcr = await Promise.race([
           bcrModel.getBcrById(bcrId),
           timeoutPromise
         ]);
-        
-        // Get available workflow transitions for this BCR
-        if (bcr) {
-          availableTransitions = await workflowService.getAvailableTransitions(bcrId);
-          
-          // Add unique IDs to transitions for form handling
-          availableTransitions = availableTransitions.map((transition, index) => ({
-            ...transition,
-            id: `${transition.phaseId}_${transition.statusId}`
-          }));
-        }
       } catch (queryError) {
         console.error('Error fetching BCR details:', queryError);
         // Don't rethrow, continue with bcr = null
@@ -309,49 +448,46 @@ exports.renderUpdateForm = async (req, res) => {
       });
     }
     
-    // Format BCR for display
-    const formattedBcr = {
-      id: bcr._id || bcr.id,
-      bcrNumber: bcr.bcrNumber || 'N/A',
-      submissionCode: bcr.submissionId ? bcr.submissionId.submissionCode : 'N/A',
-      briefDescription: bcr.title || (bcr.submissionId ? bcr.submissionId.briefDescription : 'No description provided'),
-      currentPhase: bcr.currentPhaseId ? bcr.currentPhaseId.name : 'Unknown Phase',
-      displayStatus: bcr.status || 'Unknown Status',
-      statusClass: bcr.currentStatusId && bcr.currentStatusId.color ? 
-        `govuk-tag govuk-tag--${bcr.currentStatusId.color}` : 'govuk-tag',
-      workflowHistory: bcr.workflowHistory || []
-    };
+    // Get all available statuses for the dropdown
+    let statuses = [];
+    try {
+      statuses = await bcrModel.getAllStatuses();
+    } catch (error) {
+      console.error('Error fetching statuses:', error);
+    }
     
-    // For debugging, let's try a simpler response first
-    console.log('About to render update template');
+    // Filter statuses to only include those that are appropriate for the current phase
+    let filteredStatuses = [];
+    if (bcr.currentPhaseId && bcr.currentPhaseId.statuses) {
+      filteredStatuses = statuses.filter(status => 
+        bcr.currentPhaseId.statuses.some(s => s.toString() === status._id.toString())
+      );
+    }
     
-    // Try rendering a simple response first to test if the route works
-    return res.send(`
-      <html>
-        <head><title>BCR Update Test</title></head>
-        <body>
-          <h1>BCR Update Test</h1>
-          <p>BCR ID: ${bcrId}</p>
-          <p>This is a test page for the BCR update functionality.</p>
-          <form action="/bcr/business-change-requests/${bcrId}/update" method="post">
-            <input type="hidden" name="_csrf" value="${req.csrfToken ? req.csrfToken() : ''}">
-            <button type="submit">Test Update</button>
-          </form>
-        </body>
-      </html>
-    `);
+    // If no statuses are available for the current phase, just show all statuses
+    if (filteredStatuses.length === 0) {
+      filteredStatuses = statuses;
+    }
     
-    /* Commented out for debugging
-    res.render('modules/bcr/bcrs/update', {
-      title: `Update BCR ${bcr.bcrNumber}`,
-      bcr: formattedBcr,
-      availableTransitions,
-      connectionIssue: !isDbConnected,
-      timedOut: timedOut,
+    // Get the associated release if there is one
+    let associatedRelease = null;
+    if (bcr.associatedReleaseId) {
+      try {
+        associatedRelease = await releaseService.getById(bcr.associatedReleaseId);
+      } catch (error) {
+        console.error('Error fetching associated release:', error);
+      }
+    }
+    
+    // Render the update form
+    res.render('modules/bcr/update-status', {
+      title: 'Update BCR Status',
+      bcr,
+      statuses: filteredStatuses,
+      associatedRelease,
       csrfToken: req.csrfToken ? req.csrfToken() : '',
       user: req.user
     });
-    */
   } catch (error) {
     console.error('Error in renderUpdateForm controller:', error);
     res.status(500).render('error', {
@@ -364,21 +500,24 @@ exports.renderUpdateForm = async (req, res) => {
   }
 };
 
-/**
- * Process the BCR workflow update
- */
+// Process the BCR status update
 exports.processUpdate = async (req, res) => {
   try {
-    console.log('Processing BCR workflow update with body:', JSON.stringify(req.body));
     const bcrId = req.params.id;
-    const { transitionId, comments } = req.body;
+    const { statusId, notes } = req.body;
     
-    console.log(`Update data: bcrId=${bcrId}, transitionId=${transitionId}, comments=${comments}`);
+    if (!statusId) {
+      return res.status(400).render('error', {
+        title: 'Error',
+        message: 'No status selected',
+        error: { status: 400 },
+        user: req.user
+      });
+    }
     
-    // Check if the BCR exists before trying to update it
+    // Verify the BCR exists
     const bcr = await bcrModel.getBcrById(bcrId);
     if (!bcr) {
-      console.error(`BCR not found with ID: ${bcrId}`);
       return res.status(404).render('error', {
         title: 'Error',
         message: 'The BCR you are trying to update could not be found',
@@ -387,45 +526,34 @@ exports.processUpdate = async (req, res) => {
       });
     }
     
-    console.log(`Found BCR: ${bcr._id}, current status: ${bcr.status}`);
-    
-    // Parse the transition ID to get phaseId and statusId
-    const [phaseId, statusId] = transitionId.split('_');
-    
-    if (!phaseId || !statusId) {
-      return res.status(400).render('error', {
-        title: 'Error',
-        message: 'Invalid transition selected',
-        error: { status: 400 },
-        user: req.user
-      });
-    }
-    
-    // Update the BCR phase and status
+    // Update the BCR status (keep the same phase)
+    const phaseId = bcr.currentPhaseId ? bcr.currentPhaseId._id : null;
     await workflowService.updateBcrPhaseStatus(bcrId, phaseId, statusId);
     
-    // Add a workflow history entry
+    // Get a fresh copy of the BCR with the updated status
+    const updatedBcr = await bcrModel.getBcrById(bcrId);
+    if (!updatedBcr) {
+      throw new Error(`Could not retrieve updated BCR with ID: ${bcrId}`);
+    }
+    
+    // Add a status update history entry
     const historyEntry = {
       date: new Date(),
-      action: 'Workflow Updated',
+      action: 'Status Updated',
       userId: req.user ? req.user.id : null,
-      details: comments || 'No comments provided',
-      phaseId,
+      details: notes || `Status updated by ${req.user ? req.user.name || req.user.email : 'system'}`,
       statusId
     };
     
     // Update the BCR with the new history entry
-    bcr.workflowHistory = bcr.workflowHistory || [];
-    bcr.workflowHistory.push(historyEntry);
-    await bcr.save();
-    
-    console.log(`BCR ${bcrId} workflow updated successfully`);
+    updatedBcr.workflowHistory = updatedBcr.workflowHistory || [];
+    updatedBcr.workflowHistory.push(historyEntry);
+    await updatedBcr.save();
     
     // Redirect to the BCR details page
     res.redirect(`/bcr/business-change-requests/${bcrId}`);
   } catch (error) {
     console.error('Error in processUpdate controller:', error);
-    console.error('Error stack:', error.stack);
     
     // Check if this is a validation error
     if (error.name === 'ValidationError') {
@@ -434,7 +562,7 @@ exports.processUpdate = async (req, res) => {
     
     res.status(500).render('error', {
       title: 'Error',
-      message: 'An error occurred while updating the BCR workflow',
+      message: 'An error occurred while updating the BCR status',
       error: process.env.NODE_ENV === 'development' ? {
         message: error.message,
         stack: error.stack,

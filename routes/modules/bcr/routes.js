@@ -10,6 +10,7 @@ const { csrfProtection } = require('../../../middleware/csrf');
 const bcrController = require('../../../controllers/modules/bcr/controller');
 const reviewController = require('../../../controllers/modules/bcr/reviewController');
 const updateBcrController = require('../../../controllers/modules/bcr/updateBcrController');
+const releaseAssignmentController = require('../../../controllers/modules/bcr/releaseAssignmentController');
 const updateWorkflowController = require('../../../controllers/modules/bcr/updateWorkflowController');
 
 // Import workflow routes
@@ -85,6 +86,14 @@ router.post('/business-change-requests/:id/update', (req, res, next) => {
   console.log('Update POST route hit with params:', req.params);
   next();
 }, csrfProtection, updateBcrController.processUpdate); // Route for processing a BCR workflow update
+
+// Routes for updating BCR status
+router.get('/business-change-requests/:id/update-status', csrfProtection, updateBcrController.renderUpdateForm); // Route for updating a BCR status
+
+// Routes for assigning a BCR to a release
+router.get('/business-change-requests/:id/assign-release', csrfProtection, releaseAssignmentController.renderAssignReleaseForm);
+router.post('/business-change-requests/:id/assign-release', csrfProtection, releaseAssignmentController.processAssignRelease); // Route for processing a BCR release assignment
+router.post('/business-change-requests/:id/update-status', csrfProtection, updateBcrController.processUpdate); // Route for processing a BCR status update
 router.get('/:id', bcrController.viewSubmission); // Keep for backward compatibility
 router.get('/:id/update', bcrController.viewSubmission);
 router.post('/:id/update', csrfProtection, bcrController.viewSubmission);

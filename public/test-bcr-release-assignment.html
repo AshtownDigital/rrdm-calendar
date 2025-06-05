@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCR Release Assignment Test</title>
+    <link rel="stylesheet" href="/styles/govuk-frontend.min.css">
+    <style>
+        body { margin: 20px; font-family: sans-serif; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="govuk-heading-xl">BCR Release Assignment Test</h1>
+        
+        <!-- Hidden inputs to simulate the BCR update page context -->
+        <input type="hidden" id="currentPhaseId" name="currentPhaseId" value="phase123">
+        <input type="hidden" id="currentPhaseDisplayOrder" name="currentPhaseDisplayOrder" value="6">
+        
+        <div class="govuk-form-group">
+            <label class="govuk-label" for="transitionId">
+                Select phase and status
+            </label>
+            <select class="govuk-select" id="transitionId" name="transitionId">
+                <option value="">Select...</option>
+                <option value="transition1" data-phase-id="phase1" data-status-id="status1">Phase 1 - Status 1</option>
+                <option value="transition2" data-phase-id="phase2" data-status-id="status2">Phase 2 - Status 2</option>
+                <option value="transition3" data-phase-id="phase3" data-status-id="status3">Phase 3 - Status 3</option>
+                <option value="transition4" data-phase-id="phase4" data-status-id="status4">Phase 4 - Status 4</option>
+                <option value="transition5" data-phase-id="phase5" data-status-id="status5">Phase 5 - Status 5</option>
+                <option value="transition6" data-phase-id="phase6" data-status-id="status6">Phase 6 - Status 6</option>
+                <option value="transition7" data-phase-id="phase7" data-status-id="status7">Document Draft Business change requirements (Phase 7) - Status 7</option>
+                <option value="transition8" data-phase-id="phase8" data-status-id="status8">Phase 8 - Status 8</option>
+            </select>
+        </div>
+        
+        <!-- BCR Release Assignment Section - Only visible when Phase 7 is selected -->
+        <div id="releaseAssignmentSection" class="govuk-form-group" style="display: none; border: 1px solid #ccc; padding: 20px; margin-top: 20px;">
+            <fieldset class="govuk-fieldset">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                    Business Change Release Assignment
+                </legend>
+                <div class="govuk-hint">
+                    Associate this business change with a release for deployment
+                </div>
+                
+                <!-- Academic Year Dropdown -->
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="academicYearSelect">
+                        Academic Year
+                    </label>
+                    <select class="govuk-select" id="academicYearSelect" name="academicYearSelect">
+                        <option value="">Select Academic Year...</option>
+                        <!-- Options will be populated via JavaScript -->
+                    </select>
+                </div>
+                
+                <!-- Release Type Dropdown -->
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="releaseTypeSelect">
+                        Release Type
+                    </label>
+                    <select class="govuk-select" id="releaseTypeSelect" name="releaseTypeSelect" disabled>
+                        <option value="">Select Release Type...</option>
+                        <!-- Options will be populated via JavaScript -->
+                    </select>
+                </div>
+                
+                <!-- Release Name Dropdown -->
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="releaseSelect">
+                        Release Name
+                    </label>
+                    <select class="govuk-select" id="releaseSelect" name="releaseSelect" disabled>
+                        <option value="">Select Release...</option>
+                        <!-- Options will be populated via JavaScript -->
+                    </select>
+                </div>
+                
+                <!-- Hidden input to store the selected release ID -->
+                <input type="hidden" id="associatedReleaseId" name="associatedReleaseId" value="" />
+                
+                <!-- Debug info -->
+                <div class="govuk-form-group" style="margin-top: 20px; padding: 10px; background-color: #f8f8f8;">
+                    <h3 class="govuk-heading-s">Debug Information</h3>
+                    <pre id="debugInfo">Selected Release ID: None</pre>
+                </div>
+            </fieldset>
+        </div>
+
+        <div class="govuk-form-group" style="margin-top: 20px;">
+            <button id="simulatePhase7Button" class="govuk-button">Simulate Phase 7 Selection</button>
+            <button id="resetButton" class="govuk-button govuk-button--secondary">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the release assignment section
+            initReleaseAssignmentSection();
+            
+            // Add event listener for the simulate button
+            document.getElementById('simulatePhase7Button').addEventListener('click', function() {
+                const transitionSelect = document.getElementById('transitionId');
+                // Select the Phase 7 option
+                for (let i = 0; i < transitionSelect.options.length; i++) {
+                    if (transitionSelect.options[i].text.includes('Document Draft Business change requirements')) {
+                        transitionSelect.selectedIndex = i;
+                        // Trigger the change event
+                        const event = new Event('change');
+                        transitionSelect.dispatchEvent(event);
+                        break;
+                    }
+                }
+            });
+            
+            // Add event listener for the reset button
+            document.getElementById('resetButton').addEventListener('click', function() {
+                const transitionSelect = document.getElementById('transitionId');
+                transitionSelect.selectedIndex = 0;
+                
+                // Trigger the change event
+                const event = new Event('change');
+                transitionSelect.dispatchEvent(event);
+                
+                // Reset the current phase display order
+                document.getElementById('currentPhaseDisplayOrder').value = "6";
+                
+                // Update debug info
+                document.getElementById('debugInfo').textContent = 'Selected Release ID: None';
+            });
+        });
+
+        function initReleaseAssignmentSection() {
+            const transitionSelect = document.getElementById('transitionId');
+            const releaseAssignmentSection = document.getElementById('releaseAssignmentSection');
+            const currentPhaseId = document.querySelector('input[name="currentPhaseId"]')?.value || '';
+            const currentPhaseDisplayOrder = parseInt(document.querySelector('input[name="currentPhaseDisplayOrder"]')?.value || '0');
+            const phase7Name = 'Document Draft Business change requirements'; // Phase 7 name from the seed data
+            
+            // Function to check if the selected phase is Phase 7
+            function checkIfPhase7(phaseElement) {
+                if (!phaseElement) return false;
+                
+                // Get the text content of the selected option
+                const optionText = phaseElement.options[phaseElement.selectedIndex]?.text || '';
+                
+                // Check if the phase name contains 'Document Draft Business change requirements'
+                return optionText.includes(phase7Name);
+            }
+            
+            // Function to check if the current phase is Phase 7 or later
+            function isCurrentPhase7OrLater() {
+                // We know from the seed data that Phase 7 has displayOrder: 7
+                return currentPhaseDisplayOrder >= 7;
+            }
+            
+            // Initial check to see if we should display the section
+            if (isCurrentPhase7OrLater()) {
+                releaseAssignmentSection.style.display = 'block';
+                fetchAcademicYears(); // Load the academic years dropdown
+            }
+            
+            // Add change event listener to the transition select
+            if (transitionSelect) {
+                transitionSelect.addEventListener('change', function() {
+                    const isPhase7 = checkIfPhase7(transitionSelect);
+                    releaseAssignmentSection.style.display = isPhase7 ? 'block' : 'none';
+                    
+                    if (isPhase7) {
+                        fetchAcademicYears(); // Load the academic years dropdown when Phase 7 is selected
+                    }
+                });
+            }
+            
+            // Set up event listeners for the cascading dropdowns
+            setupDropdownEvents();
+        }
+        
+        // Fetch academic years with releases from the API
+        function fetchAcademicYears() {
+            const academicYearSelect = document.getElementById('academicYearSelect');
+            const loadingOption = document.createElement('option');
+            loadingOption.text = 'Loading academic years...';
+            loadingOption.disabled = true;
+            academicYearSelect.innerHTML = '';
+            academicYearSelect.appendChild(loadingOption);
+            academicYearSelect.selectedIndex = 0;
+            
+            // Fetch academic years from the API
+            fetch('/api/v1/releases/data/academic-years-for-releases')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    populateAcademicYearDropdown(data.data);
+                })
+                .catch(error => {
+                    console.error('Error fetching academic years:', error);
+                    academicYearSelect.innerHTML = '<option value="">Error loading academic years</option>';
+                });
+        }
+        
+        // Populate the academic year dropdown with data from the API
+        function populateAcademicYearDropdown(academicYears) {
+            const academicYearSelect = document.getElementById('academicYearSelect');
+            academicYearSelect.innerHTML = '<option value="">Select Academic Year...</option>';
+            
+            if (academicYears && academicYears.length > 0) {
+                academicYears.forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year._id;
+                    option.text = year.name; // e.g., "23/24"
+                    academicYearSelect.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.value = '';
+                option.text = 'No academic years available';
+                option.disabled = true;
+                academicYearSelect.appendChild(option);
+            }
+        }
+        
+        // Fetch releases for a specific academic year from the API
+        function fetchReleasesByAcademicYear(academicYearId) {
+            const releaseTypeSelect = document.getElementById('releaseTypeSelect');
+            const releaseSelect = document.getElementById('releaseSelect');
+            
+            releaseTypeSelect.innerHTML = '<option value="">Loading release types...</option>';
+            releaseTypeSelect.disabled = true;
+            releaseSelect.innerHTML = '<option value="">Select Release...</option>';
+            releaseSelect.disabled = true;
+            
+            // Fetch releases for the selected academic year
+            fetch(`/api/v1/releases/data/by-academic-year/${academicYearId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    populateReleaseTypeDropdown(data.data);
+                })
+                .catch(error => {
+                    console.error('Error fetching releases:', error);
+                    releaseTypeSelect.innerHTML = '<option value="">Error loading release types</option>';
+                    releaseTypeSelect.disabled = true;
+                });
+        }
+        
+        // Populate the release type dropdown with unique release types
+        function populateReleaseTypeDropdown(releases) {
+            const releaseTypeSelect = document.getElementById('releaseTypeSelect');
+            releaseTypeSelect.innerHTML = '<option value="">Select Release Type...</option>';
+            
+            if (releases && releases.length > 0) {
+                // Get unique release types
+                const uniqueReleaseTypes = [...new Set(releases.map(release => release.ReleaseType))];
+                
+                uniqueReleaseTypes.forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.text = type; // e.g., "AcademicYearBaseline", "InYearPeriod", "Adhoc"
+                    releaseTypeSelect.appendChild(option);
+                });
+                
+                // Store all releases in a data attribute for later filtering
+                releaseTypeSelect.setAttribute('data-releases', JSON.stringify(releases));
+                releaseTypeSelect.disabled = false;
+            } else {
+                const option = document.createElement('option');
+                option.value = '';
+                option.text = 'No releases available for this academic year';
+                option.disabled = true;
+                releaseTypeSelect.appendChild(option);
+                releaseTypeSelect.disabled = true;
+            }
+        }
+        
+        // Filter releases by release type and populate the release dropdown
+        function filterReleasesByType(releaseType) {
+            const releaseTypeSelect = document.getElementById('releaseTypeSelect');
+            const releaseSelect = document.getElementById('releaseSelect');
+            const releasesJson = releaseTypeSelect.getAttribute('data-releases');
+            
+            releaseSelect.innerHTML = '<option value="">Select Release...</option>';
+            
+            if (releasesJson) {
+                const releases = JSON.parse(releasesJson);
+                const filteredReleases = releases.filter(release => release.ReleaseType === releaseType);
+                
+                if (filteredReleases.length > 0) {
+                    filteredReleases.forEach(release => {
+                        const option = document.createElement('option');
+                        option.value = release._id;
+                        option.text = `${release.ReleaseNameDetails} (${release.ReleaseCode})`;
+                        option.setAttribute('data-release-json', JSON.stringify(release));
+                        releaseSelect.appendChild(option);
+                    });
+                    releaseSelect.disabled = false;
+                } else {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.text = 'No releases available for this type';
+                    option.disabled = true;
+                    releaseSelect.appendChild(option);
+                    releaseSelect.disabled = true;
+                }
+            }
+        }
+        
+        // Set up event listeners for the cascading dropdowns
+        function setupDropdownEvents() {
+            const academicYearSelect = document.getElementById('academicYearSelect');
+            const releaseTypeSelect = document.getElementById('releaseTypeSelect');
+            const releaseSelect = document.getElementById('releaseSelect');
+            const associatedReleaseIdInput = document.getElementById('associatedReleaseId');
+            
+            // When an academic year is selected, fetch releases for that academic year
+            academicYearSelect.addEventListener('change', function() {
+                const academicYearId = this.value;
+                if (academicYearId) {
+                    fetchReleasesByAcademicYear(academicYearId);
+                } else {
+                    releaseTypeSelect.innerHTML = '<option value="">Select Release Type...</option>';
+                    releaseTypeSelect.disabled = true;
+                    releaseSelect.innerHTML = '<option value="">Select Release...</option>';
+                    releaseSelect.disabled = true;
+                }
+            });
+            
+            // When a release type is selected, filter releases by that type
+            releaseTypeSelect.addEventListener('change', function() {
+                const releaseType = this.value;
+                if (releaseType) {
+                    filterReleasesByType(releaseType);
+                } else {
+                    releaseSelect.innerHTML = '<option value="">Select Release...</option>';
+                    releaseSelect.disabled = true;
+                }
+            });
+            
+            // When a release is selected, set the value of the hidden input
+            releaseSelect.addEventListener('change', function() {
+                const releaseId = this.value;
+                associatedReleaseIdInput.value = releaseId;
+                
+                // Update debug info
+                document.getElementById('debugInfo').textContent = 'Selected Release ID: ' + (releaseId || 'None');
+            });
+        }
+    </script>
+</body>
+</html>

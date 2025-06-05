@@ -371,10 +371,198 @@ exports.getAvailableTransitions = async (bcrId) => {
       }
     }
     
-    // Add similar transition rules for other phases
-    // following the BPMN process diagram exactly
+    // Stakeholder Consultation phase transitions
+    else if (currentPhase.value === 'stakeholder-consultation') {
+      // If in progress, can move to completed status within same phase
+      if (currentStatus._id.equals(currentPhase.inProgressStatusId._id)) {
+        transitions.push({
+          label: 'Complete Stakeholder Consultation',
+          phaseId: currentPhase._id,
+          statusId: currentPhase.completedStatusId._id,
+          description: 'Mark stakeholder consultation as completed'
+        });
+      }
+      // If completed, can move to Impact Assessment
+      else if (currentStatus._id.equals(currentPhase.completedStatusId._id)) {
+        // Find Impact Assessment phase
+        const impactPhase = allPhases.find(p => p.value === 'impact-assessment');
+        if (impactPhase) {
+          transitions.push({
+            label: 'Move to Impact Assessment',
+            phaseId: impactPhase._id,
+            statusId: impactPhase.inProgressStatusId._id,
+            description: 'Begin impact assessment phase'
+          });
+        }
+      }
+    }
     
-    return transitions;
+    // Impact Assessment phase transitions
+    else if (currentPhase.value === 'impact-assessment') {
+      // If in progress, can move to completed status within same phase
+      if (currentStatus._id.equals(currentPhase.inProgressStatusId._id)) {
+        transitions.push({
+          label: 'Complete Impact Assessment',
+          phaseId: currentPhase._id,
+          statusId: currentPhase.completedStatusId._id,
+          description: 'Mark impact assessment as completed'
+        });
+      }
+      // If completed, can move to Decision
+      else if (currentStatus._id.equals(currentPhase.completedStatusId._id)) {
+        // Find Decision phase
+        const decisionPhase = allPhases.find(p => p.value === 'decision');
+        if (decisionPhase) {
+          transitions.push({
+            label: 'Move to Decision Phase',
+            phaseId: decisionPhase._id,
+            statusId: decisionPhase.inProgressStatusId._id,
+            description: 'Begin decision phase'
+          });
+        }
+      }
+    }
+    
+    // Decision phase transitions
+    else if (currentPhase.value === 'decision') {
+      // If in progress, can move to either approved or rejected
+      if (currentStatus._id.equals(currentPhase.inProgressStatusId._id)) {
+        // Approved - move to completed
+        transitions.push({
+          label: 'Approve BCR',
+          phaseId: currentPhase._id,
+          statusId: currentPhase.completedStatusId._id,
+          description: 'Approve this BCR'
+        });
+        
+        // Rejected - find rejected status
+        const rejectedStatus = allStatuses.find(s => s.value === 'rejected');
+        if (rejectedStatus) {
+          transitions.push({
+            label: 'Reject BCR',
+            phaseId: currentPhase._id,
+            statusId: rejectedStatus._id,
+            description: 'Reject this BCR'
+          });
+        }
+      }
+      // If completed (approved), can move to Implementation
+      else if (currentStatus._id.equals(currentPhase.completedStatusId._id)) {
+        // Find Implementation phase
+        const implementationPhase = allPhases.find(p => p.value === 'implementation');
+        if (implementationPhase) {
+          transitions.push({
+            label: 'Move to Implementation',
+            phaseId: implementationPhase._id,
+            statusId: implementationPhase.inProgressStatusId._id,
+            description: 'Begin implementation phase'
+          });
+        }
+      }
+    }
+    
+    // Implementation phase transitions
+    else if (currentPhase.value === 'implementation') {
+      // If in progress, can move to completed
+      if (currentStatus._id.equals(currentPhase.inProgressStatusId._id)) {
+        transitions.push({
+          label: 'Complete Implementation',
+          phaseId: currentPhase._id,
+          statusId: currentPhase.completedStatusId._id,
+          description: 'Mark implementation as completed'
+        });
+      }
+      // If completed, can move to Testing
+      else if (currentStatus._id.equals(currentPhase.completedStatusId._id)) {
+        // Find Testing phase
+        const testingPhase = allPhases.find(p => p.value === 'testing');
+        if (testingPhase) {
+          transitions.push({
+            label: 'Move to Testing',
+            phaseId: testingPhase._id,
+            statusId: testingPhase.inProgressStatusId._id,
+            description: 'Begin testing phase'
+          });
+        }
+      }
+    }
+    
+    // Testing phase transitions
+    else if (currentPhase.value === 'testing') {
+      // If in progress, can move to completed
+      if (currentStatus._id.equals(currentPhase.inProgressStatusId._id)) {
+        transitions.push({
+          label: 'Complete Testing',
+          phaseId: currentPhase._id,
+          statusId: currentPhase.completedStatusId._id,
+          description: 'Mark testing as completed'
+        });
+      }
+      // If completed, can move to Deployment
+      else if (currentStatus._id.equals(currentPhase.completedStatusId._id)) {
+        // Find Deployment phase
+        const deploymentPhase = allPhases.find(p => p.value === 'deployment');
+        if (deploymentPhase) {
+          transitions.push({
+            label: 'Move to Deployment',
+            phaseId: deploymentPhase._id,
+            statusId: deploymentPhase.inProgressStatusId._id,
+            description: 'Begin deployment phase'
+          });
+        }
+      }
+    }
+    
+    // Deployment phase transitions
+    else if (currentPhase.value === 'deployment') {
+      // If in progress, can move to completed
+      if (currentStatus._id.equals(currentPhase.inProgressStatusId._id)) {
+        transitions.push({
+          label: 'Complete Deployment',
+          phaseId: currentPhase._id,
+          statusId: currentPhase.completedStatusId._id,
+          description: 'Mark deployment as completed'
+        });
+      }
+      // If completed, can move to Closed
+      else if (currentStatus._id.equals(currentPhase.completedStatusId._id)) {
+        // Find Closed status
+        const closedStatus = allStatuses.find(s => s.value === 'closed');
+        if (closedStatus) {
+          transitions.push({
+            label: 'Close BCR',
+            phaseId: currentPhase._id,
+            statusId: closedStatus._id,
+            description: 'Close this BCR (final state)'
+          });
+        }
+      }
+    }
+    
+    // Add a default transition for any phase to allow moving to the next logical phase
+    // This is a fallback in case the specific phase isn't handled above
+    if (transitions.length === 0 && currentStatus._id.equals(currentPhase.inProgressStatusId._id)) {
+      transitions.push({
+        label: `Complete ${currentPhase.name}`,
+        phaseId: currentPhase._id,
+        statusId: currentPhase.completedStatusId._id,
+        description: `Mark ${currentPhase.name} as completed`
+      });
+    }
+    
+    // Add description and phaseName/statusName to each transition for better UI display
+    return transitions.map(transition => {
+      // Find phase and status objects
+      const phase = allPhases.find(p => p._id.equals(transition.phaseId));
+      const status = allStatuses.find(s => s._id.equals(transition.statusId));
+      
+      return {
+        ...transition,
+        phaseName: phase ? phase.name : 'Unknown Phase',
+        statusName: status ? status.name : 'Unknown Status',
+        description: transition.description || `Move to ${status ? status.name : 'next status'} in ${phase ? phase.name : 'current phase'}`
+      };
+    });
   } catch (error) {
     console.error('Error in getAvailableTransitions:', error);
     throw error;

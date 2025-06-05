@@ -1,0 +1,925 @@
+{% extends "layouts/base-with-nav.njk" %}
+{% from "partials/bcr-workflow-diagram.njk" import workflowDiagram %}
+
+{% block title %}Update BCR {{ bcr.bcrNumber }} | Register Team Internal Services{% endblock %}
+
+{% block headStyles %}
+  <link rel="stylesheet" href="/stylesheets/bcr-workflow.css">
+{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+<script>
+  function insertCommentTemplate(templateText) {
+  const commentTextarea = document.getElementById('closureNotes');
+  if (commentTextarea) {
+    if (commentTextarea.value.trim() !== '') {
+      commentTextarea.value += '\n' + templateText;
+    } else {
+      commentTextarea.value = templateText;
+    }
+    commentTextarea.focus();
+    // If a character count update is needed for 'comment', it would be called here.
+    // For example: if (typeof updateCommentCharacterCount === 'function') updateCommentCharacterCount();
+  }
+}
+
+function togglePhaseSelector(showSelector) {
+    const phaseSelectorSection = document.getElementById('phaseSelectorSection');
+    const transitionIdSelect = document.getElementById('transitionId');
+    
+    if (showSelector) {
+      if (phaseSelectorSection) phaseSelectorSection.style.display = 'block';
+      if (transitionIdSelect) {
+        transitionIdSelect.setAttribute('required', '');
+      }
+    } else {
+      if (phaseSelectorSection) phaseSelectorSection.style.display = 'none';
+      if (transitionIdSelect) {
+        transitionIdSelect.removeAttribute('required');
+        transitionIdSelect.selectedIndex = 0; // Reset selection
+      }
+    }
+  }
+  
+  function validateForm() {
+    const updateChoice = document.querySelector('input[name="updateChoice"]:checked');
+    if (!updateChoice) {
+      alert('Please select an update choice.');
+      return false;
+    }
+    const closureNotes = document.getElementById('closureNotes');
+    if (!closureNotes || !closureNotes.value.trim()) {
+      alert('Please provide update notes.');
+      if(closureNotes) closureNotes.focus();
+      return false;
+    }
+    
+    const requiredChecklistItems = document.querySelectorAll('input[data-required="true"]');
+    if (requiredChecklistItems.length > 0) {
+        let missingRequiredItems = false;
+        requiredChecklistItems.forEach(item => {
+          if (!item.checked) {
+            missingRequiredItems = true;
+            const itemLabel = item.closest('.govuk-checkboxes__item');
+            if(itemLabel) itemLabel.classList.add('checklist-item-error');
+          } else {
+            const itemLabel = item.closest('.govuk-checkboxes__item');
+            if(itemLabel) itemLabel.classList.remove('checklist-item-error');
+          }
+        });
+        
+        if (missingRequiredItems) {
+          const confirmChecklist = document.getElementById('confirm-checklist');
+          if (!confirmChecklist || !confirmChecklist.checked) {
+            alert('Please complete all required checklist items or confirm acknowledgement of incomplete items.');
+            return false;
+          }
+        }
+    }
+
+    const selectSpecificPhaseRadio = document.getElementById('selectSpecificPhase');
+    if (selectSpecificPhaseRadio && selectSpecificPhaseRadio.checked) {
+      const transitionId = document.getElementById('transitionId');
+      if (!transitionId || !transitionId.value) {
+        alert('Please select a specific phase and status.');
+        if(transitionId) transitionId.focus();
+        return false;
+      }
+    }
+    return true;
+  }
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the BCR Release Assignment section
+    initReleaseAssignmentSection();
+    const selectSpecificPhaseRadio = document.getElementById('selectSpecificPhase');
+    if(selectSpecificPhaseRadio) {
+        togglePhaseSelector(selectSpecificPhaseRadio.checked);
+        // Ensure event listeners for radio buttons are set up to call togglePhaseSelector
+        const completePhaseRadio = document.getElementById('completePhase');
+        if (completePhaseRadio) {
+            completePhaseRadio.addEventListener('change', () => togglePhaseSelector(false));
+        }
+        selectSpecificPhaseRadio.addEventListener('change', () => togglePhaseSelector(true));
+    }
+    
+    const form = document.querySelector('form[action*="/update-status"]'); 
+    if (form) {
+        form.addEventListener('submit', function(event) {
+          if (!validateForm()) {
+            event.preventDefault();
+          }
+        });
+    }
+    updateCharacterCount(); // Initial count
+    setupAutosave();
+
+    // Initialize transitionId select change listener for phase skip warning
+    const transitionIdSelect = document.getElementById('transitionId');
+    if (transitionIdSelect) {
+        transitionIdSelect.addEventListener('change', function() {
+            checkPhaseSkip(this.value);
+        });
+    }
+
+    // Setup for comment template buttons
+    document.querySelectorAll('button[data-template]').forEach(button => {
+      button.addEventListener('click', function() {
+        insertCommentTemplate(this.dataset.template);
+      });
+    });
+  });
+
+  function updateCharacterCount() {
+    const closureNotes = document.getElementById('closureNotes');
+    const charCountDisplay = document.getElementById('charCount');
+    if (closureNotes && charCountDisplay) {
+      charCountDisplay.textContent = `${closureNotes.value.length}/2000 characters`;
+    }
+  }
+  
+  function insertTemplate(type) {
+    const closureNotes = document.getElementById('closureNotes');
+    if (!closureNotes) return;
+    let template = '';
+    switch(type) {
+      case 'completion':
+        template = 'All requirements for this phase have been successfully completed. Moving to the next phase.\n\nKey accomplishments:\n- [List key items completed]\n\nNext steps:\n- [List next steps]';
+        break;
+      case 'pending':
+        template = 'Work in this phase is complete but pending approval from [name/role].\n\nItems awaiting review:\n- [List items]\n\nBlockers: None';
+        break;
+      case 'blocked':
+        template = 'Work in this phase is blocked.\n\nReason for blockage:\n- [Describe blockage]\n\nImpact:\n- [Describe impact]\n\nRequired action:\n- [Describe action needed]';
+        break;
+    }
+    closureNotes.value = template;
+    updateCharacterCount();
+    closureNotes.focus();
+  }
+  
+  function formatText(format) {
+    const closureNotes = document.getElementById('closureNotes');
+    if (!closureNotes) return;
+    const start = closureNotes.selectionStart;
+    const end = closureNotes.selectionEnd;
+    const selectedText = closureNotes.value.substring(start, end);
+    let formattedText = selectedText;
+    let textToInsert = '';
+    switch(format) {
+      case 'bold':
+        textToInsert = '**' + selectedText + '**';
+        break;
+      case 'italic':
+        textToInsert = '*' + selectedText + '*';
+        break;
+      case 'bullet':
+        const lines = selectedText.split('\n');
+        if (lines.every(line => line.trim().startsWith('- '))) { // Toggle off
+            textToInsert = lines.map(line => line.trim().substring(2).trimStart()).join('\n');
+        } else { // Toggle on
+            textToInsert = lines.map(line => '- ' + line.trim()).join('\n');
+        }
+        break;
+      default:
+        textToInsert = selectedText;
+    }
+    closureNotes.value = closureNotes.value.substring(0, start) + textToInsert + closureNotes.value.substring(end);
+    updateCharacterCount();
+    closureNotes.focus();
+    closureNotes.setSelectionRange(start + textToInsert.length, start + textToInsert.length);
+  }
+  
+  function checkPhaseSkip(selectedValue) {
+    const transitionSelect = document.getElementById('transitionId');
+    if (!transitionSelect) return;
+
+    let existingWarning = document.getElementById('phaseSkipWarning');
+    if (existingWarning) {
+        existingWarning.remove();
+    }
+
+    if (selectedValue && selectedValue !== 'auto' && selectedValue !== '') {
+        const selectedOption = transitionSelect.options[transitionSelect.selectedIndex];
+        if (!selectedOption || !selectedOption.getAttribute('data-phase-id')) return; // Ensure option and data attribute exist
+
+        const selectedPhaseId = selectedOption.getAttribute('data-phase-id');
+        const currentPhaseOrder = parseInt("{{ bcr.currentPhaseId.displayOrder if bcr.currentPhaseId and bcr.currentPhaseId.displayOrder is defined else 0 }}", 10);
+        let selectedPhaseOrder = -1;
+        
+        let allPhasesData = [];
+        try {
+            allPhasesData = JSON.parse('{{ allPhases | dump | safe }}');
+        } catch (e) {
+            console.error('Error parsing allPhases JSON:', e);
+            return;
+        }
+
+        const targetPhase = allPhasesData.find(phase => phase._id === selectedPhaseId);
+        if (targetPhase && typeof targetPhase.displayOrder !== 'undefined'){
+            selectedPhaseOrder = parseInt(targetPhase.displayOrder, 10);
+        } else {
+            return; // Could not find phase or displayOrder
+        }
+
+        if (selectedPhaseOrder > currentPhaseOrder + 1) {
+            const warningElement = document.createElement('div');
+            warningElement.id = 'phaseSkipWarning';
+            warningElement.className = 'govuk-warning-text govuk-!-margin-top-2';
+            warningElement.innerHTML = '<span class="govuk-warning-text__icon" aria-hidden="true">!</span><strong class="govuk-warning-text__text"><span class="govuk-warning-text__assistive">Warning</span>This selection will skip one or more phases.</strong>';
+            
+            const selectParent = transitionSelect.parentNode;
+            if (selectParent) {
+                 selectParent.appendChild(warningElement);
+            }
+        }
+    }
+  }
+  
+  function setupAutosave() {
+    const closureNotes = document.getElementById('closureNotes');
+    const bcrId = "{{ bcr.id | default('') }}"; 
+    if (!bcrId || !closureNotes) return;
+    const draftKey = `bcrUpdateNotesDraft_${bcrId}`;
+
+    const savedDraft = localStorage.getItem(draftKey);
+    if (savedDraft) {
+      closureNotes.value = savedDraft;
+      updateCharacterCount();
+    }
+    closureNotes.addEventListener('input', function() {
+      localStorage.setItem(draftKey, closureNotes.value);
+      updateCharacterCount(); 
+    });
+
+    const form = document.querySelector('form[action*="/update-status"]');
+    if (form) {
+      form.addEventListener('submit', function() {
+        if(validateForm()){ 
+          localStorage.removeItem(draftKey);
+        }
+      });
+    }
+  }
+
+  // RELEASE ASSIGNMENT SECTION FUNCTIONS
+  
+  // Initialize the Release Assignment Section
+  function initReleaseAssignmentSection() {
+    const transitionSelect = document.getElementById('transitionId');
+    const releaseAssignmentSection = document.getElementById('releaseAssignmentSection');
+    const currentPhaseId = document.querySelector('input[name="currentPhaseId"]')?.value || '';
+    const currentPhaseDisplayOrder = parseInt(document.querySelector('input[name="currentPhaseDisplayOrder"]')?.value || '0');
+    
+    // More inclusive phase 7 detection - Phase 7 can be identified by various means
+    function checkIfPhase7(phaseElement) {
+      if (!phaseElement) return false;
+      
+      // Get the text content of the selected option
+      const optionText = phaseElement.options[phaseElement.selectedIndex]?.text || '';
+      const optionValue = phaseElement.options[phaseElement.selectedIndex]?.value || '';
+      
+      console.log('Selected phase text:', optionText);
+      console.log('Selected phase value:', optionValue);
+      
+      // Check if the phase is Phase 7 by various detection methods
+      return (
+        optionText.includes('Document Draft Business change requirements') || // Original check
+        optionText.includes('Plan and Schedule BC Release') || // Updated text
+        optionText.includes('Phase 7') || // Simple numeric reference
+        optionText.toLowerCase().includes('business change requirements') || // Partial match
+        (optionValue && document.querySelector(`option[value="${optionValue}"]`)?.getAttribute('data-phase-order') === '7') // Check data attribute
+      );
+    }
+    
+    // Function to check if the current phase is Phase 7 or later
+    function isCurrentPhase7OrLater() {
+      // More inclusive check for current phase
+      return (
+        currentPhaseDisplayOrder >= 7 || 
+        document.querySelector('.current-phase-name')?.textContent?.includes('Business change requirements')
+      );
+    }
+    
+    // Log current phase information (can be removed in production)
+    console.log('Current phase display order:', currentPhaseDisplayOrder);
+    console.log('Is current phase 7 or later:', isCurrentPhase7OrLater());
+    
+    // Debug mode disabled - only show section when Phase 7 is reached or selected
+    const debugMode = false;
+    
+    // Initial check to see if we should display the section
+    if (isCurrentPhase7OrLater() || debugMode) {
+      console.log('Showing release assignment section - current phase check');
+      releaseAssignmentSection.style.display = 'block';
+      fetchAcademicYears(); // Load the academic years dropdown
+    }
+    
+    // Add change event listener to the transition select
+    if (transitionSelect) {
+      console.log('Adding change listener to transition select');
+      transitionSelect.addEventListener('change', function() {
+        const selectedIndex = transitionSelect.selectedIndex;
+        const selectedText = transitionSelect.options[selectedIndex]?.text || '';
+        console.log('Transition changed to:', selectedText);
+        
+        const isPhase7 = checkIfPhase7(transitionSelect) || debugMode;
+        console.log('Is Phase 7?', isPhase7);
+        
+        releaseAssignmentSection.style.display = isPhase7 ? 'block' : 'none';
+        
+        if (isPhase7) {
+          console.log('Loading academic years...');
+          fetchAcademicYears(); // Load the academic years dropdown when Phase 7 is selected
+        }
+      });
+      
+      // Force trigger the change event to evaluate current selection
+      transitionSelect.dispatchEvent(new Event('change'));
+    }
+    
+    // Set up event listeners for the cascading dropdowns
+    setupDropdownEvents();
+    
+    // Set up event listener for the change release button
+    const changeReleaseBtn = document.getElementById('changeReleaseBtn');
+    if (changeReleaseBtn) {
+      changeReleaseBtn.addEventListener('click', function() {
+        // Hide the scheduled release details panel
+        const scheduledReleaseDetails = document.getElementById('scheduledReleaseDetails');
+        if (scheduledReleaseDetails) {
+          scheduledReleaseDetails.style.display = 'none';
+        }
+        
+        // Show the release assignment section
+        const releaseAssignmentSection = document.getElementById('releaseAssignmentSection');
+        if (releaseAssignmentSection) {
+          releaseAssignmentSection.style.display = 'block';
+          fetchAcademicYears(); // Load the academic years dropdown
+        }
+      });
+    }
+  }
+  
+  // Fetch academic years with releases from the API
+  function fetchAcademicYears() {
+    const academicYearSelect = document.getElementById('academicYearSelect');
+    const loadingOption = document.createElement('option');
+    loadingOption.text = 'Loading academic years...';
+    loadingOption.disabled = true;
+    academicYearSelect.innerHTML = '';
+    academicYearSelect.appendChild(loadingOption);
+    academicYearSelect.selectedIndex = 0;
+    
+    // Fetch academic years from the API
+    fetch('/api/v1/releases/data/academic-years-for-releases')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        populateAcademicYearDropdown(data.data);
+      })
+      .catch(error => {
+        console.error('Error fetching academic years:', error);
+        academicYearSelect.innerHTML = '<option value="">Error loading academic years</option>';
+      });
+  }
+  
+  // Populate the academic year dropdown with data from the API
+  function populateAcademicYearDropdown(academicYears) {
+    const academicYearSelect = document.getElementById('academicYearSelect');
+    academicYearSelect.innerHTML = '<option value="">Select Academic Year...</option>';
+    
+    if (academicYears && academicYears.length > 0) {
+      academicYears.forEach(year => {
+        const option = document.createElement('option');
+        option.value = year._id;
+        option.text = year.name; // e.g., "23/24"
+        academicYearSelect.appendChild(option);
+      });
+      
+      // If bcr.associatedReleaseId exists, try to select the appropriate academic year
+      const existingReleaseId = document.getElementById('associatedReleaseId').value;
+      if (existingReleaseId) {
+        // This would require an additional API call to get the release details and match the academic year
+        // For now, leave it unselected
+      }
+    } else {
+      const option = document.createElement('option');
+      option.value = '';
+      option.text = 'No academic years available';
+      option.disabled = true;
+      academicYearSelect.appendChild(option);
+    }
+  }
+  
+  // Fetch releases for a specific academic year from the API
+  function fetchReleasesByAcademicYear(academicYearId) {
+    const releaseTypeSelect = document.getElementById('releaseTypeSelect');
+    const releaseSelect = document.getElementById('releaseSelect');
+    
+    releaseTypeSelect.innerHTML = '<option value="">Loading release types...</option>';
+    releaseTypeSelect.disabled = true;
+    releaseSelect.innerHTML = '<option value="">Select Release...</option>';
+    releaseSelect.disabled = true;
+    
+    // Fetch releases for the selected academic year
+    fetch(`/api/v1/releases/data/by-academic-year/${academicYearId}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        populateReleaseTypeDropdown(data.data);
+      })
+      .catch(error => {
+        console.error('Error fetching releases:', error);
+        releaseTypeSelect.innerHTML = '<option value="">Error loading release types</option>';
+        releaseTypeSelect.disabled = true;
+      });
+  }
+  
+  // Populate the release type dropdown with unique release types
+  function populateReleaseTypeDropdown(releases) {
+    const releaseTypeSelect = document.getElementById('releaseTypeSelect');
+    releaseTypeSelect.innerHTML = '<option value="">Select Release Type...</option>';
+    
+    if (releases && releases.length > 0) {
+      // Get unique release types
+      const uniqueReleaseTypes = [...new Set(releases.map(release => release.ReleaseType))];
+      
+      uniqueReleaseTypes.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.text = type; // e.g., "AcademicYearBaseline", "InYearPeriod", "Adhoc"
+        releaseTypeSelect.appendChild(option);
+      });
+      
+      // Store all releases in a data attribute for later filtering
+      releaseTypeSelect.setAttribute('data-releases', JSON.stringify(releases));
+      releaseTypeSelect.disabled = false;
+    } else {
+      const option = document.createElement('option');
+      option.value = '';
+      option.text = 'No releases available for this academic year';
+      option.disabled = true;
+      releaseTypeSelect.appendChild(option);
+      releaseTypeSelect.disabled = true;
+    }
+  }
+  
+  // Filter releases by release type and populate the release dropdown
+  function filterReleasesByType(releaseType) {
+    const releaseTypeSelect = document.getElementById('releaseTypeSelect');
+    const releaseSelect = document.getElementById('releaseSelect');
+    const releasesJson = releaseTypeSelect.getAttribute('data-releases');
+    
+    releaseSelect.innerHTML = '<option value="">Select Release...</option>';
+    
+    if (releasesJson) {
+      const releases = JSON.parse(releasesJson);
+      const filteredReleases = releases.filter(release => release.ReleaseType === releaseType);
+      
+      if (filteredReleases.length > 0) {
+        filteredReleases.forEach(release => {
+          const option = document.createElement('option');
+          option.value = release._id;
+          option.text = `${release.ReleaseNameDetails} (${release.ReleaseCode})`;
+          option.setAttribute('data-release-json', JSON.stringify(release));
+          releaseSelect.appendChild(option);
+        });
+        releaseSelect.disabled = false;
+      } else {
+        const option = document.createElement('option');
+        option.value = '';
+        option.text = 'No releases available for this type';
+        option.disabled = true;
+        releaseSelect.appendChild(option);
+        releaseSelect.disabled = true;
+      }
+    }
+  }
+  
+  // Set up event listeners for the cascading dropdowns
+  function setupDropdownEvents() {
+    const academicYearSelect = document.getElementById('academicYearSelect');
+    const releaseTypeSelect = document.getElementById('releaseTypeSelect');
+    const releaseSelect = document.getElementById('releaseSelect');
+    const associatedReleaseIdInput = document.getElementById('associatedReleaseId');
+    
+    // When an academic year is selected, fetch releases for that academic year
+    academicYearSelect.addEventListener('change', function() {
+      const academicYearId = this.value;
+      if (academicYearId) {
+        fetchReleasesByAcademicYear(academicYearId);
+      } else {
+        releaseTypeSelect.innerHTML = '<option value="">Select Release Type...</option>';
+        releaseTypeSelect.disabled = true;
+        releaseSelect.innerHTML = '<option value="">Select Release...</option>';
+        releaseSelect.disabled = true;
+      }
+    });
+    
+    // When a release type is selected, filter releases by that type
+    releaseTypeSelect.addEventListener('change', function() {
+      const releaseType = this.value;
+      if (releaseType) {
+        filterReleasesByType(releaseType);
+      } else {
+        releaseSelect.innerHTML = '<option value="">Select Release...</option>';
+        releaseSelect.disabled = true;
+      }
+    });
+    
+    // When a release is selected, set the value of the hidden input
+    releaseSelect.addEventListener('change', function() {
+      const releaseId = this.value;
+      associatedReleaseIdInput.value = releaseId;
+    });
+  }
+</script>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <a href="/bcr/business-change-requests/{{ bcr.id }}" class="govuk-back-link govuk-!-margin-bottom-6">Back to BCR</a>
+
+      <h1 class="govuk-heading-xl">
+        <span class="govuk-caption-xl">Update BCR {{ bcr.bcrNumber | default('N/A') }}</span>
+        {{ bcr.briefDescription | default('No description provided') }}
+      </h1>
+
+      {% if connectionIssue %}
+        <div class="govuk-warning-text govuk-!-margin-bottom-6">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-warning-text__assistive">Warning</span>
+            Database connection issue detected. Some data may not be available.
+          </strong>
+        </div>
+      {% endif %}
+      {% if timedOut %}
+        <div class="govuk-warning-text govuk-!-margin-bottom-6">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-warning-text__assistive">Warning</span>
+            The request timed out. Some data may not be available.
+          </strong>
+        </div>
+      {% endif %}
+      {% if errorMessage %} {# General error message placeholder from controller #}
+      <div class="govuk-error-summary govuk-!-margin-bottom-6" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+        <h2 class="govuk-error-summary__title" id="error-summary-title">
+          There is a problem
+        </h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li>{{ errorMessage }}</li>
+          </ul>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="govuk-inset-text govuk-!-margin-bottom-6">
+        <h2 class="govuk-heading-m">BCR Details</h2>
+        <dl class="govuk-summary-list">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Current Phase</dt>
+            <dd class="govuk-summary-list__value">
+              <strong class="govuk-tag govuk-tag--blue">{{ bcr.currentPhase | default('Current Phase') }}</strong>
+            </dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Current Status</dt>
+            <dd class="govuk-summary-list__value">
+              <strong class="{{ bcr.statusClass | default('govuk-tag') }}">{{ bcr.displayStatus | default('Unknown') }}</strong>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <h2 class="govuk-heading-l">Update Workflow</h2>
+      <form method="POST" action="/bcr/business-change-requests/{{ bcr.id }}/update-status">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        
+        <div class="govuk-form-group">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+              What action do you want to perform?
+            </legend>
+            <div class="govuk-radios" data-module="govuk-radios">
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="completePhase" name="updateChoice" type="radio" value="complete">
+                <label class="govuk-label govuk-radios__label" for="completePhase">
+                  Complete current phase and move to next
+                </label>
+              </div>
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="selectSpecificPhase" name="updateChoice" type="radio" value="specific" checked>
+                <label class="govuk-label govuk-radios__label" for="selectSpecificPhase">
+                  Select specific phase and status
+                </label>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+
+        <div id="phaseSelectorSection" class="govuk-form-group" style="display: block;">
+          <label class="govuk-label" for="transitionId">
+            Select new phase and status
+          </label>
+          <select class="govuk-select" id="transitionId" name="transitionId" required>
+            <option value="">Select...</option>
+            {% for transition in availableTransitions %}
+              {% if (transition.isFuture or transition.isStandard) and transition.id and transition.phaseId and transition.statusId %}
+                <option value="{{ transition.id }}" 
+                        data-phase-id="{{ transition.phaseId }}" 
+                        data-status-id="{{ transition.statusId }}">
+                  {{ transition.label | default('Unnamed Transition') }} ({{ transition.phaseName | default('N/A') }} - {{ transition.statusName | default('N/A') }})
+                </option>
+              {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+        
+        <!-- BCR Release Assignment Section - Only visible when "Document Draft Business change requirements" phase is selected or active -->
+        {% if associatedRelease %}
+        <!-- Display scheduled release details when a release is already associated -->
+        <div id="scheduledReleaseDetails" class="govuk-form-group">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+              Scheduled Release
+            </legend>
+            <div class="govuk-panel govuk-panel--confirmation govuk-panel--small">
+              <h2 class="govuk-panel__title">Release assigned</h2>
+              <div class="govuk-panel__body">
+                {{ associatedRelease.ReleaseNameDetails | default('Release') }}
+              </div>
+            </div>
+
+            <dl class="govuk-summary-list govuk-summary-list--no-border">
+              {% if associatedAcademicYear %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Academic Year</dt>
+                <dd class="govuk-summary-list__value">{{ associatedAcademicYear.fullName | default(associatedAcademicYear.name) }}</dd>
+              </div>
+              {% endif %}
+              
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Release Type</dt>
+                <dd class="govuk-summary-list__value">{{ associatedRelease.ReleaseType | default('Not specified') }}</dd>
+              </div>
+              
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Release Name</dt>
+                <dd class="govuk-summary-list__value">{{ associatedRelease.ReleaseNameDetails | default('Not specified') }}</dd>
+              </div>
+              
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Go Live Date</dt>
+                <dd class="govuk-summary-list__value">{{ associatedRelease.GoLiveDate | date('DD MMM YYYY') | default('Not specified') }}</dd>
+              </div>
+              
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Status</dt>
+                <dd class="govuk-summary-list__value">
+                  <strong class="govuk-tag {{ 'govuk-tag--' + associatedRelease.Status | lower | default('blue') }}">
+                    {{ associatedRelease.Status | default('Scheduled') }}
+                  </strong>
+                </dd>
+              </div>
+            </dl>
+            
+            <!-- Button to change release assignment -->
+            <button type="button" id="changeReleaseBtn" class="govuk-button govuk-button--secondary govuk-!-margin-top-5">
+              Change assigned release
+            </button>
+          </fieldset>
+        </div>
+        
+        <!-- Hidden Release Assignment Section (will be shown when user clicks Change) -->
+        <div id="releaseAssignmentSection" class="govuk-form-group" style="display: none;">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+              Business Change Release Assignment
+            </legend>
+            <div class="govuk-hint">
+              Associate this business change with a release for deployment
+            </div>
+        {% else %}
+        <!-- Release Assignment Section (when no release is assigned yet) -->
+        <div id="releaseAssignmentSection" class="govuk-form-group" style="display: none;">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+              Business Change Release Assignment
+            </legend>
+            <div class="govuk-hint">
+              Associate this business change with a release for deployment
+            </div>
+        {% endif %}
+            
+            <!-- Academic Year Dropdown -->
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="academicYearSelect">
+                Academic Year
+              </label>
+              <select class="govuk-select" id="academicYearSelect" name="academicYearSelect">
+                <option value="">Select Academic Year...</option>
+                <!-- Options will be populated via JavaScript -->
+              </select>
+            </div>
+            
+            <!-- Release Type Dropdown -->
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="releaseTypeSelect">
+                Release Type
+              </label>
+              <select class="govuk-select" id="releaseTypeSelect" name="releaseTypeSelect" disabled>
+                <option value="">Select Release Type...</option>
+                <!-- Options will be populated via JavaScript -->
+              </select>
+            </div>
+            
+            <!-- Release Name Dropdown -->
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="releaseSelect">
+                Release Name
+              </label>
+              <select class="govuk-select" id="releaseSelect" name="releaseSelect" disabled>
+                <option value="">Select Release...</option>
+                <!-- Options will be populated via JavaScript -->
+              </select>
+            </div>
+            
+            <!-- Hidden input to store the selected release ID -->
+            <input type="hidden" id="associatedReleaseId" name="associatedReleaseId" value="{{ bcr.associatedReleaseId | default('') }}" />
+          </fieldset>
+        </div>
+        
+        {% if phaseChecklist and phaseChecklist.length > 0 %}
+          <div class="govuk-form-group">
+            <fieldset class="govuk-fieldset">
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                Phase Checklist for {{ bcr.currentPhase | default('Current Phase') }}
+              </legend>
+              <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                {% for item in phaseChecklist %}
+                  <div class="govuk-checkboxes__item">
+                    <input class="govuk-checkboxes__input" 
+                           id="checklistItem-{{ item.id | default(loop.index) }}" 
+                           name="checklistItems[]" 
+                           type="checkbox" 
+                           value="{{ item.id }}" 
+                           {% if item.id in (bcr.completedChecklistItems | default([])) %}checked{% endif %}
+                           data-required="{{ item.required | default(false) }}">
+                    <label class="govuk-label govuk-checkboxes__label" for="checklistItem-{{ item.id | default(loop.index) }}">
+                      {{ item.text | default('Checklist item') }}
+                      {% if item.required %}
+                        <strong class="govuk-tag govuk-tag--red govuk-!-margin-left-2">REQUIRED</strong>
+                      {% endif %}
+                    </label>
+                    {% if item.hint %}
+                      <div id="checklistItem-{{ item.id | default(loop.index) }}-hint" class="govuk-hint govuk-checkboxes__hint">
+                        {{ item.hint }}
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+                  <div class="govuk-checkboxes__item">
+                    <input class="govuk-checkboxes__input" id="confirm-checklist" name="confirm-checklist" type="checkbox" value="confirmed">
+                    <label class="govuk-label govuk-checkboxes__label" for="confirm-checklist">
+                      I confirm all required checklist items for this phase have been completed
+                    </label>
+                  </div>
+                </div> 
+              </fieldset> 
+            </div> 
+          {% endif %} 
+            
+            <!-- Comment Section -->
+            <div class="govuk-form-group govuk-!-margin-bottom-9">
+              <fieldset class="govuk-fieldset">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                  <h2 class="govuk-fieldset__heading">Update Comment</h2>
+                </legend>
+                
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="closureNotes">
+                    Comment <span class="govuk-required">*</span>
+                  </label>
+                  <div class="govuk-hint">Please provide a comment explaining this update</div>
+                  <textarea class="govuk-textarea" id="closureNotes" name="comment" rows="3" required></textarea>
+                </div>
+
+                <div class="govuk-form-group">
+                  <p class="govuk-body-s govuk-!-margin-bottom-1">Quick templates:</p>
+                  <button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-right-1 govuk-!-margin-bottom-1" data-template="Standard progress update.">Standard Update</button>
+                  <button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-right-1 govuk-!-margin-bottom-1" data-template="Awaiting feedback from stakeholders.">Awaiting Feedback</button>
+                  <button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-right-1 govuk-!-margin-bottom-1" data-template="Issue identified and under investigation.">Issue Identified</button>
+                  <button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-1 govuk-!-margin-right-1" data-template="Resolved and closing.">Resolved</button>
+                  <button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-1" data-template="Status: Completed all tasks and actions.">All Tasks Complete</button>
+                </div>
+                
+                {% if not user %}
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="user">
+                    Your Name <span class="govuk-required">*</span>
+                  </label>
+                  <input class="govuk-input" id="user" name="user" type="text" required>
+                </div>
+                {% endif %}
+              </fieldset>
+            </div>
+            
+            <!-- Additional Details Section -->
+            <div class="govuk-form-group govuk-!-margin-bottom-9 govuk-!-padding-bottom-6 govuk-!-border-bottom-width-1">
+              <fieldset class="govuk-fieldset">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                  <h2 class="govuk-fieldset__heading">Additional Details</h2>
+                </legend>
+                
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="assignedReviewer">
+                    Assigned Reviewer
+                  </label>
+                  <input class="govuk-input" id="assignedReviewer" name="assignedReviewer" type="text" value="{{ bcr.assignedTo }}">
+                </div>
+                
+                {% if urgencyLevels %}
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="priority">
+                    Priority
+                  </label>
+                  <select class="govuk-select" id="priority" name="priority">
+                    {% for level in urgencyLevels %}
+                      <option value="{{ level | lower }}" {% if level | lower == bcr.priority %}selected{% endif %}>
+                        {{ level }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </div>
+                {% endif %}
+              </fieldset>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="govuk-form-group govuk-!-margin-top-9">
+              <div class="govuk-button-group">
+                <button type="submit" class="govuk-button" data-module="govuk-button">
+                  Update Workflow Status
+                </button>
+                
+                <a href="/bcr/business-change-requests/{{ bcr.id }}" class="govuk-button govuk-button--secondary">
+                  Cancel
+                </a>
+              </div>
+              <div class="govuk-hint govuk-!-margin-top-2">
+                Updating the workflow status will record your changes in the workflow history below.
+              </div>
+            </div>
+          </form>
+          
+          <!-- Workflow History -->
+          <h2 class="govuk-heading-m">Workflow History</h2>
+          
+          {% if bcr.workflowHistory and bcr.workflowHistory.length > 0 %}
+            <table class="govuk-table">
+              <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                  <th scope="col" class="govuk-table__header">Date</th>
+                  <th scope="col" class="govuk-table__header">Phase</th>
+                  <th scope="col" class="govuk-table__header">Status</th>
+                  <th scope="col" class="govuk-table__header">Comments</th>
+                  <th scope="col" class="govuk-table__header">Updated By</th>
+                </tr>
+              </thead>
+              <tbody class="govuk-table__body">
+                {% for history in bcr.workflowHistory %}
+                  <tr class="govuk-table__row">
+                    <td class="govuk-table__cell">{{ history.timestamp | date('DD/MM/YYYY HH:mm') }}</td>
+                    <td class="govuk-table__cell">{{ history.phaseName }}</td>
+                    <td class="govuk-table__cell">
+                      <span class="govuk-tag govuk-tag--{{ history.statusColor }}">{{ history.statusName }}</span>
+                    </td>
+                    <td class="govuk-table__cell">{{ history.comments }}</td>
+                    <td class="govuk-table__cell">{{ history.updatedBy }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <p class="govuk-body">No workflow history available for this BCR.</p>
+          {% endif %}
+        </div>
+        
+      </div>
+    </div>
+{% endblock %}

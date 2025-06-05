@@ -1,0 +1,186 @@
+/* BCR Workflow Diagram Styles */
+.bcr-workflow-diagram {
+  margin: 2em 0;
+  padding: 1em;
+  background-color: #f8f8f8;
+  border-radius: 5px;
+}
+
+.workflow-steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding: 1em 0;
+}
+
+.workflow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  min-width: 100px;
+  text-align: center;
+}
+
+.workflow-step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #b1b4b6; /* grey for pending */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.workflow-step.current .workflow-step-circle {
+  background-color: #1d70b8; /* blue for current */
+  box-shadow: 0 0 0 4px rgba(29, 112, 184, 0.3);
+}
+
+.workflow-step.completed .workflow-step-circle {
+  background-color: #00703c; /* green for completed */
+}
+
+.workflow-step-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center the name and tag horizontally */
+  text-align: center;
+  width: 100%; /* Ensure it takes full width of the step for centering */
+}
+
+.workflow-step-name {
+  font-size: 0.875rem; /* Smaller font for phase names */
+  color: #0b0c0c;
+  margin-top: 8px;
+  text-align: center;
+  word-break: break-word;
+  min-height: 3em; /* Ensure space for two lines of text */
+}
+
+.workflow-step-name-text {
+  display: block; /* Ensures it takes its own line */
+  font-size: 0.875rem;
+  color: #0b0c0c;
+  word-break: break-word;
+  margin-bottom: 4px; /* Adds a small space between the name and the tag */
+}
+
+.workflow-step-duration {
+  font-size: 12px;
+  color: #666;
+}
+
+.workflow-step-connector {
+  flex-grow: 1;
+  height: 2px;
+  background-color: #b1b4b6; /* grey for pending */
+  position: relative;
+  margin: 0 5px;
+  min-width: 20px;
+}
+
+.workflow-step-connector.completed {
+  background-color: #00703c; /* green for completed */
+}
+
+/* Phase transition checklist */
+.phase-checklist {
+  margin: 1.5em 0;
+  padding: 15px;
+  background-color: #f3f2f1;
+  border-left: 5px solid #1d70b8;
+}
+
+.phase-checklist-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.checklist-item input {
+  margin-right: 10px;
+  margin-top: 5px;
+}
+
+.checklist-item-error {
+  border-left: 3px solid #d4351c;
+  padding-left: 10px;
+  background-color: #fef6f6;
+}
+
+/* Closure notes enhancement */
+.closure-notes-counter {
+  text-align: right;
+  color: #666;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.closure-notes-template-buttons {
+  margin-bottom: 10px;
+}
+
+.template-button {
+  background: #f3f2f1;
+  border: 1px solid #b1b4b6;
+  padding: 5px 10px;
+  margin-right: 5px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.template-button:hover {
+  background: #dbdad9;
+}
+
+/* Format controls for closure notes */
+.format-controls {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #b1b4b6;
+}
+
+.format-button {
+  background: none;
+  border: 1px solid #b1b4b6;
+  padding: 5px 10px;
+  margin-right: 5px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.format-button:hover {
+  background: #f3f2f1;
+}
+
+/* Recommended next steps */
+.recommended-next-steps {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f8f8f8;
+  border-left: 5px solid #5694ca;
+}
+
+.next-steps-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Confirmation dialog */
+.phase-skip-warning {
+  color: #d4351c;
+  margin-top: 5px;
+  font-weight: bold;
+}

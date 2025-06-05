@@ -1,0 +1,56 @@
+{% macro workflowDiagram(phases, currentPhaseId) %}
+<div class="bcr-workflow-diagram">
+  <h3 class="govuk-heading-s">Workflow Progress</h3>
+  <div class="workflow-steps">
+    {% if phases and phases.length > 0 %}
+      {# Determine current phase ID string and display order for logic #}
+      {% set currentPhaseIdString = '' %}
+      {% set foundCurrentPhaseObject = null %}
+
+      {# First, ensure currentPhaseIdString is set from currentPhaseIdFromBcr #}
+      {% if currentPhaseId %}
+        {% if currentPhaseId._id %} {# currentPhaseId is a populated phase object #}
+          {% set currentPhaseIdString = currentPhaseId._id.toString() %}
+          {% set foundCurrentPhaseObject = currentPhaseId %}
+        {% elif currentPhaseId.toString %} {# currentPhaseId is likely an ID string or an object that can be stringified #}
+          {% set currentPhaseIdString = currentPhaseId.toString() %}
+        {% endif %}
+      {% endif %}
+
+      {# Now, determine currentPhaseDisplayOrder using currentPhaseIdString #}
+      {% set currentPhaseDisplayOrder = -1 %}
+      {% if currentPhaseIdString %}
+          {# If we had the original phase object AND it had a defined displayOrder, use it directly #}
+          {% if foundCurrentPhaseObject and foundCurrentPhaseObject.displayOrder is defined and foundCurrentPhaseObject.displayOrder is not none %}
+              {% set currentPhaseDisplayOrder = foundCurrentPhaseObject.displayOrder %}
+          {% else %}
+            {# Otherwise, search in the 'phases' list for the displayOrder using currentPhaseIdString #}
+            {% for p in phases %}
+                {% if p._id.toString() == currentPhaseIdString %}
+                {% if p.displayOrder is defined and p.displayOrder is not none %}
+                    {% set currentPhaseDisplayOrder = p.displayOrder %}
+                {% endif %}
+
+                {% endif %}
+            {% endfor %}
+          {% endif %}
+      {% endif %}
+
+      {% for phase in phases %}
+        {% set isCurrentPhase = phase._id and phase._id.toString() == currentPhaseIdString %}
+        {% set isCompleted = phase.displayOrder < currentPhaseDisplayOrder %}
+        <div class="workflow-step {% if isCurrentPhase %}current{% elif isCompleted %}completed{% else %}pending{% endif %}">
+          <div class="workflow-step-circle">{{ loop.index }}</div>
+          <div class="workflow-step-details">\n            <span class="workflow-step-name-text">{{ phase.name }}</span>\n            {% if isCompleted %}\n              <strong class="govuk-tag govuk-tag--green govuk-!-margin-top-1">Completed</strong>\n            {% elif isCurrentPhase %}\n              <strong class="govuk-tag govuk-tag--blue govuk-!-margin-top-1">Current</strong>\n            {% else %}\n              <strong class="govuk-tag govuk-tag--grey govuk-!-margin-top-1">Pending</strong>\n            {% endif %}\n          </div>
+          {% if phase.estimatedDuration %}
+            <div class="workflow-step-duration">~{{ phase.estimatedDuration }}</div>
+          {% endif %}
+        </div>
+        {% if not loop.last %}
+          <div class="workflow-step-connector {% if isCompleted %}completed{% endif %}"></div>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+{% endmacro %}

@@ -1,0 +1,123 @@
+{% extends "layout.njk" %}
+
+{# Import GOV.UK components #}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block pageTitle %}
+  Assign BCR to Release - RRDM
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container">
+  {{ govukBackLink({
+    text: "Back to BCR Details",
+    href: "/bcr/business-change-requests/" + bcr._id
+  }) }}
+
+  <main class="govuk-main-wrapper" id="main-content" role="main">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-xl">Assign BCR to Release</h1>
+        
+        <div class="govuk-inset-text">
+          <h2 class="govuk-heading-m">BCR Details</h2>
+          <p class="govuk-body"><strong>BCR Number:</strong> {{ bcr.bcrNumber }}</p>
+          <p class="govuk-body"><strong>Description:</strong> {{ bcr.description }}</p>
+          {% if bcr.associatedReleaseId %}
+          <p class="govuk-body govuk-!-font-weight-bold">Currently assigned to: {{ associatedRelease.ReleaseNameDetails }}</p>
+          {% else %}
+          <p class="govuk-body govuk-!-font-weight-bold">Not currently assigned to any release</p>
+          {% endif %}
+        </div>
+
+        <form action="/bcr/business-change-requests/{{ bcr._id }}/assign-release" method="post">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          
+          <div class="govuk-form-group">
+            <label class="govuk-label govuk-label--m" for="academicYearId">
+              Academic Year
+            </label>
+            <select class="govuk-select" id="academicYearId" name="academicYearId" aria-describedby="academic-year-hint" onchange="loadReleases(this.value)">
+              <option value="">Select Academic Year</option>
+              {% for year in academicYears %}
+                <option value="{{ year._id }}">{{ year.name }} ({{ year.releaseCount }} release{% if year.releaseCount != 1 %}s{% endif %})</option>
+              {% endfor %}
+            </select>
+            <span id="academic-year-hint" class="govuk-hint">
+              Select the academic year for this release
+            </span>
+          </div>
+          
+          <div class="govuk-form-group">
+            <label class="govuk-label govuk-label--m" for="releaseId">
+              Release
+            </label>
+            <select class="govuk-select" id="releaseId" name="releaseId" aria-describedby="release-hint">
+              <option value="">Select Release</option>
+              <!-- Options will be populated via JavaScript -->
+            </select>
+            <span id="release-hint" class="govuk-hint">
+              Select the release to assign this BCR to
+            </span>
+          </div>
+          
+          <div class="govuk-form-group">
+            <label class="govuk-label govuk-label--m" for="notes">
+              Notes
+            </label>
+            <textarea class="govuk-textarea" id="notes" name="notes" rows="3" aria-describedby="notes-hint"></textarea>
+            <span id="notes-hint" class="govuk-hint">
+              Optional notes about this assignment
+            </span>
+          </div>
+          
+          <button class="govuk-button" data-module="govuk-button">
+            Assign to Release
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block pageScripts %}
+<script>
+  function loadReleases(academicYearId) {
+    if (!academicYearId) {
+      document.getElementById('releaseId').innerHTML = '<option value="">Select Release</option>';
+      return;
+    }
+    
+    fetch(`/releases/data/by-academic-year/${academicYearId}`)
+      .then(response => response.json())
+      .then(releases => {
+        const releaseSelect = document.getElementById('releaseId');
+        releaseSelect.innerHTML = '<option value="">Select Release</option>';
+        
+        if (releases && releases.length > 0) {
+          releases.forEach(release => {
+            const option = document.createElement('option');
+            option.value = release._id;
+            option.textContent = `${release.ReleaseNameDetails} (${new Date(release.GoLiveDate).toLocaleDateString()})`;
+            releaseSelect.appendChild(option);
+          });
+        } else {
+          const option = document.createElement('option');
+          option.value = "";
+          option.textContent = "No releases found for this academic year";
+          releaseSelect.appendChild(option);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching releases:', error);
+        const releaseSelect = document.getElementById('releaseId');
+        releaseSelect.innerHTML = '<option value="">Error loading releases</option>';
+      });
+  }
+</script>
+{% endblock %}

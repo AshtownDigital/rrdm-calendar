@@ -1,0 +1,144 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}BCR Workflow Management | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">BCR Workflow Management</h1>
+      
+      <!-- BCR Workflow Phases Section -->
+      <section class="govuk-!-margin-bottom-8">
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-full">
+            <h2 class="govuk-heading-l">BCR Workflow Phases</h2>
+            
+            <div class="govuk-inset-text">
+              <p class="govuk-body">
+                The BCR workflow process consists of multiple phases, from initial submission to final release. Each phase has a specific purpose and defined status. The workflow is designed to ensure proper governance, documentation, and implementation of business change requests.
+              </p>
+            </div>
+            
+            {% set phaseGroups = {
+              "Submission & Initial Review": [],
+              "Review & Approval": [],
+              "Requirements Documentation": [],
+              "Implementation & Release": []
+            } %}
+            
+            {% for phase in phases %}
+              {% if phase.displayOrder >= 1 and phase.displayOrder <= 3 %}
+                {% set group = "Submission & Initial Review" %}
+                {% set tagColor = "blue" %}
+              {% elif phase.displayOrder >= 4 and phase.displayOrder <= 6 %}
+                {% set group = "Review & Approval" %}
+                {% set tagColor = "purple" %}
+              {% elif phase.displayOrder >= 7 and phase.displayOrder <= 9 %}
+                {% set group = "Requirements Documentation" %}
+                {% set tagColor = "orange" %}
+              {% else %}
+                {% set group = "Implementation & Release" %}
+                {% set tagColor = "yellow" %}
+              {% endif %}
+              
+              {# Store phase info with tag color in a simple object #}
+              {% set _ = phaseGroups[group].push(phase) %}
+            {% endfor %}
+            
+            {% for groupName, groupPhases in phaseGroups %}
+              {% if groupPhases.length > 0 %}
+                <h3 class="govuk-heading-m govuk-!-margin-bottom-2">{{ groupName }}</h3>
+                <div class="govuk-inset-text">
+                  <p class="govuk-body">{{ getGroupDescription(groupName) }}</p>
+                  
+                  <dl class="govuk-summary-list">
+                    {% for phase in groupPhases %}
+                      <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">
+                          {% if phase.displayOrder >= 1 and phase.displayOrder <= 3 %}
+                            {% set tagColor = "blue" %}
+                          {% elif phase.displayOrder >= 4 and phase.displayOrder <= 6 %}
+                            {% set tagColor = "purple" %}
+                          {% elif phase.displayOrder >= 7 and phase.displayOrder <= 9 %}
+                            {% set tagColor = "orange" %}
+                          {% else %}
+                            {% set tagColor = "yellow" %}
+                          {% endif %}
+                          <strong class="govuk-tag govuk-tag--{{ tagColor }}">Phase {{ phase.displayOrder }}</strong>
+                        </dt>
+                        <dd class="govuk-summary-list__value">
+                          <h4 class="govuk-heading-s">{{ phase.name }}</h4>
+                          <p class="govuk-body">{{ phase.description }}</p>
+                          
+                          {% if phase.availableStatuses and phase.availableStatuses.length > 0 %}
+                            <p class="govuk-body-s govuk-!-margin-bottom-1 govuk-!-margin-top-3">Status:</p>
+                            {% for statusId in phase.availableStatuses %}
+                              {% set status = getStatusById(statuses, statusId) %}
+                              {% if status %}
+                                <strong class="govuk-tag govuk-tag--{{ status.color }}">{{ status.name }}</strong>
+                                {% if not loop.last %}<br>{% endif %}
+                              {% endif %}
+                            {% endfor %}
+                          {% endif %}
+                        </dd>
+                        <dd class="govuk-summary-list__actions">
+                        </dd>
+                      </div>
+                    {% endfor %}
+                  </dl>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+      
+      <!-- Workflow Management Actions -->
+      <section class="govuk-!-margin-bottom-8">
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-full">
+            <h2 class="govuk-heading-l">Workflow Management Actions</h2>
+            
+            <div class="govuk-warning-text">
+              <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+              <strong class="govuk-warning-text__text">
+                <span class="govuk-warning-text__assistive">Warning</span>
+                Changes to the workflow process should be carefully managed as they may affect ongoing business change requests.
+              </strong>
+            </div>
+            
+            <div class="govuk-grid-row">
+              <div class="govuk-grid-column-one-third">
+                <div class="govuk-panel govuk-panel--sidebar">
+                  <h3 class="govuk-heading-m">BCR Management</h3>
+                  <ul class="govuk-list">
+                    <li>
+                      <a href="/bcr/business-change-requests" class="govuk-link">View All BCRs</a>
+                    </li>
+                    <li>
+                      <a href="/bcr/submissions" class="govuk-link">View Submissions</a>
+                    </li>
+                    <li>
+                      <a href="/bcr/dashboard" class="govuk-link">Return to Dashboard</a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="govuk-grid-column-two-thirds">
+                <p class="govuk-body">
+                  The workflow process is designed to provide structure and governance to business change requests.
+                  Each phase and status has specific requirements and responsibilities assigned to different stakeholders.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

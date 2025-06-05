@@ -1,56 +1,97 @@
-{% extends "layouts/base.njk" %}
+{% extends "layouts/base-no-header.njk" %}
 
-{% block pageTitle %}
-  Home | Register Team Internal Services
+{% block title %}Home | Register Team Internal Services{% endblock %}
+
+{% block stylesheets %}
+  <link href="/stylesheets/app-cards.css" rel="stylesheet">
+{% endblock %}
+
+{% block header %}
+  {% include "partials/header.njk" %}
 {% endblock %}
 
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
     <h1 class="govuk-heading-xl">Register Team Internal Services</h1>
-    
-    <div class="govuk-grid-row">
-      <!-- BCR Management Card -->
-      <div class="govuk-grid-column-one-third">
-        <div class="app-card">
-          <h2 class="govuk-heading-m">BCR Management</h2>
-          <p class="govuk-body">Manage Business Change Requests (BCRs) and track their progress.</p>
-          <p class="govuk-body"><a href="/release-management" class="govuk-link">Release Management</a></p>
-          <a href="/bcr/submissions" class="govuk-button">View BCR Submissions</a>
-        </div>
-      </div>
-      
-      <!-- Reference Data Card -->
-      <div class="govuk-grid-column-one-third">
-        <div class="app-card">
-          <h2 class="govuk-heading-m">Reference Data</h2>
-          <p class="govuk-body">Manage reference data items and values.</p>
-          <a href="/items" class="govuk-button">View Reference Data</a>
-        </div>
-      </div>
-      
+    <p class="govuk-body-l">Select a service to continue</p>
+  </div>
+</div>
 
-      <!-- Dashboard Card -->
-      <div class="govuk-grid-column-one-third">
-        <div class="app-card">
-          <h2 class="govuk-heading-m">Dashboard</h2>
-          <p class="govuk-body">View overall system status and metrics.</p>
-          <a href="/dashboard" class="govuk-button">Go to Dashboard</a>
-        </div>
-      </div>
+<div class="govuk-grid-row">
+  <!-- Panel 1: Register Reference Data Management -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card app-card--blue">
+      <h2 class="govuk-heading-m">Register Reference Data Management</h2>
+      <p class="govuk-body">Manage and maintain reference data for registration systems.</p>
+      <span class="govuk-tag govuk-tag--blue">Core service</span>
+      <a href="/ref-data/dashboard" class="govuk-button govuk-!-margin-bottom-0">Access service</a>
     </div>
-    
-    <!-- Quick Links Section -->
-    <div class="govuk-!-margin-top-6">
-      <h2 class="govuk-heading-m">Quick Links</h2>
-      <ul class="govuk-list govuk-list--bullet">
-        <li><a href="/bcr/submit" class="govuk-link">Submit New BCR</a></li>
-        <li><a href="/bcr/workflow" class="govuk-link">BCR Workflow</a></li>
-        <li><a href="/release-notes" class="govuk-link">Reference Data - Public facing</a></li>
-        {% if user and user.role === 'admin' %}
-        <li><a href="/access/manage" class="govuk-link">Access Management</a></li>
-        {% endif %}
-      </ul>
+  </div>
+  
+  <!-- Panel 2 -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card app-card--turquoise">
+      <h2 class="govuk-heading-m">DFE Reference Data</h2>
+      <p class="govuk-body">Access standardized DFE reference data lists.</p>
+      <span class="govuk-tag govuk-tag--turquoise">Active</span>
+      <a href="/ref-data/dfe-data" class="govuk-button govuk-!-margin-bottom-0">Access service</a>
+    </div>
+  </div>
+  
+  <!-- Panel 3 -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card app-card--purple">
+      <h2 class="govuk-heading-m">Release Management</h2>
+      <p class="govuk-body">Schedule and track data releases across environments.</p>
+      <span class="govuk-tag govuk-tag--purple">Updated</span>
+      <a href="/releases" class="govuk-button govuk-!-margin-bottom-0">Access service</a>
+    </div>
+  </div>
+</div>
+
+<div class="govuk-grid-row govuk-!-margin-top-6">
+  <!-- Panel 4: BCR Management -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card app-card--orange">
+      <h2 class="govuk-heading-m">BCR Management</h2>
+      <p class="govuk-body">Manage Business Change Requests and track progress.</p>
+      <span class="govuk-tag govuk-tag--orange">Core service</span>
+      <a href="/bcr/submissions" class="govuk-button govuk-!-margin-bottom-0">Access service</a>
+    </div>
+  </div>
+  
+  <!-- Panel 5: Academic Years -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card app-card--green">
+      <h2 class="govuk-heading-m">Academic Years</h2>
+      <p class="govuk-body">Manage academic year configurations and settings.</p>
+      <span class="govuk-tag govuk-tag--green">New module</span>
+      <a href="/academic-years" class="govuk-button govuk-!-margin-bottom-0">Access service</a>
+    </div>
+  </div>
+
+  <!-- Panel X: Release Diary -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card app-card--pink">
+      <h2 class="govuk-heading-m">Release Diary</h2>
+      <p class="govuk-body">View a calendar of BCRs with assigned releases.</p>
+      <span class="govuk-tag govuk-tag--pink">New</span>
+      <a href="/release-diary" class="govuk-button govuk-!-margin-bottom-0">Access service</a>
+    </div>
+  </div>
+  
+  <!-- Panel 6 -->
+  <div class="govuk-grid-column-one-third">
+    <div class="app-card app-card--light-blue">
+      <h2 class="govuk-heading-m">Access Management</h2>
+      <p class="govuk-body">Manage user accounts and permissions.</p>
+      <span class="govuk-tag govuk-tag--light-blue">Admin only</span>
+      {% if user and user.role === 'admin' %}
+        <a href="/access/manage" class="govuk-button govuk-!-margin-bottom-0">Access service</a>
+      {% else %}
+        <a href="#" class="govuk-button govuk-button--disabled govuk-!-margin-bottom-0" aria-disabled="true">Admin only</a>
+      {% endif %}
     </div>
   </div>
 </div>

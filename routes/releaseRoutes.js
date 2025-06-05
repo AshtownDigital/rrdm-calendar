@@ -33,5 +33,15 @@ router.post('/academic-year/:academicYearId/generate-standard', releaseControlle
 // router.post('/generate', isAuthenticated, authorizeRoles(['admin', 'manager']), releaseController.generateAllReleases);
 router.post('/generate', releaseController.generateAllReleases); // Placeholder without auth
 
+// --- Routes for Frontend Data Population (e.g., for dropdowns) ---
+
+// Get academic years that have releases
+// router.get('/data/academic-years-for-releases', isAuthenticated, releaseController.getAcademicYearsForReleasesDropdown);
+router.get('/data/academic-years-for-releases', releaseController.getAcademicYearsForReleasesDropdown); // Placeholder without auth
+
+// Get releases by academic year ID
+// router.get('/data/by-academic-year/:academicYearId', isAuthenticated, releaseController.getReleasesByAcademicYearDropdown);
+router.get('/data/by-academic-year/:academicYearId', releaseController.getReleasesByAcademicYearDropdown); // Placeholder without auth
+
 
 module.exports = router;

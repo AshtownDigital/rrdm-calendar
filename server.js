@@ -335,8 +335,11 @@ const wrapRouter = (name, router) => {
   return router;
 };
 
-// Use the view router for frontend pages
-app.use('/', wrapRouter('view', viewRoutes));
+// Use the home router for the root path
+app.use('/', wrapRouter('home', homeRouter));
+
+// Use the view router for other frontend pages
+app.use('/views', wrapRouter('view', viewRoutes));
 
 // Debug routes for testing calendar (no authentication required)
 app.use('/debug', debugRoutes);

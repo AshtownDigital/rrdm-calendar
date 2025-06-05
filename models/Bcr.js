@@ -52,6 +52,10 @@ const BcrSchema = new Schema({
     type: Schema.Types.Mixed,
     default: []
   },
+  completedChecklistItems: {
+    type: [String],
+    default: []
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -59,6 +63,11 @@ const BcrSchema = new Schema({
   updatedAt: {
     type: Date,
     default: Date.now
+  },
+  associatedReleaseId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Release',
+    required: false
   }
 });
 
@@ -66,6 +75,7 @@ const BcrSchema = new Schema({
 BcrSchema.index({ recordNumber: 1 });
 BcrSchema.index({ status: 1 });
 BcrSchema.index({ submissionId: 1 });
+BcrSchema.index({ associatedReleaseId: 1 });
 
 // Update the updatedAt field on save
 BcrSchema.pre('save', function(next) {

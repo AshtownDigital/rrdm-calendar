@@ -5,8 +5,11 @@
 
 const mongoose = require('mongoose');
 const bcrModel = require('../../../models/modules/bcr/model');
+const releaseService = require('../../../services/releaseService');
+const AcademicYear = require('../../../models/AcademicYear');
 const { Submission } = require('../../../models');
 const workflowService = require('../../../services/modules/bcr/workflowService');
+const counterService = require('../../../services/modules/bcr/counterService');
 const { formatBcr } = require('../../../utils/formatters');
 
 /**
@@ -1035,6 +1038,29 @@ exports.viewBcr = async (req, res) => {
       currentStatus: currentStatusObj
     });
     
+    // Fetch release details if a release is associated with this BCR
+    let associatedRelease = null;
+    let associatedAcademicYear = null;
+    
+    if (bcr.associatedReleaseId) {
+      try {
+        // Get the release details
+        associatedRelease = await releaseService.getReleaseById(bcr.associatedReleaseId);
+        
+        // If we have a release with an academic year, get the academic year details
+        if (associatedRelease && associatedRelease.AcademicYearID) {
+          associatedAcademicYear = await AcademicYear.findById(associatedRelease.AcademicYearID)
+            .select('name code fullName status')
+            .lean();
+        }
+        
+        console.log('Found associated release for BCR details page:', associatedRelease ? associatedRelease.ReleaseNameDetails : 'None');
+      } catch (error) {
+        console.error('Error fetching associated release details:', error);
+        // Don't fail if we can't get release details
+      }
+    }
+    
     // Get all phases for the workflow visualization
     const allPhases = await bcrModel.getAllPhases();
     
@@ -1072,20 +1098,93 @@ exports.viewBcr = async (req, res) => {
       });
     }
     
+    // Create timeline data for history section
+    const timeline = [];
+    
+    // Add phase transitions to timeline
+    if (bcrData.phaseHistory && bcrData.phaseHistory.length > 0) {
+      bcrData.phaseHistory.forEach(history => {
+        const phaseObj = allPhases.find(p => p._id.toString() === history.phaseId.toString());
+        const phaseName = phaseObj ? phaseObj.name : 'Unknown Phase';
+        const userObj = history.updatedBy ? 
+          (typeof history.updatedBy === 'object' ? history.updatedBy : { name: 'System' }) : 
+          { name: 'System' };
+        
+        timeline.push({
+          title: `Phase changed to ${phaseName}`,
+          by: userObj.name,
+          date: history.updatedAt,
+          content: history.notes || 'Phase transition occurred'
+        });
+      });
+    }
+    
+    // Add status changes to timeline
+    if (bcrData.statusHistory && bcrData.statusHistory.length > 0) {
+      bcrData.statusHistory.forEach(history => {
+        const statusObj = allStatuses.find(s => s._id.toString() === history.statusId.toString());
+        const statusName = statusObj ? statusObj.name : 'Unknown Status';
+        const userObj = history.updatedBy ? 
+          (typeof history.updatedBy === 'object' ? history.updatedBy : { name: 'System' }) : 
+          { name: 'System' };
+        
+        timeline.push({
+          title: `Status changed to ${statusName}`,
+          by: userObj.name,
+          date: history.updatedAt,
+          content: history.notes || 'Status change occurred'
+        });
+      });
+    }
+    
+    // Add release assignment to timeline if present
+    if (associatedRelease) {
+      timeline.push({
+        title: `Release assigned: ${associatedRelease.ReleaseNameDetails}`,
+        by: bcrData.updatedBy ? bcrData.updatedBy.name : 'System',
+        date: bcrData.updatedAt,
+        content: `BCR was assigned to release ${associatedRelease.ReleaseCode || associatedRelease.ReleaseNameDetails}`
+      });
+    }
+    
+    // Add BCR creation to timeline
+    timeline.push({
+      title: 'BCR Created',
+      by: bcrData.createdBy ? bcrData.createdBy.name : 'System',
+      date: bcrData.createdAt,
+      content: 'Business Change Request was created'
+    });
+    
+    // Sort timeline by date descending (newest first)
+    timeline.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
     // Render the BCR view
-    res.render('modules/bcr/bcrs/view', {
-      title: `BCR ${bcrData.bcrNumber}`,
-      bcr: {
-        ...bcrData,
-        initialPhase: initialPhase
-      },
+    return res.render('modules/bcr/bcr-details', {
+      title: `Business Change Request: ${bcrData.bcrNumber}`,
+      bcr: bcrData,
       submission,
-      currentPhase,
+      // Pass the full objects to the template instead of just strings
+      currentPhase: currentPhaseObj, // Pass phase object instead of string
+      currentStatus: currentStatusObj, // Pass status object
+      // Keep these for backward compatibility
+      currentPhaseName: currentPhase,
       workflowStatus,
       workflowStatusClass,
       workflowProgress,
       allPhases,
       allStatuses,
+      // Add associated release details
+      associatedRelease,
+      associatedAcademicYear,
+      // Add timeline data for history section
+      timeline,
+      // SLA status for the right column
+      slaStatus: bcrData.slaStatus || {
+        responseStatus: 'on-track',
+        resolutionStatus: 'on-track',
+        targetResponseDate: new Date(Date.now() + 86400000), // tomorrow
+        targetResolutionDate: new Date(Date.now() + 7 * 86400000) // 7 days from now
+      },
       user: req.user,
       csrfToken: req.csrfToken ? req.csrfToken() : ''
     });

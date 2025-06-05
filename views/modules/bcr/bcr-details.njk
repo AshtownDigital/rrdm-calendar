@@ -4,92 +4,663 @@
   {{ title }} - RRDM
 {% endblock %}
 
+{% block head %}
+  <style>
+    /* Module container styling */
+    .module-container {
+      border-left: 5px solid #1d70b8;
+      padding-left: 15px;
+      margin-bottom: 30px;
+    }
+    
+    /* Workflow progress visualization */
+    .workflow-progress {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding: 10px 0;
+    }
+    .workflow-step {
+      flex: 1;
+      text-align: center;
+      position: relative;
+      padding-bottom: 25px;
+      min-width: 100px;
+    }
+    .workflow-step:not(:last-child):after {
+      content: "";
+      position: absolute;
+      top: 15px;
+      right: -50%;
+      width: 100%;
+      height: 4px;
+      background-color: #b1b4b6;
+      z-index: 1;
+    }
+    .workflow-step.completed:not(:last-child):after {
+      background-color: #00703c;
+    }
+    .workflow-step-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: #b1b4b6;
+      display: inline-block;
+      margin-bottom: 5px;
+      position: relative;
+      z-index: 2;
+    }
+    .workflow-step.completed .workflow-step-circle {
+      background-color: #00703c;
+    }
+    .workflow-step.current .workflow-step-circle {
+      background-color: #1d70b8;
+      border: 3px solid #1d70b8;
+    }
+    .workflow-step-label {
+      font-size: 14px;
+      color: #0b0c0c;
+      position: absolute;
+      width: 100%;
+      left: 0;
+      text-align: center;
+    }
+    
+    /* Tab styling enhancements */
+    .govuk-tabs__panel {
+      border: 1px solid #b1b4b6;
+      border-top: 0;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    .govuk-tabs__list-item--selected {
+      background-color: #f3f2f1;
+    }
+    
+    /* Special style for showing all details */
+    .show-all-details .govuk-tabs__panel {
+      display: block !important;
+    }
+    
+    /* Tab content styling */
+    .tab-section {
+      margin-bottom: 20px;
+    }
+    .tab-section-title {
+      margin-bottom: 15px;
+      border-bottom: 2px solid #1d70b8;
+      padding-bottom: 5px;
+      color: #1d70b8;
+    }
+    
+    /* Summary panel for key information */
+    .bcr-summary-panel {
+      background-color: #f8f8f8;
+      padding: 25px;
+      margin-bottom: 30px;
+      border-top: 5px solid #1d70b8;
+      border-left: none;
+      color: #0b0c0c;
+    }
+    
+    .bcr-summary-panel .govuk-heading-l {
+      color: #0b0c0c;
+      font-size: 32px;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #b1b4b6;
+      padding-bottom: 10px;
+    }
+    
+    .bcr-summary-content {
+      color: #0b0c0c;
+      font-size: 19px;
+    }
+    
+    /* Actions panel styling */
+    .bcr-actions-panel {
+      background-color: #f8f8f8;
+      padding: 25px;
+      margin-bottom: 30px;
+      border-top: 5px solid #00703c;
+    }
+    
+    .bcr-actions-panel .govuk-heading-m {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #0b0c0c;
+    }
+    
+    .bcr-actions-panel .govuk-inset-text {
+      margin: 20px 0 0;
+      padding: 15px;
+      background-color: #ffffff;
+      border-left: 5px solid #b1b4b6;
+    }
+  </style>
+{% endblock %}
+
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-xl">{{ bcr.title }}</h1>
-      
-      <div class="govuk-inset-text">
-        <h2 class="govuk-heading-m">Overview</h2>
-        <dl class="govuk-summary-list">
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">BCR Number</dt>
-            <dd class="govuk-summary-list__value">{{ bcr.bcrNumber }}</dd>
+      <h1 class="govuk-heading-xl">Business Change Request</h1>
+    </div>
+  </div>
+  
+  <!-- Split Grid Layout -->
+  <div class="govuk-grid-row">
+    <!-- Left Column: BCR Summary Information -->
+    <div class="govuk-grid-column-two-thirds">
+      <div class="bcr-summary-panel">
+        <h2 class="govuk-heading-l">{{ bcr.title }}</h2>
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-one-half">
+            <dl class="govuk-summary-list govuk-summary-list--no-border">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">BCR Number</dt>
+                <dd class="govuk-summary-list__value">BCR-{{ bcr.bcrNumber }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Created</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.createdAt | date }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Requested By</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.requestedBy }}</dd>
+              </div>
+            </dl>
           </div>
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Status</dt>
-            <dd class="govuk-summary-list__value">
-              <strong class="govuk-tag govuk-tag--blue">{{ bcr.statusDisplay }}</strong>
-            </dd>
+          <div class="govuk-grid-column-one-half">
+            <dl class="govuk-summary-list govuk-summary-list--no-border">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Status</dt>
+                <dd class="govuk-summary-list__value">
+                  <strong class="govuk-tag {% if workflowStatus == 'Approved' %}govuk-tag--green{% elif workflowStatus == 'Rejected' %}govuk-tag--red{% elif workflowStatus == 'In Progress' %}govuk-tag--blue{% elif workflowStatus == 'On Hold' %}govuk-tag--yellow{% else %}govuk-tag--blue{% endif %}">
+                    {{ workflowStatus }}
+                  </strong>
+                </dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Phase</dt>
+                <dd class="govuk-summary-list__value">
+                  <strong class="govuk-tag {% if currentPhaseName == 'Complete' %}govuk-tag--green{% elif currentPhaseName == 'Implementation' %}govuk-tag--blue{% elif currentPhaseName == 'Development' %}govuk-tag--purple{% elif currentPhaseName == 'Analysis' %}govuk-tag--orange{% else %}govuk-tag--grey{% endif %}">
+                    {{ currentPhaseName }}
+                  </strong>
+                </dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Updated</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.updatedAt | date }}</dd>
+              </div>
+            </dl>
           </div>
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Current Phase</dt>
-            <dd class="govuk-summary-list__value">
-              <strong class="govuk-tag">{{ bcr.currentPhaseName }}</strong>
-            </dd>
-          </div>
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Requested By</dt>
-            <dd class="govuk-summary-list__value">{{ bcr.Users_Bcrs_requestedByToUsers.name }}</dd>
-          </div>
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Assigned To</dt>
-            <dd class="govuk-summary-list__value">{{ bcr.Users_Bcrs_assignedToToUsers.name }}</dd>
-          </div>
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Submitted</dt>
-            <dd class="govuk-summary-list__value">{{ bcr.createdAt | date }}</dd>
-          </div>
-        </dl>
+        </div>
       </div>
-
-      <div class="govuk-inset-text">
-        <h2 class="govuk-heading-m">Description</h2>
-        <p class="govuk-body">{{ bcr.description }}</p>
+    </div>
+    
+    <!-- Right Column: Actions and Priority -->
+    <div class="govuk-grid-column-one-third">
+      <div class="bcr-actions-panel">
+        <h3 class="govuk-heading-m">Actions</h3>
+        <div class="govuk-button-group govuk-!-margin-bottom-4">
+          <a href="/bcr/bcr/{{ bcr._id }}/update" class="govuk-button govuk-!-margin-bottom-1">Edit BCR</a>
+          <a href="/bcr/bcr/{{ bcr._id }}/update-status" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-1">Update Status</a>
+        </div>
+        
+        <div class="govuk-inset-text">
+          <h4 class="govuk-heading-s govuk-!-margin-bottom-1">Priority</h4>
+          <p class="govuk-body govuk-!-font-weight-bold">{{ bcr.priority }}</p>
+          
+          {% if associatedRelease %}
+          <h4 class="govuk-heading-s govuk-!-margin-bottom-1 govuk-!-margin-top-4">Assigned Release</h4>
+          <p class="govuk-body">{{ associatedRelease.ReleaseNameDetails }}</p>
+          {% endif %}
+        </div>
       </div>
+    </div>
+  </div>
+  
+  <!-- Main Content with Tabs -->
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <div class="govuk-tabs show-all-details" data-module="govuk-tabs">
+        <h2 class="govuk-tabs__title">BCR Information</h2>
+        
+        <ul class="govuk-tabs__list">
+          <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+            <a class="govuk-tabs__tab" href="#details">Details</a>
+          </li>
+          <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+            <a class="govuk-tabs__tab" href="#submission">Submission Details</a>
+          </li>
+          <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+            <a class="govuk-tabs__tab" href="#release">Release Information</a>
+          </li>
+          <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+            <a class="govuk-tabs__tab" href="#workflow">Workflow</a>
+          </li>
+          <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+            <a class="govuk-tabs__tab" href="#audit">Audit History</a>
+          </li>
+        </ul>
+        
+        <!-- Details Tab Panel -->
+        <div class="govuk-tabs__panel" id="details">
+          <div class="tab-section">
+            <h3 class="tab-section-title">Description</h3>
+            <div class="govuk-inset-text">
+              <p class="govuk-body">{{ bcr.description }}</p>
+            </div>
+          </div>
+          
+          <div class="tab-section">
+            <h3 class="tab-section-title">Business Information</h3>
+            <dl class="govuk-summary-list">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Business Area</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.businessArea or 'Not specified' }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Business Process</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.businessProcess or 'Not specified' }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Business Justification</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.justification or submission.justification or 'None provided' }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Expected Benefits</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.expectedBenefits or submission.expectedBenefits or 'None specified' }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Impacted Systems</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.impactedSystems or 'None specified' }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Impacted Users</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.impactedUsers or submission.impactedUsers or 'Not specified' }}</dd>
+              </div>
+            </dl>
+          </div>
+          
+          <div class="tab-section">
+            <h3 class="tab-section-title">Technical Information</h3>
+            <dl class="govuk-summary-list">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Type of Change</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.changeType or submission.changeType or 'Not specified' }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Estimated Effort</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.estimatedEffort or submission.estimatedEffort or 'Not estimated' }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Technical Dependencies</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.technicalDependencies or submission.technicalDependencies or 'None identified' }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Technical Notes</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.technicalNotes or 'None provided' }}</dd>
+              </div>
+            </dl>
+          </div>
+          
+          <div class="tab-section">
+            <h3 class="tab-section-title">Administrative Information</h3>
+            <dl class="govuk-summary-list">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">BCR Number</dt>
+                <dd class="govuk-summary-list__value">BCR-{{ bcr.bcrNumber }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Requested By</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.requestedBy }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Assigned To</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.assignedTo or 'Not assigned' }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Created Date</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.createdAt | date }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Last Updated</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.updatedAt | date }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Priority</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.priority }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Urgency Level</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.urgencyLevel or submission.urgencyLevel or 'Not specified' }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Original Submission ID</dt>
+                <dd class="govuk-summary-list__value">{{ bcr.submissionId or 'Not available' }}</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+        
+        <!-- Submission Details Tab Panel -->
+        <div class="govuk-tabs__panel" id="submission">
+          {% if submission %}
+          <div class="tab-section">
+            <h3 class="tab-section-title">Submission Information</h3>
+            <dl class="govuk-summary-list">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Submission Code</dt>
+                <dd class="govuk-summary-list__value">{{ submission.submissionCode }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Submitted Date</dt>
+                <dd class="govuk-summary-list__value">{{ submission.createdAt | date }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Status</dt>
+                <dd class="govuk-summary-list__value">
+                  <strong class="govuk-tag {% if submission.status == 'Approved' %}govuk-tag--green{% elif submission.status == 'Rejected' %}govuk-tag--red{% elif submission.status == 'Pending' %}govuk-tag--blue{% elif submission.status == 'More Info Required' %}govuk-tag--yellow{% else %}govuk-tag--blue{% endif %}">
+                    {{ submission.status }}
+                  </strong>
+                </dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Record Number</dt>
+                <dd class="govuk-summary-list__value">{{ submission.recordNumber }}</dd>
+              </div>
+            </dl>
+          </div>
 
-      {% if slaStatus %}
-      <div class="govuk-inset-text">
-        <h2 class="govuk-heading-m">Service Level Agreements</h2>
-        <dl class="govuk-summary-list">
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Target Response Time</dt>
-            <dd class="govuk-summary-list__value">
-              {% if slaStatus.responseStatus === 'on-track' %}
-                <strong class="govuk-tag govuk-tag--green">On Track</strong>
-              {% elif slaStatus.responseStatus === 'at-risk' %}
-                <strong class="govuk-tag govuk-tag--yellow">At Risk</strong>
-              {% elif slaStatus.responseStatus === 'overdue' %}
-                <strong class="govuk-tag govuk-tag--red">Overdue</strong>
-              {% else %}
-                <strong class="govuk-tag govuk-tag--grey">Not Set</strong>
+          <div class="tab-section">
+            <h3 class="tab-section-title">Submitter Details</h3>
+            <dl class="govuk-summary-list">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Full Name</dt>
+                <dd class="govuk-summary-list__value">{{ submission.fullName }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Email Address</dt>
+                <dd class="govuk-summary-list__value">{{ submission.emailAddress }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Organisation</dt>
+                <dd class="govuk-summary-list__value">{{ submission.organisation or 'Not specified' }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Submission Source</dt>
+                <dd class="govuk-summary-list__value">{{ submission.submissionSource }}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="tab-section">
+            <h3 class="tab-section-title">Request Details</h3>
+            <dl class="govuk-summary-list">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Brief Description</dt>
+                <dd class="govuk-summary-list__value">{{ submission.briefDescription }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Justification</dt>
+                <dd class="govuk-summary-list__value">{{ submission.justification }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Urgency Level</dt>
+                <dd class="govuk-summary-list__value">{{ submission.urgencyLevel }}</dd>
+              </div>
+              {% if submission.otherUrgencyDescription %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Other Urgency Description</dt>
+                <dd class="govuk-summary-list__value">{{ submission.otherUrgencyDescription }}</dd>
+              </div>
               {% endif %}
-              {{ slaStatus.targetResponseDate | date }}
-            </dd>
-          </div>
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Target Resolution Time</dt>
-            <dd class="govuk-summary-list__value">
-              {% if slaStatus.resolutionStatus === 'on-track' %}
-                <strong class="govuk-tag govuk-tag--green">On Track</strong>
-              {% elif slaStatus.resolutionStatus === 'at-risk' %}
-                <strong class="govuk-tag govuk-tag--yellow">At Risk</strong>
-              {% elif slaStatus.resolutionStatus === 'overdue' %}
-                <strong class="govuk-tag govuk-tag--red">Overdue</strong>
-              {% else %}
-                <strong class="govuk-tag govuk-tag--grey">Not Set</strong>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Impact Areas</dt>
+                <dd class="govuk-summary-list__value">
+                  {% if submission.impactAreas and submission.impactAreas.length > 0 %}
+                    <ul class="govuk-list govuk-list--bullet">
+                      {% for area in submission.impactAreas %}
+                        <li>{{ area }}</li>
+                      {% endfor %}
+                    </ul>
+                  {% else %}
+                    None specified
+                  {% endif %}
+                </dd>
+              </div>
+              {% if submission.affectedReferenceDataArea %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Affected Reference Data Area</dt>
+                <dd class="govuk-summary-list__value">{{ submission.affectedReferenceDataArea }}</dd>
+              </div>
               {% endif %}
-              {{ slaStatus.targetResolutionDate | date }}
-            </dd>
+            </dl>
           </div>
-        </dl>
-      </div>
-      {% endif %}
 
-      <div class="govuk-button-group">
-        <a href="/bcr/bcr/{{ bcr.id }}/update" class="govuk-button">Update BCR</a>
-        <a href="/bcr/bcr-submission/{{ bcr.id }}/review" class="govuk-button govuk-button--secondary">Review Submission</a>
-        <a href="/bcr/bcr/{{ bcr.id }}/warning?action=delete" class="govuk-button govuk-button--warning">Delete BCR</a>
+          <div class="tab-section">
+            <h3 class="tab-section-title">Additional Information</h3>
+            <dl class="govuk-summary-list">
+              {% if submission.technicalDependencies %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Technical Dependencies</dt>
+                <dd class="govuk-summary-list__value">{{ submission.technicalDependencies }}</dd>
+              </div>
+              {% endif %}
+              {% if submission.relatedDocuments %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Related Documents</dt>
+                <dd class="govuk-summary-list__value">{{ submission.relatedDocuments }}</dd>
+              </div>
+              {% endif %}
+              {% if submission.attachments %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Attachments</dt>
+                <dd class="govuk-summary-list__value">{{ submission.attachments }}</dd>
+              </div>
+              {% endif %}
+              {% if submission.additionalNotes %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Additional Notes</dt>
+                <dd class="govuk-summary-list__value">{{ submission.additionalNotes }}</dd>
+              </div>
+              {% endif %}
+            </dl>
+          </div>
+
+          {% if submission.reviewedAt or submission.reviewOutcome or submission.reviewComments %}
+          <div class="tab-section">
+            <h3 class="tab-section-title">Review Information</h3>
+            <dl class="govuk-summary-list">
+              {% if submission.reviewOutcome %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Review Outcome</dt>
+                <dd class="govuk-summary-list__value">{{ submission.reviewOutcome }}</dd>
+              </div>
+              {% endif %}
+              {% if submission.reviewComments %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Review Comments</dt>
+                <dd class="govuk-summary-list__value">{{ submission.reviewComments }}</dd>
+              </div>
+              {% endif %}
+              {% if submission.reviewedAt %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Reviewed Date</dt>
+                <dd class="govuk-summary-list__value">{{ submission.reviewedAt | date }}</dd>
+              </div>
+              {% endif %}
+            </dl>
+          </div>
+          {% endif %}
+          {% else %}
+          <div class="tab-section">
+            <h3 class="tab-section-title">No Submission Information Available</h3>
+            <p class="govuk-body">This BCR was not created from a submission or the submission information is no longer available.</p>
+          </div>
+          {% endif %}
+        </div>
+        
+        <!-- Release Information Tab Panel -->
+        <div class="govuk-tabs__panel" id="release">
+          {% if associatedRelease %}
+            <div class="tab-section">
+              <h3 class="tab-section-title">Assigned Release</h3>
+              <dl class="govuk-summary-list">
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">Release Name</dt>
+                  <dd class="govuk-summary-list__value">{{ associatedRelease.ReleaseNameDetails }}</dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">Release Code</dt>
+                  <dd class="govuk-summary-list__value">{{ associatedRelease.ReleaseCode }}</dd>
+                </div>
+                {% if associatedAcademicYear %}
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">Academic Year</dt>
+                  <dd class="govuk-summary-list__value">{{ associatedAcademicYear.name }}</dd>
+                </div>
+                {% endif %}
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">Release Type</dt>
+                  <dd class="govuk-summary-list__value">{{ associatedRelease.ReleaseType }}</dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">Go-Live Date</dt>
+                  <dd class="govuk-summary-list__value">{{ associatedRelease.GoLiveDate | date }}</dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">Status</dt>
+                  <dd class="govuk-summary-list__value">
+                    <strong class="govuk-tag {% if associatedRelease.Status == 'Deployed Successfully' %}govuk-tag--green{% elif associatedRelease.Status == 'Deployed with Issues' or associatedRelease.Status == 'Postponed' %}govuk-tag--yellow{% elif associatedRelease.Status == 'Cancelled' %}govuk-tag--red{% else %}govuk-tag--blue{% endif %}">
+                      {{ associatedRelease.Status }}
+                    </strong>
+                  </dd>
+                </div>
+              </dl>
+            </div>
+            
+            <div class="tab-section">
+              <h3 class="tab-section-title">Release Actions</h3>
+              <div class="govuk-button-group">
+                <a href="/bcr/bcr/{{ bcr._id }}/change-release" class="govuk-button govuk-button--secondary">Change Release</a>
+                <a href="/releases/view/{{ associatedRelease._id }}" class="govuk-button govuk-button--secondary">View Release Details</a>
+              </div>
+            </div>
+          {% else %}
+            <div class="tab-section">
+              <h3 class="tab-section-title">No Release Assigned</h3>
+              <p class="govuk-body">This BCR has not been scheduled for a specific release yet.</p>
+              <a href="/bcr/business-change-requests/{{ bcr._id }}/assign-release" class="govuk-button">Schedule for Release</a>
+            </div>
+          {% endif %}
+        </div>
+        
+        <!-- Workflow Tab Panel -->
+        <div class="govuk-tabs__panel" id="workflow">
+          <div class="tab-section">
+            <h3 class="tab-section-title">Current Status</h3>
+            <p class="govuk-body">
+              <span class="govuk-heading-s">Phase:</span> 
+              <strong class="govuk-tag">{{ currentPhaseName }}</strong>
+            </p>
+            <p class="govuk-body">
+              <span class="govuk-heading-s">Status:</span> 
+              <strong class="govuk-tag {{ workflowStatusClass }}">{{ workflowStatus }}</strong>
+            </p>
+          </div>
+          
+          <div class="tab-section">
+            <h3 class="tab-section-title">Progress</h3>
+            <div class="workflow-progress">
+              {% if workflowProgress and workflowProgress.length > 0 %}
+                {% for phase in workflowProgress %}
+                  <div class="workflow-step {% if phase.status == 'Completed' %}completed{% elif phase.status == 'In Progress' %}current{% endif %}">
+                    <div class="workflow-step-circle"></div>
+                    <span class="workflow-step-label">{{ phase.name }}</span>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <p class="govuk-body">No workflow information available.</p>
+              {% endif %}
+            </div>
+          </div>
+          
+          {% if slaStatus %}
+          <div class="tab-section">
+            <h3 class="tab-section-title">SLA Status</h3>
+            <dl class="govuk-summary-list">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Response</dt>
+                <dd class="govuk-summary-list__value">
+                  <strong class="govuk-tag {% if slaStatus.responseStatus == 'on-track' %}govuk-tag--green{% elif slaStatus.responseStatus == 'at-risk' %}govuk-tag--yellow{% else %}govuk-tag--red{% endif %}">
+                    {{ slaStatus.responseStatus | title }}
+                  </strong>
+                  <span class="govuk-hint">Target: {{ slaStatus.targetResponseDate | date }}</span>
+                </dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Resolution</dt>
+                <dd class="govuk-summary-list__value">
+                  <strong class="govuk-tag {% if slaStatus.resolutionStatus == 'on-track' %}govuk-tag--green{% elif slaStatus.resolutionStatus == 'at-risk' %}govuk-tag--yellow{% else %}govuk-tag--red{% endif %}">
+                    {{ slaStatus.resolutionStatus | title }}
+                  </strong>
+                  <span class="govuk-hint">Target: {{ slaStatus.targetResolutionDate | date }}</span>
+                </dd>
+              </div>
+            </dl>
+          </div>
+          {% endif %}
+          
+          <div class="tab-section">
+            <h3 class="tab-section-title">Actions</h3>
+            <div class="govuk-button-group">
+              <a href="/bcr/bcr/{{ bcr._id }}/update-status" class="govuk-button">Update Status</a>
+              <a href="/bcr/bcr/{{ bcr._id }}/update-phase" class="govuk-button govuk-button--secondary">Change Phase</a>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Audit History Tab Panel -->
+        <div class="govuk-tabs__panel" id="audit">
+          <div class="tab-section">
+            <h3 class="tab-section-title">Audit Timeline</h3>
+            {% if timeline and timeline.length > 0 %}
+              <table class="govuk-table">
+                <thead class="govuk-table__head">
+                  <tr class="govuk-table__row">
+                    <th scope="col" class="govuk-table__header">Date</th>
+                    <th scope="col" class="govuk-table__header">Event</th>
+                    <th scope="col" class="govuk-table__header">By</th>
+                    <th scope="col" class="govuk-table__header">Details</th>
+                  </tr>
+                </thead>
+                <tbody class="govuk-table__body">
+                  {% for item in timeline %}
+                    <tr class="govuk-table__row">
+                      <td class="govuk-table__cell">{{ item.date | date }}</td>
+                      <td class="govuk-table__cell">{{ item.title }}</td>
+                      <td class="govuk-table__cell">{{ item.by }}</td>
+                      <td class="govuk-table__cell">{{ item.content }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            {% else %}
+              <p class="govuk-body">No audit history available.</p>
+            {% endif %}
+          </div>
+          
+          <div class="tab-section">
+            <h3 class="tab-section-title">Management Actions</h3>
+            <div class="govuk-button-group">
+              <a href="/bcr/bcr/{{ bcr._id }}/update" class="govuk-button govuk-button--secondary">Edit BCR</a>
+              <a href="/bcr/bcr/{{ bcr._id }}/review" class="govuk-button govuk-button--secondary">Review Submission</a>
+              <a href="/bcr/bcr/{{ bcr._id }}/delete" class="govuk-button govuk-button--warning">Delete BCR</a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
