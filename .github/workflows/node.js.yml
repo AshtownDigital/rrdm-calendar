@@ -6,6 +6,8 @@ on:
   pull_request:
     branches: [ main, staging, production ]
 
+# Environment variables are defined within each job that needs them
+
 jobs:
   build:
     name: Build with Node.js 24.x
@@ -24,8 +26,8 @@ jobs:
       run: npm run copy-govuk-assets
     - name: Build application
       run: npm run build --if-present
-    - name: Skip tests temporarily
-      run: echo "Tests are temporarily skipped until test issues are resolved"
+    - name: Run minimal tests
+      run: npm run test:minimal
 
   deploy-staging:
     name: Deploy to Staging
@@ -44,11 +46,15 @@ jobs:
       - name: Copy GOV.UK assets
         run: npm run copy-govuk-assets
       - name: Deploy to Heroku Staging
-        uses: akhileshns/heroku-deploy@v3.12.12
+        uses: akhileshns/heroku-deploy@v3.12.14
+        env:
+          HD_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HD_EMAIL: ${{ secrets.HEROKU_EMAIL }}
         with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: "rrdm-staging"
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          heroku_api_key: ${{ env.HD_API_KEY }}
+          heroku_app_name: "rrdm-stage"
+          heroku_email: ${{ env.HD_EMAIL }}
+          usedocker: true
 
   deploy-production:
     name: Deploy to Production
@@ -67,8 +73,12 @@ jobs:
       - name: Copy GOV.UK assets
         run: npm run copy-govuk-assets
       - name: Deploy to Heroku Production
-        uses: akhileshns/heroku-deploy@v3.12.12
+        uses: akhileshns/heroku-deploy@v3.12.14
+        env:
+          HD_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HD_EMAIL: ${{ secrets.HEROKU_EMAIL }}
         with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_api_key: ${{ env.HD_API_KEY }}
           heroku_app_name: "rrdm-production"
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          heroku_email: ${{ env.HD_EMAIL }}
+          usedocker: true
