@@ -110,3 +110,55 @@ A frontend application for managing reference data using the GOV.UK Frontend Des
 ## License
 
 This project is licensed under the MIT License.
+
+## Deployment & CI/CD Pipeline
+
+### Repository Structure
+
+The project uses a three-branch strategy for development and deployment:
+
+- `main` - Active development branch
+- `staging` - Staging environment for testing
+- `production` - Production deployment branch
+
+### CI/CD Pipeline
+
+The project is configured with GitHub Actions for continuous integration and Heroku Pipelines for deployment:
+
+1. **GitHub Actions Workflow**
+   - Runs on pushes to `main`, `staging`, and `production` branches
+   - Performs automated testing and build validation
+   - See `.github/workflows/node.js.yml` for details
+
+2. **Heroku Pipeline**
+   - `rrdm-stage` app (staging environment)
+   - `rrdm-production` app (production environment)
+
+### Deployment Process
+
+1. **Development**:
+   - Make changes on the `main` branch
+   - Use pull requests to merge changes to `staging`
+
+2. **Staging**:
+   - Changes pushed to `staging` branch are automatically deployed to the staging app
+   - Test thoroughly in the staging environment
+
+3. **Production**:
+   - When ready for production, either:
+     - Create a PR from `staging` to `production`, or
+     - Use the Heroku Dashboard to promote from staging to production
+
+```bash
+# To promote from staging to production via CLI:
+heroku pipelines:promote -r staging
+```
+
+### Environment Variables
+
+Ensure these environment variables are set in your Heroku apps:
+
+- `NODE_ENV`: Set to `test-deployment` for staging and `production` for production
+- `USE_SIMPLE_SERVER`: Set to `true` for simplified server mode during testing, `false` for full server mode
+- `MONGODB_URI`: MongoDB connection string
+- `SESSION_SECRET`: Secret for session cookie signing
