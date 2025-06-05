@@ -28,8 +28,42 @@ const possibleSources = [
   path.join(__dirname, '..', 'node_modules', 'govuk-frontend', 'govuk'),
   path.join(__dirname, '..', 'node_modules', 'govuk-frontend', 'dist', 'govuk'),
   path.join(__dirname, '..', 'node_modules', '@govuk', 'frontend', 'govuk'),
-  path.join(__dirname, '..', 'node_modules', '@govuk-frontend', 'govuk')
+  path.join(__dirname, '..', 'node_modules', '@govuk-frontend', 'govuk'),
+  // New possible locations
+  path.join(__dirname, '..', 'node_modules', 'govuk-frontend'),
+  path.join(__dirname, '..', 'node_modules', 'govuk-frontend', 'dist'),
+  path.join(__dirname, '..', 'node_modules', '@govuk', 'frontend'),
+  path.join(__dirname, '..', 'node_modules', '@govuk-frontend')
 ];
+
+// List files in node_modules to help debug
+const nodeModulesDir = path.join(__dirname, '..', 'node_modules');
+console.log('Checking node_modules directory structure:');
+try {
+  if (fs.existsSync(nodeModulesDir)) {
+    const govukDir = path.join(nodeModulesDir, 'govuk-frontend');
+    if (fs.existsSync(govukDir)) {
+      console.log('govuk-frontend exists, contents:', fs.readdirSync(govukDir));
+      
+      // Check if there's a dist directory
+      const distDir = path.join(govukDir, 'dist');
+      if (fs.existsSync(distDir)) {
+        console.log('dist directory exists, contents:', fs.readdirSync(distDir));
+      }
+    } else {
+      console.log('govuk-frontend directory not found in node_modules');
+      
+      // Check for alternative packages
+      const dirs = fs.readdirSync(nodeModulesDir).filter(dir => 
+        dir.includes('govuk') || dir.includes('@govuk'));
+      console.log('Potential GOV.UK related directories:', dirs);
+    }
+  } else {
+    console.log('node_modules directory not found');
+  }
+} catch (err) {
+  console.log('Error inspecting node_modules:', err.message);
+}
 
 // Find the first existing source path
 let sourceGovukDir = null;
@@ -115,13 +149,66 @@ try {
     fs.mkdirSync(targetGovukDir, { recursive: true });
   }
   
-  // Copy the assets
-  copyRecursive(sourceGovukDir, targetGovukDir);
+  // Check if sourceGovukDir is a directory or if it's the parent directory
+  const stats = fs.statSync(sourceGovukDir);
+  if (stats.isDirectory()) {
+    // If it's just the 'govuk-frontend' directory without 'govuk' subdirectory
+    if (path.basename(sourceGovukDir) === 'govuk-frontend' || 
+        path.basename(sourceGovukDir) === 'frontend' || 
+        path.basename(path.dirname(sourceGovukDir)) === '@govuk') {
+      
+      console.log('Found GOV.UK Frontend directory without expected structure');
+      console.log('Copying entire directory contents');
+      
+      // List the contents to see what we're working with
+      const contents = fs.readdirSync(sourceGovukDir);
+      console.log(`Directory contents: ${contents.join(', ')}`);
+      
+      // Instead of looking for 'govuk' subdirectory, copy all CSS and assets
+      contents.forEach(item => {
+        const sourcePath = path.join(sourceGovukDir, item);
+        const stats = fs.statSync(sourcePath);
+        
+        if (stats.isDirectory()) {
+          copyRecursive(sourcePath, path.join(publicGovukDir, item));
+        } else if (item.endsWith('.css') || item.endsWith('.js')) {
+          // Copy CSS and JS files directly
+          fs.copyFileSync(sourcePath, path.join(publicGovukDir, item));
+          console.log(`Copied ${item} directly`);
+        }
+      });
+      
+      // Create a 'govuk' directory anyway for the template paths
+      const linkDir = path.join(publicGovukDir, 'govuk');
+      if (!fs.existsSync(linkDir)) {
+        fs.mkdirSync(linkDir, { recursive: true });
+      }
+      
+      // Create a special all.css in the govuk directory for template paths
+      const allCssPath = path.join(linkDir, 'all.css');
+      fs.writeFileSync(allCssPath, '/* Compatibility CSS file */\n');
+      console.log(`Created compatibility file at ${allCssPath}`);
+    } else {
+      // Normal case - just copy the assets
+      copyRecursive(sourceGovukDir, targetGovukDir);
+    }
+  } else {
+    console.log(`Source is not a directory: ${sourceGovukDir}`);
+  }
   
-  // Check for assets directory
-  const sourceAssetsDir = path.join(path.dirname(sourceGovukDir), 'assets');
-  if (fs.existsSync(sourceAssetsDir)) {
-    copyRecursive(sourceAssetsDir, publicAssetsDir);
+  // Check for assets directory in multiple possible locations
+  const possibleAssetDirs = [
+    path.join(path.dirname(sourceGovukDir), 'assets'),
+    path.join(sourceGovukDir, 'assets'),
+    path.join(path.dirname(path.dirname(sourceGovukDir)), 'assets')
+  ];
+  
+  for (const assetDir of possibleAssetDirs) {
+    if (fs.existsSync(assetDir)) {
+      console.log(`Found assets directory at: ${assetDir}`);
+      copyRecursive(assetDir, publicAssetsDir);
+      break;
+    }
   }
   
   // Create a CSS file that imports the GOV.UK Frontend CSS
