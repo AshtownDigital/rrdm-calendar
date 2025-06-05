@@ -122,6 +122,8 @@ describe('Redis Manager Integration Tests', () => {
       
       // Verify keys were deleted
       const remainingKeys = await redisClient.keys('rrdm:test:*');
+      
+      // We should only have the 'other-key' remaining
       expect(remainingKeys).toHaveLength(1);
       expect(remainingKeys[0]).toContain('other-key');
     });

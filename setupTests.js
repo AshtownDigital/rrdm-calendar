@@ -2,17 +2,31 @@
 
 // Mock Prisma client
 jest.mock('@prisma/client', () => {
+  // Mock PrismaClientKnownRequestError
+  class MockPrismaClientKnownRequestError extends Error {
+    constructor(message, meta) {
+      super(message);
+      this.meta = meta;
+      this.code = 'P2002'; // Example error code
+      this.name = 'PrismaClientKnownRequestError';
+    }
+  }
+
+  // Mock Prisma client
   const mockPrisma = {
     Prisma: {
-      PrismaClientKnownRequestError: class MockPrismaClientKnownRequestError extends Error {
-        constructor(message, meta) {
+      PrismaClientKnownRequestError: MockPrismaClientKnownRequestError,
+      // Add other Prisma types that might be needed
+      PrismaClientValidationError: class MockPrismaClientValidationError extends Error {
+        constructor(message) {
           super(message);
-          this.meta = meta;
-          this.code = 'P2002'; // Example error code
+          this.name = 'PrismaClientValidationError';
         }
-      }
+      },
+      // Add other error types as needed
     }
   };
+  
   return mockPrisma;
 });
 
