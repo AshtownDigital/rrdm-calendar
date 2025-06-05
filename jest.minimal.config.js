@@ -49,30 +49,35 @@ module.exports = {
 
   // Mock modules
   moduleNameMapper: {
-    "@prisma/client": "<rootDir>/mocks/prisma-with-errors.js",
-    "@prisma/client/runtime/library": "<rootDir>/mocks/prisma-with-errors.js",
-    "ioredis": "<rootDir>/mocks/ioredis.js",
-    "mongoose": "<rootDir>/mocks/mongoose.js",
-    "sequelize": "<rootDir>/mocks/sequelize.js",
-    "express": "<rootDir>/mocks/express.js",
-    "express-session": "<rootDir>/mocks/express-session.js",
-    "passport": "<rootDir>/mocks/passport.js",
-    "http-errors": "<rootDir>/mocks/http-errors.js",
-    "connect-mongo": "<rootDir>/mocks/connect-mongo.js",
-    "../../config/prisma": "<rootDir>/mocks/prisma-config.js",
-    "../config/prisma": "<rootDir>/mocks/prisma-config.js",
-    "./config/prisma": "<rootDir>/mocks/prisma-config.js",
-    "../../config/database": "<rootDir>/mocks/models-user-utils.js",
-    "../config/database": "<rootDir>/mocks/models-user-utils.js",
-    "./config/database": "<rootDir>/mocks/config-database.js",
-    "<rootDir>/utils/user-utils.js": "<rootDir>/utils/user-utils.js",
-    "../config/mongoose": "<rootDir>/mocks/mongoose-config.js",
-    "../../config/mongoose": "<rootDir>/mocks/mongoose-config.js",
-    "./config/mongoose": "<rootDir>/mocks/mongoose-config.js",
-    "./config/database.mongo": "<rootDir>/mocks/database.mongo.js",
-    "../config/database.mongo": "<rootDir>/mocks/database.mongo.js",
-    "../../config/database.mongo": "<rootDir>/mocks/database.mongo.js",
-    "@quixo3/prisma-session-store": "<rootDir>/mocks/prisma-session-store.js"
+    // Handle Prisma client imports
+    '^@prisma/client(/.*)?$': '<rootDir>/mocks/prisma-with-errors.js',
+    '^@prisma/client/runtime/library$': '<rootDir>/mocks/prisma-with-errors.js',
+    '^@prisma/client/runtime$': '<rootDir>/mocks/prisma-with-errors.js',
+    '^@prisma/client/runtime/index$': '<rootDir>/mocks/prisma-with-errors.js',
+    '^@prisma/client/index$': '<rootDir>/mocks/prisma-with-errors.js',
+    '^@prisma/client/index.js$': '<rootDir>/mocks/prisma-with-errors.js',
+    '^@prisma/client$': '<rootDir>/mocks/prisma-with-errors.js',
+    
+    // Handle ioredis imports
+    '^ioredis$': '<rootDir>/mocks/ioredis.js',
+    '^ioredis/(.*)$': '<rootDir>/mocks/ioredis.js',
+    
+    // Other mocks
+    '^mongoose$': '<rootDir>/mocks/mongoose.js',
+    '^sequelize$': '<rootDir>/mocks/sequelize.js',
+    '^express$': '<rootDir>/mocks/express.js',
+    '^express-session$': '<rootDir>/mocks/express-session.js',
+    '^passport$': '<rootDir>/mocks/passport.js',
+    '^http-errors$': '<rootDir>/mocks/http-errors.js',
+    '^connect-mongo$': '<rootDir>/mocks/connect-mongo.js',
+    '^@quixo3/prisma-session-store$': '<rootDir>/mocks/prisma-session-store.js',
+    
+    // Config file mocks
+    '^.*/config/prisma(.*)$': '<rootDir>/mocks/prisma-config.js',
+    '^.*/config/database(.*)$': '<rootDir>/mocks/config-database.js',
+    '^.*/config/mongoose(.*)$': '<rootDir>/mocks/mongoose-config.js',
+    '^.*/config/database\.mongo(.*)$': '<rootDir>/mocks/database.mongo.js',
+    '^.*/user-utils\.js$': '<rootDir>/utils/user-utils.js'
   },
 
   // Disable automock
