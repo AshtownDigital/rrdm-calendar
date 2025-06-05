@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [24.x]
 
     steps:
     - uses: actions/checkout@v3
@@ -21,7 +21,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm ci
+    - run: npm install
     - run: npm run copy-govuk-assets
     - run: npm run build --if-present
     - run: npm test --if-present
@@ -32,6 +32,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 24.x
+      - run: npm install
+      - run: npm run copy-govuk-assets
       - name: Deploy to Heroku Staging
         uses: akhileshns/heroku-deploy@v3.12.14
         with:
@@ -45,6 +51,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 24.x
+      - run: npm install
+      - run: npm run copy-govuk-assets
       - name: Deploy to Heroku Production
         uses: akhileshns/heroku-deploy@v3.12.14
         with:
