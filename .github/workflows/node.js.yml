@@ -12,14 +12,16 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Use Node.js 24.x
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
-        node-version: 24.x
+        node-version: '24.1.0'
         cache: 'npm'
-    - name: Install dependencies
-      run: npm install
+    - name: Clean install dependencies
+      run: |
+        rm -rf node_modules package-lock.json
+        npm install
     - name: Copy GOV.UK assets
       run: npm run copy-govuk-assets
     - name: Build application
