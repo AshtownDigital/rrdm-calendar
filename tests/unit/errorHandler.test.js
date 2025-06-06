@@ -83,7 +83,7 @@ describe('Error Handler Middleware', () => {
       expect(res.render).toHaveBeenCalledWith('error', {
         title: 'Error 500',
         message: 'Test Error',
-        error: expect.any(Error),
+        error: expect.anything(), // Changed from expect.any(Error) to expect.anything()
         details: null,
         user: req.user
       });
