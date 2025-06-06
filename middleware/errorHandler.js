@@ -4,8 +4,8 @@
  * This middleware provides consistent error handling across the application.
  * It handles different types of errors and formats responses appropriately.
  */
-const { Prisma } = require('@prisma/client');
-const PrismaClientKnownRequestError = Prisma.PrismaClientKnownRequestError;
+// Logger for consistent logging
+const logger = require('../services/logger').logger;
 
 /**
  * Custom error class for API errors
@@ -59,7 +59,10 @@ const apiErrorHandler = (err, req, res, next) => {
   }
 
   // Log the error
-  console.error(`API Error: ${err.message}`, err.stack);
+  logger.error(`API Error: ${err.message}`, {
+    stack: err.stack,
+    component: 'error-handler'
+  });
   
   // Send the response
   return res.status(statusCode).json(errorResponse);
@@ -77,21 +80,24 @@ const webErrorHandler = (err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   
   // Log the error
-  console.error(`Web Error: ${err.message}`, err.stack);
+  logger.error(`Web Error: ${err.message}`, {
+    stack: err.stack,
+    component: 'error-handler'
+  });
   
   // Format error message based on type
   let errorMessage = err.message || 'An unexpected error occurred';
   let errorDetails = null;
   
   // Handle Prisma errors
-  if (err instanceof PrismaClientKnownRequestError) {
+  if (err?.constructor?.name === 'PrismaClientKnownRequestError' || err?.name === 'PrismaClientKnownRequestError') {
     switch (err.code) {
       case 'P2002':
         errorMessage = 'A record with this information already exists';
         break;
       case 'P2025':
         errorMessage = 'Record not found';
-        statusCode = 404;
+        err.statusCode = 404;
         break;
       default:
         errorMessage = 'Database error';

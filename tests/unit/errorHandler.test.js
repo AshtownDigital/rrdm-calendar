@@ -83,8 +83,36 @@ describe('Error Handler Middleware', () => {
       expect(res.render).toHaveBeenCalledWith('error', {
         title: 'Error 500',
         message: 'Test Error',
-        error: expect.anything(), // Changed from expect.any(Error) to expect.anything()
+        error: expect.anything(),
         details: null,
+        user: req.user
+      });
+    });
+
+    it('should handle Prisma errors for web routes', () => {
+      req.path = '/non-api';
+      req.user = { name: 'Test User' };
+      
+      // Create a mock Prisma error
+      const error = {
+        name: 'PrismaClientKnownRequestError',
+        code: 'P2002',
+        message: 'Unique constraint failed',
+        meta: { target: ['email'] }
+      };
+      
+      // Make instanceof work for our mock
+      Object.setPrototypeOf(error, Error.prototype);
+      error.constructor = { name: 'PrismaClientKnownRequestError' };
+      
+      webErrorHandler(error, req, res, next);
+      
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.render).toHaveBeenCalledWith('error', {
+        title: 'Error 500',
+        message: 'A record with this information already exists',
+        error: expect.anything(),
+        details: { target: ['email'] },
         user: req.user
       });
     });
