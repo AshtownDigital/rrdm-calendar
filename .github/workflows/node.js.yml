@@ -1,16 +1,14 @@
-name: Node.js CI/CD
+name: Node.js CI
 
 on:
   push:
-    branches: [ main, staging, production ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, staging, production ]
-
-# Environment variables are defined within each job that needs them
+    branches: [ main ]
 
 jobs:
   build:
-    name: Build with Node.js 24.x
+    name: Build and Test
     runs-on: ubuntu-latest
     
     steps:
@@ -37,57 +35,3 @@ jobs:
       run: |
         echo "Running tests with NODE_ENV=test"
         NODE_ENV=test npm run test:minimal -- --verbose
-
-  deploy-staging:
-    name: Deploy to Staging
-    needs: build
-    if: github.ref == 'refs/heads/staging'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js 24.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: 24.x
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm install
-      - name: Copy GOV.UK assets
-        run: npm run copy-govuk-assets
-      - name: Deploy to Heroku Staging
-        uses: akhileshns/heroku-deploy@v3.12.14
-        env:
-          HD_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          HD_EMAIL: ${{ secrets.HEROKU_EMAIL }}
-        with:
-          heroku_api_key: ${{ env.HD_API_KEY }}
-          heroku_app_name: "rrdm-stage"
-          heroku_email: ${{ env.HD_EMAIL }}
-          usedocker: true
-
-  deploy-production:
-    name: Deploy to Production
-    needs: build
-    if: github.ref == 'refs/heads/production'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js 24.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: 24.x
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm install
-      - name: Copy GOV.UK assets
-        run: npm run copy-govuk-assets
-      - name: Deploy to Heroku Production
-        uses: akhileshns/heroku-deploy@v3.12.14
-        env:
-          HD_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          HD_EMAIL: ${{ secrets.HEROKU_EMAIL }}
-        with:
-          heroku_api_key: ${{ env.HD_API_KEY }}
-          heroku_app_name: "rrdm-production"
-          heroku_email: ${{ env.HD_EMAIL }}
-          usedocker: true
