@@ -14,11 +14,16 @@ try {
   const loggerModule = require('../services/logger');
   logger = loggerModule.logger;
 } catch (error) {
+  // eslint-disable-next-line no-console
   console.warn('Warning: Logger not available in Redis manager, using console fallback');
   logger = {
+    // eslint-disable-next-line no-console
     info: console.log,
+    // eslint-disable-next-line no-console
     warn: console.warn,
+    // eslint-disable-next-line no-console
     error: console.error,
+    // eslint-disable-next-line no-console
     debug: console.debug
   };
 }
@@ -48,6 +53,8 @@ class RedisMock extends EventEmitter {
     
     // Start TTL cleanup interval
     this.ttlInterval = setInterval(() => this.processTtlExpiry(), 1000);
+    // Ensure interval is unref'd to not keep process alive
+    this.ttlInterval.unref();
   }
   
   /**
