@@ -48,7 +48,7 @@ A frontend application for managing reference data using the GOV.UK Frontend Des
 - ORM: Prisma
 - Server: Express.js
 - Styling: GOV.UK Design System
-- Deployment: Vercel
+- Deployment: Heroku
 
 ## Setup
 

@@ -15,8 +15,6 @@
     "start:random": "killall node || true && sleep 2 && MONGODB_URI=mongodb://localhost:27017/rrdm cross-env NODE_ENV=development node server-start.js",
     "staging": "cross-env NODE_ENV=staging node server-start.js",
     "prod": "cross-env NODE_ENV=production node server-start.js",
-    "heroku-postbuild": "npm install --production=false && npm run copy-govuk-assets",
-    "postinstall": "node -e \"try { require('./scripts/copy-govuk-assets.js') } catch(e) { console.log('Asset copy failed but continuing:', e.message) }\" || true",
     "copy-govuk-assets": "node ./scripts/copy-govuk-assets.js || echo 'Asset copy script failed but build will continue'",
     "db:setup": "node ./scripts/setup-local-db.js",
     "db:reset": "node ./scripts/reset-local-db.js",
@@ -32,7 +30,6 @@
     "test:watch": "jest --watch",
     "test:e2e": "cucumber-js",
     "test:e2e:report": "node ./tests/e2e/support/generate-report.js",
-    "test:deploy": "node ./scripts/test-and-deploy.js",
     "lint": "eslint .",
     "format": "prettier --write .",
     "standardize": "node ./scripts/standardize-templates.js"
