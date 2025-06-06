@@ -14,13 +14,17 @@ jobs:
       NODE_ENV: test
       NODE_OPTIONS: --max-old-space-size=4096
     
+    strategy:
+      matrix:
+        node-version: ['24.1.0']
+    
     steps:
     - uses: actions/checkout@v4
     
-    - name: Setup Node.js 24.1.0
+    - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '24.1.0'
+        node-version: ${{ matrix.node-version }}
     
     - name: Install npm 11.3.0
       run: npm install -g npm@11.3.0
