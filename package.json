@@ -2,6 +2,7 @@
   "name": "rrdm",
   "version": "1.0.0",
   "description": "Reference Data Management System",
+  
   "main": "server-start.js",
   "scripts": {
     "start": "node server-start.js",
@@ -96,7 +97,7 @@
     "webpack-cli": "^6.0.1"
   },
   "engines": {
-    "node": "24.1.0",
-    "npm": "11.3.0"
+    "node": "18.20.8",
+    "npm": "10.8.2"
   }
 }
