@@ -1,59 +1,40 @@
-name: Node.js CI/CD
+name: Node.js CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
 
 jobs:
-  build-and-test:
-    name: Build and Test
+  build:
     runs-on: ubuntu-latest
-    env:
-      NODE_ENV: test
-      NODE_OPTIONS: --max-old-space-size=4096
-    
+
     strategy:
       matrix:
-        node-version: ['24.1.0']
-    
+        node-version: [24.x]
+
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v3
     
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
+        cache: 'npm'
     
-    - name: Install npm 11.3.0
-      run: npm install -g npm@11.3.0
-    
-    - name: Verify versions
-      run: |
-        echo "Node.js version: $(node -v)"
-        echo "npm version: $(npm -v)"
-    
-    - name: Cache dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-npm-${{ hashFiles('**/package.json') }}
-        restore-keys: |
-          ${{ runner.os }}-npm-
-    
-    - name: Clean install dependencies
-      run: |
-        rm -rf node_modules package-lock.json
-        npm install
-    
+    - name: Install dependencies
+      run: npm ci
+      
     - name: Copy GOV.UK assets
       run: npm run copy-govuk-assets
-    
+      
     - name: Run tests
-      run: |
-        npm run test:minimal -- --ci --colors --verbose --detectOpenHandles --forceExit --maxWorkers=2
-    
+      run: npm run test:minimal -- --ci --colors --verbose --detectOpenHandles --forceExit --maxWorkers=2
+      env:
+        NODE_ENV: test
+        NODE_OPTIONS: --max-old-space-size=4096
+        
     - name: Run linting
-      run: npm run lint
       continue-on-error: true
+      run: npm run lint
