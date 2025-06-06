@@ -13,11 +13,16 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
-    - name: Use Node.js 24.x
+    - name: Use Node.js 24.1.0
       uses: actions/setup-node@v4
       with:
         node-version: '24.1.0'
-        cache: 'npm'
+    - name: Install npm 11.3.0
+      run: npm install -g npm@11.3.0
+    - name: Verify versions
+      run: |
+        node -v
+        npm -v
     - name: Clean install dependencies
       run: |
         rm -rf node_modules package-lock.json
