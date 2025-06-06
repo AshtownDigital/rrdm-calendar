@@ -52,7 +52,7 @@ jobs:
     
     - name: Run tests
       run: |
-        npm run test:minimal -- --verbose --detectOpenHandles --forceExit
+        npm run test:minimal -- --ci --colors --verbose --detectOpenHandles --forceExit --maxWorkers=2
     
     - name: Run linting
       run: npm run lint

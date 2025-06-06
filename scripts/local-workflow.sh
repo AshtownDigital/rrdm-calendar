@@ -21,7 +21,7 @@ npm run copy-govuk-assets
 
 # Run tests
 echo "Running tests..."
-npm run test:minimal -- --verbose --detectOpenHandles --forceExit
+npm run test:minimal -- --ci --colors --verbose --detectOpenHandles --forceExit --maxWorkers=2
 
 # Run linting
 echo "Running linting..."
