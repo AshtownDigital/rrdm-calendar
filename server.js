@@ -4,12 +4,28 @@ console.log('<<<<< Current NODE_ENV is:', process.env.NODE_ENV, '>>>>>');/**
  */
 const express = require('express');
 const app = express();
+
+// VERY EARLY REQUEST LOGGER - Placed immediately after app instantiation
+app.use((req, res, next) => {
+  console.log(`***** INCOMING REQUEST: ${req.method} ${req.originalUrl} [${new Date().toISOString()}] *****`);
+  next();
+});
 const path = require('path');
 const nunjucks = require('nunjucks');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const { connect, mongoose } = require('./config/database.mongo');
+const { setupMockMongoose } = require('./config/mockMongoose');
+
+// EARLY MOCK SETUP FOR DEVELOPMENT/TEST ENVIRONMENTS
+if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+  console.log('DEVELOPMENT/TEST MODE: Initializing Mongoose mocks EARLY...');
+  setupMockMongoose(); // This patches mongoose.model and sets up mock connection
+  console.log('DEVELOPMENT/TEST MODE: Mongoose mocks initialized EARLY.');
+}
+
 const flash = require('connect-flash');
+const compression = require('compression');
 
 // === Core Module Routes ===
 
@@ -50,23 +66,33 @@ const debugRoutes = require('./routes/debugRoutes'); // Debug routes for testing
 // Load environment variables
 require('dotenv').config();
 
-// Connect to MongoDB with automatic reconnection
+// Connect to MongoDB with automatic reconnection - BYPASSED FOR TESTING
 const connectWithRetry = async () => {
-  try {
-    await connect();
-    console.log('MongoDB connected successfully');
-  } catch (error) {
-    console.error('Failed to connect to MongoDB:', error);
-    console.log('Retrying connection in 5 seconds...');
-    setTimeout(connectWithRetry, 5000);
+  if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+    console.log('DEVELOPMENT/TEST MODE: Mock MongoDB connection should already be established by early setup.');
+    // setupMockMongoose() was called earlier, so mongoose.connection is already mocked.
+    // We can verify readyState if needed: console.log('Mongoose connection readyState:', mongoose.connection.readyState);
+    return true;
+  } else {
+    // Real connection logic for production would go here
+    console.log('PRODUCTION MODE: Connecting to real MongoDB');
+    try {
+      await connect();
+      console.log('Connected to MongoDB successfully');
+      return true;
+    } catch (error) {
+      console.error('MongoDB connection failed:', error);
+      return false;
+    }
   }
 };
 
 // Initial connection attempt
 connectWithRetry();
 
-// Configure session middleware with MongoDB store
-const MongoStore = require('connect-mongo');
+// Configure session middleware with memory store for testing purposes
+// const MongoStore = require('connect-mongo');
+// Already required at line 9: const session = require('express-session');
 
 // Initialize cookie-parser middleware (required for CSRF)
 app.use(cookieParser(process.env.SESSION_SECRET || 'your-secret-key'));
@@ -76,39 +102,15 @@ app.use(express.urlencoded({ extended: false }));
 // Middleware to parse JSON bodies (as sent by API clients)
 app.use(express.json());
 
-// Determine the appropriate MongoDB URI based on environment
-let mongoUrl = process.env.MONGODB_URI;
-
-// For Heroku, ensure we're using the correct MongoDB URI
-if (process.env.NODE_ENV === 'production' && !mongoUrl) {
-  console.error('ERROR: MONGODB_URI environment variable is not set in production!');
-  // Fallback to a dummy URI that will fail gracefully
-  mongoUrl = 'mongodb://atlas-placeholder-uri/rrdm';
-} else if (!mongoUrl) {
-  // For local development, use localhost
-  mongoUrl = 'mongodb://localhost:27017/rrdm';
-}
-
-// Mask sensitive parts of the connection string for logging
-const maskedUrl = mongoUrl.replace(/mongodb\+srv:\/\/([^:]+):[^@]+@/, 'mongodb+srv://$1:***@');
-console.log(`Setting up session store with MongoDB at ${maskedUrl}`);
+// TESTING MODE: Using in-memory session store instead of MongoDB
+console.log('TESTING MODE: Using in-memory session store');
 
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: mongoUrl,
-    ttl: 24 * 60 * 60, // Session TTL (1 day)
-    autoRemove: 'native', // Use MongoDB's TTL index
-    touchAfter: 24 * 3600, // Only update session every 24 hours unless data changes
-    crypto: {
-      secret: process.env.SESSION_SECRET || 'your-secret-key'
-    },
-    mongoOptions: {
-      serverSelectionTimeoutMS: 10000 // Increased timeout for staging/production environments
-    }
-  }),
+  // Using in-memory store for testing
+  // Normally we'd use MongoStore.create({...})
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
@@ -215,28 +217,84 @@ env.addFilter('ukDateWithDay', function(date) {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from public directory
-app.use('/assets', express.static(path.join(__dirname, 'node_modules/govuk-frontend/govuk/assets')));
-app.use('/assets/js', express.static(path.join(__dirname, 'node_modules/govuk-frontend/govuk/all.js')));
-app.use('/assets/css', express.static(path.join(__dirname, 'public/stylesheets')));
-app.use('/assets/images', express.static(path.join(__dirname, 'public/images')));
+// Apply compression middleware
+app.use(compression());
 
-// Ensure direct access to stylesheets works (for compatibility)
-app.use('/stylesheets', express.static(path.join(__dirname, 'public/stylesheets')));
-app.use('/assets/images', express.static(path.join(__dirname, 'public/images')));
+// Root URL handler - serve the home page from modules/home/home.njk
+app.get('/', (req, res) => {
+  res.render('modules/home/home', {
+    user: req.session.user || null,
+    title: 'Home | Register Team Internal Services'
+  });
+});
+
+// URL pattern validator to prevent malformed URLs
+const validateUrlPattern = (pattern) => {
+  if (!pattern || typeof pattern !== 'string') {
+    throw new TypeError('URL pattern must be a non-empty string');
+  }
+  // Check for malformed patterns that might cause path-to-regexp errors
+  if (pattern.includes('://') || pattern.includes('..')) {
+    throw new TypeError(`Invalid URL pattern: ${pattern}`);
+  }
+  return pattern.replace(/\/+/g, '/'); // Normalize multiple slashes
+};
+
+// Static file serving middleware with proper error handling
+const serveStaticWithFallback = (urlPath, filePath) => {
+  const validatedPath = validateUrlPattern(urlPath);
+  return (req, res, next) => {
+    // Validate the request URL
+    if (req.url.includes('://') || req.url.includes('..')) {
+      return next(new TypeError('Invalid request URL'));
+    }
+
+    const fullPath = path.join(__dirname, filePath);
+    res.sendFile(fullPath, (err) => {
+      if (err && err.code === 'ENOENT') {
+        // File not found, continue to next middleware
+        next();
+      } else if (err) {
+        // Other errors, send to error handler
+        next(err);
+      }
+    });
+  };
+};
+
+// GOV.UK Frontend assets with validated paths
+app.use('/assets', express.static(path.join(__dirname, 'node_modules/govuk-frontend/govuk/assets'), {
+  fallthrough: true, // Continue to next middleware if file not found
+  index: false // Disable directory index
+}));
+
+app.use('/assets/js', serveStaticWithFallback('/assets/js', 'node_modules/govuk-frontend/govuk/all.js'));
+
+// Application assets with proper path resolution and validation
+app.use('/assets/css', express.static(path.join(__dirname, 'public/stylesheets'), {
+  fallthrough: true,
+  index: false
+}));
+
+app.use('/stylesheets', express.static(path.join(__dirname, 'public/stylesheets'), {
+  fallthrough: true,
+  index: false
+})); // Legacy support
+
+app.use('/assets/images', express.static(path.join(__dirname, 'public/images'), {
+  fallthrough: true,
+  index: false
+}));
+app.use('/scripts', express.static(path.join(__dirname, 'public/scripts')));
 
 // Initialize GOV.UK Frontend
 app.use('/govuk-frontend', express.static(path.join(__dirname, 'node_modules/govuk-frontend')));
 
-// Add missing static routes for scripts and manifest
-app.use('/scripts', express.static(path.join(__dirname, 'public/scripts')));
-app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
-app.use('/assets/images', express.static(path.join(__dirname, 'public/images')));
-// Serve files directly from the public directory
+// Serve manifest.json with proper error handling
+app.use('/assets/manifest.json', serveStaticWithFallback('/assets/manifest.json', 'public/assets/manifest.json'));
+
+// Serve files from public directory as a fallback
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/assets/manifest.json', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/assets/manifest.json'));
-});
 
 // Add request timestamp for debugging
 app.use((req, res, next) => {
@@ -278,83 +336,152 @@ app.use((req, res, next) => {
 // Add debug wrapper for routers to identify undefined routes
 // Super detailed router debugging
 const wrapRouter = (name, router) => {
-  console.log(`Registering ${name} router`);
-  // Store original methods
-  const origUse = router.use;
-  const origGet = router.get;
-  const origPost = router.post;
-  const origPut = router.put;
-  const origDelete = router.delete;
+  // Store the original methods to enhance them with logging
+  const originalUse = router.use;
+  const originalGet = router.get;
+  const originalPost = router.post;
+  const originalPut = router.put;
+  const originalDelete = router.delete;
   
+  // Create a helper function to validate route parameters
+  const validatePath = (path) => {
+    if (typeof path !== 'string') {
+      console.warn(`[${name}] Warning: Non-string path argument:`, path);
+      return path;
+    }
+
+    // Check for malformed route parameters
+    const paramRegex = /:([^/]+)/g;
+    const matches = path.match(paramRegex);
+    
+    if (matches) {
+      matches.forEach(param => {
+        const paramName = param.substring(1);
+        if (!paramName || paramName.includes('.') || paramName.includes('-')) {
+          throw new Error(`Invalid route parameter '${param}' in path '${path}'. Parameters must be valid JavaScript identifiers.`);
+        }
+      });
+    }
+
+    return path;
+  };
+
   // Create a helper function to log handler details
   const logHandlers = (method, path, handlers) => {
-    console.log(`[${name}] ${method} route for path: '${path}' with ${handlers.length} handlers`);
-    
-    for (let i = 0; i < handlers.length; i++) {
-      const handler = handlers[i];
-      if (handler === undefined) {
-        console.error(`[${name}] ${method} UNDEFINED HANDLER at position ${i} for path: '${path}'`);
-      } else {
-        const handlerName = handler.name || 'anonymous';
-        console.log(`[${name}] ${method} handler at position ${i} for path: '${path}': ${handlerName}`);
-      }
+    const validatedPath = validatePath(path);
+    console.log(`[${name}] ${method.toUpperCase()} ${validatedPath}`);
+    if (Array.isArray(handlers)) {
+      handlers.forEach((handler, index) => {
+        console.log(`  Handler ${index + 1}: ${handler.name || '<anonymous>'}`);
+        if (handler.name === 'csrfProtection') {
+          console.log('    - CSRF Protection enabled');
+        }
+      });
     }
   };
-  
-  // Override router methods to add logging
+
+  // Replace the HTTP methods with enhanced versions
   router.use = function(path, ...handlers) {
-    if (typeof path !== 'string') {
-      // If path is a middleware function
-      handlers.unshift(path);
-      path = '*';
-    }
-    logHandlers('USE', path, handlers);
-    return origUse.apply(this, [path, ...handlers]);
+    logHandlers('use', path, handlers);
+    return originalUse.call(this, path, ...handlers);
   };
-  
+
   router.get = function(path, ...handlers) {
-    logHandlers('GET', path, handlers);
-    return origGet.apply(this, [path, ...handlers]);
+    logHandlers('get', path, handlers);
+    return originalGet.call(this, path, ...handlers);
   };
-  
+
   router.post = function(path, ...handlers) {
-    logHandlers('POST', path, handlers);
-    return origPost.apply(this, [path, ...handlers]);
+    logHandlers('post', path, handlers);
+    return originalPost.call(this, path, ...handlers);
   };
-  
+
   router.put = function(path, ...handlers) {
-    logHandlers('PUT', path, handlers);
-    return origPut.apply(this, [path, ...handlers]);
+    logHandlers('put', path, handlers);
+    return originalPut.call(this, path, ...handlers);
   };
-  
+
   router.delete = function(path, ...handlers) {
-    logHandlers('DELETE', path, handlers);
-    return origDelete.apply(this, [path, ...handlers]);
+    logHandlers('delete', path, handlers);
+    return originalDelete.call(this, path, ...handlers);
   };
-  
+
   return router;
 };
 
-// Use the home router for the root path
-app.use('/', wrapRouter('home', homeRouter));
+// Special route handler for release-management to avoid routing conflicts
+app.get('/release-management', async (req, res, next) => {
+  console.log('Direct route handler for /release-management triggered in server.js');
+  const viewRouteHandler = require('./routes/viewRoutes');
+  
+  // Find the release management route handler within viewRoutes router
+  let releaseManagementHandler = null;
+  if (viewRouteHandler.stack) {
+    for (const layer of viewRouteHandler.stack) {
+      if (layer.route && layer.route.path === '/release-management' && layer.route.methods.get) {
+        // Assuming the GET handler is the first one in the stack for this path
+        const getHandler = layer.route.stack.find(s => s.method === 'get');
+        if (getHandler) {
+          releaseManagementHandler = getHandler.handle;
+          break;
+        }
+      }
+    }
+  }
+  
+  if (releaseManagementHandler) {
+    console.log('Found and delegating to /release-management handler in viewRoutes.js');
+    return releaseManagementHandler(req, res, next);
+  } else {
+    console.error('Could not find /release-management GET handler in viewRoutes.js. Falling back.');
+    next(); // Pass to next general handler if specific one not found
+  }
+});
 
-// Use the view router for other frontend pages
-app.use('/views', wrapRouter('view', viewRoutes));
+// Special route handler for release-diary to avoid routing/redirection issues
+app.get('/release-diary', async (req, res, next) => {
+  console.log('Direct route handler for /release-diary triggered in server.js');
+  const viewRouteHandler = require('./routes/viewRoutes');
+  const releaseDiaryController = require('./controllers/releaseDiaryController');
+  
+  // Try to find the release diary route handler in viewRoutes first
+  let releaseDiaryHandler = null;
+  if (viewRouteHandler.stack) {
+    for (const layer of viewRouteHandler.stack) {
+      if (layer.route && layer.route.path === '/release-diary' && layer.route.methods.get) {
+        const getHandler = layer.route.stack.find(s => s.method === 'get');
+        if (getHandler) {
+          releaseDiaryHandler = getHandler.handle;
+          break;
+        }
+      }
+    }
+  }
+  
+  if (releaseDiaryHandler) {
+    console.log('Found and delegating to /release-diary handler in viewRoutes.js');
+    return releaseDiaryHandler(req, res, next);
+  } else {
+    console.log('Could not find /release-diary handler in viewRoutes. Using controller directly.');
+    // Use the controller directly as a fallback
+    return releaseDiaryController.renderReleaseDiaryPage(req, res, next);
+  }
+});
+
+// Register API routes first
+// Academic Year API routes
+app.use('/api/v1/academic-years', wrapRouter('academicYearApi', academicYearRouter));
+app.use('/api/v1/release-management', wrapRouter('releaseApi', releaseRoutes));
 
 // Debug routes for testing calendar (no authentication required)
 app.use('/debug', debugRoutes);
 
-// Academic Year API routes
-app.use('/api/v1/academic-years', wrapRouter('academicYearApi', academicYearRouter));
-app.use('/api/v1/releases', wrapRouter('releaseApi', releaseRoutes));
-
+// Register module-specific routes with prefixes
 // BCR Module - preserves all BCR functionality including workflows, urgency levels, and impact areas
 app.use('/bcr', wrapRouter('bcr', bcrRouter));
 
 // Reference Data Module
 app.use('/reference-data', wrapRouter('reference-data', refDataRouter));
-// Legacy path for backward compatibility
-app.use('/ref-data', wrapRouter('ref-data', refDataRouter));
 
 // Dashboard Module
 app.use('/dashboard', wrapRouter('dashboard', dashboardRouter));
@@ -365,6 +492,13 @@ app.use('/access', wrapRouter('access', accessRouter));
 // === Supporting Modules ===
 app.use('/funding', wrapRouter('funding', fundingRouter));
 
+// Use the view router for specific frontend pages - mounted at root level
+// This should come after module-specific routes but before the home router
+app.use('/', wrapRouter('view', viewRoutes));
+
+// Use the home router for the root path (should be last to avoid conflicts)
+app.use('/', wrapRouter('home', homeRouter));
+
 // Note: Legacy modules (release-management and monitoring) have been removed as part of modularization
 
 // Legacy redirect for home page
@@ -372,9 +506,34 @@ app.get('/home', (req, res) => {
   res.redirect('/');
 });
 
+// Debug route to show all registered routes
+app.get('/debug/routes', (req, res) => {
+  const routes = [];
+  app._router.stack.forEach(middleware => {
+    if(middleware.route) { // routes registered directly on the app
+      routes.push({path: middleware.route.path, methods: middleware.route.methods});
+    } else if(middleware.name === 'router') { // router middleware
+      middleware.handle.stack.forEach(handler => {
+        if(handler.route) {
+          const path = handler.route.path;
+          routes.push({path: path, methods: handler.route.methods});
+        }
+      });
+    }
+  });
+  res.json(routes);
+});
+
+// Academic years route now handled directly by the view router mounted at root
+
 // === Legacy BCR Route Redirects ===
 // These redirects ensure backward compatibility with existing URLs
 // while migrating to the new modular structure
+
+// Fix for incorrect /bcr/submissions/business-change-requests URL
+app.get('/bcr/submissions/business-change-requests', (req, res) => {
+  res.redirect('/bcr/business-change-requests' + (req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''));
+});
 
 // Redirect legacy BCR routes to the new modular BCR routes
 app.get('/bcr/submit', (req, res) => {
@@ -403,33 +562,33 @@ app.get('/bcr/phase-status-mapping/create-phase', (req, res) => {
 });
 
 // Redirect legacy BCR create status POST
-app.post('/bcr/phase-status-mapping/create-status/:phaseId', (req, res) => {
-  res.redirect(`/bcr/workflow/phases/${req.params.phaseId}/statuses/new`);
+app.post('/bcr/phase-status-mapping/create-status/:legacyPhaseId', (req, res) => {
+  res.redirect(`/bcr/workflow/phases/${req.params.legacyPhaseId}/statuses/new`);
 });
 
 // Redirect legacy BCR phase detail route to the new modular BCR routes
-app.get('/bcr/phase-status-mapping/phase/:id', (req, res) => {
-  res.redirect(`/bcr/workflow/phases/${req.params.id}`);
+app.get('/bcr/phase-status-mapping/phase/:legacyPhaseId', (req, res) => {
+  res.redirect(`/bcr/workflow/phases/${req.params.legacyPhaseId}`);
 });
 
 // Redirect legacy BCR edit phase route
-app.get('/bcr/phase-status-mapping/edit-phase/:id', (req, res) => {
-  res.redirect(`/bcr/workflow/phases/${req.params.id}/edit`);
+app.get('/bcr/phase-status-mapping/edit-phase/:legacyPhaseId', (req, res) => {
+  res.redirect(`/bcr/workflow/phases/${req.params.legacyPhaseId}/edit`);
 });
 
 // Redirect legacy BCR edit status route to the new modular BCR routes
-app.get('/bcr/phase-status-mapping/edit-status/:id', (req, res) => {
-  res.redirect(`/bcr/workflow/statuses/${req.params.id}/edit`);
+app.get('/bcr/phase-status-mapping/edit-status/:legacyStatusId', (req, res) => {
+  res.redirect(`/bcr/workflow/statuses/${req.params.legacyStatusId}/edit`);
 });
 
 // Redirect legacy BCR delete phase route
-app.get('/bcr/phase-status-mapping/delete-phase/:id', (req, res) => {
-  res.redirect(`/bcr/workflow/phases/${req.params.id}/delete`);
+app.get('/bcr/phase-status-mapping/delete-phase/:legacyPhaseId', (req, res) => {
+  res.redirect(`/bcr/workflow/phases/${req.params.legacyPhaseId}/delete`);
 });
 
 // Redirect legacy BCR delete status route
-app.get('/bcr/phase-status-mapping/delete-status/:id', (req, res) => {
-  res.redirect(`/bcr/workflow/statuses/${req.params.id}/delete`);
+app.get('/bcr/phase-status-mapping/delete-status/:legacyStatusId', (req, res) => {
+  res.redirect(`/bcr/workflow/statuses/${req.params.legacyStatusId}/delete`);
 });
 
 // Redirect legacy BCR confirmation pages
@@ -564,13 +723,13 @@ app.get('/bcr/impact-areas/create-confirmation', (req, res) => {
 });
 
 // Redirect legacy BCR edit impact area form
-app.get('/bcr/impact-areas/edit/:id', (req, res) => {
-  res.redirect(`/bcr/impact-areas/${req.params.id}/edit`);
+app.get('/bcr/impact-areas/edit/:impactAreaId', (req, res) => {
+  res.redirect(`/bcr/impact-areas/${req.params.impactAreaId}/edit`);
 });
 
 // Redirect legacy BCR edit impact area POST form to GET (since we can't do POST redirects properly)
-app.post('/bcr/impact-areas/edit/:id', (req, res) => {
-  res.redirect(`/bcr/impact-areas/${req.params.id}/edit`);
+app.post('/bcr/impact-areas/edit/:impactAreaId', (req, res) => {
+  res.redirect(`/bcr/impact-areas/${req.params.impactAreaId}/edit`);
 });
 
 // Redirect legacy BCR edit impact area confirmation
@@ -609,30 +768,42 @@ app.post('/bcr/phase-status-mapping/create-phase', (req, res) => {
 });
 
 // Redirect legacy BCR delete status POST
-app.post('/bcr/phase-status-mapping/delete-status/:id', (req, res) => {
-  res.redirect(`/bcr/workflow/statuses/${req.params.id}/delete`);
+app.post('/bcr/phase-status-mapping/delete-status/:legacyStatusId', (req, res) => {
+  res.redirect(`/bcr/workflow/statuses/${req.params.legacyStatusId}/delete`);
 });
 
 // Redirect legacy BCR update status POST
-app.post('/bcr/update-status/:id', (req, res) => {
-  res.redirect(`/bcr/submissions/${req.params.id}/status/update`);
+app.post('/bcr/update-status/:legacyBcrId', (req, res) => {
+  res.redirect(`/bcr/submissions/${req.params.legacyBcrId}/status/update`);
 });
 
 // Redirect legacy BCR view route to the new modular BCR route
-app.get('/bcr/:id', (req, res) => {
-  res.redirect(`/bcr/submissions/${req.params.id}`);
+app.get('/bcr/:legacyBcrId', (req, res) => {
+  res.redirect(`/bcr/submissions/${req.params.legacyBcrId}`);
 });
 
 // === Error handling ===
 
+// URL sanitizer to prevent malformed URLs from being used in error messages
+const sanitizeUrl = (url) => {
+  if (!url) return '';
+  try {
+    // Remove any potentially problematic characters
+    return url.replace(/[<>"'`]/g, '');
+  } catch (e) {
+    return '[Invalid URL]';
+  }
+};
+
 // 404 handler
 app.use((req, res, next) => {
+  const sanitizedPath = sanitizeUrl(req.path);
   res.status(404).render('error', {
     title: 'Page not found',
-    message: 'The requested page was not found',
+    message: `The requested page '${sanitizedPath}' was not found`,
     error: {
       status: 404,
-      stack: process.env.NODE_ENV === 'development' ? 'Page not found' : ''
+      stack: process.env.NODE_ENV === 'development' ? `Path: ${sanitizedPath}` : ''
     },
     user: req.user
   });
@@ -640,12 +811,26 @@ app.use((req, res, next) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error('Application error:', err);
-  
+  // Log error details
+  console.error('Application error:', {
+    message: err.message,
+    stack: err.stack,
+    path: req.path,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
+
+  // Handle path-to-regexp errors specifically
+  if (err instanceof TypeError && err.message.includes('path-to-regexp')) {
+    const sanitizedPath = sanitizeUrl(req.path);
+    err.status = 400;
+    err.message = `Invalid route pattern in URL: ${sanitizedPath}`;
+  }
+
   // Set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = process.env.NODE_ENV === 'development' ? err : {};
-  
+
   // Render the error page
   res.status(err.status || 500);
   res.render('error', {

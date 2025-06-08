@@ -7,13 +7,20 @@ exports.renderReleaseDiaryPage = async (req, res) => {
     // Get releases from database
     const releasesData = await releaseService.getAllReleases({ limit: 0 });
     const allReleases = releasesData.releases || [];
+    console.log(`Found ${allReleases.length} releases from releaseService`);
     
     // Get BCRs with associated releases
-    const bcrsWithReleases = await BCR.find({
-      associatedReleaseId: { $exists: true, $ne: null }
-    }).populate('associatedReleaseId').lean();
+    let bcrsWithReleases = [];
+    try {
+      bcrsWithReleases = await BCR.find({
+        associatedReleaseId: { $exists: true, $ne: null }
+      }).populate('associatedReleaseId').lean();
+      console.log(`Found ${bcrsWithReleases.length} BCRs with associated releases`);
+    } catch (bcrError) {
+      console.error('Error fetching BCRs with releases (continuing with empty list):', bcrError.message);
+      // Continue with empty list instead of failing completely
+    }
     
-    console.log(`Found ${bcrsWithReleases.length} BCRs with associated releases`);
     
     // Create simple array to store calendar events
     let calendarEvents = [];
@@ -140,8 +147,16 @@ exports.renderReleaseDiaryPage = async (req, res) => {
     
   } catch (error) {
     console.error('Error rendering Release Diary page:', error);
-    req.flash('error', 'Could not load the Release Diary. ' + error.message);
-    res.redirect('/dashboard');
+    req.flash('error', 'Could not load the Release Diary completely. Some data may be missing. ' + error.message);
+    // Render the page with empty data instead of redirecting
+    return res.render('diary/release-diary-fully-fixed', {
+      title: 'Release Diary - Error Loading',
+      calendarEvents: JSON.stringify([]),
+      releaseDateMap: JSON.stringify({}),
+      calendarEventsCount: 0,
+      releaseDateMapCount: 0,
+      error: error.message
+    });
   }
 };
 
