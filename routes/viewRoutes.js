@@ -22,17 +22,22 @@ router.use((req, res, next) => {
 
 // Home page
 router.get('/', (req, res) => {
-  res.render('modules/home/home', {
+  res.render('modules/home/index', {
     pageTitle: 'Home - RRDM',
   });
 });
 
-// --- Release Diary Route --- (No auth required for testing)
-router.get('/release-diary', (req, res, next) => {
-  // Bypass authentication check
-  console.log('Processing Release Diary request');
-  next();
-}, releaseDiaryController.renderReleaseDiaryPage);
+// --- Release Diary Route ---
+router.get('/release-diary', releaseDiaryController.renderReleaseDiaryPage);
+
+// --- Release Notes Route ---
+router.get('/release-notes', (req, res) => {
+  // This is a temporary route handler until the full release notes functionality is implemented
+  res.render('modules/release-notes/index', {
+    pageTitle: 'Release Notes - RRDM',
+    releases: [] // Placeholder for actual release notes data
+  });
+});
 
 // Dashboard
 // router.get('/dashboard', isAuthenticated, (req, res) => { // isAuthenticated temporarily removed
@@ -57,26 +62,52 @@ router.get('/academic-years', async (req, res) => {
     const queryParams = { page, limit, status, sortBy, sortOrder };
     const data = await academicYearService.listAcademicYears(queryParams);
 
-    // Use our new helper function to correctly determine the next academic year to be created
+    // Calculate the next potential start year for a new academic year
     const nextPotentialStartYear = await academicYearService.getNextAcademicYearStart();
-    
-    const today = new Date();
-    
-    // Find the current academic year
-    const currentAcademicYearForBanner = await AcademicYear.findOne({
-      startDate: { $lte: today },
-      endDate: { $gte: today }
-    }).lean();
-    
-    // Find the next academic year (the one immediately following the current one)
+
+    // Get the current academic year for the banner
+    let currentAcademicYearForBanner = null;
     let nextAcademicYear = null;
-    if (currentAcademicYearForBanner && currentAcademicYearForBanner.endDate) {
-      nextAcademicYear = await AcademicYear.findOne({
-        startDate: { $gt: currentAcademicYearForBanner.endDate }
-      }).sort({ startDate: 1 }).lean();
+    const today = new Date();
+
+    // Handle differently based on environment
+    if (process.env.NODE_ENV === 'test') {
+      console.log('Using 10 mock academic years for banner display');
+      // Get mock data for test mode
+      const mockYears = academicYearService.getMockAcademicYears();
       
-      if (nextAcademicYear) {
-        console.log(`Next academic year identified: ${nextAcademicYear.fullName}`);
+      if (mockYears && mockYears.length > 0) {
+        // Find current academic year (with status 'Current')
+        currentAcademicYearForBanner = mockYears.find(year => year.status === 'Current');
+        
+        // Find next academic year (with status 'Next')
+        nextAcademicYear = mockYears.find(year => year.status === 'Next');
+        
+        // If no 'Next' status found, find the first future year after current
+        if (!nextAcademicYear && currentAcademicYearForBanner) {
+          const currentEndDate = new Date(currentAcademicYearForBanner.endDate);
+          nextAcademicYear = mockYears.find(year => {
+            const startDate = new Date(year.startDate);
+            return startDate > currentEndDate;
+          });
+        }
+      }
+    } else {
+      // Production mode - use database queries
+      currentAcademicYearForBanner = await AcademicYear.findOne({
+        startDate: { $lte: today },
+        endDate: { $gte: today }
+      }).lean();
+      
+      // Find the next academic year (the one immediately following the current one)
+      if (currentAcademicYearForBanner && currentAcademicYearForBanner.endDate) {
+        nextAcademicYear = await AcademicYear.findOne({
+          startDate: { $gt: currentAcademicYearForBanner.endDate }
+        }).sort({ startDate: 1 }).lean();
+        
+        if (nextAcademicYear) {
+          console.log(`Next academic year identified: ${nextAcademicYear.fullName}`);
+        }
       }
     }
     
@@ -103,8 +134,20 @@ router.get('/academic-years', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching academic years for view:', error);
-    req.flash('error', 'Failed to load academic years. ' + error.message);
-    res.redirect('/dashboard');
+    // Instead of redirecting, render the academic years page with an error message
+    res.render('academic-years/list', {
+      pageTitle: 'Academic Years - RRDM',
+      academicYears: [],
+      pagination: { page: 1, limit: 10, totalPages: 0, totalItems: 0 },
+      currentSort: { sortBy: 'startDate', sortOrder: 'asc' },
+      currentFilters: { status: null },
+      queryParams: req.query,
+      nextPotentialStartYear: null,
+      currentAcademicYearForBanner: null,
+      nextAcademicYear: null,
+      daysRemaining: null,
+      error: 'Failed to load academic years: ' + error.message
+    });
   }
 });
 
@@ -168,7 +211,8 @@ router.get('/academic-years/bulk-generate-warning', async (req, res) => {
   }
 });
 
-// Releases List Page
+// IMPORTANT: Release Management Module - Main Entry Point
+// This route handles the main release management listing page
 // router.get('/releases', isAuthenticated, async (req, res) => { // isAuthenticated temporarily removed
 router.get('/release-management', async (req, res) => {
   try {
@@ -272,7 +316,7 @@ router.get('/release-management', async (req, res) => {
       console.log(`Fetched ${academicYears.length} academic years with releases`);
     }
 
-    res.render('releases/list', {
+    res.render('release-management/list', {
       pageTitle: 'Release Directory - RRDM',
       releases: result.releases || [],
       pagination: result.pagination,
@@ -290,9 +334,9 @@ router.get('/release-management', async (req, res) => {
 });
 
 // Release - View Single Release
-router.get('/release-management/view/:id', async (req, res) => {
+router.get('/release-management/view/:releaseId', async (req, res) => {
   try {
-    const releaseId = req.params.id;
+    const releaseId = req.params.releaseId;
     console.log(`Viewing release details for ID: ${releaseId}`);
     
     // Get the release details
@@ -318,8 +362,8 @@ router.get('/release-management/view/:id', async (req, res) => {
         LastModifiedDateTimeFormatted: formatDate(release.LastModifiedDateTime)
       };
       
-      console.log('Rendering template: releases/view');
-      return res.render('releases/view', {
+      console.log('Rendering template: release-management/view');
+      return res.render('release-management/view', {
         pageTitle: `Release Details: ${release.ReleaseCode} - RRDM`,
         release: formattedRelease
       });
@@ -350,7 +394,7 @@ router.get('/release-management/new', async (req, res) => {
     const academicYearData = await academicYearService.listAcademicYears({ limit: 1000, sortBy: 'startDate', sortOrder: 'asc' }); // Fetch all, sorted
     const academicYears = academicYearData ? academicYearData.academicYears : [];
 
-    res.render('releases/new', {
+    res.render('release-management/new', {
       pageTitle: 'Add New Release Entry - RRDM',
       formData: {},
       errors: {},
@@ -444,7 +488,7 @@ router.get('/release-management/select-generate-years', csrfProtection, async (r
       ...(futureYearsData.academicYears || [])
     ];
 
-    res.render('releases/select-generate-years', {
+    res.render('release-management/select-generate-years', {
       pageTitle: 'Select Academic Years for Release Generation - RRDM',
       academicYears: academicYears,
       csrfToken: req.csrfToken() // Pass CSRF token for the form
@@ -496,7 +540,7 @@ router.get('/release-management/delete-releases', csrfProtection, async (req, re
       });
     }
     
-    res.render('releases/delete-releases-select', {
+    res.render('release-management/delete-releases-select', {
       pageTitle: 'Delete Auto-Generated Releases - RRDM',
       academicYears: academicYearsWithCounts,
       csrfToken: req.csrfToken()
@@ -547,7 +591,7 @@ router.post('/release-management/delete-releases-confirm', csrfProtection, async
       totalReleasesToDelete += count;
     }
     
-    res.render('releases/delete-releases-confirm', {
+    res.render('release-management/delete-releases-confirm', {
       pageTitle: 'Confirm Delete Auto-Generated Releases - RRDM',
       academicYears: academicYearsWithCounts,
       totalReleasesToDelete,
@@ -588,7 +632,7 @@ router.post('/release-management/delete-releases-execute', csrfProtection, async
     );
     
     // Render success page
-    res.render('releases/delete-releases-success', {
+    res.render('release-management/delete-releases-success', {
       pageTitle: 'Releases Deleted Successfully - RRDM',
       result
     });
@@ -634,7 +678,7 @@ router.post('/release-management/confirm-generate-releases', csrfProtection, asy
       }
     }
 
-    res.render('releases/confirm-generate-releases', {
+    res.render('release-management/confirm-generate-releases', {
       pageTitle: 'Confirm Standard Release Generation - RRDM',
       academicYearsWithInfo: academicYearsWithInfo,
       overallWarning: overallWarning, // To show a general warning message if any year has existing releases
