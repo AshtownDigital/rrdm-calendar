@@ -220,9 +220,9 @@ app.use(express.urlencoded({ extended: true }));
 // Apply compression middleware
 app.use(compression());
 
-// Root URL handler - serve the home page from modules/home/home.njk
+// Root URL handler - serve the home page from modules/home/index.njk
 app.get('/', (req, res) => {
-  res.render('modules/home/home', {
+  res.render('modules/home/index', {
     user: req.session.user || null,
     title: 'Home | Register Team Internal Services'
   });
