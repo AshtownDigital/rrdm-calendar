@@ -18,10 +18,14 @@ const viewPaths = [
   path.join(__dirname, 'node_modules/govuk-frontend')
 ];
 
+// Only enable watching in development mode and when not explicitly disabled
+const shouldWatch = process.env.NODE_ENV === 'development' && process.env.DISABLE_FILE_WATCHING !== 'true';
+console.log(`Nunjucks file watching ${shouldWatch ? 'enabled' : 'disabled'}`);
+
 const env = nunjucks.configure(viewPaths, {
   autoescape: true,
   express: app,
-  watch: process.env.NODE_ENV === 'development' // Only watch files in development mode
+  watch: shouldWatch
 });
 
 app.set('view engine', 'njk');
