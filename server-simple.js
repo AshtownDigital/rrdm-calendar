@@ -21,7 +21,7 @@ const viewPaths = [
 const env = nunjucks.configure(viewPaths, {
   autoescape: true,
   express: app,
-  watch: true
+  watch: process.env.NODE_ENV === 'development' // Only watch files in development mode
 });
 
 app.set('view engine', 'njk');
