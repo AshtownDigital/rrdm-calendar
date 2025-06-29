@@ -7,12 +7,18 @@ const path = require('path');
 
 // Load mock data in test environment
 let mockAcademicYears = [];
+// Flag to control whether mock data should be used. By default we only use mock
+// data in automated tests (NODE_ENV === 'test').  If you still want to use mock
+// data during manual local development start the server with
+//   --mock-data
+// which sets ENABLE_MOCK_DATA=true in start-server.js.
+const USE_MOCK_DATA = process.env.NODE_ENV === 'test' || process.env.ENABLE_MOCK_DATA === 'true';
 try {
   const mockDataPath = path.join(__dirname, '../mock-data/academic-years.json');
   console.log(`Checking for mock data at: ${mockDataPath}`);
   console.log(`Current NODE_ENV: ${process.env.NODE_ENV}`);
   
-  if ((process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') && fs.existsSync(mockDataPath)) {
+  if ((USE_MOCK_DATA) && fs.existsSync(mockDataPath)) {
     const rawData = fs.readFileSync(mockDataPath, 'utf8');
     console.log(`Raw mock data loaded, length: ${rawData.length} characters`);
     
@@ -118,7 +124,7 @@ async function validateAcademicYearSequence() {
   let existingYears;
   
   // Use mock data in test environment
-  if ((process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') && mockAcademicYears.length > 0) {
+  if ((USE_MOCK_DATA) && mockAcademicYears.length > 0) {
     console.log('Using mock academic years for sequence validation');
     // Clone and sort the mock data by startDate
     existingYears = [...mockAcademicYears].map(year => {
@@ -269,6 +275,25 @@ async function createMultipleAcademicYears(startYearInput, numberOfYears, userId
  * @returns {Promise<Object>} The updated academic year document.
  * @throws {Error} If the academic year is not found, inputs are invalid, or update fails.
  */
+/**
+ * Deletes ALL academic year documents.
+ * In test/development with mock data, clears the mock array instead.
+ * @returns {Promise<object>} Mongo result with deletedCount or mock summary.
+ */
+async function deleteAllAcademicYears() {
+  try {
+    if ((USE_MOCK_DATA) && mockAcademicYears.length > 0) {
+      const count = mockAcademicYears.length;
+      mockAcademicYears.length = 0;
+      return { deletedCount: count };
+    }
+    const result = await AcademicYear.deleteMany({});
+    return result;
+  } catch (error) {
+    throw new Error(`Failed to delete academic years: ${error.message}`);
+  }
+}
+
 async function updateAcademicYear(identifier, updateData, userId, username) {
   let academicYear;
   // Check if the identifier is a valid MongoDB ObjectId string
@@ -430,7 +455,7 @@ async function updateAcademicYear(identifier, updateData, userId, username) {
 async function getAcademicYearByIdentifier(identifier) {
   try {
     // Use mock data in test environment
-    if ((process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') && mockAcademicYears.length > 0) {
+    if ((USE_MOCK_DATA) && mockAcademicYears.length > 0) {
       // Find by _id or uuid in mock data
       const academicYear = mockAcademicYears.find(year => 
         year._id === identifier || year.uuid === identifier
@@ -478,7 +503,7 @@ async function listAcademicYears(options = {}) {
     const skip = (page - 1) * limit;
     
     // Use mock data in test environment
-    if ((process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') && mockAcademicYears.length > 0) {
+    if ((USE_MOCK_DATA) && mockAcademicYears.length > 0) {
       console.log(`Using ${mockAcademicYears.length} mock academic years`);
       
       // Filter by status if provided
@@ -683,6 +708,21 @@ async function updateAcademicYearStatuses(userId = 'system', username = 'system_
  * @returns {Promise<Number>} The year in which the next academic year should start.
  */
 async function getNextAcademicYearStart() {
+  // First, if the real AcademicYear collection is empty, default to current academic year.
+  try {
+    const realCount = await AcademicYear.countDocuments({}).exec();
+    if (realCount === 0) {
+      const today = new Date();
+      const year = today.getUTCFullYear();
+      const month = today.getUTCMonth();
+      const academicYearStart = month < 8 ? year - 1 : year;
+      console.log(`AcademicYear collection empty – starting with current academic year ${academicYearStart}/${academicYearStart + 1}`);
+      return academicYearStart;
+    }
+  } catch (e) {
+    // If count fails (e.g., in mock mode), fall through to existing logic
+    console.warn('Could not count AcademicYear documents; falling back:', e.message);
+  }
   // Check for gaps in the sequence first
   const missingYears = await validateAcademicYearSequence();
   
@@ -694,7 +734,7 @@ async function getNextAcademicYearStart() {
   }
   
   // Use mock data in test environment
-  if ((process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') && mockAcademicYears.length > 0) {
+  if ((USE_MOCK_DATA) && mockAcademicYears.length > 0) {
     console.log('Using mock academic years to determine next start year');
     // Find the latest academic year from mock data
     const sortedMockYears = [...mockAcademicYears].map(year => {
@@ -734,10 +774,16 @@ async function getNextAcademicYearStart() {
     return nextStartYear;
   }
   
-  // If no academic years exist, start from current year
-  const currentYear = new Date().getUTCFullYear();
-  console.log(`No existing academic years, starting with current year: ${currentYear}/${currentYear + 1}`);
-  return currentYear;
+    // If no academic years exist, derive the current academic year based on today's date.
+  // Business rule: academic year runs from 1 Sept to 31 Aug.
+  const today = new Date();
+  const year = today.getUTCFullYear();
+  const month = today.getUTCMonth(); // 0-indexed; 8 == September
+
+  // If we're before September (months 0-7), the academic year actually started the previous calendar year.
+  const academicYearStart = month < 8 ? year - 1 : year;
+  console.log(`No existing academic years – deriving current academic year: ${academicYearStart}/${academicYearStart + 1}`);
+  return academicYearStart;
 }
 
 /**
@@ -745,7 +791,7 @@ async function getNextAcademicYearStart() {
  * @returns {Array} Array of mock academic year objects
  */
 function getMockAcademicYears() {
-  if ((process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') && mockAcademicYears.length > 0) {
+  if ((USE_MOCK_DATA) && mockAcademicYears.length > 0) {
     return mockAcademicYears;
   }
   return [];
@@ -755,11 +801,12 @@ module.exports = {
   createAcademicYear,
   listAcademicYears,
   getAcademicYearByIdentifier,
-  parseStartDate, // Exporting for potential use in controller or tests
+  parseStartDate, // exported for tests
   createMultipleAcademicYears,
   updateAcademicYear,
   updateAcademicYearStatuses,
-  validateAcademicYearSequence, // Export the sequence validation function
-  getNextAcademicYearStart, // Export the function to determine next academic year start
-  getMockAcademicYears
+  validateAcademicYearSequence,
+  getNextAcademicYearStart,
+  deleteAllAcademicYears,
+  getMockAcademicYears,
 };

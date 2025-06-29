@@ -60,15 +60,8 @@ async function handleBulkCreateAcademicYears(req, res) {
       return res.redirect('/academic-years');
     }
 
-    // Determine startYear automatically
-    let startYear;
-    const latestAcademicYear = await AcademicYear.findOne().sort({ endDate: -1 });
-
-    if (latestAcademicYear && latestAcademicYear.endDate) {
-      startYear = latestAcademicYear.endDate.getUTCFullYear() + 1;
-    } else {
-      startYear = new Date().getUTCFullYear(); // Default to current year if no academic years exist
-    }
+        // Determine startYear automatically using service logic (handles gaps and empty DB)
+    const startYear = await academicYearService.getNextAcademicYearStart();
 
     const userId = req.user && req.user.id ? req.user.id : 'SYSTEM_BULK';
     const username = req.user && req.user.username ? req.user.username : 'system_bulk';

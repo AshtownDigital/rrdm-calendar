@@ -1,0 +1,40 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}
+  Confirm Delete All Academic Years - RRDM
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container">
+  <main class="govuk-main-wrapper govuk-main-wrapper--l" id="main-content" role="main">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Confirm Delete All Academic Years</h1>
+
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-warning-text__assistive">Warning</span>
+            You are about to <strong>permanently delete every academic year</strong> in the system.
+            <br><br>
+            This action cannot be undone and may have significant impact on related records.
+          </strong>
+        </div>
+
+        <form method="POST" action="/academic-years/delete-all" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <div class="govuk-button-group">
+            <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="submit">
+              Yes, delete all academic years
+            </button>
+            <a href="/academic-years" class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button">
+              Cancel
+            </a>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

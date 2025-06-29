@@ -62,6 +62,18 @@ router.get('/academic-years', async (req, res) => {
     const queryParams = { page, limit, status, sortBy, sortOrder };
     const data = await academicYearService.listAcademicYears(queryParams);
 
+    // Format dates to long form for display
+    const fmtOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+    const formattedAcademicYears = (data.academicYears || []).map(y => {
+      const base = typeof y.toObject === 'function' ? y.toObject() : y;
+      return {
+        ...base,
+      ...y,
+      startDateFormatted: y.startDate ? new Date(y.startDate).toLocaleDateString('en-GB', fmtOptions) : '',
+      endDateFormatted: y.endDate ? new Date(y.endDate).toLocaleDateString('en-GB', fmtOptions) : ''
+      };
+    });
+
     // Calculate the next potential start year for a new academic year
     const nextPotentialStartYear = await academicYearService.getNextAcademicYearStart();
 
@@ -122,7 +134,7 @@ router.get('/academic-years', async (req, res) => {
 
     res.render('academic-years/list', {
       pageTitle: 'Academic Years - RRDM',
-      academicYears: data.academicYears,
+      academicYears: formattedAcademicYears,
       pagination: data.pagination,
       currentSort: { sortBy, sortOrder },
       currentFilters: { status },
@@ -131,6 +143,8 @@ router.get('/academic-years', async (req, res) => {
       currentAcademicYearForBanner,
       nextAcademicYear,
       daysRemaining,
+      // Provide CSRF token only if middleware is present to avoid runtime error
+      csrfToken: req.csrfToken ? req.csrfToken() : '',
     });
   } catch (error) {
     console.error('Error fetching academic years for view:', error);
@@ -181,6 +195,33 @@ router.get('/academic-years/:identifier/edit', async (req, res) => {
   } catch (error) {
     console.error('Error fetching academic year for edit:', error);
     req.flash('error', 'Failed to load academic year for editing. ' + error.message);
+    res.redirect('/academic-years');
+  }
+});
+
+// BULK DELETE ALL ACADEMIC YEARS
+router.post('/academic-years/delete-all', enhancedCsrfProtection, async (req, res) => {
+  try {
+    const result = await academicYearService.deleteAllAcademicYears();
+    const deleted = result.deletedCount || 0;
+    req.flash('success', `Deleted ${deleted} academic year${deleted === 1 ? '' : 's'} successfully.`);
+  } catch (error) {
+    console.error('Error deleting all academic years:', error);
+    req.flash('error', 'Failed to delete academic years: ' + error.message);
+  }
+  res.redirect('/academic-years');
+});
+
+// NEW ROUTE: Academic Years - Delete All Warning Page
+router.get('/academic-years/delete-all-warning', csrfProtection, async (req, res) => {
+  try {
+    res.render('academic-years/delete-warning', {
+      pageTitle: 'Confirm Delete All Academic Years - RRDM',
+      csrfToken: req.csrfToken ? req.csrfToken() : ''
+    });
+  } catch (error) {
+    console.error('Error preparing delete-all warning page:', error);
+    req.flash('error', 'An error occurred while preparing the delete confirmation page. ' + error.message);
     res.redirect('/academic-years');
   }
 });

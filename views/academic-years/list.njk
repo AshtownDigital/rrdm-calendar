@@ -34,7 +34,7 @@
     </div>
     <div class="govuk-grid-column-one-third" style="text-align: right;">
       <a href="/academic-years/new" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-        Add New Academic Year
+        Add a specific academic year
       </a>
     </div>
   </div>
@@ -44,16 +44,19 @@
     <div class="govuk-grid-column-full">
       <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
       <h2 class="govuk-heading-m">Bulk Generate Academic Years</h2>
-        <div class="govuk-button-group">
-          <a href="/academic-years/bulk-generate-warning?numberOfYears=1" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+        <div class="govuk-button-group" style="display:flex; flex-wrap:nowrap; gap:0.5rem;">
+          <a href="/academic-years/bulk-generate-warning?numberOfYears=1" role="button" draggable="false" class="govuk-button govuk-!-margin-right-2" data-module="govuk-button">
             Generate 1 Year
           </a>
-          <a href="/academic-years/bulk-generate-warning?numberOfYears=5" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+          <a href="/academic-years/bulk-generate-warning?numberOfYears=5" role="button" draggable="false" class="govuk-button govuk-button--secondary govuk-!-margin-right-2" data-module="govuk-button">
             Generate 5 Years
           </a>
-          <a href="/academic-years/bulk-generate-warning?numberOfYears=10" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+          <a href="/academic-years/bulk-generate-warning?numberOfYears=10" role="button" draggable="false" class="govuk-button govuk-button--secondary govuk-!-margin-right-2" data-module="govuk-button">
             Generate 10 Years
           </a>
+          <a href="/academic-years/delete-all-warning" role="button" draggable="false" class="govuk-button govuk-button--warning" data-module="govuk-button">
+              Delete All Academic Years
+            </a>
         </div>
       <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
     </div>
@@ -79,8 +82,8 @@
             <td class="govuk-table__cell">{{ year.name }}</td>
             <td class="govuk-table__cell">{{ year.code }}</td>
             <td class="govuk-table__cell">{{ year.fullName }}</td>
-            <td class="govuk-table__cell">{{ year.startDate | date('dd/MM/yyyy') }}</td>
-            <td class="govuk-table__cell">{{ year.endDate | date('dd/MM/yyyy') }}</td>
+            <td class="govuk-table__cell">{{ year.startDateFormatted }}</td>
+            <td class="govuk-table__cell">{{ year.endDateFormatted }}</td>
             <td class="govuk-table__cell">
               {% set tag_class = '' %}
               {% set tag_text = year.status %}

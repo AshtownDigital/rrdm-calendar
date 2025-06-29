@@ -17,8 +17,11 @@ const cookieParser = require('cookie-parser');
 const { connect, mongoose } = require('./config/database.mongo');
 const { setupMockMongoose } = require('./config/mockMongoose');
 
+// Determine if we should initialise mock MongoDB
+const SHOULD_USE_MOCK_DB = (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') && process.env.BYPASS_MOCK !== 'true';
+
 // EARLY MOCK SETUP FOR DEVELOPMENT/TEST ENVIRONMENTS
-if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+if (SHOULD_USE_MOCK_DB) {
   console.log('DEVELOPMENT/TEST MODE: Initializing Mongoose mocks EARLY...');
   setupMockMongoose(); // This patches mongoose.model and sets up mock connection
   console.log('DEVELOPMENT/TEST MODE: Mongoose mocks initialized EARLY.');
@@ -68,7 +71,7 @@ require('dotenv').config();
 
 // Connect to MongoDB with automatic reconnection - BYPASSED FOR TESTING
 const connectWithRetry = async () => {
-  if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+  if (SHOULD_USE_MOCK_DB) {
     console.log('DEVELOPMENT/TEST MODE: Mock MongoDB connection should already be established by early setup.');
     // setupMockMongoose() was called earlier, so mongoose.connection is already mocked.
     // We can verify readyState if needed: console.log('Mongoose connection readyState:', mongoose.connection.readyState);
