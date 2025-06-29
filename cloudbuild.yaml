@@ -40,7 +40,7 @@ steps:
     # Environment variables are set via substitution variables
 
 substitutions:
-  _REGION: us-central1  # Default region, can be overridden in trigger settings
+  _REGION: europe-west2  # Deploy region (Cloud Run + Artifact Registry)
   _REPOSITORY: rrdm-images  # Default repository name in Artifact Registry
 
 options:
