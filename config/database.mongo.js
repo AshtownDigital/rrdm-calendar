@@ -69,6 +69,9 @@ async function connect() {
         // If not a mongo URI, maybe a local path or something unexpected
         displayUri = '[Non-standard URI format, logging as is, check for sensitive data] ' + uri;
       }
+      // Determine if the URI points to MongoDB Atlas (SRV scheme or .mongodb.net host)
+      const isAtlas = uri.startsWith('mongodb+srv://') || uri.includes('.mongodb.net');
+
       console.log(`Attempting to connect to MongoDB with URI: ${displayUri}`);
       
       // Configure connection options with better defaults for stability
@@ -102,13 +105,6 @@ async function connect() {
         // The driver now handles reconnection automatically
       };
       
-      // Evaluate whether we should enable TLS automatically (Atlas & SRV URIs always require it)
-      const isAtlas = uri.startsWith('mongodb+srv://') || uri.includes('.mongodb.net');
-      if (isAtlas) {
-        options.ssl = true;
-        options.tls = true;
-      }
-
       // Connect to MongoDB
       await mongoose.connect(uri, options);
       
