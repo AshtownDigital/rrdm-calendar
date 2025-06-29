@@ -1,0 +1,92 @@
+[
+  {
+    "_id": "mock-academic-year-1",
+    "name": "2025/2026",
+    "startDate": "2025-09-01T00:00:00.000Z",
+    "endDate": "2026-08-31T00:00:00.000Z",
+    "status": "Current",
+    "createdAt": "2025-06-08T08:04:00.106Z",
+    "updatedAt": "2025-06-08T08:04:00.106Z"
+  },
+  {
+    "_id": "mock-academic-year-2",
+    "name": "2026/2027",
+    "startDate": "2026-09-01T00:00:00.000Z",
+    "endDate": "2027-08-31T00:00:00.000Z",
+    "status": "Next",
+    "createdAt": "2025-06-08T08:04:00.106Z",
+    "updatedAt": "2025-06-08T08:04:00.106Z"
+  },
+  {
+    "_id": "mock-academic-year-3",
+    "name": "2027/2028",
+    "startDate": "2027-09-01T00:00:00.000Z",
+    "endDate": "2028-08-31T00:00:00.000Z",
+    "status": "Future",
+    "createdAt": "2025-06-08T08:04:00.106Z",
+    "updatedAt": "2025-06-08T08:04:00.106Z"
+  },
+  {
+    "_id": "mock-academic-year-4",
+    "name": "2028/2029",
+    "startDate": "2028-09-01T00:00:00.000Z",
+    "endDate": "2029-08-31T00:00:00.000Z",
+    "status": "Future",
+    "createdAt": "2025-06-08T08:04:00.106Z",
+    "updatedAt": "2025-06-08T08:04:00.106Z"
+  },
+  {
+    "_id": "mock-academic-year-5",
+    "name": "2029/2030",
+    "startDate": "2029-09-01T00:00:00.000Z",
+    "endDate": "2030-08-31T00:00:00.000Z",
+    "status": "Future",
+    "createdAt": "2025-06-08T08:04:00.106Z",
+    "updatedAt": "2025-06-08T08:04:00.106Z"
+  },
+  {
+    "_id": "mock-academic-year-6",
+    "name": "2030/2031",
+    "startDate": "2030-09-01T00:00:00.000Z",
+    "endDate": "2031-08-31T00:00:00.000Z",
+    "status": "Future",
+    "createdAt": "2025-06-08T08:04:00.106Z",
+    "updatedAt": "2025-06-08T08:04:00.106Z"
+  },
+  {
+    "_id": "mock-academic-year-7",
+    "name": "2031/2032",
+    "startDate": "2031-09-01T00:00:00.000Z",
+    "endDate": "2032-08-31T00:00:00.000Z",
+    "status": "Future",
+    "createdAt": "2025-06-08T08:04:00.106Z",
+    "updatedAt": "2025-06-08T08:04:00.106Z"
+  },
+  {
+    "_id": "mock-academic-year-8",
+    "name": "2032/2033",
+    "startDate": "2032-09-01T00:00:00.000Z",
+    "endDate": "2033-08-31T00:00:00.000Z",
+    "status": "Future",
+    "createdAt": "2025-06-08T08:04:00.106Z",
+    "updatedAt": "2025-06-08T08:04:00.106Z"
+  },
+  {
+    "_id": "mock-academic-year-9",
+    "name": "2033/2034",
+    "startDate": "2033-09-01T00:00:00.000Z",
+    "endDate": "2034-08-31T00:00:00.000Z",
+    "status": "Future",
+    "createdAt": "2025-06-08T08:04:00.106Z",
+    "updatedAt": "2025-06-08T08:04:00.106Z"
+  },
+  {
+    "_id": "mock-academic-year-10",
+    "name": "2034/2035",
+    "startDate": "2034-09-01T00:00:00.000Z",
+    "endDate": "2035-08-31T00:00:00.000Z",
+    "status": "Future",
+    "createdAt": "2025-06-08T08:04:00.106Z",
+    "updatedAt": "2025-06-08T08:04:00.106Z"
+  }
+]

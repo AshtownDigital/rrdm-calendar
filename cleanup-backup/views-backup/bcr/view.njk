@@ -1,0 +1,292 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}
+  {{ title }} - RRDM
+{% endblock %}
+
+{% block breadcrumbs %}
+  <li class="govuk-breadcrumbs__list-item">
+    <a class="govuk-breadcrumbs__link" href="/bcr/dashboard">BCR Dashboard</a>
+  </li>
+  <li class="govuk-breadcrumbs__list-item">
+    {{ bcr.bcrCode }}
+  </li>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">{{ bcr.bcrCode }}</h1>
+      
+      <div class="govuk-!-margin-bottom-6">
+        <h2 class="govuk-heading-m">BCR Overview</h2>
+        
+        <!-- Basic Information Section -->
+        <div class="govuk-inset-text">
+          <h3 class="govuk-heading-s">Basic Information</h3>
+          
+          {% if bcr.submissionCode %}
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+              <h4 class="govuk-heading-s">Submission Code</h4>
+              <p class="govuk-body">{{ bcr.submissionCode }}</p>
+            </div>
+          </div>
+          {% endif %}
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+              <h4 class="govuk-heading-s">Title</h4>
+              <p class="govuk-body">{{ bcr.title }}</p>
+            </div>
+          </div>
+          
+          <div class="govuk-grid-row govuk-!-margin-top-4">
+            <div class="govuk-grid-column-one-half">
+              <h4 class="govuk-heading-s">Status</h4>
+              <p class="govuk-body">
+                <strong class="{{ bcr.statusTagColor }}">{{ bcr.status | replace('_', ' ') | title }}</strong>
+              </p>
+            </div>
+            
+            <div class="govuk-grid-column-one-half">
+              <h4 class="govuk-heading-s">Current Phase</h4>
+              <p class="govuk-body">
+                <strong class="govuk-tag">{{ bcr.currentPhase }}</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Priority Information Section -->
+        <div class="govuk-inset-text">
+          <h3 class="govuk-heading-s">Priority Information</h3>
+          
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-one-half">
+              <h4 class="govuk-heading-s">Urgency Level</h4>
+              <p class="govuk-body">
+                {% if bcr.urgencyLevel === 'High' %}
+                  <strong class="govuk-tag govuk-tag--red">{{ bcr.urgencyLevel }}</strong>
+                {% elif bcr.urgencyLevel === 'Medium' %}
+                  <strong class="govuk-tag govuk-tag--yellow">{{ bcr.urgencyLevel }}</strong>
+                {% else %}
+                  <strong class="govuk-tag govuk-tag--green">{{ bcr.urgencyLevel }}</strong>
+                {% endif %}
+              </p>
+            </div>
+            
+            <div class="govuk-grid-column-one-half">
+              <h4 class="govuk-heading-s">Impacted Areas</h4>
+              <p class="govuk-body">
+                {% for area in bcr.impactedAreaNames %}
+                  <span class="govuk-tag govuk-tag--blue govuk-!-margin-right-1">{{ area }}</span>
+                {% endfor %}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Dates Section -->
+        <div class="govuk-inset-text">
+          <h3 class="govuk-heading-s">Dates</h3>
+          
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-one-half">
+              <h4 class="govuk-heading-s">Created</h4>
+              <p class="govuk-body">{{ bcr.createdAt | date }}</p>
+            </div>
+            
+            <div class="govuk-grid-column-one-half">
+              <h4 class="govuk-heading-s">Last Updated</h4>
+              <p class="govuk-body">{{ bcr.updatedAt | date }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="govuk-!-margin-bottom-6">
+        <h2 class="govuk-heading-m">BCR Description</h2>
+        
+        <div class="govuk-inset-text">
+          <h3 class="govuk-heading-s">Detailed Description</h3>
+          <p class="govuk-body">{{ bcr.description }}</p>
+        </div>
+      </div>
+
+      {% if submission %}
+      <div class="govuk-!-margin-bottom-6">
+        <h2 class="govuk-heading-m">Original Submission Details</h2>
+        
+        <!-- Submission Information Section -->
+        <div class="govuk-inset-text">
+          <h3 class="govuk-heading-s">Submission Information</h3>
+          
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-one-half">
+              <h4 class="govuk-heading-s">Submission Code</h4>
+              <p class="govuk-body">{{ submission.submissionCode }}</p>
+            </div>
+            
+            <div class="govuk-grid-column-one-half">
+              <h4 class="govuk-heading-s">Submission Date</h4>
+              <p class="govuk-body">{{ submission.createdAt | date }}</p>
+            </div>
+          </div>
+          
+          {% if submission.reviewedAt %}
+          <div class="govuk-grid-row govuk-!-margin-top-3">
+            <div class="govuk-grid-column-one-half">
+              <h4 class="govuk-heading-s">Reviewed Date</h4>
+              <p class="govuk-body">{{ submission.reviewedAt | date }}</p>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        
+        <!-- Submitter Information Section -->
+        <div class="govuk-inset-text">
+          <h3 class="govuk-heading-s">Submitter Information</h3>
+          
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-one-half">
+              <h4 class="govuk-heading-s">Submitted By</h4>
+              <p class="govuk-body">{{ submission.fullName }}</p>
+            </div>
+            
+            <div class="govuk-grid-column-one-half">
+              <h4 class="govuk-heading-s">Email Address</h4>
+              <p class="govuk-body">{{ submission.emailAddress }}</p>
+            </div>
+          </div>
+          
+          <div class="govuk-grid-row govuk-!-margin-top-3">
+            <div class="govuk-grid-column-one-half">
+              <h4 class="govuk-heading-s">Submission Source</h4>
+              <p class="govuk-body">{{ submission.submissionSource }}</p>
+            </div>
+            
+            {% if submission.organisation %}
+            <div class="govuk-grid-column-one-half">
+              <h4 class="govuk-heading-s">Organisation</h4>
+              <p class="govuk-body">{{ submission.organisation }}</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <!-- Request Details Section -->
+        <div class="govuk-inset-text">
+          <h3 class="govuk-heading-s">Request Details</h3>
+          
+          <h4 class="govuk-heading-s">Brief Description</h4>
+          <p class="govuk-body">{{ submission.briefDescription }}</p>
+          
+          <h4 class="govuk-heading-s govuk-!-margin-top-4">Justification</h4>
+          <p class="govuk-body">{{ submission.justification }}</p>
+          
+          <div class="govuk-grid-row govuk-!-margin-top-4">
+            <div class="govuk-grid-column-one-half">
+              <h4 class="govuk-heading-s">Urgency Level</h4>
+              <p class="govuk-body">
+                {% if submission.urgencyLevel === 'High' %}
+                  <strong class="govuk-tag govuk-tag--red">{{ submission.urgencyLevel }}</strong>
+                {% elif submission.urgencyLevel === 'Medium' %}
+                  <strong class="govuk-tag govuk-tag--yellow">{{ submission.urgencyLevel }}</strong>
+                {% else %}
+                  <strong class="govuk-tag govuk-tag--green">{{ submission.urgencyLevel }}</strong>
+                {% endif %}
+              </p>
+            </div>
+            
+            {% if submission.impactAreas %}
+            <div class="govuk-grid-column-one-half">
+              <h4 class="govuk-heading-s">Impact Areas</h4>
+              <p class="govuk-body">
+                {% for area in submission.impactAreas %}
+                  <span class="govuk-tag govuk-tag--blue govuk-!-margin-right-1">{{ area }}</span>
+                {% endfor %}
+              </p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <!-- Technical Information Section -->
+        <div class="govuk-inset-text">
+          <h3 class="govuk-heading-s">Technical Information</h3>
+          
+          {% if submission.affectedReferenceDataArea %}
+          <h4 class="govuk-heading-s">Affected Reference Data Area</h4>
+          <p class="govuk-body">{{ submission.affectedReferenceDataArea }}</p>
+          {% endif %}
+          
+          {% if submission.technicalDependencies %}
+          <h4 class="govuk-heading-s govuk-!-margin-top-4">Technical Dependencies</h4>
+          <p class="govuk-body">{{ submission.technicalDependencies }}</p>
+          {% endif %}
+          
+          {% if submission.relatedDocuments %}
+          <h4 class="govuk-heading-s govuk-!-margin-top-4">Related Documents</h4>
+          <p class="govuk-body">{{ submission.relatedDocuments }}</p>
+          {% endif %}
+          
+          <h4 class="govuk-heading-s govuk-!-margin-top-4">Attachments</h4>
+          <p class="govuk-body">{{ submission.attachments }}</p>
+          
+          {% if submission.additionalNotes %}
+          <h4 class="govuk-heading-s govuk-!-margin-top-4">Additional Notes</h4>
+          <p class="govuk-body">{{ submission.additionalNotes }}</p>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="govuk-!-margin-bottom-6">
+        <h2 class="govuk-heading-m">Workflow History</h2>
+        
+        <div class="govuk-inset-text">
+          <h3 class="govuk-heading-s">Status Timeline</h3>
+          
+          <table class="govuk-table">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Date</th>
+                <th scope="col" class="govuk-table__header">Phase</th>
+                <th scope="col" class="govuk-table__header">Status</th>
+                <th scope="col" class="govuk-table__header">Comment</th>
+                <th scope="col" class="govuk-table__header">Updated By</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for entry in bcr.formattedHistory | reverse %}
+                <tr class="govuk-table__row">
+                  <td class="govuk-table__cell">{{ entry.formattedTimestamp }}</td>
+                  <td class="govuk-table__cell">{{ entry.phase }}</td>
+                  <td class="govuk-table__cell">
+                    <strong class="{{ entry.statusTagColor }}">{{ entry.status }}</strong>
+                  </td>
+                  <td class="govuk-table__cell">{{ entry.comment }}</td>
+                  <td class="govuk-table__cell">{{ entry.updatedBy }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="govuk-!-margin-bottom-6">
+        <h2 class="govuk-heading-m">Actions</h2>
+        
+        <div class="govuk-inset-text">
+          <h3 class="govuk-heading-s">Available Actions</h3>
+          
+          <div class="govuk-button-group">
+            <a href="/bcr/{{ bcr.id }}/update" class="govuk-button">Update Phase</a>
+            <a href="/bcr/{{ bcr.id }}/warning?action=delete" class="govuk-button govuk-button--warning">Delete BCR</a>
+            <a href="/bcr/dashboard" class="govuk-button govuk-button--secondary">Return to Dashboard</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

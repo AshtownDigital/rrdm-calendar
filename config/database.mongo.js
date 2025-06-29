@@ -11,6 +11,26 @@ mongoose.set('strictQuery', false);
 let connectionAttempts = 0;
 let isConnecting = false;
 let connectionPromise = null;
+let modelsRegistered = false;
+
+// Function to register models
+function registerModels() {
+  if (modelsRegistered) return;
+  
+  // Clear any existing models to prevent duplicate registration
+  Object.keys(mongoose.models).forEach(modelName => {
+    delete mongoose.models[modelName];
+    if (mongoose.modelSchemas) {
+      delete mongoose.modelSchemas[modelName];
+    }
+  });
+
+  // Register all models
+  require('../models');
+  
+  modelsRegistered = true;
+  console.log('MongoDB models registered successfully');
+}
 
 // Connection function with improved retry logic and error handling
 async function connect() {
@@ -68,7 +88,7 @@ async function connect() {
         bufferTimeoutMS: 10000, // 10 seconds (reduced from 30)
         // Network settings
         family: 4, // Use IPv4, skip trying IPv6
-        ssl: process.env.NODE_ENV === 'production',
+        ssl: false, // Only enable SSL in production
         // Write concern
         retryWrites: true,
         w: 'majority',
@@ -86,6 +106,9 @@ async function connect() {
       // Reset connection attempts on successful connection
       connectionAttempts = 0;
       console.log('MongoDB connected successfully');
+      
+      // Register models after successful connection
+      registerModels();
       
       // Setup connection event handlers with improved error handling
       mongoose.connection.on('error', (err) => {

@@ -1,0 +1,43 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}
+  {{ title }} - RRDM
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <div class="govuk-panel govuk-panel--confirmation">
+      <h1 class="govuk-panel__title">
+        Submission complete
+      </h1>
+      <div class="govuk-panel__body">
+        Your submission code<br><strong>{{ submissionCode }}</strong>
+      </div>
+    </div>
+
+    <p class="govuk-body">We have sent you a confirmation email.</p>
+
+    <h2 class="govuk-heading-m">What happens next</h2>
+
+    <p class="govuk-body">
+      Your submission will be reviewed by our team. You will be notified when the review is complete.
+    </p>
+    
+    <p class="govuk-body">
+      If your submission is approved, it will be converted into a Business Change Request (BCR) and assigned a BCR number.
+    </p>
+
+    <div class="govuk-inset-text">
+      <p>You can view the status of your submission at any time by visiting:</p>
+      <p><a href="/bcr/submissions/{{ submissionId }}" class="govuk-link">{{ submissionLink }}</a></p>
+    </div>
+
+    <div class="govuk-button-group">
+      <a href="/bcr/submissions" class="govuk-button">View all submissions</a>
+      <a href="/bcr/submit" class="govuk-button govuk-button--secondary">Submit another request</a>
+      <a href="/dashboard" class="govuk-link">Return to dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

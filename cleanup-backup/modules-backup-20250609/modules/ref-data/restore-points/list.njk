@@ -1,0 +1,197 @@
+{% extends "layouts/base-no-header.njk" %}
+
+{% block title %}Reference Data Restore Points{% endblock %}
+
+{% block stylesheets %}
+  <link href="/stylesheets/govuk-frontend.min.css" rel="stylesheet">
+  <link href="/stylesheets/ref-data-nav.css" rel="stylesheet">
+{% endblock %}
+
+{% block header %}
+  {% include "partials/ref-data/header.njk" %}
+{% endblock %}
+
+{% block navigation %}
+  {% include "partials/ref-data/navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-breadcrumbs">
+  <ol class="govuk-breadcrumbs__list">
+    <li class="govuk-breadcrumbs__list-item">
+      <a class="govuk-breadcrumbs__link" href="/">Home</a>
+    </li>
+    <li class="govuk-breadcrumbs__list-item">
+      <a class="govuk-breadcrumbs__link" href="/ref-data">Reference Data</a>
+    </li>
+    <li class="govuk-breadcrumbs__list-item">
+      Restore Points
+    </li>
+  </ol>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Reference Data Restore Points</h1>
+    <p class="govuk-body-l">Create and manage reference data restore points</p>
+    
+    {# Create Restore Point Form #}
+    <div class="govuk-form-group">
+      <h2 class="govuk-heading-m">Create Restore Point</h2>
+      <form id="createRestorePoint" class="govuk-!-margin-bottom-6">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="description">
+            Description
+          </label>
+          <input class="govuk-input govuk-input--width-30" id="description" name="description" type="text" required>
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="academicYear">
+            Academic Year
+          </label>
+          <select class="govuk-select govuk-input--width-10" id="academicYear" name="academicYear" required>
+            <option value="">Select year</option>
+            {% for year in academicYears %}
+              <option value="{{ year.id }}">{{ year.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="type">
+            Type
+          </label>
+          <select class="govuk-select govuk-input--width-20" id="type" name="type" required>
+            <option value="">Select type</option>
+            <option value="manual">Manual Backup</option>
+            <option value="pre-update">Pre-Update</option>
+            <option value="post-update">Post-Update</option>
+            <option value="system">System</option>
+          </select>
+        </div>
+
+        <button type="submit" class="govuk-button" data-module="govuk-button">
+          Create Restore Point
+        </button>
+      </form>
+    </div>
+
+    {# Restore Points Table #}
+    <table class="govuk-table" data-module="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--m">Available Restore Points</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header" aria-sort="none">Created</th>
+          <th scope="col" class="govuk-table__header" aria-sort="none">Description</th>
+          <th scope="col" class="govuk-table__header" aria-sort="none">Academic Year</th>
+          <th scope="col" class="govuk-table__header" aria-sort="none">Type</th>
+          <th scope="col" class="govuk-table__header">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% if restorePoints and restorePoints.length > 0 %}
+          {% for point in restorePoints %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell">{{ point.timestamp }}</td>
+              <td class="govuk-table__cell">{{ point.description }}</td>
+              <td class="govuk-table__cell">{{ point.academicYear }}</td>
+              <td class="govuk-table__cell">
+                <strong class="govuk-tag 
+                  {% if point.type === 'manual' %}govuk-tag--blue
+                  {% elif point.type === 'pre-update' %}govuk-tag--yellow
+                  {% elif point.type === 'post-update' %}govuk-tag--green
+                  {% elif point.type === 'system' %}govuk-tag--grey
+                  {% endif %}">
+                  {{ point.type | title }}
+                </strong>
+              </td>
+              <td class="govuk-table__cell">
+                <button class="govuk-button govuk-button--warning govuk-!-margin-0" 
+                        data-module="govuk-button"
+                        data-restore-point="{{ point.id }}"
+                        onclick="restoreFromPoint('{{ point.id }}')">
+                  Restore
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" colspan="5">
+              <div class="govuk-warning-text">
+                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                <strong class="govuk-warning-text__text">
+                  <span class="govuk-warning-text__assistive">Warning</span>
+                  No restore points available
+                </strong>
+              </div>
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+    
+    <div class="govuk-button-group govuk-!-margin-top-6">
+      <a href="/ref-data/dashboard" class="govuk-button">Back to Dashboard</a>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Handle form submission
+  document.getElementById('createRestorePoint').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = {
+      description: document.getElementById('description').value,
+      academicYear: document.getElementById('academicYear').value,
+      type: document.getElementById('type').value
+    };
+
+    try {
+      const response = await fetch('/ref-data/restore-points/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create restore point');
+      }
+
+      window.location.reload();
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to create restore point');
+    }
+  });
+});
+
+// Handle restore point
+async function restoreFromPoint(id) {
+  if (!confirm('Are you sure you want to restore to this point? All current data will be replaced.')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/ref-data/restore-points/restore/${id}`, {
+      method: 'POST'
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to restore from point');
+    }
+
+    alert('Successfully restored from backup');
+    window.location.reload();
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Failed to restore from point');
+  }
+}
+</script>
+{% endblock %}

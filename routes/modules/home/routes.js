@@ -4,7 +4,7 @@
  */
 const express = require('express');
 const router = express.Router();
-const homeController = require('../../../controllers/modules/home/controller');
+const homeController = require('../../../controllers/homeController');
 
 // Home page route (landing page)
 router.get('/', homeController.index);

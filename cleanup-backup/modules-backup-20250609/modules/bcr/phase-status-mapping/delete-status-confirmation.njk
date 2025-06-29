@@ -1,0 +1,59 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}Status Deleted | BCR Phase-Status Mapping | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-panel govuk-panel--confirmation">
+        <h1 class="govuk-panel__title">
+          Status deleted successfully
+        </h1>
+        <div class="govuk-panel__body">
+          Status: <strong>{{ status.name }}</strong><br>
+          Phase: <strong>{{ phase.name }}</strong>
+        </div>
+      </div>
+
+      <h2 class="govuk-heading-m">What happens next</h2>
+      
+      <p class="govuk-body">
+        The status has been removed from the phase-status mapping and is no longer available for selection in BCR workflows.
+      </p>
+      
+      {% if bcrCount > 0 %}
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-warning-text__assistive">Warning</span>
+            {{ bcrCount }} existing BCRs were affected by this change
+          </strong>
+        </div>
+        
+        <p class="govuk-body">
+          The following BCRs were previously using this status and may need to be updated:
+        </p>
+        
+        <ul class="govuk-list govuk-list--bullet">
+          {% for bcr in affectedBcrs %}
+            <li>
+              <a href="/bcr/{{ bcr.id }}" class="govuk-link">
+                BCR-{{ bcr.id }}: {{ bcr.title }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      
+      <div class="govuk-button-group">
+        <a href="/bcr/phase-status-mapping" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+          Return to Phase-Status Mapping
+        </a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

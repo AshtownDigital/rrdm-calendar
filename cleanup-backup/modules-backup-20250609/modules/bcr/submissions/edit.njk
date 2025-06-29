@@ -1,0 +1,328 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}Edit BCR: {{ bcr.id }} | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">Edit BCR: {{ bcr.id }}</h1>
+      
+      {% if errors and errors is defined %}
+      <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" data-module="govuk-error-summary">
+        <h2 class="govuk-error-summary__title" id="error-summary-title">
+          There is a problem
+        </h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            {% for key, error in errors %}
+              <li>
+                <a href="#{{ key }}">{{ error.text }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      {% endif %}
+      
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+          <!-- Form introduction -->
+          <div class="govuk-form-group">
+            <p class="govuk-body">Use this form to edit the Business Change Request (BCR). Fields marked with <span class="govuk-required">*</span> are required.</p>
+          </div>
+          
+          <form action="/bcr/edit/{{ bcr.id }}" method="post" class="govuk-!-margin-bottom-9">
+            <!-- Section 1: Submitter Information -->
+            <div class="govuk-form-group govuk-!-margin-bottom-8">
+              <fieldset class="govuk-fieldset">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                  <h2 class="govuk-fieldset__heading">1. Submitter Information</h2>
+                </legend>
+                <div class="govuk-inset-text govuk-!-margin-bottom-6">
+                  <p class="govuk-body govuk-!-margin-bottom-0">Contact details of the person who submitted this request.</p>
+                </div>
+                
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="submitterName">
+                    Full Name <span class="govuk-required">*</span>
+                  </label>
+                  <input class="govuk-input" id="submitterName" name="submitterName" type="text" value="{{ submission.submitterName or (submission.submitter and submission.submitter.name) or '' }}" required>
+                </div>
+                
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="submitterEmail">
+                    Email Address <span class="govuk-required">*</span>
+                  </label>
+                  <input class="govuk-input" id="submitterEmail" name="submitterEmail" type="email" value="{{ submission.submitterEmail or (submission.submitter and submission.submitter.email) or '' }}" required>
+                </div>
+                
+                <div class="govuk-form-group">
+                  <fieldset class="govuk-fieldset">
+                    <legend class="govuk-fieldset__legend">
+                      Are you a civil servant, contractor or consultant within the DfE? <span class="govuk-required">*</span>
+                    </legend>
+                    <div class="govuk-radios" data-module="govuk-radios">
+                      <div class="govuk-radios__item">
+                        <input class="govuk-radios__input" id="employmentType-yes" name="employmentType" type="radio" value="yes" {% if submission.employmentType === 'yes' %}checked{% endif %} required>
+                        <label class="govuk-label govuk-radios__label" for="employmentType-yes">
+                          Yes
+                        </label>
+                      </div>
+                      <div class="govuk-radios__item">
+                        <input class="govuk-radios__input" id="employmentType-no" name="employmentType" type="radio" value="no" {% if submission.employmentType === 'no' %}checked{% endif %}>
+                        <label class="govuk-label govuk-radios__label" for="employmentType-no">
+                          No
+                        </label>
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+                
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="submitterOrganisation">
+                    Organisation <span class="govuk-required">*</span>
+                  </label>
+                  <input class="govuk-input" id="submitterOrganisation" name="submitterOrganisation" type="text" value="{{ submission.submitterOrganisation or (submission.submitter and submission.submitter.organisation) or '' }}" required>
+                </div>
+              </fieldset>
+            </div>
+            
+            <!-- Section 2: Change Request Details -->
+            <div class="govuk-form-group govuk-!-margin-bottom-8">
+              <fieldset class="govuk-fieldset">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                  <h2 class="govuk-fieldset__heading">2. Change Request Details</h2>
+                </legend>
+                <div class="govuk-inset-text govuk-!-margin-bottom-6">
+                  <p class="govuk-body govuk-!-margin-bottom-0">Provide details about the change you are requesting.</p>
+                </div>
+                
+
+                
+                <div class="govuk-form-group {% if errors is defined and errors.description %}govuk-form-group--error{% endif %}">
+                  <label class="govuk-label" for="description">
+                    Description <span class="govuk-required">*</span>
+                  </label>
+                  {% if errors.description %}
+                  <p id="description-error" class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span> {{ errors.description.text }}
+                  </p>
+                  {% endif %}
+                  <textarea class="govuk-textarea {% if errors is defined and errors.description %}govuk-textarea--error{% endif %}" id="description" name="description" rows="5" required>{{ formData.description or bcr.description }}</textarea>
+                </div>
+                
+                <div class="govuk-form-group {% if errors is defined and errors.justification %}govuk-form-group--error{% endif %}">
+                  <label class="govuk-label" for="justification">
+                    Justification <span class="govuk-required">*</span>
+                  </label>
+                  {% if errors.justification %}
+                  <p id="justification-error" class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span> {{ errors.justification.text }}
+                  </p>
+                  {% endif %}
+                  <textarea class="govuk-textarea {% if errors is defined and errors.justification %}govuk-textarea--error{% endif %}" id="justification" name="justification" rows="5" required>{{ formData.justification or bcr.justification }}</textarea>
+                </div>
+                
+                <div class="govuk-form-group {% if errors is defined and errors.impactAreas %}govuk-form-group--error{% endif %}">
+                  <fieldset class="govuk-fieldset">
+                    <legend class="govuk-fieldset__legend">
+                      Select which of the following your change request relates to <span class="govuk-required">*</span>
+                    </legend>
+                    {% if errors.impactAreas %}
+                    <p id="impactAreas-error" class="govuk-error-message">
+                      <span class="govuk-visually-hidden">Error:</span> {{ errors.impactAreas.text }}
+                    </p>
+                    {% endif %}
+                    <div class="govuk-checkboxes {% if errors is defined and errors.impactAreas %}govuk-checkboxes--error{% endif %}" data-module="govuk-checkboxes">
+                      {% for area in impactAreas %}
+                      <div class="govuk-checkboxes__item">
+                        <input class="govuk-checkboxes__input" id="impactAreas-{{ area.name }}" name="impactAreas" type="checkbox" value="{{ area.name }}" {% if selectedImpactAreas and selectedImpactAreas.includes(area.name) %}checked{% endif %}>
+                        <label class="govuk-label govuk-checkboxes__label" for="impactAreas-{{ area.name }}">
+                          {{ area.name }}
+                        </label>
+                        {% if area.description %}
+                        <div class="govuk-hint govuk-checkboxes__hint">
+                          {{ area.description }}
+                        </div>
+                        {% endif %}
+                      </div>
+                      {% endfor %}
+                    </div>
+                  </fieldset>
+                </div>
+                
+                <div class="govuk-form-group">
+                  <fieldset class="govuk-fieldset">
+                    <legend class="govuk-fieldset__legend">
+                      Urgency of Change <span class="govuk-required">*</span>
+                    </legend>
+                    <div class="govuk-radios" data-module="govuk-radios">
+                      <div class="govuk-radios__item">
+                        <input class="govuk-radios__input" id="urgency-critical" name="urgency" type="radio" value="Critical" {% if submission.urgency === 'Critical' %}checked{% endif %} required>
+                        <label class="govuk-label govuk-radios__label" for="urgency-critical">
+                          Critical
+                        </label>
+                      </div>
+                      <div class="govuk-radios__item">
+                        <input class="govuk-radios__input" id="urgency-high" name="urgency" type="radio" value="High" {% if submission.urgency === 'High' %}checked{% endif %}>
+                        <label class="govuk-label govuk-radios__label" for="urgency-high">
+                          High
+                        </label>
+                      </div>
+                      <div class="govuk-radios__item">
+                        <input class="govuk-radios__input" id="urgency-medium" name="urgency" type="radio" value="Medium" {% if submission.urgency === 'Medium' %}checked{% endif %}>
+                        <label class="govuk-label govuk-radios__label" for="urgency-medium">
+                          Medium
+                        </label>
+                      </div>
+                      <div class="govuk-radios__item">
+                        <input class="govuk-radios__input" id="urgency-low" name="urgency" type="radio" value="Low" {% if submission.urgency === 'Low' %}checked{% endif %}>
+                        <label class="govuk-label govuk-radios__label" for="urgency-low">
+                          Low
+                        </label>
+                      </div>
+                      <div class="govuk-radios__item">
+                        <input class="govuk-radios__input" id="urgency-unknown" name="urgency" type="radio" value="Unknown" {% if submission.urgency === 'Unknown' %}checked{% endif %}>
+                        <label class="govuk-label govuk-radios__label" for="urgency-unknown">
+                          Unknown
+                        </label>
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+              </fieldset>
+            </div>
+            
+            <!-- Section 3: Technical Details -->
+            <div class="govuk-form-group govuk-!-margin-bottom-8">
+              <fieldset class="govuk-fieldset">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                  <h2 class="govuk-fieldset__heading">3. Technical Details</h2>
+                </legend>
+                <div class="govuk-inset-text govuk-!-margin-bottom-6">
+                  <p class="govuk-body govuk-!-margin-bottom-0">Provide technical details about the change request.</p>
+                </div>
+                
+                <div class="govuk-form-group">
+                  <fieldset class="govuk-fieldset">
+                    <legend class="govuk-fieldset__legend">
+                      Impact Areas <span class="govuk-required">*</span>
+                    </legend>
+                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                      {% for area in impactAreas %}
+                        <div class="govuk-checkboxes__item">
+                          <input class="govuk-checkboxes__input" id="impactAreas-{{ loop.index }}" name="impactAreas" type="checkbox" value="{{ area.value }}" {% if selectedImpactAreas and selectedImpactAreas.includes(area.value) %}checked{% endif %}>
+                          <label class="govuk-label govuk-checkboxes__label" for="impactAreas-{{ loop.index }}">
+                            {{ area.value }}
+                          </label>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </fieldset>
+                </div>
+                
+                <div class="govuk-form-group" id="affectedRefDataAreaGroup" style="display: none;">
+                  <label class="govuk-label" for="affectedRefDataArea">
+                    Affected Reference Data Area
+                  </label>
+                  <span id="affectedRefDataArea-hint" class="govuk-hint">
+                    Optional - provide details if Reference Data is affected
+                  </span>
+                  <input class="govuk-input" id="affectedRefDataArea" name="affectedRefDataArea" type="text" value="{{ submission.affectedRefDataArea }}" aria-describedby="affectedRefDataArea-hint">
+                </div>
+                
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="technicalDependencies">
+                    Technical Dependencies
+                  </label>
+                  <textarea class="govuk-textarea" id="technicalDependencies" name="technicalDependencies" rows="3">{{ submission.technicalDependencies }}</textarea>
+                </div>
+              </fieldset>
+            </div>
+            
+            <!-- Section 4: Supporting Information -->
+            <div class="govuk-form-group govuk-!-margin-bottom-8">
+              <fieldset class="govuk-fieldset">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                  <h2 class="govuk-fieldset__heading">4. Supporting Information</h2>
+                </legend>
+                <div class="govuk-inset-text govuk-!-margin-bottom-6">
+                  <p class="govuk-body govuk-!-margin-bottom-0">Provide any additional information to support your request.</p>
+                </div>
+                
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="relatedDocuments">
+                    Related Documents (URLs)
+                  </label>
+                  <textarea class="govuk-textarea" id="relatedDocuments" name="relatedDocuments" rows="3">{% if submission.relatedDocuments %}{{ submission.relatedDocuments | join('\n') }}{% endif %}</textarea>
+                  <div class="govuk-hint">Enter one URL per line</div>
+                </div>
+              </fieldset>
+            </div>
+            
+            <!-- Section 5: Declaration -->
+            <div class="govuk-form-group govuk-!-margin-bottom-8">
+              <fieldset class="govuk-fieldset">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                  <h2 class="govuk-fieldset__heading">5. Declaration</h2>
+                </legend>
+                <div class="govuk-inset-text govuk-!-margin-bottom-6">
+                  <p class="govuk-body govuk-!-margin-bottom-0">Please review your changes before submitting.</p>
+                </div>
+                
+                <div class="govuk-warning-text">
+                  <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                  <strong class="govuk-warning-text__text">
+                    <span class="govuk-warning-text__assistive">Warning</span>
+                    By submitting this form, you confirm that the information provided is accurate and complete to the best of your knowledge.
+                  </strong>
+                </div>
+              </fieldset>
+            </div>
+            
+            <div class="govuk-button-group">
+              <button type="submit" class="govuk-button" data-module="govuk-button">
+                Save Changes
+              </button>
+              <a href="/bcr/submissions/{{ bcr.id }}" class="govuk-button govuk-button--secondary">
+                Cancel
+              </a>
+              <a href="/bcr/submissions/{{ bcr.id }}/delete-confirmation" class="govuk-button govuk-button--warning" data-module="govuk-button">
+                Delete BCR
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block pageScripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get the Reference Data checkbox and the Affected Reference Data Area field
+    const refDataCheckbox = document.getElementById('changeType-reference-data');
+    const affectedRefDataAreaGroup = document.getElementById('affectedRefDataAreaGroup');
+    
+    // Function to toggle visibility of the Affected Reference Data Area field
+    function toggleRefDataAreaVisibility() {
+      if (refDataCheckbox.checked) {
+        affectedRefDataAreaGroup.style.display = 'block';
+      } else {
+        affectedRefDataAreaGroup.style.display = 'none';
+      }
+    }
+    
+    // Add event listener to the Reference Data checkbox
+    refDataCheckbox.addEventListener('change', toggleRefDataAreaVisibility);
+    
+    // Initial check in case the checkbox is already checked (e.g., when returning to the form)
+    toggleRefDataAreaVisibility();
+  });
+</script>
+{% endblock %}

@@ -1,5 +1,4 @@
 @include govuk-exports("govuk/component/header") {
-
   $govuk-header-background: govuk-colour("black");
   $govuk-header-border-color: $govuk-brand-colour;
   $govuk-header-border-width: govuk-spacing(2);
@@ -7,23 +6,38 @@
   $govuk-header-link-active: #1d8feb;
   $govuk-header-nav-item-border-color: #2e3133;
   $govuk-header-link-underline-thickness: 3px;
+  $govuk-header-vertical-spacing-value: 2;
+  // This crown height is only used to calculate top offset of mobile menu button
+  // as the crown svg height is the only thing that controls the height of the header
+  $govuk-header-crown-height: 30px;
+  $govuk-header-menu-button-height: 24px;
+  $govuk-header-menu-button-width: 80px;
 
   $govuk-header-rebrand-background: $govuk-brand-colour;
   $govuk-header-rebrand-logo-bottom-margin: 2px;
 
   .govuk-header {
-    @include govuk-font($size: 16);
-    @include _govuk-rebrand {
-      // Manual override of line height
-      line-height: 1;
-    }
+    @include govuk-font($size: 16, $line-height: 1);
+
+    // Add a transparent bottom border for forced-colour modes
     @include _govuk-rebrand(
       "border-bottom",
       $from: govuk-spacing(2) solid govuk-colour("white"),
       $to: 1px solid transparent
     );
     @include _govuk-rebrand("background", $from: $govuk-header-background, $to: $govuk-header-rebrand-background);
+
     color: $govuk-header-text;
+  }
+
+  .govuk-header--with-js-navigation {
+    @include govuk-media-query($until: desktop) {
+      .govuk-header__logo {
+        // Protect the absolute positioned menu button from overlapping with the
+        // logo with right padding using the button's width
+        padding-right: $govuk-header-menu-button-width;
+      }
+    }
   }
 
   .govuk-header__container--full-width {
@@ -39,8 +53,9 @@
     @include govuk-clearfix;
     position: relative;
     margin-bottom: -$govuk-header-border-width;
-    padding-top: govuk-spacing(2);
+    padding-top: govuk-spacing($govuk-header-vertical-spacing-value);
     border-bottom: $govuk-header-border-width solid $govuk-header-border-color;
+
     @include _govuk-rebrand {
       // Remove the space allocated to the blue bar
       margin-bottom: 0;
@@ -53,13 +68,25 @@
     }
   }
 
+  // TODO: Remove this when _govuk-rebrand becomes the default
+  .govuk-header--full-width-border {
+    border-bottom-color: $govuk-header-border-color;
+
+    .govuk-header__container {
+      border-bottom-color: transparent;
+    }
+  }
+
   .govuk-header__logotype {
     display: inline-block;
+    position: relative;
+    top: -3px;
 
     // Add a gap after the logo in case it's followed by a product name. This
     // gets removed later if the logotype is a :last-child.
     margin-right: govuk-spacing(1);
     fill: currentcolor;
+    vertical-align: top;
 
     // Prevent readability backplate from obscuring underline in Windows High
     // Contrast Mode
@@ -75,11 +102,8 @@
     }
 
     @include _govuk-rebrand {
-      position: relative;
-      top: -3px;
       margin-right: govuk-px-to-rem(7px); // 1 'dot'
       margin-bottom: $govuk-header-rebrand-logo-bottom-margin;
-      vertical-align: top;
 
       // Remove right-margin if there's no product name
       &:last-child {
@@ -108,40 +132,32 @@
     }
   }
 
-  .govuk-header__logotype-crown {
-    position: relative;
-    top: -1px;
-    margin-right: 1px;
-    fill: currentcolor;
-    vertical-align: top;
-  }
-
-  // Spacing adjustment for Tudor crown, as the new graphic is narrower than the
-  // existing crown. In Frontend v5, this rule should replace the equivalent in
-  // the block above.
-  .govuk-header__logotype-crown[width="32"] {
-    top: -3px;
-    margin-right: 2px;
-  }
-
-  .govuk-header__logotype-crown-fallback-image {
-    width: 36px;
-    height: 32px;
-    border: 0;
-    vertical-align: bottom;
-  }
-
-  // Sizing adjustment for Tudor crown, as the new graphic is smaller than the
-  // existing crown. In Frontend v5, these rules should replace their
-  // equivalents in the block above.
-  .govuk-header__logotype-crown-fallback-image[width="32"] {
-    width: 32px;
-    height: 30px;
-  }
-
   .govuk-header__product-name {
-    @include govuk-font($size: 24, $line-height: 1);
+    $product-name-offset: if($govuk-new-typography-scale, 7px, 10px);
+    $product-name-offset-tablet: 5px;
+
+    @include govuk-font-size($size: 24, $line-height: 1);
+    @include govuk-typography-weight-regular;
     display: inline-table;
+
+    // Maintain space below logo when wrapped
+    margin-top: $product-name-offset;
+
+    // Firefox places the GOV.UK logo one pixel higher, due to how it rounds
+    // subpixels, so nudge the product name in FF to still be aligned.
+    @-moz-document url-prefix() {
+      margin-top: $product-name-offset - 0.5px;
+    }
+
+    // Align vertically with logo when not wrapped
+    vertical-align: top;
+
+    @include govuk-media-query($from: tablet) {
+      margin-top: $product-name-offset-tablet;
+      @-moz-document url-prefix() {
+        margin-top: $product-name-offset-tablet - 0.5px;
+      }
+    }
 
     @include _govuk-rebrand {
       // Remove top margin
@@ -156,14 +172,14 @@
       font-size: govuk-px-to-rem(31px);
 
       // Reduce letter spacing
-      letter-spacing: -.015em;
+      letter-spacing: -0.015em;
 
       // Prevent forced colour modes from applying a background colour behind
       // the product name, which cuts off the underline that appears on hover.
       forced-color-adjust: none;
 
       @media screen and (forced-colors: active) {
-        color: linktext;
+        color: LinkText;
         background: transparent;
       }
 
@@ -186,7 +202,6 @@
     // - all links get a 3px underline regardless of text size, as there are
     //   multiple grouped elements close to one another and having slightly
     //   different underline widths looks unbalanced
-    @include govuk-typography-common;
     @include govuk-link-style-inverse;
 
     text-decoration: none;
@@ -208,14 +223,11 @@
   .govuk-header__link--homepage {
     // Font size needs to be set on the link so that the box sizing is correct
     // in Firefox
-    @include govuk-font($size: false, $weight: bold);
-
     display: inline-block;
     margin-right: govuk-spacing(2);
     font-size: 30px; // We don't have a mixin that produces 30px font size
-    @include _govuk-rebrand("line-height", $from: 1, $to: inherit);
 
-    @include govuk-media-query($from: tablet) {
+    @include govuk-media-query($from: desktop) {
       display: inline;
     }
 
@@ -228,8 +240,6 @@
     &:active {
       // Negate the added border
       margin-bottom: $govuk-header-link-underline-thickness * -1;
-      // Omitting colour will use default value of currentColor – if we
-      // specified currentColor explicitly IE8 would ignore this rule.
       border-bottom: $govuk-header-link-underline-thickness solid;
     }
 
@@ -240,8 +250,6 @@
     }
 
     @include _govuk-rebrand {
-      @include govuk-typography-weight-regular;
-
       display: inline;
 
       // Remove word-spacing from within the logo so we can ignore
@@ -259,13 +267,11 @@
     }
   }
 
-  // The govuk-header__link--service-name class is deprecated - use
-  // govuk-header__service-name instead.
-  .govuk-header__service-name,
-  .govuk-header__link--service-name {
+  .govuk-header__service-name {
     display: inline-block;
     margin-bottom: govuk-spacing(2);
-    @include govuk-font($size: 24, $weight: bold);
+    @include govuk-font-size($size: 24);
+    @include govuk-typography-weight-bold;
 
     @include _govuk-rebrand {
       // Apply margins to internal elements to emulate padding
@@ -286,22 +292,19 @@
   }
 
   .govuk-header__logo {
-    @include govuk-responsive-margin(2, "bottom");
-    padding-right: govuk-spacing(8);
+    @include govuk-responsive-margin($govuk-header-vertical-spacing-value, "bottom");
 
-    @include govuk-media-query ($from: desktop) {
+    @include govuk-media-query($from: desktop) {
       width: 33.33%;
       padding-right: $govuk-gutter-half;
       float: left;
       vertical-align: top;
 
-      @include _govuk-rebrand {
-        // Reset float when logo is the last child, without a navigation
-        &:last-child {
-          width: auto;
-          padding-right: 0;
-          float: none;
-        }
+      // Reset float when logo is the last child, without a navigation
+      &:last-child {
+        width: auto;
+        padding-right: 0;
+        float: none;
       }
     }
 
@@ -316,7 +319,7 @@
   }
 
   .govuk-header__content {
-    @include govuk-media-query ($from: desktop) {
+    @include govuk-media-query($from: desktop) {
       width: 66.66%;
       padding-left: $govuk-gutter-half;
       float: left;
@@ -325,15 +328,14 @@
 
   .govuk-header__menu-button {
     @include govuk-font($size: 16);
-    display: none;
-    position: absolute;
-    top: govuk-spacing(4);
-    right: 0;
-    margin: 0;
+    max-width: $govuk-header-menu-button-width;
+    min-height: $govuk-header-menu-button-height;
+    margin-bottom: govuk-spacing(1);
     padding: 0;
     border: 0;
     color: govuk-colour("white");
     background: none;
+    word-break: break-all;
     cursor: pointer;
 
     &:hover {
@@ -349,26 +351,39 @@
       @include govuk-focused-text;
     }
 
-    &:after {
+    &::after {
       @include govuk-shape-arrow($direction: down, $base: 10px, $display: inline-block);
       content: "";
       margin-left: govuk-spacing(1);
     }
 
-    &[aria-expanded="true"]:after {
+    &[aria-expanded="true"]::after {
       @include govuk-shape-arrow($direction: up, $base: 10px, $display: inline-block);
     }
 
-    @include govuk-media-query ($from: tablet) {
+    @include govuk-media-query($from: mobile) {
+      position: absolute;
+      // calculate top offset by:
+      // - getting the vertical spacing for the top and the bottom of the header
+      // - adding that to the crown height
+      // - dividing it by 2 so you have the vertical centre of the header
+      // - subtracting half the height of the menu button
+      top: (((govuk-spacing($govuk-header-vertical-spacing-value) * 2) + $govuk-header-crown-height) / 2) -
+        ($govuk-header-menu-button-height / 2);
+      right: 0;
+      margin: 0;
+    }
+
+    @include govuk-media-query($from: tablet) {
       top: govuk-spacing(3);
     }
 
-    .js-enabled & {
+    .govuk-frontend-supported & {
       display: block;
     }
 
     &[hidden],
-    .js-enabled &[hidden] {
+    .govuk-frontend-supported &[hidden] {
       display: none;
     }
   }
@@ -380,7 +395,7 @@
       }
     }
 
-    @include govuk-media-query ($from: desktop) {
+    @include govuk-media-query($from: desktop) {
       margin-bottom: govuk-spacing(2);
 
       @include _govuk-rebrand {
@@ -426,24 +441,18 @@
   }
 
   .govuk-header__navigation--end {
-    @include govuk-media-query ($from: desktop) {
+    @include govuk-media-query($from: desktop) {
       margin: 0;
       padding: govuk-spacing(1) 0;
       text-align: right;
     }
   }
 
-  // The govuk-header__navigation--no-service-name class is deprecated and will
-  // be removed in the next major release.
-  .govuk-header__navigation--no-service-name {
-    padding-top: govuk-spacing(7);
-  }
-
   .govuk-header__navigation-item {
     padding: govuk-spacing(2) 0;
     border-bottom: 1px solid $govuk-header-nav-item-border-color;
 
-    @include govuk-media-query ($from: desktop) {
+    @include govuk-media-query($from: desktop) {
       display: inline-block;
       margin-right: govuk-spacing(3);
       padding: govuk-spacing(1) 0;
@@ -451,7 +460,8 @@
     }
 
     a {
-      @include govuk-font($size: 16, $weight: bold);
+      @include govuk-font-size($size: 16);
+      @include govuk-typography-weight-bold;
       white-space: nowrap;
     }
 
@@ -521,11 +531,6 @@
       background: transparent;
     }
 
-    // Hide the inverted crown when printing in browsers that don't support SVG.
-    .govuk-header__logotype-crown-fallback-image {
-      display: none;
-    }
-
     .govuk-header__link {
       &:link,
       &:visited {
@@ -533,31 +538,10 @@
       }
 
       // Do not append link href to GOV.UK link when printing (e.g. '(/)')
-      &:after {
+      &::after {
         display: none;
       }
     }
-  }
-
-  @if $govuk-use-legacy-font {
-    // Begin adjustments for font baseline offset
-    // These should be removed when the font is updated with the correct baseline
-    .govuk-header__logotype-crown,
-    .govuk-header__logotype-crown-fallback-image {
-      position: relative;
-      top: -4px;
-      vertical-align: middle;
-    }
-
-    .govuk-header {
-      $offset: 3px;
-      padding-top: $offset;
-    }
-
-    .govuk-header__link--homepage {
-      line-height: 30px;
-    }
-    // End adjustments
   }
 }
 

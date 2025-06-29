@@ -22,7 +22,7 @@ router.use((req, res, next) => {
 
 // Home page
 router.get('/', (req, res) => {
-  res.render('modules/home/index', {
+  res.render('home/index', {
     pageTitle: 'Home - RRDM',
   });
 });
@@ -33,7 +33,7 @@ router.get('/release-diary', releaseDiaryController.renderReleaseDiaryPage);
 // --- Release Notes Route ---
 router.get('/release-notes', (req, res) => {
   // This is a temporary route handler until the full release notes functionality is implemented
-  res.render('modules/release-notes/index', {
+  res.render('release-notes/index', {
     pageTitle: 'Release Notes - RRDM',
     releases: [] // Placeholder for actual release notes data
   });
@@ -42,7 +42,7 @@ router.get('/release-notes', (req, res) => {
 // Dashboard
 // router.get('/dashboard', isAuthenticated, (req, res) => { // isAuthenticated temporarily removed
 router.get('/dashboard', (req, res) => {
-  res.render('modules/dashboard/dashboard', {
+  res.render('dashboard/dashboard', {
     pageTitle: 'Dashboard - RRDM',
   });
 });

@@ -3,7 +3,7 @@
         "name": "rows",
         "type": "array",
         "required": true,
-        "description": "Array of row item objects.",
+        "description": "The rows within the summary list component.",
         "params": [
             {
                 "name": "classes",
@@ -12,87 +12,112 @@
                 "description": "Classes to add to the row `div`."
             },
             {
-                "name": "key.text",
-                "type": "string",
+                "name": "key",
+                "type": "object",
                 "required": true,
-                "description": "If `html` is set, this is not required. Text to use within the each key. If `html` is provided, the `text` option will be ignored."
-            },
-            {
-                "name": "key.html",
-                "type": "string",
-                "required": true
-            },
-            {
-                "name": "key.classes",
-                "type": "string",
-                "required": false,
-                "description": "Classes to add to the key wrapper."
-            },
-            {
-                "name": "value.text",
-                "type": "string",
-                "required": true,
-                "description": "If `html` is set, this is not required. Text to use within the each value. If `html` is provided, the `text` option will be ignored."
-            },
-            {
-                "name": "value.html",
-                "type": "string",
-                "required": true,
-                "description": "If `text` is set, this is not required. HTML to use within the each value. If `html` is provided, the `text` option will be ignored."
-            },
-            {
-                "name": "value.classes",
-                "type": "string",
-                "required": false,
-                "description": "Classes to add to the value wrapper."
-            },
-            {
-                "name": "actions.classes",
-                "type": "string",
-                "required": false,
-                "description": "Classes to add to the actions wrapper."
-            },
-            {
-                "name": "actions.items",
-                "type": "array",
-                "required": false,
-                "description": "Array of action item objects.",
+                "description": "The reference content (key) for each row item in the summary list component.",
                 "params": [
-                    {
-                        "name": "href",
-                        "type": "string",
-                        "required": true,
-                        "description": "The value of the link's `href` attribute for an action item."
-                    },
                     {
                         "name": "text",
                         "type": "string",
                         "required": true,
-                        "description": "If `html` is set, this is not required. Text to use within each action item. If `html` is provided, the `text` option will be ignored."
+                        "description": "If `html` is set, this is not required. Text to use within each key. If `html` is provided, the `text` option will be ignored."
                     },
                     {
                         "name": "html",
                         "type": "string",
                         "required": true,
-                        "description": "If `text` is set, this is not required. HTML to use within the each action item. If `html` is provided, the `text` option will be ignored."
-                    },
-                    {
-                        "name": "visuallyHiddenText",
-                        "type": "string",
-                        "required": false,
-                        "description": "Actions rely on context from the surrounding content so may require additional accessible text. Text supplied to this option is appended to the end. Use `html` for more complicated scenarios."
+                        "description": "If `text` is set, this is not required. HTML to use within each key. If `html` is provided, the `text` option will be ignored."
                     },
                     {
                         "name": "classes",
                         "type": "string",
                         "required": false,
-                        "description": "Classes to add to the action item."
+                        "description": "Classes to add to the key wrapper."
+                    }
+                ]
+            },
+            {
+                "name": "value",
+                "type": "object",
+                "required": true,
+                "description": "The value for each row item in the summary list component.",
+                "params": [
+                    {
+                        "name": "text",
+                        "type": "string",
+                        "required": true,
+                        "description": "If `html` is set, this is not required. Text to use within each value. If `html` is provided, the `text` option will be ignored."
                     },
                     {
-                        "name": "attributes",
-                        "type": "object",
+                        "name": "html",
+                        "type": "string",
+                        "required": true,
+                        "description": "If `text` is set, this is not required. HTML to use within each value. If `html` is provided, the `text` option will be ignored."
+                    },
+                    {
+                        "name": "classes",
+                        "type": "string",
                         "required": false,
-                        "description": "HTML attributes (for example data attributes) to add to the action item."
+                        "description": "Classes to add to the value wrapper."
+                    }
+                ]
+            },
+            {
+                "name": "actions",
+                "type": "object",
+                "required": false,
+                "description": "The action link content for each row item in the summary list component.",
+                "params": [
+                    {
+                        "name": "items",
+                        "type": "array",
+                        "required": false,
+                        "description": "The action link items within the row item of the summary list component.",
+                        "params": [
+                            {
+                                "name": "href",
+                                "type": "string",
+                                "required": true,
+                                "description": "The value of the link's `href` attribute for an action item."
+                            },
+                            {
+                                "name": "text",
+                                "type": "string",
+                                "required": true,
+                                "description": "If `html` is set, this is not required. Text to use within each action item. If `html` is provided, the `text` option will be ignored."
+                            },
+                            {
+                                "name": "html",
+                                "type": "string",
+                                "required": true,
+                                "description": "If `text` is set, this is not required. HTML to use within each action item. If `html` is provided, the `text` option will be ignored."
+                            },
+                            {
+                                "name": "visuallyHiddenText",
+                                "type": "string",
+                                "required": false,
+                                "description": "Actions rely on context from the surrounding content so may require additional accessible text. Text supplied to this option is appended to the end. Use `html` for more complicated scenarios."
+                            },
+                            {
+                                "name": "classes",
+                                "type": "string",
+                                "required": false,
+                                "description": "Classes to add to the action item."
+                            },
+                            {
+                                "name": "attributes",
+                                "type": "object",
+                                "required": false,
+                                "description": "HTML attributes (for example data attributes) to add to the action item."
+                            }
+                        ]
+                    },
+                    {
+                        "name": "classes",
+                        "type": "string",
+                        "required": false,
+                        "description": "Classes to add to the actions wrapper."
                     }
                 ]
             }
@@ -102,7 +127,7 @@
         "name": "card",
         "type": "object",
         "required": false,
-        "description": "Options for the summary card. If any of these options are present, a summary card will wrap around the summary list.",
+        "description": "Can be used to wrap a summary card around the summary list component. If any of these options are present, a summary card will wrap around the summary list.",
         "params": [
             {
                 "name": "title",
@@ -114,13 +139,13 @@
                         "name": "text",
                         "type": "string",
                         "required": false,
-                        "description": "Text to use within the each title. If `html` is provided, the `text` option will be ignored."
+                        "description": "Text to use within each title. If `html` is provided, the `text` option will be ignored."
                     },
                     {
                         "name": "html",
                         "type": "string",
                         "required": false,
-                        "description": "Text to use within the each title. If `html` is provided, the `text` option will be ignored."
+                        "description": "Text to use within each title. If `html` is provided, the `text` option will be ignored."
                     },
                     {
                         "name": "headingLevel",
@@ -140,13 +165,13 @@
                 "name": "actions",
                 "type": "object",
                 "required": false,
-                "description": "Data for the summary card actions",
+                "description": "The action link content shown in the header of each summary card wrapped around the summary list component.",
                 "params": [
                     {
                         "name": "items",
                         "type": "array",
                         "required": false,
-                        "description": "Array of action item objects.",
+                        "description": "The action link items shown in the header within the summary card wrapped around the summary list component.",
                         "params": [
                             {
                                 "name": "href",
@@ -164,7 +189,7 @@
                                 "name": "html",
                                 "type": "string",
                                 "required": true,
-                                "description": "If `text` is set, this is not required. HTML to use within the each action item. If `html` is provided, the `text` option will be ignored."
+                                "description": "If `text` is set, this is not required. HTML to use within each action item. If `html` is provided, the `text` option will be ignored."
                             },
                             {
                                 "name": "visuallyHiddenText",

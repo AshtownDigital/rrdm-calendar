@@ -1,0 +1,283 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}API Documentation | Register Team Internal Services{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">API Documentation</h1>
+
+      <div class="govuk-tabs" data-module="govuk-tabs">
+        <h2 class="govuk-tabs__title">API Documentation</h2>
+        
+        <ul class="govuk-tabs__list">
+          <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+            <a class="govuk-tabs__tab" href="#overview">
+              Overview
+            </a>
+          </li>
+          <li class="govuk-tabs__list-item">
+            <a class="govuk-tabs__tab" href="#authentication">
+              Authentication
+            </a>
+          </li>
+          <li class="govuk-tabs__list-item">
+            <a class="govuk-tabs__tab" href="#reference-data">
+              Reference Data
+            </a>
+          </li>
+          <li class="govuk-tabs__list-item">
+            <a class="govuk-tabs__tab" href="#bcr">
+              BCR
+            </a>
+          </li>
+          <li class="govuk-tabs__list-item">
+            <a class="govuk-tabs__tab" href="#funding">
+              Funding
+            </a>
+          </li>
+        </ul>
+        
+        <!-- Overview Tab -->
+        <div class="govuk-tabs__panel" id="overview">
+          <h2 class="govuk-heading-l">API Overview</h2>
+          
+          <p class="govuk-body">
+            The RRDM API provides programmatic access to reference data, BCR submissions, and funding information.
+            The API is versioned to ensure backward compatibility as new features are added.
+          </p>
+          
+          <h3 class="govuk-heading-m">API Versions</h3>
+          
+          <table class="govuk-table">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Version</th>
+                <th scope="col" class="govuk-table__header">Status</th>
+                <th scope="col" class="govuk-table__header">Base URL</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">v1</td>
+                <td class="govuk-table__cell">
+                  <strong class="govuk-tag govuk-tag--green">Current</strong>
+                </td>
+                <td class="govuk-table__cell">/api/v1</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">Legacy (no version)</td>
+                <td class="govuk-table__cell">
+                  <strong class="govuk-tag govuk-tag--yellow">Deprecated</strong>
+                </td>
+                <td class="govuk-table__cell">/api</td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <h3 class="govuk-heading-m">Response Format</h3>
+          
+          <p class="govuk-body">All API responses are returned in JSON format with a consistent structure:</p>
+          
+          <div class="govuk-inset-text">
+            <pre><code>{
+  "success": true,
+  "data": { ... },  // For successful responses
+  "error": { ... }  // For error responses
+}</code></pre>
+          </div>
+          
+          <h3 class="govuk-heading-m">Error Handling</h3>
+          
+          <p class="govuk-body">When an error occurs, the API will return an appropriate HTTP status code along with a JSON response containing error details:</p>
+          
+          <div class="govuk-inset-text">
+            <pre><code>{
+  "success": false,
+  "error": {
+    "message": "Error message",
+    "status": 400,
+    "details": { ... }  // Optional additional error details
+  }
+}</code></pre>
+          </div>
+        </div>
+        
+        <!-- Authentication Tab -->
+        <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="authentication">
+          <h2 class="govuk-heading-l">Authentication</h2>
+          
+          <p class="govuk-body">
+            The RRDM API uses session-based authentication. You must be logged in to the RRDM application
+            to use the API. All API requests must include the session cookie.
+          </p>
+          
+          <h3 class="govuk-heading-m">Session Authentication</h3>
+          
+          <p class="govuk-body">
+            When you log in to the RRDM application, a session cookie is set. This cookie must be included
+            in all API requests.
+          </p>
+          
+          <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+              <span class="govuk-warning-text__assistive">Warning</span>
+              API access is restricted to authenticated users only. Unauthorized access attempts will be logged.
+            </strong>
+          </div>
+        </div>
+        
+        <!-- Reference Data Tab -->
+        <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="reference-data">
+          <h2 class="govuk-heading-l">Reference Data API</h2>
+          
+          <h3 class="govuk-heading-m">Endpoints</h3>
+          
+          <table class="govuk-table">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Method</th>
+                <th scope="col" class="govuk-table__header">Endpoint</th>
+                <th scope="col" class="govuk-table__header">Description</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">GET</td>
+                <td class="govuk-table__cell">/api/v1/items</td>
+                <td class="govuk-table__cell">Get all reference data items</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">GET</td>
+                <td class="govuk-table__cell">/api/v1/items/:id</td>
+                <td class="govuk-table__cell">Get a specific reference data item by ID</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">GET</td>
+                <td class="govuk-table__cell">/api/v1/items/:id/values</td>
+                <td class="govuk-table__cell">Get values for a specific reference data item</td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <h3 class="govuk-heading-m">Example Response</h3>
+          
+          <div class="govuk-inset-text">
+            <pre><code>{
+  "success": true,
+  "data": [
+    {
+      "id": "ethnicity",
+      "name": "Ethnicity",
+      "status": "Active",
+      "lastUpdated": "2025-01-15T12:00:00Z"
+    },
+    {
+      "id": "gender",
+      "name": "Gender",
+      "status": "Active",
+      "lastUpdated": "2025-01-15T12:00:00Z"
+    }
+  ]
+}</code></pre>
+          </div>
+        </div>
+        
+        <!-- BCR Tab -->
+        <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="bcr">
+          <h2 class="govuk-heading-l">BCR API</h2>
+          
+          <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+            <div class="govuk-notification-banner__header">
+              <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                Coming Soon
+              </h2>
+            </div>
+            <div class="govuk-notification-banner__content">
+              <p class="govuk-notification-banner__heading">
+                The BCR API endpoints are currently under development and will be available in a future release.
+              </p>
+            </div>
+          </div>
+          
+          <h3 class="govuk-heading-m">Planned Endpoints</h3>
+          
+          <table class="govuk-table">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Method</th>
+                <th scope="col" class="govuk-table__header">Endpoint</th>
+                <th scope="col" class="govuk-table__header">Description</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">GET</td>
+                <td class="govuk-table__cell">/api/v1/bcr</td>
+                <td class="govuk-table__cell">Get all BCR submissions</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">GET</td>
+                <td class="govuk-table__cell">/api/v1/bcr/:id</td>
+                <td class="govuk-table__cell">Get a specific BCR submission by ID</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">POST</td>
+                <td class="govuk-table__cell">/api/v1/bcr</td>
+                <td class="govuk-table__cell">Create a new BCR submission</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Funding Tab -->
+        <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="funding">
+          <h2 class="govuk-heading-l">Funding API</h2>
+          
+          <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title-2" data-module="govuk-notification-banner">
+            <div class="govuk-notification-banner__header">
+              <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title-2">
+                Coming Soon
+              </h2>
+            </div>
+            <div class="govuk-notification-banner__content">
+              <p class="govuk-notification-banner__heading">
+                The Funding API endpoints are currently under development and will be available in a future release.
+              </p>
+            </div>
+          </div>
+          
+          <h3 class="govuk-heading-m">Planned Endpoints</h3>
+          
+          <table class="govuk-table">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Method</th>
+                <th scope="col" class="govuk-table__header">Endpoint</th>
+                <th scope="col" class="govuk-table__header">Description</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">GET</td>
+                <td class="govuk-table__cell">/api/v1/funding/requirements</td>
+                <td class="govuk-table__cell">Get all funding requirements</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">GET</td>
+                <td class="govuk-table__cell">/api/v1/funding/history</td>
+                <td class="govuk-table__cell">Get funding history</td>
+              </tr>
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">GET</td>
+                <td class="govuk-table__cell">/api/v1/funding/subjects</td>
+                <td class="govuk-table__cell">Get subject funding records</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

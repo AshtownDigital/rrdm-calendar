@@ -1,0 +1,63 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}BCR Impact Areas | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">BCR Impact Areas</h1>
+      
+      <p class="govuk-body">
+        Impact areas define the categories of changes that a BCR might affect. These are used during BCR submission to categorize the impact of the change request.
+      </p>
+      
+      <div class="govuk-button-group">
+        <a href="/bcr/impact-areas/new" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+          Add new impact area
+        </a>
+        <a href="/bcr/dashboard" class="govuk-link govuk-link--no-visited-state">Return to BCR management</a>
+      </div>
+      
+      {% if impactAreas and impactAreas.length > 0 %}
+        <table class="govuk-table">
+          <caption class="govuk-table__caption govuk-table__caption--m">Current impact areas</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">Name</th>
+              <th scope="col" class="govuk-table__header">Description</th>
+              <th scope="col" class="govuk-table__header">Display Order</th>
+              <th scope="col" class="govuk-table__header">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for area in impactAreas %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                  <strong>{{ area.displayName }}</strong>
+                </td>
+                <td class="govuk-table__cell">
+                  {{ area.description }}
+                </td>
+                <td class="govuk-table__cell">
+                  {{ area.displayOrder }}
+                </td>
+                <td class="govuk-table__cell">
+                  <a href="/bcr/impact-areas/{{ area.id }}/edit" class="govuk-link govuk-link--no-visited-state">Edit</a>
+                  <a href="/bcr/impact-areas/{{ area.id }}/delete" class="govuk-link govuk-link--no-visited-state govuk-!-margin-left-2">Delete</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="govuk-inset-text">
+          No impact areas have been defined yet. Click "Add new impact area" to create one.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends "layouts/base.njk" %}
+
+{% block title %}Structured Funding View | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/funding-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Structured Funding View</h1>
+    <p class="govuk-body-l">Funding requirements organized by academic year, funding type, training route, amount, and allocation subject</p>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          Filter options
+        </legend>
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-one-quarter">
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="academic-year">
+                Academic year
+              </label>
+              <select class="govuk-select" id="academic-year" name="academicYear">
+                <option value="all" {% if filter.academicYear == 'all' %}selected{% endif %}>All years</option>
+                <option value="2025-26" {% if filter.academicYear == '2025-26' %}selected{% endif %}>2025-26</option>
+              </select>
+            </div>
+          </div>
+          <div class="govuk-grid-column-one-quarter">
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="funding-type">
+                Funding type
+              </label>
+              <select class="govuk-select" id="funding-type" name="fundingType">
+                <option value="all" {% if filter.fundingType == 'all' %}selected{% endif %}>All types</option>
+                <option value="Bursary" {% if filter.fundingType == 'Bursary' %}selected{% endif %}>Bursary</option>
+                <option value="Scholarship" {% if filter.fundingType == 'Scholarship' %}selected{% endif %}>Scholarship</option>
+                <option value="Grant" {% if filter.fundingType == 'Grant' %}selected{% endif %}>Grant</option>
+              </select>
+            </div>
+          </div>
+          <div class="govuk-grid-column-one-quarter">
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="training-route">
+                Training route
+              </label>
+              <select class="govuk-select" id="training-route" name="trainingRoute">
+                <option value="all" {% if filter.trainingRoute == 'all' %}selected{% endif %}>All routes</option>
+                <option value="Provider-led (Undergraduate)" {% if filter.trainingRoute == 'Provider-led (Undergraduate)' %}selected{% endif %}>Provider-led (Undergraduate)</option>
+                <option value="Provider-led (Postgraduate)" {% if filter.trainingRoute == 'Provider-led (Postgraduate)' %}selected{% endif %}>Provider-led (Postgraduate)</option>
+                <option value="School Direct (Salaried)" {% if filter.trainingRoute == 'School Direct (Salaried)' %}selected{% endif %}>School Direct (Salaried)</option>
+                <option value="Early Years (Postgraduate)" {% if filter.trainingRoute == 'Early Years (Postgraduate)' %}selected{% endif %}>Early Years (Postgraduate)</option>
+                <option value="Early Years (Salaried)" {% if filter.trainingRoute == 'Early Years (Salaried)' %}selected{% endif %}>Early Years (Salaried)</option>
+              </select>
+            </div>
+          </div>
+          <div class="govuk-grid-column-one-quarter">
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="subject">
+                Subject
+              </label>
+              <select class="govuk-select" id="subject" name="subject">
+                <option value="all" {% if filter.subject == 'all' %}selected{% endif %}>All subjects</option>
+                <option value="Mathematics" {% if filter.subject == 'Mathematics' %}selected{% endif %}>Mathematics</option>
+                <option value="Physics" {% if filter.subject == 'Physics' %}selected{% endif %}>Physics</option>
+                <option value="Chemistry" {% if filter.subject == 'Chemistry' %}selected{% endif %}>Chemistry</option>
+                <option value="Computing" {% if filter.subject == 'Computing' %}selected{% endif %}>Computing</option>
+                <option value="Biology" {% if filter.subject == 'Biology' %}selected{% endif %}>Biology</option>
+                <option value="English" {% if filter.subject == 'English' %}selected{% endif %}>English</option>
+                <option value="Modern Languages" {% if filter.subject == 'Modern Languages' %}selected{% endif %}>Modern Languages</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="govuk-grid-row govuk-!-margin-top-3">
+          <div class="govuk-grid-column-full">
+            <button class="govuk-button" data-module="govuk-button" id="apply-filters">
+              Apply filters
+            </button>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+  </div>
+</div>
+
+<div class="govuk-grid-row govuk-!-margin-top-6">
+  <div class="govuk-grid-column-full">
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--m">Funding requirements for 2025-26</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Academic Year</th>
+          <th scope="col" class="govuk-table__header">Training Route</th>
+          <th scope="col" class="govuk-table__header">Funding Type</th>
+          <th scope="col" class="govuk-table__header">Amount</th>
+          <th scope="col" class="govuk-table__header">Allocation Subject</th>
+          <th scope="col" class="govuk-table__header">Course Subject Specialism</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for item in fundingItems %}
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">{{ item.academicYear }}</td>
+          <td class="govuk-table__cell">{{ item.trainingRoute }}</td>
+          <td class="govuk-table__cell">{{ item.fundingType }}</td>
+          <td class="govuk-table__cell">£{{ item.amount | toLocaleString }}</td>
+          <td class="govuk-table__cell">{{ item.allocationSubject }}</td>
+          <td class="govuk-table__cell">{{ item.courseSubjectSpecialism }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="govuk-grid-row govuk-!-margin-top-6">
+  <div class="govuk-grid-column-full">
+    <div class="govuk-button-group">
+      <a href="/funding" class="govuk-button govuk-button--secondary">Back to Funding</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const applyFiltersButton = document.getElementById('apply-filters');
+    
+    applyFiltersButton.addEventListener('click', function() {
+      const academicYear = document.getElementById('academic-year').value;
+      const fundingType = document.getElementById('funding-type').value;
+      const trainingRoute = document.getElementById('training-route').value;
+      const subject = document.getElementById('subject').value;
+      
+      window.location.href = `/funding/structured-view?academicYear=${academicYear}&fundingType=${fundingType}&trainingRoute=${encodeURIComponent(trainingRoute)}&subject=${encodeURIComponent(subject)}`;
+    });
+  });
+</script>
+{% endblock %}

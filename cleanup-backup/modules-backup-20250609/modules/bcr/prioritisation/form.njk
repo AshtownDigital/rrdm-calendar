@@ -1,0 +1,95 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}{{ title }} | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">{{ title }}</h1>
+      
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+          <form action="/bcr/prioritisation/save" method="post">
+            <div class="govuk-form-group">
+              <fieldset class="govuk-fieldset">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                  <h2 class="govuk-fieldset__heading">Prioritisation Details</h2>
+                </legend>
+                
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="bcrId">
+                    BCR ID <span class="govuk-required">*</span>
+                  </label>
+                  <select class="govuk-select" id="bcrId" name="bcrId" required {% if isEdit %}disabled{% endif %}>
+                    <option value="">Select a BCR</option>
+                    {% for submission in submissions %}
+                      <option value="{{ submission.id }}" {% if prioritisation.bcrId === submission.id %}selected{% endif %}>
+                        {{ submission.id }} - {{ submission.title }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                  {% if isEdit %}
+                    <input type="hidden" name="bcrId" value="{{ prioritisation.bcrId }}">
+                  {% endif %}
+                </div>
+                
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="trelloTicketId">
+                    Trello Ticket ID <span class="govuk-required">*</span>
+                  </label>
+                  <input class="govuk-input" id="trelloTicketId" name="trelloTicketId" type="text" value="{{ prioritisation.trelloTicketId }}" required>
+                </div>
+                
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="description">
+                    Description <span class="govuk-required">*</span>
+                  </label>
+                  <input class="govuk-input" id="description" name="description" type="text" value="{{ prioritisation.description }}" required>
+                </div>
+                
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="prioritisationFlag">
+                    Prioritisation Flag <span class="govuk-required">*</span>
+                  </label>
+                  <select class="govuk-select" id="prioritisationFlag" name="prioritisationFlag" required>
+                    <option value="">Select a prioritisation flag</option>
+                    {% for flag in prioritisationFlags %}
+                      <option value="{{ flag }}" {% if prioritisation.prioritisationFlag === flag %}selected{% endif %}>{{ flag }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="prioritisationNarrative">
+                    Prioritisation Narrative <span class="govuk-required">*</span>
+                  </label>
+                  <textarea class="govuk-textarea" id="prioritisationNarrative" name="prioritisationNarrative" rows="5" required>{{ prioritisation.prioritisationNarrative }}</textarea>
+                </div>
+                
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="currentStatus">
+                    Current Status <span class="govuk-required">*</span>
+                  </label>
+                  <input class="govuk-input" id="currentStatus" name="currentStatus" type="text" value="{{ prioritisation.currentStatus }}" required>
+                </div>
+              </fieldset>
+            </div>
+            
+            <div class="govuk-button-group">
+              <button class="govuk-button" data-module="govuk-button">
+                Save Prioritisation
+              </button>
+              <a href="/bcr/prioritisation" class="govuk-button govuk-button--secondary">
+                Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

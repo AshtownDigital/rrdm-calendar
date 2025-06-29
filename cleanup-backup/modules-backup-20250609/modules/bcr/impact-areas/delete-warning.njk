@@ -1,0 +1,62 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}Delete Impact Area | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a href="/bcr/impact-areas" class="govuk-back-link">Back to impact areas</a>
+      
+      <h1 class="govuk-heading-xl">Delete Impact Area</h1>
+      
+      <div class="govuk-warning-text">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text">
+          <span class="govuk-warning-text__assistive">Warning</span>
+          This action cannot be undone. Deleting an impact area may affect existing BCRs that use this category.
+        </strong>
+      </div>
+      
+      <h2 class="govuk-heading-m">Impact area details</h2>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Name
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ impactArea.name }}
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Description
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ impactArea.description }}
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Display Order
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ impactArea.displayOrder }}
+          </dd>
+        </div>
+      </dl>
+      
+      <form action="/bcr/impact-areas/delete/{{ impactArea.id }}" method="post" novalidate>
+        <div class="govuk-button-group">
+          <button class="govuk-button govuk-button--warning" data-module="govuk-button">
+            Delete impact area
+          </button>
+          <a href="/bcr/impact-areas" class="govuk-link govuk-link--no-visited-state">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

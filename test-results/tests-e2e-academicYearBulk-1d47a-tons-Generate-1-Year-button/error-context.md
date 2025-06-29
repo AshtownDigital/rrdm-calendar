@@ -1,0 +1,181 @@
+# Page snapshot
+
+```yaml
+- link "Skip to main content":
+  - /url: "#main-content"
+- banner:
+  - link "Register Team Internal Services":
+    - /url: /
+  - navigation "Menu":
+    - button "Show or hide menu": Menu
+    - list:
+      - listitem:
+        - link "Home":
+          - /url: /
+      - listitem:
+        - link "Academic Years":
+          - /url: /academic-years
+      - listitem:
+        - link "Release Diary":
+          - /url: /release-management
+      - listitem:
+        - link "BCR Dashboard":
+          - /url: /bcr/dashboard
+      - listitem:
+        - link "New Submission":
+          - /url: /bcr/submit
+      - listitem:
+        - link "Impact Areas":
+          - /url: /bcr/impact-areas
+- paragraph:
+  - strong: Beta
+  - text: This is a new service – your
+  - link "feedback":
+    - /url: "#"
+  - text: will help us to improve it.
+- list:
+  - listitem:
+    - link "Home":
+      - /url: /
+- main:
+  - region "Information":
+    - heading "Information" [level=2]
+    - paragraph:
+      - text: The current academic year is 2024/2025.
+      - strong: "63"
+      - text: days remaining until the end of this academic year.
+  - heading "Academic Years" [level=1]
+  - button "Add New Academic Year"
+  - separator
+  - heading "Bulk Generate Academic Years" [level=2]
+  - button "Generate 1 Year"
+  - button "Generate 5 Years"
+  - button "Generate 10 Years"
+  - separator
+  - table:
+    - rowgroup:
+      - row "Name Code Full Name Start Date End Date Status Actions":
+        - columnheader "Name"
+        - columnheader "Code"
+        - columnheader "Full Name"
+        - columnheader "Start Date"
+        - columnheader "End Date"
+        - columnheader "Status"
+        - columnheader "Actions"
+    - rowgroup:
+      - row "24/25 AY24/25 2024/2025 2024-09-01T00:00:00.000Z 2025-08-31T00:00:00.000Z Current Edit":
+        - cell "24/25"
+        - cell "AY24/25"
+        - cell "2024/2025"
+        - cell "2024-09-01T00:00:00.000Z"
+        - cell "2025-08-31T00:00:00.000Z"
+        - cell "Current":
+          - strong: Current
+        - cell "Edit":
+          - link "Edit":
+            - /url: /academic-years/a9376b1c-f318-4f04-92c2-da250a63c5c9/edit
+      - row "25/26 AY25/26 2025/2026 2025-09-01T00:00:00.000Z 2026-08-31T00:00:00.000Z Next Edit":
+        - cell "25/26"
+        - cell "AY25/26"
+        - cell "2025/2026"
+        - cell "2025-09-01T00:00:00.000Z"
+        - cell "2026-08-31T00:00:00.000Z"
+        - cell "Next":
+          - strong: Next
+        - cell "Edit":
+          - link "Edit":
+            - /url: /academic-years/e8ecc854-ba7d-463d-80e1-d39477839e37/edit
+      - row "26/27 AY26/27 2026/2027 2026-09-01T00:00:00.000Z 2027-08-31T00:00:00.000Z Future Edit":
+        - cell "26/27"
+        - cell "AY26/27"
+        - cell "2026/2027"
+        - cell "2026-09-01T00:00:00.000Z"
+        - cell "2027-08-31T00:00:00.000Z"
+        - cell "Future":
+          - strong: Future
+        - cell "Edit":
+          - link "Edit":
+            - /url: /academic-years/4a8c2941-9c78-4219-8116-41faef3f5468/edit
+      - row "27/28 AY27/28 2027/2028 2027-09-01T00:00:00.000Z 2028-08-31T00:00:00.000Z Future Edit":
+        - cell "27/28"
+        - cell "AY27/28"
+        - cell "2027/2028"
+        - cell "2027-09-01T00:00:00.000Z"
+        - cell "2028-08-31T00:00:00.000Z"
+        - cell "Future":
+          - strong: Future
+        - cell "Edit":
+          - link "Edit":
+            - /url: /academic-years/d7b1530f-0b44-41a7-8908-38e489322e62/edit
+      - row "28/29 AY28/29 2028/2029 2028-09-01T00:00:00.000Z 2029-08-31T00:00:00.000Z Future Edit":
+        - cell "28/29"
+        - cell "AY28/29"
+        - cell "2028/2029"
+        - cell "2028-09-01T00:00:00.000Z"
+        - cell "2029-08-31T00:00:00.000Z"
+        - cell "Future":
+          - strong: Future
+        - cell "Edit":
+          - link "Edit":
+            - /url: /academic-years/4c87345b-6fe2-407e-9cf8-ad94693ffa97/edit
+      - row "29/30 AY29/30 2029/2030 2029-09-01T00:00:00.000Z 2030-08-31T00:00:00.000Z Future Edit":
+        - cell "29/30"
+        - cell "AY29/30"
+        - cell "2029/2030"
+        - cell "2029-09-01T00:00:00.000Z"
+        - cell "2030-08-31T00:00:00.000Z"
+        - cell "Future":
+          - strong: Future
+        - cell "Edit":
+          - link "Edit":
+            - /url: /academic-years/e1557870-eb9f-4d12-82e7-70e82a6da4ae/edit
+      - row "30/31 AY30/31 2030/2031 2030-09-01T00:00:00.000Z 2031-08-31T00:00:00.000Z Future Edit":
+        - cell "30/31"
+        - cell "AY30/31"
+        - cell "2030/2031"
+        - cell "2030-09-01T00:00:00.000Z"
+        - cell "2031-08-31T00:00:00.000Z"
+        - cell "Future":
+          - strong: Future
+        - cell "Edit":
+          - link "Edit":
+            - /url: /academic-years/ba253a69-2d78-4b2d-ba18-f31ca9985c7e/edit
+      - row "31/32 AY31/32 2031/2032 2031-09-01T00:00:00.000Z 2032-08-31T00:00:00.000Z Future Edit":
+        - cell "31/32"
+        - cell "AY31/32"
+        - cell "2031/2032"
+        - cell "2031-09-01T00:00:00.000Z"
+        - cell "2032-08-31T00:00:00.000Z"
+        - cell "Future":
+          - strong: Future
+        - cell "Edit":
+          - link "Edit":
+            - /url: /academic-years/8e9df140-4e23-4569-a2fe-67a3cdcad068/edit
+- contentinfo:
+  - heading "Support links" [level=2]
+  - list:
+    - listitem:
+      - link "Help":
+        - /url: "#"
+    - listitem:
+      - link "Privacy":
+        - /url: "#"
+    - listitem:
+      - link "Cookies":
+        - /url: "#"
+    - listitem:
+      - link "Accessibility statement":
+        - /url: "#"
+    - listitem:
+      - link "Contact":
+        - /url: "#"
+    - listitem:
+      - link "Terms and conditions":
+        - /url: "#"
+  - text: All content is available under the
+  - link "Open Government Licence v3.0":
+    - /url: https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+  - text: ", except where otherwise stated"
+  - link "© Crown copyright":
+    - /url: https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/
+```

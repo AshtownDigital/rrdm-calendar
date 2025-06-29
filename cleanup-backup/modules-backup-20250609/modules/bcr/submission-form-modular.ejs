@@ -1,0 +1,161 @@
+<%- include('../../partials/header') %>
+
+<div class="govuk-width-container">
+  <main class="govuk-main-wrapper" id="main-content" role="main">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-xl"><%= title %></h1>
+        
+        <% if (connectionIssue) { %>
+          <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+              <span class="govuk-warning-text__assistive">Warning</span>
+              There may be a database connection issue. Some data might not be up to date.
+            </strong>
+          </div>
+        <% } %>
+        
+        <% if (errors && Object.keys(errors).length > 0) { %>
+          <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+            <h2 class="govuk-error-summary__title" id="error-summary-title">
+              There is a problem
+            </h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                <% for (const field in errors) { %>
+                  <li>
+                    <a href="#<%= field %>"><%= errors[field] %></a>
+                  </li>
+                <% } %>
+              </ul>
+            </div>
+          </div>
+        <% } %>
+        
+        <form method="post" action="<%= formAction %>" novalidate>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          
+          <!-- Using the reusable text input component -->
+          <%- include('../../components/formElements/textInput', {
+            id: 'fullName',
+            name: 'fullName',
+            label: 'Full name',
+            hint: 'Enter your full name',
+            value: formData.fullName || '',
+            required: true,
+            error: errors && errors.fullName,
+            width: 'two-thirds'
+          }) %>
+          
+          <!-- Using the reusable text input component -->
+          <%- include('../../components/formElements/textInput', {
+            id: 'emailAddress',
+            name: 'emailAddress',
+            label: 'Email address',
+            hint: 'Enter your email address',
+            value: formData.emailAddress || '',
+            required: true,
+            error: errors && errors.emailAddress,
+            width: 'two-thirds'
+          }) %>
+          
+          <!-- Using the reusable text input component -->
+          <%- include('../../components/formElements/textInput', {
+            id: 'organisation',
+            name: 'organisation',
+            label: 'Organisation',
+            hint: 'Enter your organisation name',
+            value: formData.organisation || '',
+            required: true,
+            error: errors && errors.organisation,
+            width: 'two-thirds'
+          }) %>
+          
+          <!-- Using the reusable text input component -->
+          <%- include('../../components/formElements/textInput', {
+            id: 'briefDescription',
+            name: 'briefDescription',
+            label: 'Brief description',
+            hint: 'Provide a brief description of the change request',
+            value: formData.briefDescription || '',
+            required: true,
+            error: errors && errors.briefDescription,
+            width: 'full'
+          }) %>
+          
+          <!-- Using the reusable text input component with textarea -->
+          <%- include('../../components/formElements/textInput', {
+            id: 'justification',
+            name: 'justification',
+            label: 'Justification',
+            hint: 'Explain why this change is needed',
+            value: formData.justification || '',
+            required: true,
+            error: errors && errors.justification,
+            width: 'full',
+            isTextarea: true,
+            rows: 5
+          }) %>
+          
+          <!-- Using the reusable select input component -->
+          <%- include('../../components/formElements/selectInput', {
+            id: 'urgencyLevel',
+            name: 'urgencyLevel',
+            label: 'Urgency level',
+            hint: 'Select the urgency level for this change request',
+            options: urgencyLevels.map(level => ({
+              value: level._id,
+              text: level.name,
+              selected: formData.urgencyLevel && formData.urgencyLevel.toString() === level._id.toString()
+            })),
+            required: true,
+            error: errors && errors.urgencyLevel
+          }) %>
+          
+          <div class="govuk-form-group <%= errors && errors.impactAreas ? 'govuk-form-group--error' : '' %>">
+            <fieldset class="govuk-fieldset" aria-describedby="impactAreas-hint <%= errors && errors.impactAreas ? 'impactAreas-error' : '' %>">
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                <h2 class="govuk-fieldset__heading">
+                  Impact areas
+                </h2>
+              </legend>
+              <div id="impactAreas-hint" class="govuk-hint">
+                Select all areas that will be impacted by this change
+              </div>
+              
+              <% if (errors && errors.impactAreas) { %>
+                <p id="impactAreas-error" class="govuk-error-message">
+                  <span class="govuk-visually-hidden">Error:</span> <%= errors.impactAreas %>
+                </p>
+              <% } %>
+              
+              <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                <% impactAreas.forEach(function(area) { %>
+                  <div class="govuk-checkboxes__item">
+                    <input class="govuk-checkboxes__input" id="impactAreas-<%= area._id %>" name="impactAreas" type="checkbox" value="<%= area._id %>" 
+                      <%= formData.impactAreas && Array.isArray(formData.impactAreas) && formData.impactAreas.includes(area._id.toString()) ? 'checked' : '' %>>
+                    <label class="govuk-label govuk-checkboxes__label" for="impactAreas-<%= area._id %>">
+                      <%= area.name %>
+                    </label>
+                    <% if (area.description) { %>
+                      <div class="govuk-hint govuk-checkboxes__hint">
+                        <%= area.description %>
+                      </div>
+                    <% } %>
+                  </div>
+                <% }); %>
+              </div>
+            </fieldset>
+          </div>
+          
+          <button type="submit" class="govuk-button" data-module="govuk-button">
+            Submit
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<%- include('../../partials/footer') %>

@@ -1,0 +1,24 @@
+<%#
+  Status Tag Component
+  Renders a GOV.UK Design System status tag
+
+  Parameters:
+  - text: The text to display in the tag
+  - className: The CSS class for the tag (defaults to 'govuk-tag')
+  - attributes: Additional HTML attributes (optional)
+%>
+
+<%
+  // Set default values
+  const tagText = typeof text !== 'undefined' ? text : 'Unknown';
+  const tagClass = typeof className !== 'undefined' ? className : 'govuk-tag';
+  const tagAttributes = typeof attributes !== 'undefined' ? attributes : {};
+  
+  // Build attributes string
+  let attributesString = '';
+  for (const [key, value] of Object.entries(tagAttributes)) {
+    attributesString += ` ${key}="${value}"`;
+  }
+%>
+
+<strong class="<%= tagClass %>"<%= attributesString %>><%= tagText %></strong>

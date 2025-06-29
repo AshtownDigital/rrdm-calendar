@@ -80,9 +80,9 @@ module.exports = {
   // Disable automock
   automock: false,
 
-  // Use minimal setup file
+  // Use setup files that run after Jest environment is set up
   setupFilesAfterEnv: [
-    "<rootDir>/tests/minimal-setup.js"
+    "<rootDir>/tests/setup.js"
   ],
 
   // Module file extensions
@@ -108,11 +108,6 @@ module.exports = {
   // Set a timeout for tests
   testTimeout: 10000,
   
-  // Setup files to run before each test
-  setupFiles: ["<rootDir>/tests/setup.js"],
-  
-  // Allow importing modules from node_modules
-  transformIgnorePatterns: [
-    "/node_modules/(?!(@prisma|sequelize|ioredis)/)"
-  ]
+
+
 };

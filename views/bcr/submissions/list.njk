@@ -1,0 +1,251 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}BCR Submissions | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">BCR Submissions</h1>
+      
+
+
+      <!-- Filter Panel -->
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+          <div class="govuk-form-group">
+            <fieldset class="govuk-fieldset">
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                <h2 class="govuk-fieldset__heading">
+                  Filter submissions
+                </h2>
+              </legend>
+              
+              <form action="/bcr/submissions" method="get" class="govuk-!-margin-bottom-6">
+                <div class="govuk-grid-row">
+                  <div class="govuk-grid-column-one-quarter">
+                    <div class="govuk-form-group">
+                      <label class="govuk-label" for="status">
+                        Status
+                      </label>
+                      <select class="govuk-select" id="status" name="status">
+                        <option value="all" {% if selectedFilters.status === 'all' %}selected{% endif %}>All statuses</option>
+                        {% for status in filters.statuses %}
+                          <option value="{{ status }}" {% if selectedFilters.status === status %}selected{% endif %}>{{ status }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="govuk-grid-column-one-quarter">
+                    <div class="govuk-form-group">
+                      <label class="govuk-label" for="impactArea">
+                        Impact Area
+                      </label>
+                      <select class="govuk-select" id="impactArea" name="impactArea">
+                        <option value="all" {% if selectedFilters.impactArea === 'all' %}selected{% endif %}>All impact areas</option>
+                        {% for area in filters.impactAreas %}
+                          <option value="{{ area }}" {% if selectedFilters.impactArea === area %}selected{% endif %}>{{ area }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="govuk-grid-column-one-quarter">
+                    <div class="govuk-form-group">
+                      <label class="govuk-label" for="dfeAffiliation">
+                        DfE Affiliation
+                      </label>
+                      <select class="govuk-select" id="dfeAffiliation" name="dfeAffiliation">
+                        <option value="all" {% if selectedFilters.dfeAffiliation === 'all' %}selected{% endif %}>All affiliations</option>
+                        <option value="internal" {% if selectedFilters.dfeAffiliation === 'internal' %}selected{% endif %}>Internal</option>
+                        <option value="external" {% if selectedFilters.dfeAffiliation === 'external' %}selected{% endif %}>External</option>
+                        <option value="other" {% if selectedFilters.dfeAffiliation === 'other' %}selected{% endif %}>Other</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="govuk-grid-column-one-quarter">
+                    <div class="govuk-form-group">
+                      <label class="govuk-label" for="submitter">
+                        Submitter
+                      </label>
+                      <select class="govuk-select" id="submitter" name="submitter">
+                        <option value="all" {% if selectedFilters.submitter === 'all' %}selected{% endif %}>All submitters</option>
+                        {% for submitter in filters.submitters %}
+                          <option value="{{ submitter }}" {% if selectedFilters.submitter === submitter %}selected{% endif %}>{{ submitter }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="govuk-grid-row govuk-!-margin-top-3">
+                  <div class="govuk-grid-column-one-quarter">
+                    <div class="govuk-form-group">
+                      <label class="govuk-label" for="startDate">
+                        From date
+                      </label>
+                      <input class="govuk-input" id="startDate" name="startDate" type="date" value="{{ selectedFilters.startDate }}">
+                    </div>
+                  </div>
+                  
+                  <div class="govuk-grid-column-one-quarter">
+                    <div class="govuk-form-group">
+                      <label class="govuk-label" for="endDate">
+                        To date
+                      </label>
+                      <input class="govuk-input" id="endDate" name="endDate" type="date" value="{{ selectedFilters.endDate }}">
+                    </div>
+                  </div>
+                  
+                  <div class="govuk-grid-column-one-quarter">
+                    <div class="govuk-form-group" style="margin-top: 2rem;">
+                      <button class="govuk-button" data-module="govuk-button">
+                        Apply filters
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+          <div class="govuk-button-group">
+            <a href="/bcr/submit" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+              Submit new BCR
+            </a>
+            <a href="/bcr/export" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+              Export to CSV
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submissions Table -->
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+          {% if submissions.length > 0 %}
+            <table class="govuk-table">
+              <caption class="govuk-table__caption govuk-table__caption--m">BCR submissions ({{ submissions.length }})</caption>
+              <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                  <th scope="col" class="govuk-table__header govuk-table__header--numeric">Record #</th>
+                  <th scope="col" class="govuk-table__header">Submission Code</th>
+                  <th scope="col" class="govuk-table__header">Date</th>
+                  <th scope="col" class="govuk-table__header">Description</th>
+                  <th scope="col" class="govuk-table__header">Submitter</th>
+                  <th scope="col" class="govuk-table__header">Organisation</th>
+                  <th scope="col" class="govuk-table__header">Impact Areas</th>
+                  <th scope="col" class="govuk-table__header">Status</th>
+                  <th scope="col" class="govuk-table__header">Urgency</th>
+                  <th scope="col" class="govuk-table__header">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="govuk-table__body">
+                {% for submission in submissions %}
+                  <tr class="govuk-table__row">
+                    <td class="govuk-table__cell govuk-table__cell--numeric">
+                      {{ submission.recordNumber or loop.index }}
+                    </td>
+                    <td class="govuk-table__cell">
+                      <a href="/bcr/submissions/view/{{ submission.id }}" class="govuk-link">
+                        <strong>{{ submission.submissionCode }}</strong>
+                      </a>
+                    </td>
+                    <td class="govuk-table__cell">{{ submission.createdAtFormatted or (submission.createdAt | date('D MMM YYYY')) }}</td>
+                    <td class="govuk-table__cell">
+                      {% if submission.briefDescription %}
+                        {% if submission.briefDescription.length > 100 %}{{ submission.briefDescription.substring(0, 97) }}...{% else %}{{ submission.briefDescription }}{% endif %}
+                      {% elif submission.description %}
+                        {% if submission.description.length > 100 %}{{ submission.description.substring(0, 97) }}...{% else %}{{ submission.description }}{% endif %}
+                      {% endif %}
+                    </td>
+                    <td class="govuk-table__cell">
+                      {% if submission.fullName %}
+                        {{ submission.fullName }}
+                      {% elif submission.submitterName %}
+                        {{ submission.submitterName }}
+                      {% elif submission.submitter and submission.submitter.name %}
+                        {{ submission.submitter.name }}
+                      {% else %}
+                        Unknown submitter
+                      {% endif %}
+                    </td>
+                    <td class="govuk-table__cell">
+                      {% if submission.organisation %}
+                        {{ submission.organisation }}
+                      {% elif submission.submitterOrganisation %}
+                        {{ submission.submitterOrganisation }}
+                      {% elif submission.submitter and submission.submitter.organisation %}
+                        {{ submission.submitter.organisation }}
+                      {% else %}
+                        N/A
+                      {% endif %}
+                    </td>
+                    <td class="govuk-table__cell">
+                      {% if submission.impactAreas and submission.impactAreas.length > 0 %}
+                        {% for area in submission.impactAreas %}
+                          <span class="govuk-tag govuk-tag--turquoise govuk-!-margin-right-1 govuk-!-margin-bottom-1">{{ area }}</span>
+                        {% endfor %}
+                      {% else %}
+                        <span class="govuk-tag govuk-tag--grey">None specified</span>
+                      {% endif %}
+                    </td>
+                    <td class="govuk-table__cell">
+                      {% if submission.status == 'Pending' %}
+                        <strong class="govuk-tag govuk-tag--blue">Pending</strong>
+                      {% elif submission.status == 'Approved' %}
+                        <strong class="govuk-tag govuk-tag--green">Approved</strong>
+                      {% elif submission.status == 'Rejected' %}
+                        <strong class="govuk-tag govuk-tag--red">Rejected</strong>
+                      {% elif submission.status == 'Paused' %}
+                        <strong class="govuk-tag govuk-tag--yellow">Paused</strong>
+                      {% elif submission.status == 'Closed' %}
+                        <strong class="govuk-tag govuk-tag--grey">Closed</strong>
+                      {% elif submission.status == 'More Info Required' %}  
+                        <strong class="govuk-tag govuk-tag--purple">More Info Required</strong>
+                      {% else %}
+                        <strong class="govuk-tag">{{ submission.status }}</strong>
+                      {% endif %}
+                    </td>
+                    <td class="govuk-table__cell">
+                      {% if submission.urgencyLevel == 'Critical' %}
+                        <strong class="govuk-tag govuk-tag--red">Critical</strong>
+                      {% elif submission.urgencyLevel == 'High' %}
+                        <strong class="govuk-tag govuk-tag--orange">High</strong>
+                      {% elif submission.urgencyLevel == 'Medium' %}
+                        <strong class="govuk-tag govuk-tag--yellow">Medium</strong>
+                      {% elif submission.urgencyLevel == 'Low' %}
+                        <strong class="govuk-tag govuk-tag--green">Low</strong>
+                      {% else %}
+                        <strong class="govuk-tag govuk-tag--grey">{{ submission.urgencyLevel or 'Not set' }}</strong>
+                      {% endif %}
+                    </td>
+                    <td class="govuk-table__cell">
+                      <a href="/bcr/submissions/view/{{ submission.id }}" class="govuk-link govuk-!-margin-right-3">View</a>
+                      <a href="/bcr/submissions/edit/{{ submission.id }}" class="govuk-link govuk-!-margin-right-3">Edit</a>
+                      {% if submission.attachments %}
+                        <a href="#attachments-{{ submission.id }}" class="govuk-link govuk-!-margin-right-3">Attachments</a>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <p class="govuk-body">No submissions found matching your criteria.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

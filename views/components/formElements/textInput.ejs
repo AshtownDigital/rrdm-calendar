@@ -1,0 +1,70 @@
+<%#
+  Text Input Component
+  Renders a GOV.UK Design System text input field
+
+  Parameters:
+  - id: The input ID (required)
+  - name: The input name (required)
+  - label: The input label (required)
+  - value: The current value (optional)
+  - hint: Hint text (optional)
+  - error: Error message (optional)
+  - width: Input width class (optional, e.g. 'govuk-input--width-10')
+  - required: Whether the field is required (optional, default: false)
+%>
+
+<%
+  // Set default values and handle optional parameters
+  const inputId = id;
+  const inputName = name;
+  const inputLabel = label;
+  const inputValue = typeof value !== 'undefined' ? value : '';
+  const inputHint = typeof hint !== 'undefined' ? hint : '';
+  const inputError = typeof error !== 'undefined' ? error : '';
+  const inputWidth = typeof width !== 'undefined' ? width : '';
+  const isRequired = typeof required !== 'undefined' ? required : false;
+  
+  // Generate classes
+  let formGroupClass = 'govuk-form-group';
+  if (inputError) {
+    formGroupClass += ' govuk-form-group--error';
+  }
+  
+  let inputClass = 'govuk-input';
+  if (inputWidth) {
+    inputClass += ' ' + inputWidth;
+  }
+  if (inputError) {
+    inputClass += ' govuk-input--error';
+  }
+%>
+
+<div class="<%= formGroupClass %>">
+  <label class="govuk-label" for="<%= inputId %>">
+    <%= inputLabel %>
+    <% if (isRequired) { %><span class="govuk-required">*</span><% } %>
+  </label>
+  
+  <% if (inputHint) { %>
+  <div id="<%= inputId %>-hint" class="govuk-hint">
+    <%= inputHint %>
+  </div>
+  <% } %>
+  
+  <% if (inputError) { %>
+  <p id="<%= inputId %>-error" class="govuk-error-message">
+    <span class="govuk-visually-hidden">Error:</span> <%= inputError %>
+  </p>
+  <% } %>
+  
+  <input
+    class="<%= inputClass %>"
+    id="<%= inputId %>"
+    name="<%= inputName %>"
+    type="text"
+    value="<%= inputValue %>"
+    <% if (inputHint) { %>aria-describedby="<%= inputId %>-hint"<% } %>
+    <% if (inputError) { %>aria-describedby="<%= inputId %>-error"<% } %>
+    <% if (isRequired) { %>required<% } %>
+  >
+</div>

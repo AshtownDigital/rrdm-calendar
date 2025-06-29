@@ -12,6 +12,7 @@ const { v4: uuidv4 } = require('uuid');
 const Bcr = require('../../models/Bcr');
 const BcrConfig = require('../../models/BcrConfig');
 const BcrWorkflowActivity = require('../../models/BcrWorkflowActivity');
+const User = require('../../models/User');
 
 // Ensure database is connected
 require('../../config/database.mongo');
@@ -224,12 +225,8 @@ const createBCRSubmission = async (req, res) => {
       updatedAt: now
     });
     
-    return res.status(201).json({
-      id: bcr.id,
-      bcrNumber: bcr.bcrNumber,
-      status: bcr.status,
-      message: 'BCR submission created successfully'
-    });
+    // Instead of returning JSON, redirect to the submissions list
+    return res.redirect('/bcr/submissions');
   } catch (error) {
     console.error('Error creating BCR submission:', error);
     res.status(500).json({ error: 'Failed to create BCR submission' });
@@ -242,7 +239,7 @@ const createBCRSubmission = async (req, res) => {
  */
 const updateBCRPhase = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { apiBcrId: id } = req.params;
     const { phase, phaseCompleted, comment, reviewerName } = req.body;
     
     // Validate required fields
@@ -318,7 +315,7 @@ const updateBCRPhase = async (req, res) => {
  */
 const promoteBCRSubmission = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { apiSubmissionId: id } = req.params;
     const userId = req.user?.id;
     const nextStatus = 'phase_1_in_progress';
     
@@ -432,10 +429,10 @@ router.get('/bcr/counters', (req, res) => {
 router.post('/bcr-submission', ensureAuthenticated, wrapAsync(createBCRSubmission));
 
 // Update BCR Phase
-router.post('/bcr/:id/update', ensureAuthenticated, wrapAsync(updateBCRPhase));
+router.post('/bcr/:apiBcrId/update', ensureAuthenticated, wrapAsync(updateBCRPhase));
 
 // Promote BCR Submission
-router.post('/bcr-submission/:id/review', ensureAuthenticated, wrapAsync(promoteBCRSubmission));
+router.post('/bcr-submission/:apiSubmissionId/review', ensureAuthenticated, wrapAsync(promoteBCRSubmission));
 
 // Error handling middleware
 router.use((err, req, res, next) => {

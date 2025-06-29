@@ -5,13 +5,49 @@
 const express = require('express');
 const router = express.Router();
 const { csrfProtection } = require('../../../middleware/csrf');
+// We need to load the controller for the monolithic router but don't use it directly here
+const migrationRouter = require('../../../scripts/migration/controller-migration');
+const modularRouter = require('./modular');
+
+// Create a migration router that can switch between monolithic and modular controllers
+const { createMigrationRouter } = migrationRouter;
+
+// Define which routes have been migrated to modular controllers
+const migratedRoutes = [
+  { path: '/bcr/dashboard', method: 'GET' },
+  { path: '/bcr/business-change-requests', method: 'GET' },
+  { path: '/bcr/business-change-requests/:bcrId', method: 'GET' },
+  { path: '/bcr/business-change-requests/:id/workflow-progress', method: 'GET' },
+  { path: '/bcr/workflow', method: 'GET' },
+  { path: '/bcr/workflow-progress/:id', method: 'GET' },
+  { path: '/bcr/workflow-progress/:id', method: 'POST' },
+  { path: '/bcr/statistics', method: 'GET' },
+  { path: '/submissions/new', method: 'GET' },
+  { path: '/submissions/new', method: 'POST' },
+  { path: '/submissions', method: 'GET' },
+  { path: '/submissions/:id', method: 'GET' },
+  { path: '/submissions/:id/edit', method: 'GET' },
+  { path: '/submissions/:id/edit', method: 'POST' },
+  { path: '/bcrs', method: 'GET' },
+  { path: '/bcrs/:id', method: 'GET' },
+  { path: '/business-change-requests', method: 'GET' },
+  { path: '/business-change-requests/:bcrId', method: 'GET' }
+];
+
+// Create a migration router that will use either the monolithic or modular controller
+const bcrMigrationRouter = createMigrationRouter({
+  monolithicRouter: router,
+  modularRouter: modularRouter,
+  migratedRoutes: migratedRoutes,
+  enableModular: true // Set to true to use modular controllers for migrated routes
+});
 
 // Import controllers
-const bcrController = require('../../../controllers/modules/bcr/controller');
-const reviewController = require('../../../controllers/modules/bcr/reviewController');
-const updateBcrController = require('../../../controllers/modules/bcr/updateBcrController');
-const releaseAssignmentController = require('../../../controllers/modules/bcr/releaseAssignmentController');
-const updateWorkflowController = require('../../../controllers/modules/bcr/updateWorkflowController');
+const bcrController = require('../../../controllers/bcrController');
+const reviewController = require('../../../controllers/reviewController');
+const updateBcrController = require('../../../controllers/updateBcrController');
+const releaseAssignmentController = require('../../../controllers/releaseAssignmentController');
+const updateWorkflowController = require('../../../controllers/updateWorkflowController');
 
 // Import workflow routes
 const workflowRoutes = require('./workflow');
@@ -34,9 +70,10 @@ router.use('/workflow', workflowRoutes);
 router.get('/submit', bcrController.newSubmissionForm);
 router.post('/submit', csrfProtection, bcrController.createSubmission);
 router.get('/submissions', bcrController.listSubmissions);
-router.get('/submissions/:id', bcrController.viewSubmission);
-router.get('/submissions/:id/review', csrfProtection, reviewController.renderReviewForm);
-router.post('/submissions/:id/review', csrfProtection, reviewController.processReview);
+router.get('/submissions/dashboard', bcrController.submissionDashboard); // Add specific route for submissions dashboard
+router.get('/submissions/:submissionId', bcrController.viewSubmission);
+router.get('/submissions/:submissionId/review', csrfProtection, reviewController.renderReviewForm);
+router.post('/submissions/:submissionId/review', csrfProtection, reviewController.processReview);
 
 // === Impact Areas Routes ===
 // Main impact areas route to list all impact areas
@@ -44,62 +81,44 @@ router.get('/impact-areas', bcrController.listImpactAreas);
 router.get('/impact-areas/list', bcrController.listImpactAreas);
 router.get('/impact-areas/new', csrfProtection, bcrController.newImpactAreaForm);
 router.post('/impact-areas/new', csrfProtection, bcrController.createImpactArea);
-router.get('/impact-areas/:id/edit', csrfProtection, bcrController.editImpactAreaForm);
-router.post('/impact-areas/:id/edit', csrfProtection, bcrController.updateImpactArea);
-router.get('/impact-areas/:id/delete', csrfProtection, bcrController.deleteImpactAreaConfirm);
-router.post('/impact-areas/:id/delete', csrfProtection, bcrController.deleteImpactArea);
+router.get('/impact-areas/:impactAreaId/edit', csrfProtection, bcrController.editImpactAreaForm);
+router.post('/impact-areas/:impactAreaId/edit', csrfProtection, bcrController.updateImpactArea);
+router.get('/impact-areas/:impactAreaId/delete', csrfProtection, bcrController.deleteImpactAreaConfirm);
+router.post('/impact-areas/:impactAreaId/delete', csrfProtection, bcrController.deleteImpactArea);
 
 // === Business Change Request Routes (Post-Approval) ===
-router.get('/business-change-requests', bcrController.listApprovedBcrs); // New route for listing only BCRs
-router.get('/business-change-requests/:id', bcrController.viewBcr); // New route for viewing a specific BCR
-router.get('/bcr-view/:id', bcrController.viewBcr); // New detailed view route for BCRs
-router.get('/bcr-view/:id/workflow-progress', bcrController.viewWorkflowProgress); // Dedicated page for workflow progress
-router.get('/business-change-requests/:id/review', csrfProtection, reviewController.renderReviewForm); // Route for reviewing a BCR
-router.post('/business-change-requests/:id/review', csrfProtection, reviewController.processReview); // Route for processing a BCR review
-// Routes for updating the workflow
-router.get('/business-change-requests/:id/update-workflow', csrfProtection, updateWorkflowController.renderUpdateWorkflowForm);
-router.post('/business-change-requests/:id/update-workflow', csrfProtection, updateWorkflowController.processUpdateWorkflow);
-// Simple test route for debugging
-router.get('/test-update', (req, res) => {
-  console.log('Test update route hit');
-  res.send(`
-    <html>
-      <head><title>BCR Update Test</title></head>
-      <body>
-        <h1>BCR Update Test</h1>
-        <p>This is a test page for the BCR update functionality.</p>
-        <form action="/bcr/test-update-post" method="post">
-          <button type="submit">Test Update</button>
-        </form>
-      </body>
-    </html>
-  `);
+// Most specific routes first
+router.get('/business-change-requests/:bcrId/assign-release', csrfProtection, releaseAssignmentController.renderAssignReleaseForm);
+router.post('/business-change-requests/:bcrId/assign-release', csrfProtection, releaseAssignmentController.processAssignRelease);
+
+router.get('/business-change-requests/:bcrId/update-workflow', csrfProtection, updateWorkflowController.renderUpdateWorkflowForm);
+router.post('/business-change-requests/:bcrId/update-workflow', csrfProtection, updateWorkflowController.processUpdateWorkflow);
+
+router.get('/business-change-requests/:bcrId/update-status', csrfProtection, updateBcrController.renderUpdateForm);
+router.post('/business-change-requests/:bcrId/update-status', csrfProtection, updateBcrController.processUpdate);
+
+router.get('/business-change-requests/:bcrId/update', csrfProtection, updateBcrController.renderUpdateForm);
+router.post('/business-change-requests/:bcrId/update', csrfProtection, updateBcrController.processUpdate);
+
+router.get('/business-change-requests/:bcrId/review', csrfProtection, reviewController.renderReviewForm);
+router.post('/business-change-requests/:bcrId/review', csrfProtection, reviewController.processReview);
+
+// Main BCR list route
+router.get('/business-change-requests', bcrController.listApprovedBcrs);
+
+// Legacy routes - redirect to new URL pattern
+router.get('/bcr-view/:legacyBcrId/workflow-progress', (req, res) => {
+  res.redirect(`/bcr/business-change-requests/${req.params.legacyBcrId}/update-workflow`);
+});
+router.get('/bcr-view/:legacyBcrId', (req, res) => {
+  res.redirect(`/bcr/business-change-requests/${req.params.legacyBcrId}`);
 });
 
-// Routes for updating BCR workflow
-router.get('/business-change-requests/:id/update', (req, res, next) => {
-  console.log('Update route hit with params:', req.params);
-  next();
-}, csrfProtection, updateBcrController.renderUpdateForm); // Route for updating a BCR workflow
-
-router.post('/business-change-requests/:id/update', (req, res, next) => {
-  console.log('Update POST route hit with params:', req.params);
-  next();
-}, csrfProtection, updateBcrController.processUpdate); // Route for processing a BCR workflow update
-
-// Routes for updating BCR status
-router.get('/business-change-requests/:id/update-status', csrfProtection, updateBcrController.renderUpdateForm); // Route for updating a BCR status
-
-// Routes for assigning a BCR to a release
-router.get('/business-change-requests/:id/assign-release', csrfProtection, releaseAssignmentController.renderAssignReleaseForm);
-router.post('/business-change-requests/:id/assign-release', csrfProtection, releaseAssignmentController.processAssignRelease); // Route for processing a BCR release assignment
-router.post('/business-change-requests/:id/update-status', csrfProtection, updateBcrController.processUpdate); // Route for processing a BCR status update
-router.get('/:id', bcrController.viewSubmission); // Keep for backward compatibility
-router.get('/:id/update', bcrController.viewSubmission);
-router.post('/:id/update', csrfProtection, bcrController.viewSubmission);
+// Main BCR view route - must be last
+router.get('/business-change-requests/:bcrId', bcrController.viewBcr);
 
 // === Confirmation and Warning Routes ===
-router.get('/:id/confirm', (req, res) => {
+router.get('/business-change-requests/:bcrId/confirm', (req, res) => {
   const action = req.query.action || 'update';
   const message = req.query.message || 'Action completed successfully';
   
@@ -107,13 +126,13 @@ router.get('/:id/confirm', (req, res) => {
     title: 'Confirmation',
     message,
     action,
-    bcrId: req.params.id,
+    bcrId: req.params.bcrId,
     csrfToken: req.csrfToken ? req.csrfToken() : '',
     user: req.user
   });
 });
 
-router.get('/:id/warning', (req, res) => {
+router.get('/business-change-requests/:bcrId/warning', (req, res) => {
   const action = req.query.action || 'delete';
   let message = 'Are you sure you want to proceed with this action?';
   let title = 'Warning';
@@ -127,10 +146,11 @@ router.get('/:id/warning', (req, res) => {
     title,
     message,
     action,
-    bcrId: req.params.id,
+    bcrId: req.params.bcrId,
     csrfToken: req.csrfToken ? req.csrfToken() : '',
     user: req.user
   });
 });
 
-module.exports = router;
+// Export the migration router instead of the original router
+module.exports = bcrMigrationRouter;

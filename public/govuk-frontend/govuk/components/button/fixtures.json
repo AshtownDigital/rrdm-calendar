@@ -7,7 +7,10 @@
                 "text": "Save and continue"
             },
             "hidden": false,
-            "html": "<button class=\"govuk-button\" data-module=\"govuk-button\">\n  Save and continue\n</button>"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button type=\"submit\" class=\"govuk-button\" data-module=\"govuk-button\">\n  Save and continue\n</button>"
         },
         {
             "name": "disabled",
@@ -16,7 +19,10 @@
                 "disabled": true
             },
             "hidden": false,
-            "html": "<button disabled=\"disabled\" aria-disabled=\"true\" class=\"govuk-button govuk-button--disabled\" data-module=\"govuk-button\">\n  Disabled button\n</button>"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button type=\"submit\" disabled aria-disabled=\"true\" class=\"govuk-button\" data-module=\"govuk-button\">\n  Disabled button\n</button>"
         },
         {
             "name": "link",
@@ -25,17 +31,10 @@
                 "href": "/"
             },
             "hidden": false,
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
             "html": "<a href=\"/\" role=\"button\" draggable=\"false\" class=\"govuk-button\" data-module=\"govuk-button\">\n  Link button\n</a>"
-        },
-        {
-            "name": "link disabled",
-            "options": {
-                "text": "Disabled link button",
-                "href": "/",
-                "disabled": true
-            },
-            "hidden": false,
-            "html": "<a href=\"/\" role=\"button\" draggable=\"false\" class=\"govuk-button govuk-button--disabled\" data-module=\"govuk-button\">\n  Disabled link button\n</a>"
         },
         {
             "name": "start",
@@ -44,7 +43,10 @@
                 "isStartButton": true
             },
             "hidden": false,
-            "html": "<button class=\"govuk-button govuk-button--start\" data-module=\"govuk-button\">\n  Start now button\n  <svg class=\"govuk-button__start-icon\" xmlns=\"http://www.w3.org/2000/svg\" width=\"17.5\" height=\"19\" viewBox=\"0 0 33 40\" aria-hidden=\"true\" focusable=\"false\">\n    <path fill=\"currentColor\" d=\"M0 0h13l20 20-20 20H0l20-20z\"/>\n  </svg></button>"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": true,
+            "html": "<button type=\"submit\" class=\"govuk-button govuk-button--start\" data-module=\"govuk-button\">\n  Start now button\n  <svg class=\"govuk-button__start-icon\" xmlns=\"http://www.w3.org/2000/svg\" width=\"17.5\" height=\"19\" viewBox=\"0 0 33 40\" aria-hidden=\"true\" focusable=\"false\">\n    <path fill=\"currentColor\" d=\"M0 0h13l20 20-20 20H0l20-20z\"/>\n  </svg>\n</button>"
         },
         {
             "name": "start link",
@@ -54,7 +56,10 @@
                 "isStartButton": true
             },
             "hidden": false,
-            "html": "<a href=\"/\" role=\"button\" draggable=\"false\" class=\"govuk-button govuk-button--start\" data-module=\"govuk-button\">\n  Start now link button\n  <svg class=\"govuk-button__start-icon\" xmlns=\"http://www.w3.org/2000/svg\" width=\"17.5\" height=\"19\" viewBox=\"0 0 33 40\" aria-hidden=\"true\" focusable=\"false\">\n    <path fill=\"currentColor\" d=\"M0 0h13l20 20-20 20H0l20-20z\"/>\n  </svg></a>"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<a href=\"/\" role=\"button\" draggable=\"false\" class=\"govuk-button govuk-button--start\" data-module=\"govuk-button\">\n  Start now link button\n  <svg class=\"govuk-button__start-icon\" xmlns=\"http://www.w3.org/2000/svg\" width=\"17.5\" height=\"19\" viewBox=\"0 0 33 40\" aria-hidden=\"true\" focusable=\"false\">\n    <path fill=\"currentColor\" d=\"M0 0h13l20 20-20 20H0l20-20z\"/>\n  </svg>\n</a>"
         },
         {
             "name": "input",
@@ -64,6 +69,9 @@
                 "text": "Start now"
             },
             "hidden": false,
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
             "html": "<input value=\"Start now\" type=\"submit\" name=\"start-now\" class=\"govuk-button\" data-module=\"govuk-button\">"
         },
         {
@@ -74,7 +82,10 @@
                 "disabled": true
             },
             "hidden": false,
-            "html": "<input value=\"Explicit input button disabled\" type=\"submit\" disabled=\"disabled\" aria-disabled=\"true\" class=\"govuk-button govuk-button--disabled\" data-module=\"govuk-button\">"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<input value=\"Explicit input button disabled\" type=\"submit\" disabled aria-disabled=\"true\" class=\"govuk-button\" data-module=\"govuk-button\">"
         },
         {
             "name": "prevent double click",
@@ -83,7 +94,10 @@
                 "preventDoubleClick": true
             },
             "hidden": false,
-            "html": "<button data-prevent-double-click=\"true\" class=\"govuk-button\" data-module=\"govuk-button\">\n  Submit\n</button>"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button type=\"submit\" data-prevent-double-click=\"true\" class=\"govuk-button\" data-module=\"govuk-button\">\n  Submit\n</button>"
         },
         {
             "name": "with active state",
@@ -93,7 +107,10 @@
                 "classes": ":active"
             },
             "hidden": false,
-            "html": "<button name=\"active\" class=\"govuk-button :active\" data-module=\"govuk-button\">\n  Active\n</button>"
+            "description": "Simulate triggering the :active CSS pseudo-class, not available in the production build.",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button type=\"submit\" name=\"active\" class=\"govuk-button :active\" data-module=\"govuk-button\">\n  Active\n</button>"
         },
         {
             "name": "with hover state",
@@ -103,7 +120,10 @@
                 "classes": ":hover"
             },
             "hidden": false,
-            "html": "<button name=\"hover\" class=\"govuk-button :hover\" data-module=\"govuk-button\">\n  Hovered\n</button>"
+            "description": "Simulate triggering the :hover CSS pseudo-class, not available in the production build.",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button type=\"submit\" name=\"hover\" class=\"govuk-button :hover\" data-module=\"govuk-button\">\n  Hovered\n</button>"
         },
         {
             "name": "with focus state",
@@ -113,20 +133,26 @@
                 "classes": ":focus"
             },
             "hidden": false,
-            "html": "<button name=\"focus\" class=\"govuk-button :focus\" data-module=\"govuk-button\">\n  Focussed\n</button>"
+            "description": "Simulate triggering the :focus CSS pseudo-class, not available in the production build.",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button type=\"submit\" name=\"focus\" class=\"govuk-button :focus\" data-module=\"govuk-button\">\n  Focussed\n</button>"
         },
         {
-            "name": "Secondary",
+            "name": "secondary",
             "options": {
                 "name": "secondary",
                 "text": "Secondary button",
                 "classes": "govuk-button--secondary"
             },
             "hidden": false,
-            "html": "<button name=\"secondary\" class=\"govuk-button govuk-button--secondary\" data-module=\"govuk-button\">\n  Secondary button\n</button>"
+            "description": "A button for secondary actions",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button type=\"submit\" name=\"secondary\" class=\"govuk-button govuk-button--secondary\" data-module=\"govuk-button\">\n  Secondary button\n</button>"
         },
         {
-            "name": "Secondary disabled",
+            "name": "secondary disabled",
             "options": {
                 "name": "secondary",
                 "text": "Secondary button disabled",
@@ -134,10 +160,13 @@
                 "disabled": true
             },
             "hidden": false,
-            "html": "<button name=\"secondary\" disabled=\"disabled\" aria-disabled=\"true\" class=\"govuk-button govuk-button--secondary govuk-button--disabled\" data-module=\"govuk-button\">\n  Secondary button disabled\n</button>"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button type=\"submit\" name=\"secondary\" disabled aria-disabled=\"true\" class=\"govuk-button govuk-button--secondary\" data-module=\"govuk-button\">\n  Secondary button disabled\n</button>"
         },
         {
-            "name": "Secondary link",
+            "name": "secondary link",
             "options": {
                 "name": "secondary",
                 "text": "Secondary button",
@@ -145,20 +174,26 @@
                 "classes": "govuk-button--secondary"
             },
             "hidden": false,
+            "description": "A link button for secondary actions",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
             "html": "<a href=\"/\" role=\"button\" draggable=\"false\" class=\"govuk-button govuk-button--secondary\" data-module=\"govuk-button\">\n  Secondary button\n</a>"
         },
         {
-            "name": "Warning",
+            "name": "warning",
             "options": {
                 "name": "Warning",
                 "text": "Warning button",
                 "classes": "govuk-button--warning"
             },
             "hidden": false,
-            "html": "<button name=\"Warning\" class=\"govuk-button govuk-button--warning\" data-module=\"govuk-button\">\n  Warning button\n</button>"
+            "description": "A button for actions that need a warning",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button type=\"submit\" name=\"Warning\" class=\"govuk-button govuk-button--warning\" data-module=\"govuk-button\">\n  Warning button\n</button>"
         },
         {
-            "name": "Warning disabled",
+            "name": "warning disabled",
             "options": {
                 "name": "warning",
                 "text": "Warning button disabled",
@@ -166,10 +201,13 @@
                 "disabled": true
             },
             "hidden": false,
-            "html": "<button name=\"warning\" disabled=\"disabled\" aria-disabled=\"true\" class=\"govuk-button govuk-button--warning govuk-button--disabled\" data-module=\"govuk-button\">\n  Warning button disabled\n</button>"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button type=\"submit\" name=\"warning\" disabled aria-disabled=\"true\" class=\"govuk-button govuk-button--warning\" data-module=\"govuk-button\">\n  Warning button disabled\n</button>"
         },
         {
-            "name": "Warning link",
+            "name": "warning link",
             "options": {
                 "name": "Warning",
                 "text": "Warning button",
@@ -177,20 +215,28 @@
                 "classes": "govuk-button--warning"
             },
             "hidden": false,
+            "description": "A link button for actions that need a warning",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
             "html": "<a href=\"/\" role=\"button\" draggable=\"false\" class=\"govuk-button govuk-button--warning\" data-module=\"govuk-button\">\n  Warning button\n</a>"
         },
         {
-            "name": "Inverse",
+            "name": "inverse",
             "options": {
                 "name": "Inverse",
                 "text": "Inverse button",
                 "classes": "govuk-button--inverse"
             },
             "hidden": false,
-            "html": "<button name=\"Inverse\" class=\"govuk-button govuk-button--inverse\" data-module=\"govuk-button\">\n  Inverse button\n</button>"
+            "description": "A button that appears on dark backgrounds",
+            "previewLayoutModifiers": [
+                "inverse"
+            ],
+            "screenshot": true,
+            "html": "<button type=\"submit\" name=\"Inverse\" class=\"govuk-button govuk-button--inverse\" data-module=\"govuk-button\">\n  Inverse button\n</button>"
         },
         {
-            "name": "Inverse disabled",
+            "name": "inverse disabled",
             "options": {
                 "name": "Inverse",
                 "text": "Inverse button disabled",
@@ -198,10 +244,15 @@
                 "disabled": true
             },
             "hidden": false,
-            "html": "<button name=\"Inverse\" disabled=\"disabled\" aria-disabled=\"true\" class=\"govuk-button govuk-button--inverse govuk-button--disabled\" data-module=\"govuk-button\">\n  Inverse button disabled\n</button>"
+            "description": "",
+            "previewLayoutModifiers": [
+                "inverse"
+            ],
+            "screenshot": false,
+            "html": "<button type=\"submit\" name=\"Inverse\" disabled aria-disabled=\"true\" class=\"govuk-button govuk-button--inverse\" data-module=\"govuk-button\">\n  Inverse button disabled\n</button>"
         },
         {
-            "name": "Inverse link",
+            "name": "inverse link",
             "options": {
                 "name": "Inverse",
                 "text": "Inverse button",
@@ -209,10 +260,15 @@
                 "classes": "govuk-button--inverse"
             },
             "hidden": false,
+            "description": "A link button for actions that appear on dark backgrounds",
+            "previewLayoutModifiers": [
+                "inverse"
+            ],
+            "screenshot": false,
             "html": "<a href=\"/\" role=\"button\" draggable=\"false\" class=\"govuk-button govuk-button--inverse\" data-module=\"govuk-button\">\n  Inverse button\n</a>"
         },
         {
-            "name": "Inverse start button",
+            "name": "inverse start",
             "options": {
                 "name": "Inverse",
                 "text": "Inverse start button",
@@ -221,7 +277,12 @@
                 "isStartButton": true
             },
             "hidden": false,
-            "html": "<a href=\"/\" role=\"button\" draggable=\"false\" class=\"govuk-button govuk-button--inverse govuk-button--start\" data-module=\"govuk-button\">\n  Inverse start button\n  <svg class=\"govuk-button__start-icon\" xmlns=\"http://www.w3.org/2000/svg\" width=\"17.5\" height=\"19\" viewBox=\"0 0 33 40\" aria-hidden=\"true\" focusable=\"false\">\n    <path fill=\"currentColor\" d=\"M0 0h13l20 20-20 20H0l20-20z\"/>\n  </svg></a>"
+            "description": "A start button that appears on dark backgrounds",
+            "previewLayoutModifiers": [
+                "inverse"
+            ],
+            "screenshot": true,
+            "html": "<a href=\"/\" role=\"button\" draggable=\"false\" class=\"govuk-button govuk-button--inverse govuk-button--start\" data-module=\"govuk-button\">\n  Inverse start button\n  <svg class=\"govuk-button__start-icon\" xmlns=\"http://www.w3.org/2000/svg\" width=\"17.5\" height=\"19\" viewBox=\"0 0 33 40\" aria-hidden=\"true\" focusable=\"false\">\n    <path fill=\"currentColor\" d=\"M0 0h13l20 20-20 20H0l20-20z\"/>\n  </svg>\n</a>"
         },
         {
             "name": "attributes",
@@ -229,12 +290,15 @@
                 "element": "button",
                 "text": "Submit",
                 "attributes": {
-                    "aria-controls": "example-id",
+                    "aria-controls": "test-target-element",
                     "data-tracking-dimension": 123
                 }
             },
             "hidden": true,
-            "html": "<button class=\"govuk-button\" data-module=\"govuk-button\" aria-controls=\"example-id\" data-tracking-dimension=\"123\">\n  Submit\n</button>"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button type=\"submit\" class=\"govuk-button\" data-module=\"govuk-button\" aria-controls=\"test-target-element\" data-tracking-dimension=\"123\">\n  Submit\n</button>"
         },
         {
             "name": "link attributes",
@@ -242,12 +306,15 @@
                 "element": "a",
                 "text": "Submit",
                 "attributes": {
-                    "aria-controls": "example-id",
+                    "aria-controls": "test-target-element",
                     "data-tracking-dimension": 123
                 }
             },
             "hidden": true,
-            "html": "<a href=\"#\" role=\"button\" draggable=\"false\" class=\"govuk-button\" data-module=\"govuk-button\" aria-controls=\"example-id\" data-tracking-dimension=\"123\">\n  Submit\n</a>"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<a href=\"#\" role=\"button\" draggable=\"false\" class=\"govuk-button\" data-module=\"govuk-button\" aria-controls=\"test-target-element\" data-tracking-dimension=\"123\">\n  Submit\n</a>"
         },
         {
             "name": "input attributes",
@@ -255,12 +322,15 @@
                 "element": "input",
                 "text": "Submit",
                 "attributes": {
-                    "aria-controls": "example-id",
+                    "aria-controls": "test-target-element",
                     "data-tracking-dimension": 123
                 }
             },
             "hidden": true,
-            "html": "<input value=\"Submit\" type=\"submit\" class=\"govuk-button\" data-module=\"govuk-button\" aria-controls=\"example-id\" data-tracking-dimension=\"123\">"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<input value=\"Submit\" type=\"submit\" class=\"govuk-button\" data-module=\"govuk-button\" aria-controls=\"test-target-element\" data-tracking-dimension=\"123\">"
         },
         {
             "name": "classes",
@@ -270,7 +340,10 @@
                 "classes": "app-button--custom-modifier"
             },
             "hidden": true,
-            "html": "<button class=\"govuk-button app-button--custom-modifier\" data-module=\"govuk-button\">\n  Submit\n</button>"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button type=\"submit\" class=\"govuk-button app-button--custom-modifier\" data-module=\"govuk-button\">\n  Submit\n</button>"
         },
         {
             "name": "link classes",
@@ -280,6 +353,9 @@
                 "classes": "app-button--custom-modifier"
             },
             "hidden": true,
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
             "html": "<a href=\"#\" role=\"button\" draggable=\"false\" class=\"govuk-button app-button--custom-modifier\" data-module=\"govuk-button\">\n  Submit\n</a>"
         },
         {
@@ -290,6 +366,9 @@
                 "classes": "app-button--custom-modifier"
             },
             "hidden": true,
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
             "html": "<input value=\"Submit\" type=\"submit\" class=\"govuk-button app-button--custom-modifier\" data-module=\"govuk-button\">"
         },
         {
@@ -300,7 +379,10 @@
                 "name": "start-now"
             },
             "hidden": true,
-            "html": "<button name=\"start-now\" class=\"govuk-button\" data-module=\"govuk-button\">\n  Submit\n</button>"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button type=\"submit\" name=\"start-now\" class=\"govuk-button\" data-module=\"govuk-button\">\n  Submit\n</button>"
         },
         {
             "name": "type",
@@ -310,6 +392,9 @@
                 "type": "button"
             },
             "hidden": true,
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
             "html": "<button type=\"button\" class=\"govuk-button\" data-module=\"govuk-button\">\n  Submit\n</button>"
         },
         {
@@ -320,6 +405,9 @@
                 "type": "button"
             },
             "hidden": true,
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
             "html": "<input value=\"Submit\" type=\"button\" class=\"govuk-button\" data-module=\"govuk-button\">"
         },
         {
@@ -330,6 +418,9 @@
                 "text": "Continue"
             },
             "hidden": true,
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
             "html": "<a href=\"/\" role=\"button\" draggable=\"false\" class=\"govuk-button\" data-module=\"govuk-button\">\n  Continue\n</a>"
         },
         {
@@ -339,6 +430,9 @@
                 "element": "a"
             },
             "hidden": true,
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
             "html": "<a href=\"#\" role=\"button\" draggable=\"false\" class=\"govuk-button\" data-module=\"govuk-button\">\n  Submit\n</a>"
         },
         {
@@ -349,7 +443,10 @@
                 "value": "start"
             },
             "hidden": true,
-            "html": "<button value=\"start\" class=\"govuk-button\" data-module=\"govuk-button\">\n  Submit\n</button>"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button value=\"start\" type=\"submit\" class=\"govuk-button\" data-module=\"govuk-button\">\n  Submit\n</button>"
         },
         {
             "name": "html",
@@ -359,7 +456,10 @@
                 "html": "Start <em>now</em>"
             },
             "hidden": true,
-            "html": "<button class=\"govuk-button\" data-module=\"govuk-button\">\n  Start <em>now</em>\n</button>"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button type=\"submit\" class=\"govuk-button\" data-module=\"govuk-button\">\n  Start <em>now</em>\n</button>"
         },
         {
             "name": "no type",
@@ -367,7 +467,10 @@
                 "text": "Button!"
             },
             "hidden": true,
-            "html": "<button class=\"govuk-button\" data-module=\"govuk-button\">\n  Button!\n</button>"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button type=\"submit\" class=\"govuk-button\" data-module=\"govuk-button\">\n  Button!\n</button>"
         },
         {
             "name": "no data-prevent-double-click",
@@ -375,7 +478,10 @@
                 "text": "Submit"
             },
             "hidden": true,
-            "html": "<button class=\"govuk-button\" data-module=\"govuk-button\">\n  Submit\n</button>"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button type=\"submit\" class=\"govuk-button\" data-module=\"govuk-button\">\n  Submit\n</button>"
         },
         {
             "name": "don't prevent double click",
@@ -384,7 +490,10 @@
                 "preventDoubleClick": false
             },
             "hidden": true,
-            "html": "<button data-prevent-double-click=\"false\" class=\"govuk-button\" data-module=\"govuk-button\">\n  Submit\n</button>"
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
+            "html": "<button type=\"submit\" data-prevent-double-click=\"false\" class=\"govuk-button\" data-module=\"govuk-button\">\n  Submit\n</button>"
         },
         {
             "name": "id",
@@ -394,6 +503,9 @@
                 "id": "submit"
             },
             "hidden": true,
+            "description": "",
+            "previewLayoutModifiers": [],
+            "screenshot": false,
             "html": "<input value=\"Submit\" type=\"submit\" class=\"govuk-button\" data-module=\"govuk-button\" id=\"submit\">"
         }
     ]

@@ -1,0 +1,111 @@
+{% extends "layouts/base.njk" %}
+
+{% block title %}Funding Reports | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/funding-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Funding Reports</h1>
+    <p class="govuk-body-l">Generate and view reports on funding allocations and usage</p>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          Report filters
+        </legend>
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-one-third">
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="academic-year">
+                Academic year
+              </label>
+              <select class="govuk-select" id="academic-year" name="academicYear">
+                <option value="2025-26" selected>2025-26</option>
+                <option value="2024-25">2024-25</option>
+                <option value="2023-24">2023-24</option>
+              </select>
+            </div>
+          </div>
+          <div class="govuk-grid-column-one-third">
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="training-route">
+                Training route
+              </label>
+              <select class="govuk-select" id="training-route" name="trainingRoute">
+                <option value="all" selected>All routes</option>
+                <option value="provider-led-fee">Provider-led (Fee-funded)</option>
+                <option value="provider-led-salaried">Provider-led (Salaried)</option>
+                <option value="school-direct-fee">School Direct (Fee-funded)</option>
+                <option value="school-direct-salaried">School Direct (Salaried)</option>
+                <option value="teach-first">Teach First</option>
+              </select>
+            </div>
+          </div>
+          <div class="govuk-grid-column-one-third">
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="funding-type">
+                Funding type
+              </label>
+              <select class="govuk-select" id="funding-type" name="fundingType">
+                <option value="all" selected>All types</option>
+                <option value="bursary">Bursary</option>
+                <option value="scholarship">Scholarship</option>
+                <option value="grant">Grant</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="govuk-grid-row govuk-!-margin-top-3">
+          <div class="govuk-grid-column-full">
+            <button class="govuk-button" data-module="govuk-button">
+              Generate report
+            </button>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+  </div>
+</div>
+
+<div class="govuk-grid-row govuk-!-margin-top-6">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-m">Available reports</h2>
+    
+    <ul class="govuk-list">
+      <li>
+        <a href="#" class="govuk-link">Funding allocation summary for 2025-26</a>
+        <span class="govuk-hint">Generated on 24 April 2025</span>
+      </li>
+      <li>
+        <a href="#" class="govuk-link">Bursary distribution by subject for 2025-26</a>
+        <span class="govuk-hint">Generated on 23 April 2025</span>
+      </li>
+      <li>
+        <a href="#" class="govuk-link">Year-on-year funding comparison (2024-25 vs 2025-26)</a>
+        <span class="govuk-hint">Generated on 20 April 2025</span>
+      </li>
+      <li>
+        <a href="#" class="govuk-link">Training route funding breakdown for 2025-26</a>
+        <span class="govuk-hint">Generated on 18 April 2025</span>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="govuk-grid-row govuk-!-margin-top-6">
+  <div class="govuk-grid-column-full">
+    <div class="govuk-button-group">
+      <a href="/funding" class="govuk-button govuk-button--secondary">Back to Funding</a>
+      <a href="/home" class="govuk-button govuk-button--secondary">Back to Home</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -3,25 +3,25 @@
         "name": "items",
         "type": "array",
         "required": false,
-        "description": "The array of link objects.",
+        "description": "The items within the pagination component.",
         "params": [
             {
                 "name": "number",
                 "type": "string",
                 "required": false,
-                "description": "The pagination item text - usually a page number."
+                "description": "The pagination item text – usually a page number.  Required unless the item is an ellipsis."
             },
             {
                 "name": "visuallyHiddenText",
                 "type": "string",
                 "required": false,
-                "description": "The visually hidden label (for the pagination item) which will be applied to an `aria-label` and announced by screen readers on the pagination item link. Should include page number."
+                "description": "The visually hidden label for the pagination item, which will be applied to an `aria-label` and announced by screen readers on the pagination item link. Should include page number. Defaults to, for example \"Page 1\"."
             },
             {
                 "name": "href",
                 "type": "string",
-                "required": true,
-                "description": "The link's URL."
+                "required": false,
+                "description": "The link's URL. Required unless the item is an ellipsis."
             },
             {
                 "name": "current",
@@ -53,7 +53,13 @@
                 "name": "text",
                 "type": "string",
                 "required": false,
-                "description": "The link text to the previous page. Defaults to 'Previous page', where 'page' is visually hidden."
+                "description": "The text content of the link to the previous page. Defaults to `\"Previous page\"`, with 'page' being visually hidden. If `html` is provided, the `text` option will be ignored."
+            },
+            {
+                "name": "html",
+                "type": "string",
+                "required": false,
+                "description": "The HTML content of the link to the previous page. Defaults to `\"Previous page\"`, with 'page' being visually hidden. If `html` is provided, the `text` option will be ignored."
             },
             {
                 "name": "labelText",
@@ -85,7 +91,13 @@
                 "name": "text",
                 "type": "string",
                 "required": false,
-                "description": "The link text to the next page. Defaults to 'Next page', where 'page' is visually hidden."
+                "description": "The text content of the link to the next page. Defaults to `\"Next page\"`, with 'page' being visually hidden. If `html` is provided, the `text` option will be ignored."
+            },
+            {
+                "name": "html",
+                "type": "string",
+                "required": false,
+                "description": "The HTML content of the link to the next page. Defaults to `\"Next page\"`, with 'page' being visually hidden. If `html` is provided, the `text` option will be ignored."
             },
             {
                 "name": "labelText",
@@ -111,7 +123,7 @@
         "name": "landmarkLabel",
         "type": "string",
         "required": false,
-        "description": "The label for the navigation landmark that wraps the pagination. Defaults to 'results'."
+        "description": "The label for the navigation landmark that wraps the pagination. Defaults to `\"Pagination\"`."
     },
     {
         "name": "classes",

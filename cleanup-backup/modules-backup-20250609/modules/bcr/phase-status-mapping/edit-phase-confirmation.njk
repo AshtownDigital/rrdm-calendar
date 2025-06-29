@@ -1,0 +1,118 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}Phase Updated | BCR Phase-Status Mapping | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-panel govuk-panel--confirmation">
+        <h1 class="govuk-panel__title">
+          Phase updated successfully
+        </h1>
+        <div class="govuk-panel__body">
+          Phase: <strong>{{ phase.name }}</strong><br>
+          ID: <strong>{{ phase.id }}</strong>
+        </div>
+      </div>
+
+      <h2 class="govuk-heading-m">Updated phase details</h2>
+      
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Phase name
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ phase.name }}
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Phase ID
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ phase.value }}
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Display order
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ phase.displayOrder }}
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            Description
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ phase.description if phase.description else 'No description provided' }}
+          </dd>
+        </div>
+      </dl>
+
+      {% if statuses and statuses.length > 0 %}
+        <h2 class="govuk-heading-m">Associated statuses</h2>
+        
+        <p class="govuk-body">
+          This phase has the following statuses associated with it:
+        </p>
+        
+        <ul class="govuk-list">
+          {% for status in statuses %}
+            <li>
+              {% if status.name.startsWith('completed:') %}
+                <strong class="govuk-tag govuk-tag--green">{{ status.name }}</strong>
+              {% else %}
+                <strong class="govuk-tag 
+                {% if status.name === 'Submission' %}
+                  govuk-tag--blue
+                {% elif status.name === 'Prioritisation' %}
+                  govuk-tag--purple
+                {% elif status.name === 'Technical Review and Analysis' %}
+                  govuk-tag--light-blue
+                {% elif status.name === 'Governance Playback' %}
+                  govuk-tag--turquoise
+                {% elif status.name === 'Stakeholder Consultation' %}
+                  govuk-tag--pink
+                {% elif status.name === 'Final Drafting' %}
+                  govuk-tag--orange
+                {% elif status.name === 'Final Approval' %}
+                  govuk-tag
+                {% elif status.name === 'Implementation' %}
+                  govuk-tag--turquoise
+                {% elif status.name === 'Validation & Testing' %}
+                  govuk-tag--yellow
+                {% elif status.name === 'Go Live' %}
+                  govuk-tag--green
+                {% elif status.name === 'Post-Implementation Review' %}
+                  govuk-tag--grey
+                {% elif status.name === 'Closed' %}
+                  govuk-tag--grey
+                {% endif %}
+                ">{{ status.name }}</strong>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      <h2 class="govuk-heading-m">What happens next</h2>
+      
+      <p class="govuk-body">
+        You can continue managing the workflow phases and statuses.
+      </p>
+      
+      <div class="govuk-button-group">
+        <a href="/bcr/phase-status-mapping" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+          Return to Phase-Status Mapping
+        </a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

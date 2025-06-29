@@ -1,0 +1,142 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}BCR Phase-Status Mapping | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">BCR Phase-Status Mapping</h1>
+      
+      <div class="govuk-button-group">
+        <a href="/bcr/phase-status-mapping/create-phase" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+          Create New Phase
+        </a>
+        <a href="/bcr/phase-status-mapping/create-status" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+          Create New Status
+        </a>
+      </div>
+      
+      {% if phases.length === 0 %}
+        <div class="govuk-inset-text">
+          <p class="govuk-body">No phases have been defined yet. Use the 'Create New Phase' button to add a phase.</p>
+        </div>
+      {% else %}
+        <h2 class="govuk-heading-l">Phases and Statuses</h2>
+        
+        <div class="govuk-!-margin-bottom-6">
+            <h3 class="govuk-heading-m">Table View</h3>
+            
+            <table class="govuk-table">
+              <caption class="govuk-table__caption govuk-table__caption--m">BCR Workflow Phases and Statuses</caption>
+              <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                  <th scope="col" class="govuk-table__header">Phase Order Number</th>
+                  <th scope="col" class="govuk-table__header">Workflow Phase Name</th>
+                  <th scope="col" class="govuk-table__header">In Progress Status</th>
+                  <th scope="col" class="govuk-table__header">Completed Status</th>
+                  <th scope="col" class="govuk-table__header">Trello Status Name</th>
+                  <th scope="col" class="govuk-table__header">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="govuk-table__body">
+                {% for phase in phases %}
+                  {% set inProgressStatus = null %}
+                  {% set completedStatus = null %}
+                  
+                  <!-- Debug info -->
+                  <pre style="font-size: 10px; background-color: #f0f0f0; padding: 5px; margin: 5px 0;">
+                    Phase: {{ phase.name }} (ID: {{ phase.id }})
+                    Statuses for this phase: {{ phaseStatusMapping[phase.id] | dump(2) }}
+                  </pre>
+                  
+                  {% if phaseStatusMapping[phase.id] and phaseStatusMapping[phase.id].length > 0 %}
+                    {% for status in phaseStatusMapping[phase.id] %}
+                      {% if status.name === 'New Submission' or status.name === 'Being Submitted' or status.name === 'Being Prioritised' or status.name === 'Under Technical Review' or status.name === 'In Governance Review' or status.name === 'Consulting Stakeholders' or status.name === 'Drafting In Progress' or status.name === 'Awaiting Final Approval' or status.name === 'Being Implemented' or status.name === 'Testing In Progress' or status.name === 'Preparing for Go Live' or status.name === 'Under Post-Implementation Review' or status.name === 'Closing' %}
+                        {% set inProgressStatus = status %}
+                      {% elif status.name === 'Submitted' or status.name === 'Prioritised' or status.name === 'Technical Review Complete' or status.name === 'Governance Approved' or status.name === 'Stakeholders Consulted' or status.name === 'Draft Completed' or status.name === 'Final Approval Granted' or status.name === 'Implementation Complete' or status.name === 'Testing Passed' or status.name === 'Gone Live' or status.name === 'Review Completed' or status.name === 'Closed' %}
+                        {% set completedStatus = status %}
+                      {% elif status.name.startsWith('completed:') %}
+                        {% set completedStatus = status %}
+                      {% else %}
+                        {% set inProgressStatus = status %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                  
+                  <tr class="govuk-table__row">
+                    <td class="govuk-table__cell">
+                      <strong>{{ phase.id }}</strong>
+                    </td>
+                    <td class="govuk-table__cell">
+                      <a href="/bcr/phase-status-mapping/phase/{{ phase.id }}" class="govuk-link">
+                        <strong>{{ phase.name }}</strong>
+                      </a>
+                    </td>
+                    <td class="govuk-table__cell">
+                      {% if inProgressStatus %}
+                        <strong class="govuk-tag 
+                        {% if inProgressStatus.name === 'New Submission' %}
+                          govuk-tag--blue
+                        {% elif inProgressStatus.name === 'Being Submitted' %}
+                          govuk-tag--blue
+                        {% elif inProgressStatus.name === 'Being Prioritised' %}
+                          govuk-tag--purple
+                        {% elif inProgressStatus.name === 'Under Technical Review' %}
+                          govuk-tag--light-blue
+                        {% elif inProgressStatus.name === 'In Governance Review' %}
+                          govuk-tag--turquoise
+                        {% elif inProgressStatus.name === 'Consulting Stakeholders' %}
+                          govuk-tag--pink
+                        {% elif inProgressStatus.name === 'Drafting In Progress' %}
+                          govuk-tag--orange
+                        {% elif inProgressStatus.name === 'Awaiting Final Approval' %}
+                          govuk-tag
+                        {% elif inProgressStatus.name === 'Being Implemented' %}
+                          govuk-tag--turquoise
+                        {% elif inProgressStatus.name === 'Testing In Progress' %}
+                          govuk-tag--yellow
+                        {% elif inProgressStatus.name === 'Preparing for Go Live' %}
+                          govuk-tag--green
+                        {% elif inProgressStatus.name === 'Under Post-Implementation Review' %}
+                          govuk-tag--grey
+                        {% elif inProgressStatus.name === 'Closing' %}
+                          govuk-tag--grey
+                        {% endif %}
+                        ">{{ inProgressStatus.name }}</strong>
+                        
+                        <!-- Status can only be edited in the full edit form -->
+                      {% else %}
+                        <span class="govuk-tag govuk-tag--grey">Not Set</span>
+                      {% endif %}
+                    </td>
+                    <td class="govuk-table__cell">
+                      {% if completedStatus %}
+                        <strong class="govuk-tag govuk-tag--green">{{ completedStatus.name }}</strong>
+                        
+                        <!-- Status can only be edited in the full edit form -->
+                      {% else %}
+                        <span class="govuk-tag govuk-tag--grey">Not Set</span>
+                      {% endif %}
+                    </td>
+                    <td class="govuk-table__cell">
+                      {{ phase.trelloList }}
+                    </td>
+                    <td class="govuk-table__cell">
+                      <a href="/bcr/phase-status-mapping/edit-phase/{{ phase.id }}" class="govuk-link govuk-link--no-visited-state">Edit</a>
+                      <a href="/bcr/phase-status-mapping/delete-phase/{{ phase.id }}" class="govuk-link govuk-link--no-visited-state">Delete</a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+

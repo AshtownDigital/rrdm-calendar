@@ -1,0 +1,56 @@
+{% extends "../../../layouts/base.njk" %}
+
+{% block pageTitle %}
+  Reference Data Release Notes | Register Team Internal Services
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">Reference Data Release Notes</h1>
+      
+      {% if releaseNotes and releaseNotes.length > 0 %}
+        <div class="govuk-!-margin-bottom-6">
+          <a href="/reference-data/release-notes/new" class="govuk-button">Add New Release Note</a>
+        </div>
+        
+        <table class="govuk-table">
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">Version</th>
+              <th scope="col" class="govuk-table__header">Release Date</th>
+              <th scope="col" class="govuk-table__header">Summary</th>
+              <th scope="col" class="govuk-table__header">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for note in releaseNotes %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">{{ note.version }}</td>
+                <td class="govuk-table__cell">{{ note.releaseDate | date }}</td>
+                <td class="govuk-table__cell">{{ note.summary }}</td>
+                <td class="govuk-table__cell">
+                  <a href="/reference-data/release-notes/note/{{ note._id }}" class="govuk-link">View</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="govuk-panel govuk-panel--confirmation">
+          <div class="govuk-panel__body">
+            No release notes available yet
+          </div>
+        </div>
+        
+        <div class="govuk-!-margin-top-6">
+          <a href="/reference-data/release-notes/new" class="govuk-button">Add First Release Note</a>
+        </div>
+      {% endif %}
+      
+      <div class="govuk-!-margin-top-6">
+        <a href="/home" class="govuk-back-link">Return to Home</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

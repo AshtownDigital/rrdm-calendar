@@ -1,0 +1,188 @@
+<%- include('../../partials/header') %>
+
+<div class="govuk-width-container">
+  <main class="govuk-main-wrapper" id="main-content" role="main">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-xl"><%= title %></h1>
+        
+        <% if (connectionIssue) { %>
+          <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+              <span class="govuk-warning-text__assistive">Warning</span>
+              There may be a database connection issue. Some data might not be up to date.
+            </strong>
+          </div>
+        <% } %>
+        
+        <% if (timedOut) { %>
+          <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+              <span class="govuk-warning-text__assistive">Warning</span>
+              Some operations timed out. The data shown may be incomplete.
+            </strong>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        <div class="govuk-panel govuk-panel--confirmation">
+          <h2 class="govuk-panel__title">
+            BCR <%= bcr.bcrNumber || bcr._id %>
+          </h2>
+          <div class="govuk-panel__body">
+            <!-- Using the reusable status tag component -->
+            <%- include('../../components/statusTag', {
+              text: bcr.status.name,
+              classes: bcr.statusTag.classes,
+              attributes: bcr.statusTag.attributes
+            }) %>
+          </div>
+        </div>
+
+        <div class="govuk-tabs" data-module="govuk-tabs">
+          <h2 class="govuk-tabs__title">BCR Information</h2>
+          <ul class="govuk-tabs__list">
+            <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+              <a class="govuk-tabs__tab" href="#details">Details</a>
+            </li>
+            <li class="govuk-tabs__list-item">
+              <a class="govuk-tabs__tab" href="#workflow">Workflow</a>
+            </li>
+            <li class="govuk-tabs__list-item">
+              <a class="govuk-tabs__tab" href="#history">History</a>
+            </li>
+          </ul>
+          
+          <div class="govuk-tabs__panel" id="details">
+            <h2 class="govuk-heading-l">BCR Details</h2>
+            
+            <dl class="govuk-summary-list">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Title</dt>
+                <dd class="govuk-summary-list__value"><%= bcr.title %></dd>
+              </div>
+              
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Description</dt>
+                <dd class="govuk-summary-list__value"><%= bcr.description %></dd>
+              </div>
+              
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Submitted by</dt>
+                <dd class="govuk-summary-list__value"><%= bcr.submittedBy %></dd>
+              </div>
+              
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Submission date</dt>
+                <dd class="govuk-summary-list__value"><%= bcr.submissionDate ? new Date(bcr.submissionDate).toLocaleDateString() : 'N/A' %></dd>
+              </div>
+              
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Urgency level</dt>
+                <dd class="govuk-summary-list__value">
+                  <% if (bcr.urgencyLevel) { %>
+                    <%= bcr.urgencyLevel.name %>
+                  <% } else { %>
+                    Not specified
+                  <% } %>
+                </dd>
+              </div>
+              
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Impact areas</dt>
+                <dd class="govuk-summary-list__value">
+                  <% if (bcr.impactAreas && bcr.impactAreas.length > 0) { %>
+                    <ul class="govuk-list">
+                      <% bcr.impactAreas.forEach(function(area) { %>
+                        <li><%= area.name %></li>
+                      <% }); %>
+                    </ul>
+                  <% } else { %>
+                    None specified
+                  <% } %>
+                </dd>
+              </div>
+            </dl>
+            
+            <% if (user && user.canEdit) { %>
+              <a href="/bcr/submissions/<%= bcr._id %>/edit" class="govuk-button">Edit BCR</a>
+            <% } %>
+          </div>
+          
+          <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="workflow">
+            <h2 class="govuk-heading-l">Workflow Status</h2>
+            
+            <dl class="govuk-summary-list">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Current phase</dt>
+                <dd class="govuk-summary-list__value">
+                  <% if (bcr.phase) { %>
+                    <%= bcr.phase.name %>
+                  <% } else { %>
+                    Not assigned
+                  <% } %>
+                </dd>
+              </div>
+              
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Current status</dt>
+                <dd class="govuk-summary-list__value">
+                  <% if (bcr.status) { %>
+                    <!-- Using the reusable status tag component -->
+                    <%- include('../../components/statusTag', {
+                      text: bcr.status.name,
+                      classes: bcr.statusTag.classes,
+                      attributes: bcr.statusTag.attributes
+                    }) %>
+                  <% } else { %>
+                    Not assigned
+                  <% } %>
+                </dd>
+              </div>
+            </dl>
+            
+            <% if (user && user.canUpdateWorkflow) { %>
+              <a href="/bcr/workflow-progress/<%= bcr._id %>" class="govuk-button">Update Workflow Status</a>
+            <% } %>
+          </div>
+          
+          <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="history">
+            <h2 class="govuk-heading-l">BCR History</h2>
+            
+            <% if (bcr.history && bcr.history.length > 0) { %>
+              <table class="govuk-table">
+                <thead class="govuk-table__head">
+                  <tr class="govuk-table__row">
+                    <th class="govuk-table__header" scope="col">Date</th>
+                    <th class="govuk-table__header" scope="col">Action</th>
+                    <th class="govuk-table__header" scope="col">User</th>
+                    <th class="govuk-table__header" scope="col">Details</th>
+                  </tr>
+                </thead>
+                <tbody class="govuk-table__body">
+                  <% bcr.history.forEach(function(item) { %>
+                    <tr class="govuk-table__row">
+                      <td class="govuk-table__cell"><%= new Date(item.date).toLocaleString() %></td>
+                      <td class="govuk-table__cell"><%= item.action %></td>
+                      <td class="govuk-table__cell"><%= item.user %></td>
+                      <td class="govuk-table__cell"><%= item.details %></td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            <% } else { %>
+              <p class="govuk-body">No history records available.</p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<%- include('../../partials/footer') %>

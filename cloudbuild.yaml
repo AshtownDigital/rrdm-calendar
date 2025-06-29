@@ -1,0 +1,47 @@
+steps:
+# Step 1: Build the Docker image
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+    - 'build'
+    - '-t'
+    - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/rrdm-app:latest'
+    - '.'
+
+# Step 2: Push the Docker image to Artifact Registry
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+    - 'push'
+    - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/rrdm-app:latest'
+
+# Step 3: Deploy to Cloud Run
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: 'gcloud'
+  args:
+    - 'run'
+    - 'deploy'
+    - 'rrdm-service'
+    - '--image'
+    - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/rrdm-app:latest'
+    - '--platform'
+    - 'managed'
+    - '--region'
+    - '${_REGION}'
+    - '--allow-unauthenticated'
+    - '--min-instances'
+    - '0'
+    - '--max-instances'
+    - '1'
+    - '--cpu'
+    - '1'
+    - '--memory'
+    - '512Mi'
+    - '--port'
+    - '8080'
+    # Environment variables are set via substitution variables
+
+substitutions:
+  _REGION: us-central1  # Default region, can be overridden in trigger settings
+  _REPOSITORY: rrdm-images  # Default repository name in Artifact Registry
+
+options:
+  logging: CLOUD_LOGGING_ONLY

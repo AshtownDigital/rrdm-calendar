@@ -67,10 +67,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// Root route - render a simplified home page that looks like the home module
+// Root route - render the regular home page in the modules directory
 app.get('/', (req, res) => {
-  // Render directly with a simplified Home page template
-  res.render('home-simple', {
+  // Use the actual home module template
+  res.render('modules/home/index', {
     title: 'Register Team Internal Services - Deployment Test',
     user: { name: 'Test User', role: 'viewer' },
     sections: [

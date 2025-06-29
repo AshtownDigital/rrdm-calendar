@@ -1,0 +1,91 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}
+  {{ title }} - RRDM
+{% endblock %}
+
+{% block breadcrumbs %}
+  <li class="govuk-breadcrumbs__list-item">
+    <a class="govuk-breadcrumbs__link" href="/bcr/dashboard">BCR Dashboard</a>
+  </li>
+  <li class="govuk-breadcrumbs__list-item">
+    <a class="govuk-breadcrumbs__link" href="/bcr/{{ bcr.id }}">{{ bcr.bcrCode }}</a>
+  </li>
+  <li class="govuk-breadcrumbs__list-item">
+    Update Phase
+  </li>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">Update Phase: {{ bcr.bcrCode }}</h1>
+      
+      <div class="govuk-inset-text">
+        <h2 class="govuk-heading-m">Current Status</h2>
+        <dl class="govuk-summary-list">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Title</dt>
+            <dd class="govuk-summary-list__value">{{ bcr.title }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Current Phase</dt>
+            <dd class="govuk-summary-list__value">
+              <strong class="govuk-tag">{{ bcr.currentPhase }}</strong>
+            </dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Current Status</dt>
+            <dd class="govuk-summary-list__value">
+              <strong class="{{ bcr.statusTagColor }}">{{ bcr.status | replace('_', ' ') | title }}</strong>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="govuk-inset-text">
+        <h2 class="govuk-heading-m">Update Phase</h2>
+        <form action="/bcr/{{ bcr.id }}/update" method="post" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="phase">
+              Phase
+            </label>
+            <select class="govuk-select" id="phase" name="phase">
+              {% for phase in workflowPhases %}
+                <option value="{{ phase }}" {% if phase === bcr.currentPhase %}selected{% endif %}>
+                  {{ phase }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="status">
+              Status
+            </label>
+            <select class="govuk-select" id="status" name="status">
+              {% for status in phaseStatuses %}
+                <option value="{{ status }}" {% if status === bcr.status %}selected{% endif %}>
+                  {{ status }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="comment">
+              Comment
+            </label>
+            <textarea class="govuk-textarea" id="comment" name="comment" rows="5"></textarea>
+          </div>
+          
+          <button type="submit" class="govuk-button" data-module="govuk-button">
+            Update Phase
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}

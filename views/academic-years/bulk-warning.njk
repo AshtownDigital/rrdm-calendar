@@ -21,7 +21,7 @@
           </strong>
         </div>
 
-        <form method="POST" action="/api/academic-years/bulk" novalidate>
+        <form method="POST" action="/api/v1/academic-years/bulk" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           {# The startYear will be determined by the controller based on nextPotentialStartYear #}
           {# We still pass numberOfYears to the API endpoint #}

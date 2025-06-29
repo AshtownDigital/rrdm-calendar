@@ -1,0 +1,30 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block pageTitle %}
+  {{ title }} - RRDM
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-panel govuk-panel--confirmation">
+        <h1 class="govuk-panel__title">
+          {{ title }}
+        </h1>
+        <div class="govuk-panel__body">
+          {{ message }}
+        </div>
+      </div>
+
+      <h2 class="govuk-heading-m">What happens next</h2>
+      <p class="govuk-body">
+        You can now <a href="/bcr/bcr/{{ bcr.id }}" class="govuk-link">view the BCR details</a> or return to the <a href="/bcr/bcr-submission/new" class="govuk-link">new submission form</a>.
+      </p>
+
+      <div class="govuk-button-group">
+        <a href="/bcr/bcr/{{ bcr.id }}" class="govuk-button">View BCR</a>
+        <a href="/bcr/bcr-submission/new" class="govuk-button govuk-button--secondary">New Submission</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

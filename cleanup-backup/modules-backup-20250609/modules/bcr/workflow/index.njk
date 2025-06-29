@@ -1,0 +1,474 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}BCR Workflow Management | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">BCR Workflow Management</h1>
+      
+      <!-- BCR Workflow Phases Section -->
+      <section class="govuk-!-margin-bottom-8">
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-full">
+            <h2 class="govuk-heading-l">BCR Workflow Phases</h2>
+            
+            <div class="govuk-inset-text">
+              <p class="govuk-body">
+                The BCR workflow process consists of 14 distinct phases, from initial submission to final release. Each phase has a specific purpose and defined status. The workflow is designed to ensure proper governance, documentation, and implementation of business change requests.
+              </p>
+            </div>
+            
+            <!-- Submission & Initial Review Phase Group -->
+            <h3 class="govuk-heading-m govuk-!-margin-bottom-2">Submission & Initial Review</h3>
+            <div class="govuk-inset-text">
+              <p class="govuk-body">The initial phases of the BCR process involve submission, review, and prioritization.</p>
+              
+              <dl class="govuk-summary-list">
+                <!-- Phase 1 -->
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    <strong class="govuk-tag govuk-tag--blue">Phase 1</strong>
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    <h4 class="govuk-heading-s">Complete and Submit BCR form</h4>
+                    <p class="govuk-body">Initial submission of the business change request with all required information.</p>
+                    <p class="govuk-body-s govuk-!-margin-bottom-1 govuk-!-margin-top-3">Status:</p>
+                    <strong class="govuk-tag">New Submission</strong>
+                  </dd>
+                  <dd class="govuk-summary-list__actions">
+                  </dd>
+                </div>
+                
+                <!-- Phase 2 -->
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    <strong class="govuk-tag govuk-tag--blue">Phase 2</strong>
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    <h4 class="govuk-heading-s">Collate, initial review and Prioritize BCR</h4>
+                    <p class="govuk-body">Assessment of business value and priority of the change request.</p>
+                    <p class="govuk-body-s govuk-!-margin-bottom-1 govuk-!-margin-top-3">Status:</p>
+                    <strong class="govuk-tag govuk-tag--light-blue">BCR Prioritized</strong>
+                  </dd>
+                  <dd class="govuk-summary-list__actions">
+                  </dd>
+                </div>
+                
+                <!-- Phase 3 -->
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    <strong class="govuk-tag govuk-tag--blue">Phase 3</strong>
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    <h4 class="govuk-heading-s">Create BCR Trello card</h4>
+                    <p class="govuk-body">Setup tracking in project management system for workflow visibility.</p>
+                    <p class="govuk-body-s govuk-!-margin-bottom-1 govuk-!-margin-top-3">Status:</p>
+                    <strong class="govuk-tag govuk-tag--turquoise">BCR Trello card Created</strong>
+                  </dd>
+                  <dd class="govuk-summary-list__actions">
+                  </dd>
+                </div>
+              </dl>
+            </div>
+            
+            <!-- Review & Approval Phase Group -->
+            <h3 class="govuk-heading-m govuk-!-margin-bottom-2">Review & Approval</h3>
+            <div class="govuk-inset-text">
+              <p class="govuk-body">These phases involve thorough review, governance approval, and stakeholder consultation.</p>
+              
+              <dl class="govuk-summary-list">
+                <!-- Phase 4 -->
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    <strong class="govuk-tag govuk-tag--purple">Phase 4</strong>
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    <h4 class="govuk-heading-s">Review and analyse BCR (All Profession)</h4>
+                    <p class="govuk-body">Technical analysis and impact assessment by all professional teams.</p>
+                    <p class="govuk-body-s govuk-!-margin-bottom-1 govuk-!-margin-top-3">Status:</p>
+                    <strong class="govuk-tag govuk-tag--light-blue">BCR Reviewed</strong>
+                  </dd>
+                  <dd class="govuk-summary-list__actions">
+                  </dd>
+                </div>
+                
+                <!-- Phase 5 -->
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    <strong class="govuk-tag govuk-tag--purple">Phase 5</strong>
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    <h4 class="govuk-heading-s">BCR Governance Playback</h4>
+                    <p class="govuk-body">Presentation to governance board for initial approval and feedback.</p>
+                    <p class="govuk-body-s govuk-!-margin-bottom-1 govuk-!-margin-top-3">Status:</p>
+                    <strong class="govuk-tag govuk-tag--green">BCR Approved</strong>
+                  </dd>
+                  <dd class="govuk-summary-list__actions">
+                  </dd>
+                </div>
+                
+                <!-- Phase 6 -->
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    <strong class="govuk-tag govuk-tag--purple">Phase 6</strong>
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    <h4 class="govuk-heading-s">Conduct Stakeholder Consultation</h4>
+                    <p class="govuk-body">Gathering feedback from all parties who may be impacted by the change.</p>
+                    <p class="govuk-body-s govuk-!-margin-bottom-1 govuk-!-margin-top-3">Status:</p>
+                    <strong class="govuk-tag govuk-tag--pink">Stakeholders Consulted</strong>
+                  </dd>
+                  <dd class="govuk-summary-list__actions">
+                  </dd>
+                </div>
+              </dl>
+            </div>
+            
+            <!-- Requirements Documentation Phase Group -->
+            <h3 class="govuk-heading-m govuk-!-margin-bottom-2">Requirements Documentation</h3>
+            <div class="govuk-inset-text">
+              <p class="govuk-body">These phases focus on documenting the detailed requirements for the business change.</p>
+              
+              <dl class="govuk-summary-list">
+                <!-- Phase 7 -->
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    <strong class="govuk-tag govuk-tag--orange">Phase 7</strong>
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    <h4 class="govuk-heading-s">Document Draft Business change requirements</h4>
+                    <p class="govuk-body">Documentation of core business change requirements based on all feedback.</p>
+                    <p class="govuk-body-s govuk-!-margin-bottom-1 govuk-!-margin-top-3">Status:</p>
+                    <strong class="govuk-tag govuk-tag--turquoise">Business Change Requirements Documented</strong>
+                  </dd>
+                  <dd class="govuk-summary-list__actions">
+                  </dd>
+                </div>
+                
+                <!-- Phase 8 -->
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    <strong class="govuk-tag govuk-tag--orange">Phase 8</strong>
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    <h4 class="govuk-heading-s">Document Draft Business change version requirements</h4>
+                    <p class="govuk-body">Documentation of version-specific requirements for implementation.</p>
+                    <p class="govuk-body-s govuk-!-margin-bottom-1 govuk-!-margin-top-3">Status:</p>
+                    <strong class="govuk-tag govuk-tag--turquoise">Version requirements documented</strong>
+                  </dd>
+                  <dd class="govuk-summary-list__actions">
+                  </dd>
+                </div>
+                
+                <!-- Phase 9 -->
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    <strong class="govuk-tag govuk-tag--orange">Phase 9</strong>
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    <h4 class="govuk-heading-s">Document Draft Business change version communication requirements</h4>
+                    <p class="govuk-body">Planning the communication strategy for the business change.</p>
+                    <p class="govuk-body-s govuk-!-margin-bottom-1 govuk-!-margin-top-3">Status:</p>
+                    <strong class="govuk-tag govuk-tag--turquoise">Version communication requirements documented</strong>
+                  </dd>
+                  <dd class="govuk-summary-list__actions">
+                  </dd>
+                </div>
+              </dl>
+            </div>
+            
+            <!-- Implementation & Release Phase Group -->
+            <h3 class="govuk-heading-m govuk-!-margin-bottom-2">Implementation & Release</h3>
+            <div class="govuk-inset-text">
+              <p class="govuk-body">These phases cover the final approval, implementation, and release of the business change.</p>
+              
+              <dl class="govuk-summary-list">
+                <!-- Phase 10 -->
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    <strong class="govuk-tag govuk-tag--yellow">Phase 10</strong>
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    <h4 class="govuk-heading-s">Approve Business Change Requirements</h4>
+                    <p class="govuk-body">Final governance approval of the complete business change requirements.</p>
+                    <p class="govuk-body-s govuk-!-margin-bottom-1 govuk-!-margin-top-3">Status:</p>
+                    <strong class="govuk-tag govuk-tag--green">Business Change Requirements Approved</strong>
+                  </dd>
+                  <dd class="govuk-summary-list__actions">
+                  </dd>
+                </div>
+                
+                <!-- Phase 11 -->
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    <strong class="govuk-tag govuk-tag--yellow">Phase 11</strong>
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    <h4 class="govuk-heading-s">Implement Business Change Requirement(s)</h4>
+                    <p class="govuk-body">Development and implementation of the approved business change.</p>
+                    <p>
+                      <strong class="govuk-tag govuk-tag--green">Business change requirements implemented</strong>
+                    </p>
+                  </dd>
+                  <dd class="govuk-summary-list__actions">
+                  </dd>
+                </div>
+              </dl>
+            </div>
+            
+            <!-- Release Management Phase Group -->
+            <h3 class="govuk-heading-m govuk-!-margin-bottom-2">Release Management</h3>
+            <div class="govuk-inset-text">
+              <p class="govuk-body">These phases manage the deployment through various environments to production.</p>
+              
+              <dl class="govuk-summary-list">
+                <!-- Phase 12 -->
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    <strong class="govuk-tag govuk-tag--red">Phase 12</strong>
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    <h4 class="govuk-heading-s">Release to Staging Environment</h4>
+                    <p class="govuk-body">Deployment to testing environment for validation and testing.</p>
+                    <p>
+                      <strong class="govuk-tag govuk-tag--light-blue">Staging Release</strong>
+                    </p>
+                  </dd>
+                  <dd class="govuk-summary-list__actions">
+                  </dd>
+                </div>
+                
+                <!-- Phase 13 -->
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    <strong class="govuk-tag govuk-tag--red">Phase 13</strong>
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    <h4 class="govuk-heading-s">Release to Pre-Production Environment</h4>
+                    <p class="govuk-body">Deployment to pre-production environment for final validation.</p>
+                    <p>
+                      <strong class="govuk-tag govuk-tag--light-blue">Pre-Production Release</strong>
+                    </p>
+                  </dd>
+                  <dd class="govuk-summary-list__actions">
+                  </dd>
+                </div>
+                
+                <!-- Phase 14 -->
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">
+                    <strong class="govuk-tag govuk-tag--red">Phase 14</strong>
+                  </dt>
+                  <dd class="govuk-summary-list__value">
+                    <h4 class="govuk-heading-s">Release to Production Environment</h4>
+                    <p class="govuk-body">Final deployment to production environment for end users.</p>
+                    <p>
+                      <strong class="govuk-tag govuk-tag--green">Production Release</strong>
+                    </p>
+                  </dd>
+                  <dd class="govuk-summary-list__actions">
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </section>
+
+            <!-- Phases and Statuses Table Section -->
+            <section id="phases-statuses-table" class="govuk-!-padding-top-6 govuk-!-margin-bottom-6">
+              <h3 class="govuk-heading-m govuk-!-margin-bottom-2" style="color: #005a30; border-bottom: 4px solid #cce2d8; padding-bottom: 10px;">Phases and Statuses Table</h3>
+              <p class="govuk-body-m govuk-!-margin-bottom-4">Complete reference of all workflow phases and their associated statuses</p>
+              <div class="govuk-inset-text govuk-!-margin-bottom-0">
+                <p class="govuk-body">This table provides a comprehensive view of all phases in the BCR workflow process and their corresponding statuses.</p>
+                
+                <table class="govuk-table">
+                  <caption class="govuk-table__caption govuk-table__caption--m">BCR Workflow Phases and Statuses</caption>
+                  <thead class="govuk-table__head">
+                    <tr class="govuk-table__row">
+                      <th scope="col" class="govuk-table__header">Phase</th>
+                      <th scope="col" class="govuk-table__header">Description</th>
+                      <th scope="col" class="govuk-table__header">Status</th>
+                      <th scope="col" class="govuk-table__header">Functional Area</th>
+                    </tr>
+                  </thead>
+                  <tbody class="govuk-table__body">
+                    <!-- Submission & Initial Review -->
+                    <tr class="govuk-table__row">
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">Phase 1</strong></td>
+                      <td class="govuk-table__cell">Submit Business Change Request</td>
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">BCR Submitted</strong></td>
+                      <td class="govuk-table__cell" rowspan="3">Submission & Initial Review</td>
+                    </tr>
+                    <tr class="govuk-table__row">
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">Phase 2</strong></td>
+                      <td class="govuk-table__cell">Initial Review</td>
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">Initial Review Complete</strong></td>
+                    </tr>
+                    <tr class="govuk-table__row">
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">Phase 3</strong></td>
+                      <td class="govuk-table__cell">Develop Business Case</td>
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">Business Case Complete</strong></td>
+                    </tr>
+                    
+                    <!-- Review & Approval -->
+                    <tr class="govuk-table__row">
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--purple">Phase 4</strong></td>
+                      <td class="govuk-table__cell">Review Business Case</td>
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">Business Case Reviewed</strong></td>
+                      <td class="govuk-table__cell" rowspan="3">Review & Approval</td>
+                    </tr>
+                    <tr class="govuk-table__row">
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--purple">Phase 5</strong></td>
+                      <td class="govuk-table__cell">Approve Business Case</td>
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">Business Case Approved</strong></td>
+                    </tr>
+                    <tr class="govuk-table__row">
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--purple">Phase 6</strong></td>
+                      <td class="govuk-table__cell">Assign Business Change Requirements</td>
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">Requirements Assigned</strong></td>
+                    </tr>
+                    
+                    <!-- Requirements Documentation -->
+                    <tr class="govuk-table__row">
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--orange">Phase 7</strong></td>
+                      <td class="govuk-table__cell">Document Business Change Requirements</td>
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--turquoise">Requirements Documented</strong></td>
+                      <td class="govuk-table__cell" rowspan="3">Requirements Documentation</td>
+                    </tr>
+                    <tr class="govuk-table__row">
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--orange">Phase 8</strong></td>
+                      <td class="govuk-table__cell">Document Draft Business Change Version Requirements</td>
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--turquoise">Version Requirements Documented</strong></td>
+                    </tr>
+                    <tr class="govuk-table__row">
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--orange">Phase 9</strong></td>
+                      <td class="govuk-table__cell">Document Draft Business Change Version Communication Requirements</td>
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--turquoise">Version Communication Requirements Documented</strong></td>
+                    </tr>
+                    
+                    <!-- Implementation & Release -->
+                    <tr class="govuk-table__row">
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--yellow">Phase 10</strong></td>
+                      <td class="govuk-table__cell">Approve Business Change Requirements</td>
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">Business Change Requirements Approved</strong></td>
+                      <td class="govuk-table__cell" rowspan="2">Implementation & Release</td>
+                    </tr>
+                    <tr class="govuk-table__row">
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--yellow">Phase 11</strong></td>
+                      <td class="govuk-table__cell">Implement Business Change Requirement(s)</td>
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">Business Change Requirements Implemented</strong></td>
+                    </tr>
+                    
+                    <!-- Release Management -->
+                    <tr class="govuk-table__row">
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--red">Phase 12</strong></td>
+                      <td class="govuk-table__cell">Release to Staging Environment</td>
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--light-blue">Staging Release</strong></td>
+                      <td class="govuk-table__cell" rowspan="3">Release Management</td>
+                    </tr>
+                    <tr class="govuk-table__row">
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--red">Phase 13</strong></td>
+                      <td class="govuk-table__cell">Release to Pre-Production Environment</td>
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--light-blue">Pre-Production Release</strong></td>
+                    </tr>
+                    <tr class="govuk-table__row">
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--red">Phase 14</strong></td>
+                      <td class="govuk-table__cell">Release to Production Environment</td>
+                      <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">Production Release</strong></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Custom styles for workflow page -->
+      <style>
+        /* Status tag alignment */
+        .govuk-summary-list__actions {
+          width: 10%;
+          vertical-align: middle;
+        }
+        
+        .govuk-summary-list__key {
+          width: 15%;
+          vertical-align: middle;
+        }
+        
+        .govuk-summary-list__value {
+          width: 75%;
+        }
+        
+        /* Status tag styling */
+        .govuk-summary-list__value p strong {
+          display: inline-block;
+          margin-top: 10px;
+        }
+        
+        /* Prevent status tags from wrapping */
+        .govuk-tag {
+          white-space: nowrap;
+        }
+        
+        /* Ensure proper spacing between rows */
+        .govuk-summary-list__row {
+          position: relative;
+          padding: 15px 0;
+          min-height: 80px;
+          border-bottom: 1px solid #b1b4b6;
+        }
+        
+        /* Ensure consistent height for all rows */
+        .govuk-summary-list__value h4 {
+          margin-bottom: 5px;
+        }
+        
+        /* Remove default border bottom to avoid double borders */
+        .govuk-summary-list__row:last-child {
+          border-bottom: none;
+        }
+        
+        /* Phases and Statuses Table Styling */
+        #phases-statuses-table .govuk-table {
+          margin-bottom: 30px;
+        }
+        
+        #phases-statuses-table .govuk-table__header {
+          font-weight: 700;
+          vertical-align: middle;
+        }
+        
+        #phases-statuses-table .govuk-table__cell {
+          vertical-align: middle;
+          padding: 15px 20px 15px 0;
+        }
+        
+        #phases-statuses-table .govuk-table__row:nth-child(4),
+        #phases-statuses-table .govuk-table__row:nth-child(7),
+        #phases-statuses-table .govuk-table__row:nth-child(10),
+        #phases-statuses-table .govuk-table__row:nth-child(12) {
+          border-bottom: 2px solid #b1b4b6;
+        }
+        
+        /* Ensure consistent spacing in table cells */
+        #phases-statuses-table .govuk-tag {
+          margin-bottom: 0;
+          display: inline-block;
+        }
+      </style>
+      
+      <!-- Hidden data for JavaScript components -->
+      <script type="application/json" id="phase-status-mapping">
+        {{ phaseStatusMapping | dump | safe }}
+      </script>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}Create Phase | BCR Phase-Status Mapping | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a href="/bcr/phase-status-mapping" class="govuk-back-link">Back to Phase-Status Mapping</a>
+      
+      <h1 class="govuk-heading-xl">Create New Phase with Statuses</h1>
+      
+      {% if error %}
+        <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" data-module="govuk-error-summary">
+          <h2 class="govuk-error-summary__title" id="error-summary-title">
+            There is a problem
+          </h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              <li>{{ error }}</li>
+            </ul>
+          </div>
+        </div>
+      {% endif %}
+      
+      <form method="post" action="/bcr/phase-status-mapping/create-phase" novalidate>
+        <div class="govuk-form-group govuk-!-margin-bottom-8">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+              <h2 class="govuk-fieldset__heading">
+                Phase Information
+              </h2>
+            </legend>
+            
+            <div class="govuk-form-group {% if error and not formData.name %}govuk-form-group--error{% endif %}">
+              <label class="govuk-label" for="name">
+                <strong>Workflow Phase Name</strong>
+              </label>
+              <div id="name-hint" class="govuk-hint">
+                The name of the phase (e.g., "Submission", "Technical Review")
+              </div>
+              {% if error and not formData.name %}
+                <p id="name-error" class="govuk-error-message">
+                  <span class="govuk-visually-hidden">Error:</span> Enter a phase name
+                </p>
+              {% endif %}
+              <input class="govuk-input {% if error and not formData.name %}govuk-input--error{% endif %}" id="name" name="name" type="text" value="{{ formData.name }}" aria-describedby="name-hint">
+            </div>
+            
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="description">
+                <strong>Description</strong>
+              </label>
+              <div id="description-hint" class="govuk-hint">
+                A brief description of the phase and its purpose
+              </div>
+              <textarea class="govuk-textarea" id="description" name="description" rows="3" aria-describedby="description-hint">{{ formData.description }}</textarea>
+            </div>
+            
+            <div class="govuk-form-group {% if error and not formData.value %}govuk-form-group--error{% endif %}">
+              <label class="govuk-label" for="value">
+                <strong>Phase Value</strong>
+              </label>
+              <div id="value-hint" class="govuk-hint">
+                The numerical value of the phase (e.g., 1, 2, 3)
+              </div>
+              {% if error and not formData.value %}
+                <p id="value-error" class="govuk-error-message">
+                  <span class="govuk-visually-hidden">Error:</span> Enter a phase value
+                </p>
+              {% endif %}
+              <input class="govuk-input govuk-input--width-5 {% if error and not formData.value %}govuk-input--error{% endif %}" id="value" name="value" type="number" value="{{ formData.value }}" aria-describedby="value-hint">
+            </div>
+            
+            <input type="hidden" id="displayOrder" name="displayOrder" value="{{ formData.displayOrder }}">
+            
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="trelloList">
+                <strong>Trello Status Name</strong>
+              </label>
+              <div id="trelloList-hint" class="govuk-hint">
+                The name of the Trello list that corresponds to this phase
+              </div>
+              <input class="govuk-input" id="trelloList" name="trelloList" type="text" value="{{ formData.trelloList }}" aria-describedby="trelloList-hint">
+            </div>
+          </fieldset>
+        </div>
+        
+        <div class="govuk-form-group govuk-!-margin-bottom-8">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+              <h2 class="govuk-fieldset__heading">
+                In Progress Status
+              </h2>
+            </legend>
+            
+            <div class="govuk-form-group {% if error and not formData.currentStatusName %}govuk-form-group--error{% endif %}">
+              <label class="govuk-label" for="currentStatusName">
+                <strong>In Progress Status Name</strong>
+              </label>
+              <div id="currentStatusName-hint" class="govuk-hint">
+                The name of the in-progress status for this phase
+              </div>
+              {% if error and not formData.currentStatusName %}
+                <p id="currentStatusName-error" class="govuk-error-message">
+                  <span class="govuk-visually-hidden">Error:</span> Enter an in-progress status name
+                </p>
+              {% endif %}
+              <input class="govuk-input {% if error and not formData.currentStatusName %}govuk-input--error{% endif %}" id="currentStatusName" name="currentStatusName" type="text" value="{{ formData.currentStatusName }}" aria-describedby="currentStatusName-hint">
+            </div>
+            
+            <input type="hidden" id="currentStatusDisplayOrder" name="currentStatusDisplayOrder" value="{{ formData.currentStatusDisplayOrder or 10 }}">
+          </fieldset>
+        </div>
+        
+        <div class="govuk-form-group govuk-!-margin-bottom-8">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+              <h2 class="govuk-fieldset__heading">
+                Completed Status
+              </h2>
+            </legend>
+            
+            <div class="govuk-form-group {% if error and not formData.completedStatusName %}govuk-form-group--error{% endif %}">
+              <label class="govuk-label" for="completedStatusName">
+                <strong>Completed Status Name</strong>
+              </label>
+              <div id="completedStatusName-hint" class="govuk-hint">
+                The base name of the completed status (without the "completed:" prefix)
+              </div>
+              {% if error and not formData.completedStatusName %}
+                <p id="completedStatusName-error" class="govuk-error-message">
+                  <span class="govuk-visually-hidden">Error:</span> Enter a completed status name
+                </p>
+              {% endif %}
+              <input class="govuk-input {% if error and not formData.completedStatusName %}govuk-input--error{% endif %}" id="completedStatusName" name="completedStatusName" type="text" value="{{ formData.completedStatusName }}" aria-describedby="completedStatusName-hint">
+            </div>
+            
+            <input type="hidden" id="completedStatusDisplayOrder" name="completedStatusDisplayOrder" value="{{ formData.completedStatusDisplayOrder or 20 }}">
+          </fieldset>
+        </div>
+        
+        <div class="govuk-button-group">
+          <button type="submit" class="govuk-button" data-module="govuk-button">Create Phase with Statuses</button>
+          <a href="/bcr/phase-status-mapping" class="govuk-button govuk-button--secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block pageScripts %}
+<script>
+  // Handle form interactions
+  document.addEventListener('DOMContentLoaded', function() {
+    const completedStatusNameInput = document.getElementById('completedStatusName');
+    
+    // Also update when the phase name changes, if completed status is empty
+    const phaseNameInput = document.getElementById('name');
+    phaseNameInput.addEventListener('input', function() {
+      if (!completedStatusNameInput.value) {
+        completedStatusNameInput.value = phaseNameInput.value.toLowerCase().replace(/\s+/g, '_');
+      }
+    });
+    
+    // Set initial current status name from phase name if empty
+    const currentStatusNameInput = document.getElementById('currentStatusName');
+    if (phaseNameInput.value && !currentStatusNameInput.value) {
+      currentStatusNameInput.value = phaseNameInput.value;
+    }
+    
+    // Update current status name when phase name changes if it was initially empty
+    let currentStatusWasEmpty = !currentStatusNameInput.value;
+    phaseNameInput.addEventListener('input', function() {
+      if (currentStatusWasEmpty) {
+        currentStatusNameInput.value = phaseNameInput.value;
+      }
+    });
+    
+    // Once the user modifies the current status name, stop auto-updating it
+    currentStatusNameInput.addEventListener('input', function() {
+      currentStatusWasEmpty = false;
+    });
+  });
+</script>
+{% endblock %}

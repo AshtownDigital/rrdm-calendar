@@ -21,7 +21,7 @@ const releaseSchema = new Schema({
   },
   AcademicYearID: {
     type: Schema.Types.ObjectId,
-    ref: 'AcademicYear',
+    ref: 'academicYear',
     required: [true, 'AcademicYearID is required.']
   },
   AcademicYearName: {

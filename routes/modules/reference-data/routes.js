@@ -12,8 +12,8 @@ const valuesRouter = express.Router();
 const releaseNotesRouter = express.Router();
 const restorePointsRouter = express.Router();
 
-// Import modularized controller
-const refDataController = require('../../../controllers/modules/reference-data/controller');
+// Import reference data controller
+const refDataController = require('../../../controllers/referenceDataController');
 
 // Main reference data dashboard
 router.get('/', refDataController.dashboard);
@@ -22,37 +22,37 @@ router.get('/', refDataController.dashboard);
 itemsRouter.get('/', refDataController.listItems);
 itemsRouter.get('/new', csrfProtection, refDataController.newItemForm);
 itemsRouter.post('/new', csrfProtection, refDataController.createItem);
-itemsRouter.get('/:id', refDataController.viewItem);
-itemsRouter.get('/:id/edit', csrfProtection, refDataController.editItemForm);
-itemsRouter.post('/:id/edit', csrfProtection, refDataController.updateItem);
-itemsRouter.get('/:id/delete', csrfProtection, refDataController.deleteItemConfirm);
-itemsRouter.post('/:id/delete', csrfProtection, refDataController.deleteItem);
+itemsRouter.get('/ref-item/:refItemId', refDataController.viewItem);
+itemsRouter.get('/ref-item/:refItemId/edit', csrfProtection, refDataController.editItemForm);
+itemsRouter.post('/ref-item/:refItemId/edit', csrfProtection, refDataController.updateItem);
+itemsRouter.get('/ref-item/:refItemId/delete', csrfProtection, refDataController.deleteItemConfirm);
+itemsRouter.post('/ref-item/:refItemId/delete', csrfProtection, refDataController.deleteItem);
 
 // Values routes
 valuesRouter.get('/', refDataController.listValues);
 valuesRouter.get('/new', csrfProtection, refDataController.newValueForm);
 valuesRouter.post('/new', csrfProtection, refDataController.createValue);
-valuesRouter.get('/:id', refDataController.viewValue);
-valuesRouter.get('/:id/edit', csrfProtection, refDataController.editValueForm);
-valuesRouter.post('/:id/edit', csrfProtection, refDataController.updateValue);
-valuesRouter.get('/:id/delete', csrfProtection, refDataController.deleteValueConfirm);
-valuesRouter.post('/:id/delete', csrfProtection, refDataController.deleteValue);
+valuesRouter.get('/ref-value/:refValueId', refDataController.viewValue);
+valuesRouter.get('/ref-value/:refValueId/edit', csrfProtection, refDataController.editValueForm);
+valuesRouter.post('/ref-value/:refValueId/edit', csrfProtection, refDataController.updateValue);
+valuesRouter.get('/ref-value/:refValueId/delete', csrfProtection, refDataController.deleteValueConfirm);
+valuesRouter.post('/ref-value/:refValueId/delete', csrfProtection, refDataController.deleteValue);
 
 // Release notes routes
 releaseNotesRouter.get('/', refDataController.listReleaseNotes);
 releaseNotesRouter.get('/new', csrfProtection, refDataController.newReleaseNoteForm);
 releaseNotesRouter.post('/new', csrfProtection, refDataController.createReleaseNote);
-releaseNotesRouter.get('/:id', refDataController.viewReleaseNote);
-releaseNotesRouter.get('/:id/edit', csrfProtection, refDataController.editReleaseNoteForm);
-releaseNotesRouter.post('/:id/edit', csrfProtection, refDataController.updateReleaseNote);
+releaseNotesRouter.get('/note/:refNoteId', refDataController.viewReleaseNote);
+releaseNotesRouter.get('/note/:refNoteId/edit', csrfProtection, refDataController.editReleaseNoteForm);
+releaseNotesRouter.post('/note/:refNoteId/edit', csrfProtection, refDataController.updateReleaseNote);
 
 // Restore points routes
 restorePointsRouter.get('/', refDataController.listRestorePoints);
 restorePointsRouter.get('/new', csrfProtection, refDataController.createRestorePointForm);
 restorePointsRouter.post('/new', csrfProtection, refDataController.createRestorePoint);
-restorePointsRouter.get('/:id', refDataController.viewRestorePoint);
-restorePointsRouter.get('/:id/restore', csrfProtection, refDataController.restoreConfirm);
-restorePointsRouter.post('/:id/restore', csrfProtection, refDataController.restore);
+restorePointsRouter.get('/restore-point/:refRestorePointId', refDataController.viewRestorePoint);
+restorePointsRouter.get('/restore-point/:refRestorePointId/restore', csrfProtection, refDataController.restoreConfirm);
+restorePointsRouter.post('/restore-point/:refRestorePointId/restore', csrfProtection, refDataController.restore);
 
 // Mount sub-routers
 router.use('/items', itemsRouter);

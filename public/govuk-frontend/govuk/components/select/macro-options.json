@@ -2,8 +2,8 @@
     {
         "name": "id",
         "type": "string",
-        "required": true,
-        "description": "ID for each select box."
+        "required": false,
+        "description": "ID for the select box. Defaults to the value of `name`."
     },
     {
         "name": "name",
@@ -15,13 +15,13 @@
         "name": "items",
         "type": "array",
         "required": true,
-        "description": "Array of option items for the select.",
+        "description": "The items within the select component.",
         "params": [
             {
                 "name": "value",
                 "type": "string",
                 "required": false,
-                "description": "Value for the option item. Defaults to an empty string."
+                "description": "Value for the option. If this is omitted, the value is taken from the text content of the option element."
             },
             {
                 "name": "text",
@@ -70,35 +70,81 @@
     {
         "name": "label",
         "type": "object",
-        "required": false,
-        "description": "Label text or HTML by specifying value for either text or html keys.",
+        "required": true,
+        "description": "The label used by the select component.",
         "isComponent": true
     },
     {
         "name": "hint",
         "type": "object",
         "required": false,
-        "description": "Options for the hint component.",
+        "description": "Can be used to add a hint to the select component.",
         "isComponent": true
     },
     {
         "name": "errorMessage",
         "type": "object",
         "required": false,
-        "description": "Options for the error message component. The error message component will not display if you use a falsy value for `errorMessage`, for example `false` or `null`.",
+        "description": "Can be used to add an error message to the select component. The error message component will not display if you use a falsy value for `errorMessage`, for example `false` or `null`.",
         "isComponent": true
     },
     {
         "name": "formGroup",
         "type": "object",
         "required": false,
-        "description": "Options for the form-group wrapper.",
+        "description": "Additional options for the form group containing the select component.",
         "params": [
             {
                 "name": "classes",
                 "type": "string",
                 "required": false,
                 "description": "Classes to add to the form group (for example to show error state for the whole group)."
+            },
+            {
+                "name": "attributes",
+                "type": "object",
+                "required": false,
+                "description": "HTML attributes (for example data attributes) to add to the form group."
+            },
+            {
+                "name": "beforeInput",
+                "type": "object",
+                "required": false,
+                "description": "Content to add before the select used by the select component.",
+                "params": [
+                    {
+                        "name": "text",
+                        "type": "string",
+                        "required": true,
+                        "description": "Text to add before the select. If `html` is provided, the `text` option will be ignored."
+                    },
+                    {
+                        "name": "html",
+                        "type": "string",
+                        "required": true,
+                        "description": "HTML to add before the select. If `html` is provided, the `text` option will be ignored."
+                    }
+                ]
+            },
+            {
+                "name": "afterInput",
+                "type": "object",
+                "required": false,
+                "description": "Content to add after the select used by the select component.",
+                "params": [
+                    {
+                        "name": "text",
+                        "type": "string",
+                        "required": true,
+                        "description": "Text to add after the select. If `html` is provided, the `text` option will be ignored."
+                    },
+                    {
+                        "name": "html",
+                        "type": "string",
+                        "required": true,
+                        "description": "HTML to add after the select. If `html` is provided, the `text` option will be ignored."
+                    }
+                ]
             }
         ]
     },

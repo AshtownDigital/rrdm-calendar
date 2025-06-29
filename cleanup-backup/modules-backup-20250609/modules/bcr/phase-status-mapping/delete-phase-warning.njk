@@ -1,0 +1,148 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}Delete Phase Warning | BCR Phase-Status Mapping | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a href="/bcr/phase-status-mapping" class="govuk-back-link">Back to Phase-Status Mapping</a>
+      
+      <div class="govuk-warning-text">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text">
+          <span class="govuk-warning-text__assistive">Warning</span>
+          You are about to delete a phase
+        </strong>
+      </div>
+      
+      <h1 class="govuk-heading-xl">Delete Phase</h1>
+      
+      <p class="govuk-body">
+        You are about to delete the following phase:
+      </p>
+      
+      <div class="govuk-inset-text">
+        <h2 class="govuk-heading-m">{{ phase.name }} (Phase {{ phase.value }})</h2>
+        {% if phase.description %}
+          <p class="govuk-body">
+            Description: {{ phase.description }}
+          </p>
+        {% endif %}
+      </div>
+      
+      {% if statuses and statuses.length > 0 %}
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-warning-text__assistive">Warning</span>
+            This phase has {{ statuses.length }} associated statuses that will also be deleted
+          </strong>
+        </div>
+        
+        <p class="govuk-body">
+          The following statuses will be deleted along with this phase:
+        </p>
+        
+        <ul class="govuk-list">
+          {% for status in statuses %}
+            <li>
+              {% if status.name.startsWith('completed:') %}
+                <strong class="govuk-tag govuk-tag--green">{{ status.name }}</strong>
+              {% else %}
+                <strong class="govuk-tag 
+                {% if status.name === 'Submission' %}
+                  govuk-tag--blue
+                {% elif status.name === 'Prioritisation' %}
+                  govuk-tag--purple
+                {% elif status.name === 'Technical Review and Analysis' %}
+                  govuk-tag--light-blue
+                {% elif status.name === 'Governance Playback' %}
+                  govuk-tag--turquoise
+                {% elif status.name === 'Stakeholder Consultation' %}
+                  govuk-tag--pink
+                {% elif status.name === 'Final Drafting' %}
+                  govuk-tag--orange
+                {% elif status.name === 'Final Approval' %}
+                  govuk-tag
+                {% elif status.name === 'Implementation' %}
+                  govuk-tag--turquoise
+                {% elif status.name === 'Validation & Testing' %}
+                  govuk-tag--yellow
+                {% elif status.name === 'Go Live' %}
+                  govuk-tag--green
+                {% elif status.name === 'Post-Implementation Review' %}
+                  govuk-tag--grey
+                {% elif status.name === 'Closed' %}
+                  govuk-tag--grey
+                {% endif %}
+                ">{{ status.name }}</strong>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      
+      {% if bcrCount > 0 %}
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-warning-text__assistive">Warning</span>
+            This will affect {{ bcrCount }} existing BCRs
+          </strong>
+        </div>
+        
+        <p class="govuk-body">
+          The following BCRs are currently using this phase or its statuses and will be affected:
+        </p>
+        
+        <div class="govuk-inset-text">
+          <ul class="govuk-list govuk-list--bullet">
+            {% for bcr in affectedBcrs %}
+              <li>
+                <a href="/bcr/{{ bcr.id }}" class="govuk-link">
+                  BCR-{{ bcr.id }}: {{ bcr.title }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+      
+      <div class="govuk-warning-text">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text">
+          <span class="govuk-warning-text__assistive">Warning</span>
+          This action cannot be undone
+        </strong>
+      </div>
+      
+      <p class="govuk-body">
+        Deleting this phase will:
+      </p>
+      
+      <ul class="govuk-list govuk-list--bullet">
+        <li>Remove it from the phase-status mapping</li>
+        <li>Delete all associated statuses</li>
+        <li>Make it unavailable for selection in BCR workflows</li>
+        {% if bcrCount > 0 %}
+          <li>Affect {{ bcrCount }} existing BCRs that are currently using this phase or its statuses</li>
+        {% endif %}
+      </ul>
+      
+      <form method="post" action="/bcr/phase-status-mapping/delete-phase/{{ phase.id }}">
+        <div class="govuk-button-group">
+          <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">
+            Delete Phase
+          </button>
+          <a href="/bcr/phase-status-mapping" class="govuk-button govuk-button--secondary">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% block title %}Confirm BCR Update | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">BCR Update Confirmation</h1>
+      
+      <div class="govuk-panel govuk-panel--confirmation">
+        <h1 class="govuk-panel__title">
+          Update successful
+        </h1>
+        <div class="govuk-panel__body">
+          BCR {{ bcr.bcrNumber }}<br>
+          <strong>{{ bcr.description | truncate(50) }}</strong>
+        </div>
+      </div>
+      
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+          <!-- Update Summary -->
+          <h2 class="govuk-heading-m">Update Summary</h2>
+          <dl class="govuk-summary-list govuk-!-margin-bottom-9">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">BCR Number</dt>
+              <dd class="govuk-summary-list__value">{{ bcr.bcrNumber }}</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Phase</dt>
+              <dd class="govuk-summary-list__value">
+                {% for phase in phases %}
+                  {% if phase.value | int == currentPhaseId %}
+                    Phase {{ phase.value }}: {{ phase.name }}
+                  {% endif %}
+                {% endfor %}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Status</dt>
+              <dd class="govuk-summary-list__value">
+                {% set statusClass = "govuk-tag--grey" %}
+                {% if bcr.status.includes("in_progress") %}
+                  {% set statusClass = "govuk-tag--light-blue" %}
+                {% elif bcr.status.includes("completed") %}
+                  {% set statusClass = "govuk-tag--green" %}
+                {% elif bcr.status.includes("rejected") %}
+                  {% set statusClass = "govuk-tag--red" %}
+                {% endif %}
+                <span class="govuk-tag {{ statusClass }}">{{ bcr.status | replace("_", " ") | title }}</span>
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Updated By</dt>
+              <dd class="govuk-summary-list__value">{{ updatedBy }}</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Update Time</dt>
+              <dd class="govuk-summary-list__value">{{ updateTime | date("DD MMM YYYY, HH:mm") }}</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Comment</dt>
+              <dd class="govuk-summary-list__value">{{ comment }}</dd>
+            </div>
+          </dl>
+          
+          <!-- Workflow History -->
+          <h2 class="govuk-heading-m">Workflow History</h2>
+          <div class="govuk-inset-text">
+            <p class="govuk-body">The workflow history has been updated with this change.</p>
+            
+            {% if workflowHistory and workflowHistory.length > 0 %}
+              <ol class="govuk-list govuk-list--number">
+                {% for entry in workflowHistory %}
+                  <li class="govuk-!-margin-bottom-2">
+                    <p class="govuk-body-s govuk-!-margin-bottom-1 govuk-!-font-weight-bold">
+                      {{ entry.timestamp | date("DD MMM YYYY, HH:mm") }} - {{ entry.user }}
+                    </p>
+                    <p class="govuk-body-s govuk-!-margin-bottom-1">
+                      {% if entry.fromStatus %}
+                        Changed status from 
+                        <span class="govuk-tag govuk-tag--grey">{{ entry.fromStatus | replace("_", " ") | title }}</span>
+                        to
+                        <span class="govuk-tag {{ entry.statusClass }}">{{ entry.toStatus | replace("_", " ") | title }}</span>
+                      {% else %}
+                        <span class="govuk-tag {{ entry.statusClass }}">{{ entry.toStatus | replace("_", " ") | title }}</span>
+                      {% endif %}
+                    </p>
+                    <p class="govuk-body-s govuk-!-margin-bottom-0">
+                      {{ entry.comment }}
+                    </p>
+                  </li>
+                {% endfor %}
+              </ol>
+            {% else %}
+              <p class="govuk-body">No workflow history available.</p>
+            {% endif %}
+          </div>
+          
+          <div class="govuk-button-group">
+            <a href="/bcr/{{ bcr.id }}" class="govuk-button" data-module="govuk-button">
+              View BCR Details
+            </a>
+            <a href="/bcr/{{ bcr.id }}/update" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+              Make Another Update
+            </a>
+            <a href="/bcr/submissions" class="govuk-link govuk-!-margin-left-3">
+              Back to BCR List
+            </a>
+          </div>
+        </div>
+        
+        <div class="govuk-grid-column-one-third">
+          <div class="govuk-inset-text">
+            <h3 class="govuk-heading-s">What happens next?</h3>
+            <p class="govuk-body">
+              All stakeholders have been notified of this update.
+            </p>
+            <p class="govuk-body">
+              {% if phaseCompleted %}
+                The BCR has moved to the next phase in the workflow.
+              {% else %}
+                The BCR remains in the current phase.
+              {% endif %}
+            </p>
+            <p class="govuk-body">
+              You can continue to track the progress of this BCR through the BCR management system.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

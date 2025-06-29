@@ -1,0 +1,82 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}User Management | Register Team Internal Services{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">User Management</h1>
+
+      {% if errors and errors.length > 0 %}
+        <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+          <h2 class="govuk-error-summary__title" id="error-summary-title">
+            There is a problem
+          </h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              {% for error in errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      {% endif %}
+
+
+
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+          <p class="govuk-body-l">
+            Manage user accounts and permissions for the Register Team Internal Services.
+          </p>
+        </div>
+        <div class="govuk-grid-column-one-third">
+          <a href="/access/create" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-4">
+            Create new user
+          </a>
+        </div>
+      </div>
+
+      <div class="govuk-!-margin-bottom-6">
+        <h2 class="govuk-heading-m">All users</h2>
+        <table class="govuk-table govuk-table--compact">
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header" style="width: 80px;">Record No</th>
+              <th scope="col" class="govuk-table__header" style="width: 100px;">User ID</th>
+              <th scope="col" class="govuk-table__header" style="width: 150px;">Name</th>
+              <th scope="col" class="govuk-table__header" style="width: 200px;">Email</th>
+              <th scope="col" class="govuk-table__header" style="width: 100px;">Role</th>
+              <th scope="col" class="govuk-table__header" style="width: 120px;">Created</th>
+              <th scope="col" class="govuk-table__header" style="width: 120px;">Last login</th>
+              <th scope="col" class="govuk-table__header" style="width: 150px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for user in users %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell govuk-table__cell--numeric">{{ loop.index }}</td>
+                <td class="govuk-table__cell"><a href="/access/user/{{ user.id }}" class="govuk-link">USID00{{ loop.index }}</a></td>
+                <td class="govuk-table__cell">{{ user.name }}</td>
+                <td class="govuk-table__cell">{{ user.email }}</td>
+                <td class="govuk-table__cell">
+                  {% if user.role === 'admin' %}
+                    <strong class="govuk-tag govuk-tag--blue">Admin</strong>
+                  {% else %}
+                    <strong class="govuk-tag govuk-tag--green">Business</strong>
+                  {% endif %}
+                </td>
+                <td class="govuk-table__cell">{{ user.createdAt | date }}</td>
+                <td class="govuk-table__cell">{{ user.lastLogin | date if user.lastLogin else 'Never' }}</td>
+                <td class="govuk-table__cell">
+                  <a href="/access/edit/{{ user.id }}" class="govuk-link govuk-!-margin-right-2">Edit</a>
+                  <a href="/access/revoke/{{ user.id }}" class="govuk-link govuk-link--danger">Revoke</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}

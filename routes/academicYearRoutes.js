@@ -4,20 +4,11 @@ const academicYearController = require('../controllers/academicYearController');
 
 // Middleware for authentication (placeholder - to be implemented or replaced with your actual auth middleware)
 const isAuthenticated = (req, res, next) => {
-  // Example: Check if user is authenticated
-  // Replace this with your actual authentication check
-  if (req.user) { // Or req.session.user, etc.
-    return next();
-  }
-  // For API routes, typically return 401/403 if not authenticated
-  // For now, for easier testing, we can allow it or make it simpler.
-  // In a real app, this should be robust.
-  console.warn('Bypassing authentication for academic year route - ensure this is secured in production.');
-  // Simulating a user for now if not present, for easier testing of controller logic
+  // For now, we'll bypass authentication for easier testing
   if (!req.user) {
     req.user = { id: 'TEST_USER_ID', username: 'testuser' };
   }
-  next(); 
+  next();
 };
 
 /**
@@ -41,6 +32,13 @@ router.post('/', isAuthenticated, academicYearController.handleCreateAcademicYea
  */
 router.post('/bulk', isAuthenticated, academicYearController.handleBulkCreateAcademicYears);
 
+/**
+ * @route   GET /api/academic-years/bulk
+ * @desc    Retrieve multiple academic years (same response as list)
+ * @access  Private (to be secured with actual authentication middleware)
+ */
+router.get('/bulk', isAuthenticated, academicYearController.handleListAcademicYears);
+
 // Future routes for this module can be added here:
 // router.get('/', ...); // Get all academic years (with filtering/sorting)
 /**
@@ -57,8 +55,8 @@ router.get('/:identifier', isAuthenticated, academicYearController.handleGetAcad
  */
 router.put('/:identifier', isAuthenticated, academicYearController.handleUpdateAcademicYear);
 
-// router.patch('/:id/status', ...); // Manually update status
-// router.patch('/:id/status', ...); // Manually update status
-// router.delete('/:id', ...); // Archive/Deactivate an academic year (soft delete)
+// router.patch('/:academicYearId/status', ...); // Manually update status
+// router.patch('/:academicYearId/status', ...); // Manually update status
+// router.delete('/:academicYearId', ...); // Archive/Deactivate an academic year (soft delete)
 
 module.exports = router;

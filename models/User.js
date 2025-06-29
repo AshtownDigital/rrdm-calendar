@@ -1,8 +1,15 @@
 /**
- * User model for MongoDB
+ * User model for MongoDB with mock support for development and test environments
  */
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const UserMock = require('./UserMock');
+
+// Use mock model in test or development environment
+if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+  console.log('Using mock User model for testing/development');
+  module.exports = UserMock;
+} else {
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -71,3 +78,4 @@ UserSchema.methods.comparePassword = async function(candidatePassword) {
 const User = mongoose.model('User', UserSchema);
 
 module.exports = User;
+}

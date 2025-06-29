@@ -9,7 +9,7 @@
         "name": "legend",
         "type": "object",
         "required": false,
-        "description": "Options for the legend",
+        "description": "The legend for the fieldset component.",
         "params": [
             {
                 "name": "text",

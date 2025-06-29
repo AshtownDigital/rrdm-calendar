@@ -3,7 +3,10 @@
  * Handles counting and caching BCR submissions for dashboard display
  */
 const mongoose = require('mongoose');
-const { Submission, Bcr, Phase, Status } = require('../../../models/modules/bcr/model');
+const Submission = require('../../../models/Submission');
+const Bcr = require('../../../models/Bcr');
+const Phase = require('../../../models/Phase');
+const Status = require('../../../models/Status');
 
 // Cache configuration
 const cacheTimeout = 5 * 60 * 1000; // 5 minutes in milliseconds

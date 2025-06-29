@@ -1,0 +1,80 @@
+{% extends "layouts/base-no-header.njk" %}
+
+{% block pageTitle %}
+  Dashboard - {{ serviceName }}
+{% endblock %}
+
+{% block stylesheets %}
+  <link href="/stylesheets/govuk-frontend.min.css" rel="stylesheet">
+  <link href="/stylesheets/release-notes.css" rel="stylesheet">
+  <link href="/stylesheets/ref-data-nav.css" rel="stylesheet">
+{% endblock %}
+
+{% block header %}
+  {% include "partials/ref-data/header.njk" %}
+{% endblock %}
+
+{% block navigation %}
+  {% include "partials/ref-data/navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Reference Data Management Dashboard</h1>
+
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-one-third">
+        <div class="app-card app-card--blue">
+          <h2 class="govuk-heading-m">Reference Data Items for {{ selectedYear }}</h2>
+          <p class="govuk-body">View and manage reference data items</p>
+          <a href="/ref-data/items" class="govuk-button govuk-!-margin-bottom-0">View Items</a>
+        </div>
+      </div>
+
+      <div class="govuk-grid-column-one-third">
+        <div class="app-card app-card--yellow">
+          <h2 class="govuk-heading-m">Release Notes</h2>
+          <p class="govuk-body">View changes across academic years</p>
+          <a href="/ref-data/release-notes" class="govuk-button govuk-!-margin-bottom-0">View Release Notes</a>
+        </div>
+      </div>
+
+      <div class="govuk-grid-column-one-third">
+        <div class="app-card app-card--grey">
+          <h2 class="govuk-heading-m">Latest Updates</h2>
+          <p class="govuk-body">{{ latestYear }} - Version {{ latestVersion }}</p>
+          <a href="/ref-data/release-notes?year={{ latestYear }}" class="govuk-button govuk-!-margin-bottom-0">View Latest</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="govuk-grid-row govuk-!-margin-top-6">
+      <div class="govuk-grid-column-one-third">
+        <div class="app-card app-card--green">
+          <h2 class="govuk-heading-m">Reference Data Values</h2>
+          <p class="govuk-body">View and manage reference data values</p>
+          <a href="/ref-data/values" class="govuk-button govuk-!-margin-bottom-0">View Values</a>
+        </div>
+      </div>
+      
+      <div class="govuk-grid-column-one-third">
+        <div class="app-card app-card--red">
+          <h2 class="govuk-heading-m">Restore Points</h2>
+          <p class="govuk-body">Create and manage reference data backups</p>
+          <a href="/ref-data/restore-points" class="govuk-button govuk-!-margin-bottom-0">Manage Restore Points</a>
+        </div>
+      </div>
+      
+      <div class="govuk-grid-column-one-third">
+        <div class="app-card app-card--purple">
+          <h2 class="govuk-heading-m">DFE Reference Data</h2>
+          <p class="govuk-body">Access standardized DFE reference data lists</p>
+          <a href="/ref-data/dfe-data" class="govuk-button govuk-!-margin-bottom-0">View DFE Data</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

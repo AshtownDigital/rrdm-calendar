@@ -1,0 +1,270 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}Phase: {{ phase.name }} | BCR Phase-Status Mapping | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a href="/bcr/phase-status-mapping" class="govuk-back-link">Back to Phase-Status Mapping</a>
+      
+      <h1 class="govuk-heading-xl">Phase Details</h1>
+      
+      <div class="govuk-inset-text govuk-!-margin-bottom-6">
+        <h2 class="govuk-heading-l govuk-!-margin-bottom-2">
+          <strong class="govuk-tag govuk-tag--turquoise govuk-!-margin-right-1">{{ phase.name }}</strong>
+        </h2>
+        <p class="govuk-body">
+          <span class="govuk-!-font-weight-bold">Phase Order Number:</span> 
+          <strong class="govuk-tag govuk-tag--blue">{{ phase.displayOrder }}</strong>
+        </p>
+      </div>
+
+      <!-- Phase Basic Information Section -->
+      <section>
+        <h2 class="govuk-heading-m">Basic Information</h2>
+        <div class="govuk-inset-text">
+          <dl class="govuk-summary-list govuk-summary-list--no-border">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Workflow Phase Name
+              </dt>
+              <dd class="govuk-summary-list__value">
+                <strong>{{ phase.name }}</strong>
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Phase ID
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ phase.id }}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Phase Order Number
+              </dt>
+              <dd class="govuk-summary-list__value">
+                <strong class="govuk-tag govuk-tag--blue">{{ phase.displayOrder }}</strong>
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <!-- Status Mapping Section -->
+      <section>
+        <h2 class="govuk-heading-m">Status Mapping</h2>
+        <p class="govuk-body">Each phase has exactly one In Progress Status, one Completed Status, and one Trello Status.</p>
+        <div class="govuk-inset-text">
+          <dl class="govuk-summary-list govuk-summary-list--no-border">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                In Progress Status
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {% set inProgressFound = false %}
+                {% for status in statuses %}
+                  {% if not status.name.startsWith('completed:') %}
+                    {% if not inProgressFound %}
+                      <strong class="govuk-tag govuk-tag--light-blue">{{ status.name }}</strong>
+                      {% set inProgressFound = true %}
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+                {% if not inProgressFound %}
+                  <strong class="govuk-tag govuk-tag--grey">Not Set</strong>
+                  <a href="/bcr/phase-status-mapping/create-status?phaseValue={{ phase.id }}" class="govuk-link govuk-link--no-visited-state govuk-!-margin-left-2">Add In Progress Status</a>
+                {% endif %}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Completed Status
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {% set completedFound = false %}
+                {% for status in statuses %}
+                  {% if status.name.startsWith('completed:') %}
+                    {% if not completedFound %}
+                      <strong class="govuk-tag govuk-tag--green">{{ status.name }}</strong>
+                      {% set completedFound = true %}
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+                {% if not completedFound %}
+                  <strong class="govuk-tag govuk-tag--grey">Not Set</strong>
+                  <a href="/bcr/phase-status-mapping/create-status?phaseValue={{ phase.id }}&completed=true" class="govuk-link govuk-link--no-visited-state govuk-!-margin-left-2">Add Completed Status</a>
+                {% endif %}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <!-- Integration Section -->
+      <section>
+        <h2 class="govuk-heading-m">Trello Integration</h2>
+        <div class="govuk-inset-text">
+          <dl class="govuk-summary-list govuk-summary-list--no-border">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Trello Status Name
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {% if trelloList and trelloList != 'Not mapped' %}
+                  <strong class="govuk-tag govuk-tag--turquoise">{{ trelloList }}</strong>
+                {% else %}
+                  <strong class="govuk-tag govuk-tag--grey">Not mapped</strong>
+                  <a href="/bcr/phase-status-mapping/edit-phase/{{ phase.id }}" class="govuk-link govuk-link--no-visited-state govuk-!-margin-left-2">Add Trello Mapping</a>
+                {% endif %}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <!-- Technical Information Section -->
+      <section>
+        <h2 class="govuk-heading-m">Technical Information</h2>
+        <div class="govuk-inset-text">
+          <dl class="govuk-summary-list govuk-summary-list--no-border">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Phase ID
+              </dt>
+              <dd class="govuk-summary-list__value">
+                <span class="govuk-hint">{{ phase.id }}</span>
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Type
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ phase.type }}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Created At
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ phase.createdAt | date("DD MMM YYYY HH:mm:ss") }}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Updated At
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ phase.updatedAt | date("DD MMM YYYY HH:mm:ss") }}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+      
+      <div class="govuk-button-group">
+        <a href="/bcr/phase-status-mapping/edit-phase/{{ phase.id }}" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+          Edit Phase
+        </a>
+        <a href="/bcr/phase-status-mapping/delete-phase/{{ phase.id }}" role="button" draggable="false" class="govuk-button govuk-button--warning" data-module="govuk-button">
+          Delete Phase
+        </a>
+      </div>
+      
+      {% if statuses and statuses.length > 0 %}
+        <h2 class="govuk-heading-l">Associated Statuses</h2>
+        
+        <table class="govuk-table">
+          <caption class="govuk-table__caption govuk-table__caption--m">Statuses for this phase</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">ID</th>
+              <th scope="col" class="govuk-table__header">Status Name</th>
+              <th scope="col" class="govuk-table__header">Display Order</th>
+              <th scope="col" class="govuk-table__header">Type</th>
+              <th scope="col" class="govuk-table__header">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for status in statuses %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                  <span class="govuk-hint">{{ status.id }}</span>
+                </td>
+                <td class="govuk-table__cell">
+                  {% if status.name.startsWith('completed:') %}
+                    <strong class="govuk-tag govuk-tag--green">{{ status.name }}</strong>
+                  {% else %}
+                    <strong class="govuk-tag 
+                    {% if status.name === 'Submission' %}
+                      govuk-tag--blue
+                    {% elif status.name === 'Prioritisation' %}
+                      govuk-tag--purple
+                    {% elif status.name === 'Technical Review and Analysis' %}
+                      govuk-tag--light-blue
+                    {% elif status.name === 'Governance Playback' %}
+                      govuk-tag--turquoise
+                    {% elif status.name === 'Stakeholder Consultation' %}
+                      govuk-tag--pink
+                    {% elif status.name === 'Final Drafting' %}
+                      govuk-tag--orange
+                    {% elif status.name === 'Final Approval' %}
+                      govuk-tag
+                    {% elif status.name === 'Implementation' %}
+                      govuk-tag--turquoise
+                    {% elif status.name === 'Validation & Testing' %}
+                      govuk-tag--yellow
+                    {% elif status.name === 'Go Live' %}
+                      govuk-tag--green
+                    {% elif status.name === 'Post-Implementation Review' %}
+                      govuk-tag--grey
+                    {% elif status.name === 'Closed' %}
+                      govuk-tag--grey
+                    {% endif %}
+                    ">{{ status.name }}</strong>
+                  {% endif %}
+                </td>
+                <td class="govuk-table__cell">{{ status.displayOrder }}</td>
+                <td class="govuk-table__cell">
+                  {% if status.name.startsWith('completed:') %}
+                    Completed Status
+                  {% else %}
+                    Current Status
+                  {% endif %}
+                </td>
+                <td class="govuk-table__cell">
+                  <a href="/bcr/phase-status-mapping/edit-status/{{ status.id }}" class="govuk-link govuk-link--no-visited-state">Edit</a>
+                  <a href="/bcr/phase-status-mapping/delete-status/{{ status.id }}" class="govuk-link govuk-link--no-visited-state">Delete</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        
+        <div class="govuk-button-group">
+          <a href="/bcr/phase-status-mapping/create-status?phaseValue={{ phase.value }}" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+            Add New Status
+          </a>
+        </div>
+      {% else %}
+        <h2 class="govuk-heading-l">Associated Statuses</h2>
+        <div class="govuk-inset-text">
+          <p class="govuk-body">No statuses have been defined for this phase yet.</p>
+        </div>
+        
+        <div class="govuk-button-group">
+          <a href="/bcr/phase-status-mapping/create-status?phaseValue={{ phase.value }}" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+            Add Status to This Phase
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

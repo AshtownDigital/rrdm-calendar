@@ -4,7 +4,7 @@
  */
 const express = require('express');
 const router = express.Router();
-const dashboardController = require('../../../controllers/modules/dashboard/controller');
+const dashboardController = require('../../../controllers/dashboardController');
 
 // Main system dashboard
 router.get('/', dashboardController.index);

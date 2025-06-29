@@ -3,7 +3,7 @@
  * Handles user authentication, password hashing, and session management
  */
 const bcrypt = require('bcrypt');
-const accessModel = require('../../../models/modules/access/model');
+const accessModel = require('../../../models/User');
 
 // Number of salt rounds for bcrypt
 const SALT_ROUNDS = 10;

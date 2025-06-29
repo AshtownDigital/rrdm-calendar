@@ -31,11 +31,11 @@ const compression = require('compression');
 
 // Import all modularized routes
 
-// BCR module routes - preserve all BCR functionality including workflows, urgency levels, and impact areas
-const bcrRouter = require('./routes/modules/bcr/routes'); 
+// BCR module routes - consolidated controller for all BCR functionality
+const bcrRouter = require('./routes/modules/bcr/consolidatedRoutes'); 
 
-// BCR controllers
-const bcrController = require('./controllers/modules/bcr/controller');
+// BCR consolidated controller
+const bcrController = require('./controllers/consolidatedBcrController');
 
 // Reference Data module routes
 const refDataRouter = require('./routes/modules/reference-data/routes');
@@ -222,7 +222,7 @@ app.use(compression());
 
 // Root URL handler - serve the home page from modules/home/index.njk
 app.get('/', (req, res) => {
-  res.render('modules/home/index', {
+  res.render('home/index', {
     user: req.session.user || null,
     title: 'Home | Register Team Internal Services'
   });
@@ -268,6 +268,13 @@ app.use('/assets', express.static(path.join(__dirname, 'node_modules/govuk-front
   index: false // Disable directory index
 }));
 
+// Serve compiled GOV.UK Frontend JS bundle and other distribution files
+app.use('/govuk-frontend/dist/govuk', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk'), {
+  fallthrough: true,
+  index: false
+}));
+
+// Legacy fallback for /assets/js path (kept for backward-compatibility with old templates)
 app.use('/assets/js', serveStaticWithFallback('/assets/js', 'node_modules/govuk-frontend/govuk/all.js'));
 
 // Application assets with proper path resolution and validation
@@ -471,6 +478,8 @@ app.get('/release-diary', async (req, res, next) => {
 // Register API routes first
 // Academic Year API routes
 app.use('/api/v1/academic-years', wrapRouter('academicYearApi', academicYearRouter));
+// Legacy/alias route without version prefix to ensure backward compatibility
+app.use('/api/academic-years', wrapRouter('academicYearApiAlias', academicYearRouter));
 app.use('/api/v1/release-management', wrapRouter('releaseApi', releaseRoutes));
 
 // Debug routes for testing calendar (no authentication required)
@@ -684,7 +693,7 @@ app.get('/bcr/submissions', (req, res) => {
       });
       
       // Render the submissions page
-      res.render('modules/bcr/submissions/index', {
+      res.render('bcr/submissions/index', {
         title: 'BCR Submissions',
         submissions: formattedSubmissions,
         filters: req.query,
@@ -695,7 +704,7 @@ app.get('/bcr/submissions', (req, res) => {
     })
     .catch(error => {
       console.error('Error loading submissions:', error);
-      res.render('modules/bcr/submissions/index', {
+      res.render('bcr/submissions/index', {
         title: 'BCR Submissions',
         submissions: [],
         filters: req.query,

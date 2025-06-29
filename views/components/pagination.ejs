@@ -1,0 +1,112 @@
+<%#
+  Pagination Component
+  Renders a GOV.UK Design System pagination component
+
+  Parameters:
+  - currentPage: Current page number (required)
+  - totalPages: Total number of pages (required)
+  - baseUrl: Base URL for pagination links (required)
+  - queryParams: Current query parameters (optional)
+%>
+
+<%
+  // Set default values and handle optional parameters
+  const page = parseInt(currentPage) || 1;
+  const total = parseInt(totalPages) || 1;
+  const url = baseUrl || '';
+  const params = queryParams || {};
+  
+  // Function to build URL with query parameters
+  function buildUrl(pageNum) {
+    // Start with the base URL
+    let fullUrl = url;
+    
+    // Clone the params object to avoid modifying the original
+    const urlParams = {...params};
+    
+    // Set the page parameter
+    urlParams.page = pageNum;
+    
+    // Convert params to query string
+    const queryString = Object.keys(urlParams)
+      .filter(key => urlParams[key] !== undefined && urlParams[key] !== null && urlParams[key] !== '')
+      .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(urlParams[key])}`)
+      .join('&');
+    
+    // Add query string to URL if it exists
+    if (queryString) {
+      fullUrl += (fullUrl.includes('?') ? '&' : '?') + queryString;
+    }
+    
+    return fullUrl;
+  }
+  
+  // Calculate range of pages to show
+  const maxPagesToShow = 5;
+  let startPage = Math.max(1, page - Math.floor(maxPagesToShow / 2));
+  let endPage = Math.min(total, startPage + maxPagesToShow - 1);
+  
+  // Adjust start page if end page is at maximum
+  if (endPage === total) {
+    startPage = Math.max(1, endPage - maxPagesToShow + 1);
+  }
+  
+  // Only show pagination if there's more than one page
+  const showPagination = total > 1;
+%>
+
+<% if (showPagination) { %>
+<nav class="govuk-pagination" role="navigation" aria-label="Pagination">
+  <% if (page > 1) { %>
+  <div class="govuk-pagination__prev">
+    <a class="govuk-link govuk-pagination__link" href="<%= buildUrl(page - 1) %>" rel="prev">
+      <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+        <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
+      </svg>
+      <span class="govuk-pagination__link-title">Previous</span>
+    </a>
+  </div>
+  <% } %>
+
+  <ul class="govuk-pagination__list">
+    <% if (startPage > 1) { %>
+    <li class="govuk-pagination__item">
+      <a class="govuk-link govuk-pagination__link" href="<%= buildUrl(1) %>" aria-label="Page 1">1</a>
+    </li>
+    <% if (startPage > 2) { %>
+    <li class="govuk-pagination__item govuk-pagination__item--ellipses">&hellip;</li>
+    <% } %>
+    <% } %>
+    
+    <% for (let i = startPage; i <= endPage; i++) { %>
+    <li class="govuk-pagination__item <%= i === page ? 'govuk-pagination__item--current' : '' %>">
+      <% if (i === page) { %>
+      <a class="govuk-link govuk-pagination__link" href="<%= buildUrl(i) %>" aria-label="Page <%= i %>" aria-current="page"><%= i %></a>
+      <% } else { %>
+      <a class="govuk-link govuk-pagination__link" href="<%= buildUrl(i) %>" aria-label="Page <%= i %>"><%= i %></a>
+      <% } %>
+    </li>
+    <% } %>
+    
+    <% if (endPage < total) { %>
+    <% if (endPage < total - 1) { %>
+    <li class="govuk-pagination__item govuk-pagination__item--ellipses">&hellip;</li>
+    <% } %>
+    <li class="govuk-pagination__item">
+      <a class="govuk-link govuk-pagination__link" href="<%= buildUrl(total) %>" aria-label="Page <%= total %>"><%= total %></a>
+    </li>
+    <% } %>
+  </ul>
+  
+  <% if (page < total) { %>
+  <div class="govuk-pagination__next">
+    <a class="govuk-link govuk-pagination__link" href="<%= buildUrl(page + 1) %>" rel="next">
+      <span class="govuk-pagination__link-title">Next</span>
+      <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+        <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
+      </svg>
+    </a>
+  </div>
+  <% } %>
+</nav>
+<% } %>

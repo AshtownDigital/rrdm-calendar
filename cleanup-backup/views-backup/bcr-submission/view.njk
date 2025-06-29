@@ -1,0 +1,108 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block content %}
+<div class="govuk-width-container">
+  <main class="govuk-main-wrapper" id="main-content" role="main">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-xl">{{ submission.title }}</h1>
+        
+        {% if submission.status %}
+          <div class="govuk-tag govuk-tag--{{ submission.status | statusColor }}">
+            {{ submission.status }}
+          </div>
+        {% endif %}
+        
+        <dl class="govuk-summary-list">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Submission ID</dt>
+            <dd class="govuk-summary-list__value">{{ submission.submissionCode || submission._id }}</dd>
+          </div>
+          
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Submitted By</dt>
+            <dd class="govuk-summary-list__value">
+              {% if submission.submittedBy %}
+                {{ submission.submittedBy.name }} ({{ submission.submittedBy.email }})
+              {% else %}
+                Unknown
+              {% endif %}
+            </dd>
+          </div>
+          
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Submitted On</dt>
+            <dd class="govuk-summary-list__value">{{ submission.createdAt | date }}</dd>
+          </div>
+          
+          {% if submission.academicYear %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Academic Year</dt>
+            <dd class="govuk-summary-list__value">{{ submission.academicYear.name }}</dd>
+          </div>
+          {% endif %}
+          
+          {% if submission.department %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Department</dt>
+            <dd class="govuk-summary-list__value">{{ submission.department }}</dd>
+          </div>
+          {% endif %}
+          
+          {% if submission.priority %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Priority</dt>
+            <dd class="govuk-summary-list__value">
+              <span class="govuk-tag govuk-tag--{{ submission.priority }}">{{ submission.priority | capitalize }}</span>
+            </dd>
+          </div>
+          {% endif %}
+        </dl>
+        
+        <h2 class="govuk-heading-m">Description</h2>
+        <div class="govuk-body">
+          {{ submission.description | nl2br | safe }}
+        </div>
+        
+        {% if submission.reviewedBy %}
+        <h2 class="govuk-heading-m">Review Information</h2>
+        <dl class="govuk-summary-list">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Reviewed By</dt>
+            <dd class="govuk-summary-list__value">
+              {{ submission.reviewedBy.name }} ({{ submission.reviewedBy.email }})
+            </dd>
+          </div>
+          
+          {% if submission.reviewedAt %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Reviewed On</dt>
+            <dd class="govuk-summary-list__value">{{ submission.reviewedAt | date }}</dd>
+          </div>
+          {% endif %}
+          
+          {% if submission.reviewComments %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Review Comments</dt>
+            <dd class="govuk-summary-list__value">{{ submission.reviewComments | nl2br | safe }}</dd>
+          </div>
+          {% endif %}
+        </dl>
+        {% endif %}
+        
+        <div class="govuk-button-group">
+          <a href="/bcr/submissions" class="govuk-button govuk-button--secondary">Back to Submissions</a>
+          
+          {% if not submission.reviewedBy %}
+          <a href="/bcr/submissions/{{ submission._id }}/review" class="govuk-button">Review Submission</a>
+          {% endif %}
+          
+          {% if submission.bcrId %}
+          <a href="/bcr/business-change-requests/{{ submission.bcrId }}" class="govuk-button">View Business Change Request</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

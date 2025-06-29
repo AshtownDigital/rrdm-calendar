@@ -121,6 +121,6 @@ academicYearSchema.methods.addToAuditLog = function(userId, username, action, ch
   this.auditLog.push({ userId, username, action, changes });
 };
 
-const AcademicYear = mongoose.model('AcademicYear', academicYearSchema);
+const AcademicYear = mongoose.model('academicYear', academicYearSchema);
 
 module.exports = AcademicYear;

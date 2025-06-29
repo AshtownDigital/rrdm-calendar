@@ -1,0 +1,24 @@
+[
+  {
+    "_id": "mock-user-1",
+    "name": "Admin User",
+    "email": "admin@example.com",
+    "password": "$2a$10$zH17VKFDTeJynMkMD/6IeOUamvDXCLHb9TladWvniZ6oUxTrKpie2", 
+    "role": "admin",
+    "active": true,
+    "lastLogin": "2025-06-08T09:00:00.000Z",
+    "createdAt": "2025-05-01T10:00:00.000Z",
+    "updatedAt": "2025-06-08T09:00:00.000Z"
+  },
+  {
+    "_id": "mock-user-2",
+    "name": "Business User",
+    "email": "business@example.com",
+    "password": "$2a$10$zH17VKFDTeJynMkMD/6IeOUamvDXCLHb9TladWvniZ6oUxTrKpie2",
+    "role": "business",
+    "active": true,
+    "lastLogin": "2025-06-07T15:30:00.000Z",
+    "createdAt": "2025-05-15T14:00:00.000Z",
+    "updatedAt": "2025-06-07T15:30:00.000Z"
+  }
+]

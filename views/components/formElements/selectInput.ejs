@@ -1,0 +1,74 @@
+<%#
+  Select Input Component
+  Renders a GOV.UK Design System select dropdown
+
+  Parameters:
+  - id: The select ID (required)
+  - name: The select name (required)
+  - label: The select label (required)
+  - options: Array of options with value and text properties (required)
+  - selectedValue: The currently selected value (optional)
+  - hint: Hint text (optional)
+  - error: Error message (optional)
+  - required: Whether the field is required (optional, default: false)
+%>
+
+<%
+  // Set default values and handle optional parameters
+  const selectId = id;
+  const selectName = name;
+  const selectLabel = label;
+  const selectOptions = options || [];
+  const selectedValue = typeof selectedValue !== 'undefined' ? selectedValue : '';
+  const selectHint = typeof hint !== 'undefined' ? hint : '';
+  const selectError = typeof error !== 'undefined' ? error : '';
+  const isRequired = typeof required !== 'undefined' ? required : false;
+  
+  // Generate classes
+  let formGroupClass = 'govuk-form-group';
+  if (selectError) {
+    formGroupClass += ' govuk-form-group--error';
+  }
+  
+  let selectClass = 'govuk-select';
+  if (selectError) {
+    selectClass += ' govuk-select--error';
+  }
+%>
+
+<div class="<%= formGroupClass %>">
+  <label class="govuk-label" for="<%= selectId %>">
+    <%= selectLabel %>
+    <% if (isRequired) { %><span class="govuk-required">*</span><% } %>
+  </label>
+  
+  <% if (selectHint) { %>
+  <div id="<%= selectId %>-hint" class="govuk-hint">
+    <%= selectHint %>
+  </div>
+  <% } %>
+  
+  <% if (selectError) { %>
+  <p id="<%= selectId %>-error" class="govuk-error-message">
+    <span class="govuk-visually-hidden">Error:</span> <%= selectError %>
+  </p>
+  <% } %>
+  
+  <select 
+    class="<%= selectClass %>" 
+    id="<%= selectId %>" 
+    name="<%= selectName %>"
+    <% if (selectHint) { %>aria-describedby="<%= selectId %>-hint"<% } %>
+    <% if (selectError) { %>aria-describedby="<%= selectId %>-error"<% } %>
+    <% if (isRequired) { %>required<% } %>
+  >
+    <% selectOptions.forEach(function(option) { %>
+      <option 
+        value="<%= option.value %>" 
+        <% if (option.value == selectedValue) { %>selected<% } %>
+      >
+        <%= option.text %>
+      </option>
+    <% }); %>
+  </select>
+</div>

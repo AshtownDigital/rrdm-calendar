@@ -6,7 +6,7 @@ const express = require('express');
 const router = express.Router();
 const { csrfProtection } = require('../../../middleware/csrf');
 const authService = require('../../../services/modules/access/authService');
-const fundingController = require('../../../controllers/modules/funding/controller');
+const fundingController = require('../../../controllers/fundingController');
 
 // Require authentication for all funding routes
 router.use(authService.verifySession);

@@ -1,18 +1,20 @@
 @import "../base";
 
 @include govuk-exports("govuk/objects/template") {
-
   // Applied to the <html> element
   .govuk-template {
     // Set the overall page background colour to the same colour as used by the
     // footer to give the illusion of a long footer.
-    background-color: $govuk-canvas-background-colour;
+    @include _govuk-rebrand(
+      background-color,
+      $from: $govuk-template-background-colour,
+      $to: $_govuk-rebrand-template-background-colour
+    );
 
     // Prevent automatic text sizing, as we already cater for small devices and
     // would like the browser to stay on 100% text zoom by default.
     -webkit-text-size-adjust: 100%;
        -moz-text-size-adjust: 100%;
-        -ms-text-size-adjust: 100%;
             text-size-adjust: 100%;
 
     // Add scroll padding to the top of govuk-template but remove it if the

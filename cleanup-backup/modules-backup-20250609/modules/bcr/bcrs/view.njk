@@ -1,0 +1,242 @@
+{% extends "layouts/base.njk" %}
+
+{% block pageTitle %}
+  {{ title }} - RRDM
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">{{ title }}</h1>
+    
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        <span class="govuk-caption-xl">Business Change Request</span>
+        <h2 class="govuk-heading-l">{{ bcr.bcrNumber }}</h2>
+      </div>
+    </div>
+
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-one-half">
+        <div class="govuk-inset-text">
+          <h2 class="govuk-heading-m">Current Workflow Phase</h2>
+          <p class="govuk-body">
+            <strong class="govuk-tag govuk-tag--blue">{{ currentPhase.name }}</strong>
+          </p>
+        </div>
+      </div>
+      <div class="govuk-grid-column-one-half">
+        <div class="govuk-inset-text">
+          <h2 class="govuk-heading-m">Workflow Status</h2>
+          <p class="govuk-body">
+            <strong class="govuk-tag govuk-tag--{{ currentStatus.color }}">{{ bcr.status }}</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">Actions</h2>
+      <div class="govuk-button-group">
+        <a href="/bcr/business-change-requests/{{ bcr._id }}/update-status" class="govuk-button">Update Status</a>
+      </div>
+    </div>
+
+    <div class="govuk-tabs" data-module="govuk-tabs">
+      <h2 class="govuk-tabs__title">Business Change Request Information</h2>
+      <ul class="govuk-tabs__list">
+        <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+          <a class="govuk-tabs__tab" href="#bcr-details">BCR Details</a>
+        </li>
+        <li class="govuk-tabs__list-item">
+          <a class="govuk-tabs__tab" href="#original-submission">Original Submission</a>
+        </li>
+      </ul>
+
+      <div class="govuk-tabs__panel" id="bcr-details">
+        <h2 class="govuk-heading-m">BCR Details</h2>
+        <div class="govuk-inset-text">
+          <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Title
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ bcr.title }}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Description
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ bcr.description }}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Urgency Level
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {% if bcr.urgencyLevel === 'Critical' %}
+                  <strong class="govuk-tag govuk-tag--red">{{ bcr.urgencyLevel }}</strong>
+                {% elif bcr.urgencyLevel === 'High' %}
+                  <strong class="govuk-tag govuk-tag--orange">{{ bcr.urgencyLevel }}</strong>
+                {% elif bcr.urgencyLevel === 'Medium' %}
+                  <strong class="govuk-tag govuk-tag--yellow">{{ bcr.urgencyLevel }}</strong>
+                {% elif bcr.urgencyLevel === 'Low' %}
+                  <strong class="govuk-tag govuk-tag--green">{{ bcr.urgencyLevel }}</strong>
+                {% elif bcr.urgencyLevel === 'Planning' %}
+                  <strong class="govuk-tag govuk-tag--blue">{{ bcr.urgencyLevel }}</strong>
+                {% else %}
+                  <strong class="govuk-tag govuk-tag--grey">{{ bcr.urgencyLevel }}</strong>
+                {% endif %}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Created Date
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ bcr.createdAt | date('DD MMMM YYYY') }}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="original-submission">
+        <h2 class="govuk-heading-m">Original Submission Details</h2>
+        <div class="govuk-inset-text">
+          <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Submission Code
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {% if submission %}
+                  <a href="/bcr/submissions/{{ submission._id }}" class="govuk-link">{{ submission.submissionCode }}</a>
+                {% else %}
+                  Not available
+                {% endif %}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Submitter
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {% if submission %}
+                  {{ submission.fullName }}
+                {% else %}
+                  Not available
+                {% endif %}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Email
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {% if submission %}
+                  {{ submission.emailAddress }}
+                {% else %}
+                  Not available
+                {% endif %}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Organisation
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {% if submission %}
+                  {{ submission.organisation }}
+                {% else %}
+                  Not available
+                {% endif %}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Submission Source
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {% if submission %}
+                  {{ submission.submissionSource }}
+                {% else %}
+                  Not available
+                {% endif %}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Submitted Date
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {% if submission and submission.createdAt %}
+                  {{ submission.createdAt | date('DD MMMM YYYY') }}
+                {% else %}
+                  Not available
+                {% endif %}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Reviewed Date
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {% if submission and submission.reviewedAt %}
+                  {{ submission.reviewedAt | date('DD MMMM YYYY') }}
+                {% else %}
+                  Not available
+                {% endif %}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="govuk-heading-m">BCR History</h2>
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--m">Timeline of events</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Date</th>
+          <th scope="col" class="govuk-table__header">Event</th>
+          <th scope="col" class="govuk-table__header">Details</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">{{ bcr.createdAt | date('DD MMMM YYYY') }}</td>
+          <td class="govuk-table__cell"><strong>BCR Created</strong></td>
+          <td class="govuk-table__cell">
+            Business Change Request {{ bcr.bcrNumber }} was created
+            {% if submission %}
+              from submission {{ submission.submissionCode }}
+            {% endif %}
+          </td>
+        </tr>
+        {% if bcr.workflowHistory and bcr.workflowHistory.length > 0 %}
+          {% for historyItem in bcr.workflowHistory %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell">{{ historyItem.date | date('DD MMMM YYYY') }}</td>
+              <td class="govuk-table__cell"><strong>{{ historyItem.action }}</strong></td>
+              <td class="govuk-table__cell">{{ historyItem.details }}</td>
+            </tr>
+          {% endfor %}
+        {% endif %}
+      </tbody>
+    </table>
+
+    <div class="govuk-button-group">
+      <a href="/bcr/business-change-requests" class="govuk-button govuk-button--secondary">Back to Business Change Requests</a>
+      {% if submission %}
+        <a href="/bcr/submissions/{{ submission._id }}" class="govuk-link">View Original Submission</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

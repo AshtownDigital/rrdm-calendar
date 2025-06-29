@@ -3,8 +3,12 @@
  * Handles workflow phases, statuses, and transitions for the BCR process
  * Implements the BPMN process diagram workflow
  */
-const { Phase, Status, Bcr, Submission } = require('../../../models/modules/bcr/model');
+const Phase = require('../../../models/Phase');
+const Status = require('../../../models/Status');
+const Bcr = require('../../../models/Bcr');
+const Submission = require('../../../models/Submission');
 const mongoose = require('mongoose');
+const logger = require('../../../services/logger/index').logger;
 
 /**
  * Get all workflow phases with their associated statuses
@@ -29,7 +33,7 @@ exports.getAllPhases = async () => {
     
     return phases;
   } catch (error) {
-    console.error('Error in getAllPhases:', error);
+    logger.error('Error in getAllPhases:', { error: error.message });
     throw error;
   }
 };
@@ -54,7 +58,7 @@ exports.getAllStatuses = async () => {
     
     return statuses;
   } catch (error) {
-    console.error('Error in getAllStatuses:', error);
+    logger.error('Error in getAllStatuses:', { error: error.message });
     throw error;
   }
 };
@@ -70,7 +74,7 @@ exports.getPhaseById = async (phaseId) => {
       .populate('trelloStatusId')
       .exec();
   } catch (error) {
-    console.error('Error in getPhaseById:', error);
+    logger.error('Error in getPhaseById:', { error: error.message });
     throw error;
   }
 };
@@ -82,7 +86,7 @@ exports.getStatusById = async (statusId) => {
   try {
     return await Status.findById(statusId).exec();
   } catch (error) {
-    console.error('Error in getStatusById:', error);
+    logger.error('Error in getStatusById:', { error: error.message });
     throw error;
   }
 };
@@ -97,7 +101,7 @@ exports.getInitialPhase = async () => {
       .populate('inProgressStatusId')
       .exec();
   } catch (error) {
-    console.error('Error in getInitialPhase:', error);
+    logger.error('Error in getInitialPhase:', { error: error.message });
     throw error;
   }
 };
@@ -183,7 +187,7 @@ exports.updateSubmissionStatus = async (submissionId, status, options = {}) => {
     return { submission, bcr };
   } catch (error) {
     await session.abortTransaction();
-    console.error('Error in updateSubmissionStatus:', error);
+    logger.error('Error in updateSubmissionStatus:', { error: error.message });
     throw error;
   } finally {
     session.endSession();
@@ -212,7 +216,7 @@ exports.getNextPhase = async (currentPhaseId) => {
     
     return nextPhase;
   } catch (error) {
-    console.error('Error in getNextPhase:', error);
+    logger.error('Error in getNextPhase:', { error: error.message });
     throw error;
   }
 };
@@ -239,7 +243,7 @@ exports.getPreviousPhase = async (currentPhaseId) => {
     
     return previousPhase;
   } catch (error) {
-    console.error('Error in getPreviousPhase:', error);
+    logger.error('Error in getPreviousPhase:', { error: error.message });
     throw error;
   }
 };
@@ -274,7 +278,7 @@ exports.updateBcrPhaseStatus = async (bcrId, phaseId, statusId) => {
     await bcr.save();
     return bcr;
   } catch (error) {
-    console.error('Error in updateBcrPhaseStatus:', error);
+    logger.error('Error in updateBcrPhaseStatus:', { error: error.message });
     throw error;
   }
 };
@@ -564,7 +568,50 @@ exports.getAvailableTransitions = async (bcrId) => {
       };
     });
   } catch (error) {
-    console.error('Error in getAvailableTransitions:', error);
+    logger.error('Error in getAvailableTransitions:', { error: error.message });
+    throw error;
+  }
+};
+
+/**
+ * Get color-coded tag for a status
+ * Using standardized GOV.UK Design System colors
+ */
+/**
+ * Get workflow visualization data for a BCR
+ */
+exports.getWorkflowVisual = async (bcrId) => {
+  try {
+    // Get the BCR with its current phase and status
+    const bcr = await Bcr.findById(bcrId)
+      .populate('currentPhaseId')
+      .populate('currentStatusId')
+      .exec();
+    
+    if (!bcr) {
+      throw new Error('BCR not found');
+    }
+    
+    // Get all phases for the workflow diagram
+    const phases = await exports.getAllPhases();
+    
+    // Get available transitions
+    const transitions = await exports.getAvailableTransitions(bcrId);
+    
+    // Format the workflow visual data
+    return {
+      currentPhase: bcr.currentPhaseId,
+      currentStatus: bcr.currentStatusId,
+      phases: phases.map(phase => ({
+        ...phase,
+        isCurrent: phase._id.equals(bcr.currentPhaseId._id),
+        tag: exports.getStatusTag(phase.inProgressStatusId)
+      })),
+      transitions,
+      history: bcr.workflowHistory || []
+    };
+  } catch (error) {
+    logger.error('Error in getWorkflowVisual:', { error: error.message });
     throw error;
   }
 };
