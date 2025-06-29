@@ -88,7 +88,9 @@ async function connect() {
         bufferTimeoutMS: 10000, // 10 seconds (reduced from 30)
         // Network settings
         family: 4, // Use IPv4, skip trying IPv6
-        ssl: false, // Only enable SSL in production
+        // Enable TLS/SSL automatically for Atlas or SRV URIs unless explicitly disabled via env
+        ssl: isAtlas || process.env.MONGODB_ENABLE_TLS === 'true',
+        tls: isAtlas || process.env.MONGODB_ENABLE_TLS === 'true',
         // Write concern
         retryWrites: true,
         w: 'majority',
@@ -100,6 +102,13 @@ async function connect() {
         // The driver now handles reconnection automatically
       };
       
+      // Evaluate whether we should enable TLS automatically (Atlas & SRV URIs always require it)
+      const isAtlas = uri.startsWith('mongodb+srv://') || uri.includes('.mongodb.net');
+      if (isAtlas) {
+        options.ssl = true;
+        options.tls = true;
+      }
+
       // Connect to MongoDB
       await mongoose.connect(uri, options);
       
