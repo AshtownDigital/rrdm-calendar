@@ -142,10 +142,13 @@
   {% include "partials/footer.njk" %}
 
   <!-- GOV.UK Frontend JavaScript -->
-  <script type="module" src="/govuk-frontend/dist/govuk/govuk-frontend.min.js"></script>
-  <script type="module">
-      import { initAll } from '/govuk-frontend/dist/govuk/govuk-frontend.min.js';
-      initAll();
+  <script src="/govuk-frontend/govuk/all.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.GOVUKFrontend) {
+        window.GOVUKFrontend.initAll();
+      }
+    });
   </script>
 
 </body>
