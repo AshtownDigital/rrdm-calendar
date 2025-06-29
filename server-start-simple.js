@@ -14,14 +14,6 @@ const useSimpleServer = process.env.USE_SIMPLE_SERVER === 'true' || process.env.
 if (useSimpleServer) {
   console.log('Using simplified server configuration for deployment testing');
   
-  // Apply nunjucks patch to disable file watching
-  try {
-    require('./heroku-nunjucks-patch');
-    console.log('Nunjucks patch applied successfully');
-  } catch (err) {
-    console.log('Nunjucks patch not applied:', err.message);
-  }
-  
   require('./server-simple');
 } else {
   console.log('Using full application server');
