@@ -1,0 +1,26 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}Submission updated | RRDM{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <div class="govuk-panel govuk-panel--confirmation">
+      <h1 class="govuk-panel__title">Submission updated</h1>
+      <div class="govuk-panel__body">
+        Reference number<br><strong>{{ submission.recordNumber or submission._id }}</strong>
+      </div>
+    </div>
+    <p class="govuk-body">Your changes have been saved.</p>
+
+    <div class="govuk-button-group govuk-!-margin-top-6">
+      <a href="/submissions/{{ submission.id }}/details" class="govuk-button">View submission</a>
+      <a href="/submissions/list" class="govuk-link">Return to submissions list</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

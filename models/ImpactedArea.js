@@ -8,7 +8,7 @@ const Schema = mongoose.Schema;
 const ImpactedAreaSchema = new Schema({
   recordNumber: {
     type: Number,
-    required: true
+    default: null // will be set in pre-save hook
   },
   name: {
     type: String,
@@ -20,7 +20,7 @@ const ImpactedAreaSchema = new Schema({
   },
   order: {
     type: Number,
-    required: true
+    default: 0 // optional; legacy field
   },
   createdAt: {
     type: Date,

@@ -1,0 +1,137 @@
+{% extends "layouts/govuk-login-base.njk" %}
+
+{% set pageTitle = "Sign in - Reference Data Directory" %}
+{% block title %}{{ pageTitle }} - GOV.UK{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if warning %}
+        <div class="govuk-warning-text" role="alert">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            {{ warning }}
+          </strong>
+        </div>
+      {% endif %}
+
+      {% if error %}
+        <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" data-module="govuk-error-summary">
+          <h2 class="govuk-error-summary__title" id="error-summary-title">
+            There is a problem
+          </h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              <li>
+                <a href="#pin-1">{{ error }}</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      {% endif %}
+
+      <h1 class="govuk-heading-xl">Sign in</h1>
+
+      <div class="govuk-inset-text">
+        Use your Reference Data Directory PIN to access the service.
+      </div>
+
+      <form action="/login" method="post" novalidate>
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            <h2 class="govuk-fieldset__heading">
+              Enter your 4-digit PIN
+            </h2>
+          </legend>
+
+          <div class="govuk-form-group{% if error %} govuk-form-group--error{% endif %}">
+            <div id="pin-hint" class="govuk-hint">For example, 1 2 3 4</div>
+            
+            {% if error %}
+              <p id="pin-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span> {{ error }}
+              </p>
+            {% endif %}
+            
+            <div class="govuk-date-input" id="pin">
+              <div class="govuk-date-input__item">
+                <div class="govuk-form-group">
+
+                  <input class="govuk-input govuk-date-input__input govuk-input--width-2{% if error %} govuk-input--error{% endif %}" 
+                    id="pin-1" 
+                    name="pin1" 
+                    type="text" 
+                    inputmode="numeric" 
+                    pattern="[0-9]*" 
+                    maxlength="1" 
+                    autocomplete="off"
+                    aria-describedby="{% if error %}pin-error {% endif %}pin-hint">
+                </div>
+              </div>
+              <div class="govuk-date-input__item">
+                <div class="govuk-form-group">
+
+                  <input class="govuk-input govuk-date-input__input govuk-input--width-2{% if error %} govuk-input--error{% endif %}" 
+                    id="pin-2" 
+                    name="pin2" 
+                    type="text" 
+                    inputmode="numeric" 
+                    pattern="[0-9]*" 
+                    maxlength="1" 
+                    autocomplete="off"
+                    aria-describedby="{% if error %}pin-error {% endif %}pin-hint">
+                </div>
+              </div>
+              <div class="govuk-date-input__item">
+                <div class="govuk-form-group">
+
+                  <input class="govuk-input govuk-date-input__input govuk-input--width-2{% if error %} govuk-input--error{% endif %}" 
+                    id="pin-3" 
+                    name="pin3" 
+                    type="text" 
+                    inputmode="numeric" 
+                    pattern="[0-9]*" 
+                    maxlength="1" 
+                    autocomplete="off"
+                    aria-describedby="{% if error %}pin-error {% endif %}pin-hint">
+                </div>
+              </div>
+              <div class="govuk-date-input__item">
+                <div class="govuk-form-group">
+
+                  <input class="govuk-input govuk-date-input__input govuk-input--width-2{% if error %} govuk-input--error{% endif %}" 
+                    id="pin-4" 
+                    name="pin4" 
+                    type="text" 
+                    inputmode="numeric" 
+                    pattern="[0-9]*" 
+                    maxlength="1" 
+                    autocomplete="off"
+                    aria-describedby="{% if error %}pin-error {% endif %}pin-hint">
+                </div>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <button type="submit" class="govuk-button">
+          Continue
+        </button>
+      </form>
+    </div>
+  </div>
+  <script src="/javascripts/login-hash.js"></script>
+
+  <style>
+    /* Make sure the date input is displayed horizontally */
+    #pin.govuk-date-input {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+    }
+    
+    #pin .govuk-date-input__item {
+      margin-right: 1rem;
+    }
+  </style>
+{% endblock %}

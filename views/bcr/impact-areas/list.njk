@@ -29,7 +29,7 @@
             <tr class="govuk-table__row">
               <th scope="col" class="govuk-table__header">Name</th>
               <th scope="col" class="govuk-table__header">Description</th>
-              <th scope="col" class="govuk-table__header">Display Order</th>
+
               <th scope="col" class="govuk-table__header">Actions</th>
             </tr>
           </thead>
@@ -37,14 +37,12 @@
             {% for area in impactAreas %}
               <tr class="govuk-table__row">
                 <td class="govuk-table__cell">
-                  <strong>{{ area.displayName }}</strong>
+                  <strong>{{ area.name }}</strong>
                 </td>
                 <td class="govuk-table__cell">
                   {{ area.description }}
                 </td>
-                <td class="govuk-table__cell">
-                  {{ area.displayOrder }}
-                </td>
+
                 <td class="govuk-table__cell">
                   <a href="/bcr/impact-areas/{{ area.id }}/edit" class="govuk-link govuk-link--no-visited-state">Edit</a>
                   <a href="/bcr/impact-areas/{{ area.id }}/delete" class="govuk-link govuk-link--no-visited-state govuk-!-margin-left-2">Delete</a>

@@ -14,10 +14,10 @@
           <a class="govuk-breadcrumbs__link" href="/">Home</a>
         </li>
         <li class="govuk-breadcrumbs__list-item">
-          <a class="govuk-breadcrumbs__link" href="/bcr/submissions">BCR Submissions</a>
+          <a class="govuk-breadcrumbs__link" href="/submissions">BCR Submissions</a>
         </li>
         <li class="govuk-breadcrumbs__list-item">
-          <a class="govuk-breadcrumbs__link" href="/bcr/submissions/{{ submission.id }}">BCR {{ submission.id }}</a>
+          <a class="govuk-breadcrumbs__link" href="/submissions/{{ submission.id }}">BCR {{ submission.id }}</a>
         </li>
         <li class="govuk-breadcrumbs__list-item">
           Reset Confirmation
@@ -73,8 +73,8 @@
           <p class="govuk-body">The BCR workflow has been reset to the beginning. All subsequent phases have been marked as incomplete and will need to be processed again.</p>
           
           <p class="govuk-body">
-            <a href="/bcr/submissions/{{ submission.id }}" class="govuk-button">Return to BCR</a>
-            <a href="/bcr/submissions" class="govuk-button govuk-button--secondary">View all BCRs</a>
+            <a href="/submissions/{{ submission.id }}" class="govuk-button">Return to BCR</a>
+            <a href="/submissions" class="govuk-button govuk-button--secondary">View all BCRs</a>
           </p>
         </div>
       </div>

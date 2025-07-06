@@ -1,0 +1,61 @@
+{# Workflow panel content extracted from BCR submissions view template #}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l">Workflow Management</h2>
+    
+    <div class="app-card govuk-!-margin-bottom-6">
+      <h3 class="govuk-heading-m">Current Status</h3>
+      <p class="govuk-body-l">
+        {% if workflow and workflow.status %}
+          <strong class="govuk-tag {% if workflow.status == 'approved' %}govuk-tag--green{% elif workflow.status == 'rejected' %}govuk-tag--red{% elif workflow.status == 'more_info' %}govuk-tag--yellow{% else %}govuk-tag--blue{% endif %}">{{ workflow.status | replace('_', ' ') | title }}</strong>
+        {% elif submission.status %}
+          <strong class="govuk-tag {% if submission.status == 'Approved' %}govuk-tag--green{% elif submission.status == 'Rejected' %}govuk-tag--red{% elif submission.status == 'More Info Required' %}govuk-tag--yellow{% else %}govuk-tag--blue{% endif %}">{{ submission.status }}</strong>
+        {% else %}
+          <strong class="govuk-tag govuk-tag--grey">Not Set</strong>
+        {% endif %}
+      </p>
+    </div>
+    
+    <div class="app-card govuk-!-margin-bottom-6">
+      <h3 class="govuk-heading-m">Update Workflow Form</h3>
+      <form action="/submissions/{{ submission.id }}/update-workflow" method="post" novalidate>
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="status">
+            Status <span class="govuk-required">*</span>
+          </label>
+          <select class="govuk-select" id="status" name="status" required>
+            <option value="">Select status...</option>
+            <option value="new">New Submission</option>
+            <option value="under_review">Under Review</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="more_info">More Information Required</option>
+            <option value="implementation">Implementation</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="comment">
+            Comment <span class="govuk-required">*</span>
+          </label>
+          <div class="govuk-hint">
+            Please provide a reason for updating the workflow status. This will be recorded in the history.
+          </div>
+          <textarea class="govuk-textarea" id="comment" name="comment" rows="5" required></textarea>
+        </div>
+        
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="user">
+            Your Name <span class="govuk-required">*</span>
+          </label>
+          <input class="govuk-input" id="user" name="user" type="text" required>
+        </div>
+        
+        <button type="submit" class="govuk-button" data-module="govuk-button">
+          Update Workflow
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

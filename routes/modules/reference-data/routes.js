@@ -11,12 +11,13 @@ const itemsRouter = express.Router();
 const valuesRouter = express.Router();
 const releaseNotesRouter = express.Router();
 const restorePointsRouter = express.Router();
+const analysisRouter = express.Router();
 
 // Import reference data controller
 const refDataController = require('../../../controllers/referenceDataController');
 
-// Main reference data dashboard
-router.get('/', refDataController.dashboard);
+// Main reference data landing page
+router.get('/', (req,res)=> res.render('reference-data/index.njk'));
 
 // Items routes
 itemsRouter.get('/', refDataController.listItems);
@@ -54,10 +55,25 @@ restorePointsRouter.get('/restore-point/:refRestorePointId', refDataController.v
 restorePointsRouter.get('/restore-point/:refRestorePointId/restore', csrfProtection, refDataController.restoreConfirm);
 restorePointsRouter.post('/restore-point/:refRestorePointId/restore', csrfProtection, refDataController.restore);
 
+// Analysis route
+// Landing page
+analysisRouter.get('/', (req,res)=> res.render('reference-data/index.njk'));
+
+analysisRouter.get('/analysisstructure', require('../../../controllers/referenceAnalysisController').structure);
+analysisRouter.get('/dashboard', require('../../../controllers/referenceAnalysisController').structure);
+analysisRouter.get('/analysis/:alignment', require('../../../controllers/referenceAnalysisController').analysisByAlignment);
+analysisRouter.get('/directory', require('../../../controllers/referenceAnalysisController').directory);
+analysisRouter.get('/field-mapping', require('../../../controllers/referenceAnalysisController').fieldMapping);
+analysisRouter.get('/export-directory/select', csrfProtection, require('../../../controllers/referenceAnalysisController').exportDirectorySelect);
+analysisRouter.post('/export-directory/confirm', csrfProtection, require('../../../controllers/referenceAnalysisController').exportDirectoryConfirm);
+analysisRouter.post('/export-directory/ready', csrfProtection, require('../../../controllers/referenceAnalysisController').exportDirectoryReady);
+analysisRouter.post('/export-directory/download', csrfProtection, require('../../../controllers/referenceAnalysisController').exportDirectoryDownload);
+
 // Mount sub-routers
 router.use('/items', itemsRouter);
 router.use('/values', valuesRouter);
 router.use('/release-notes', releaseNotesRouter);
 router.use('/restore-points', restorePointsRouter);
+router.use('/', analysisRouter);
 
 module.exports = router;

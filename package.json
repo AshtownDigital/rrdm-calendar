@@ -5,12 +5,12 @@
   "main": "server-start.js",
   "scripts": {
     "start": "node server-start.js",
-    "dev": "node scripts/dev-tools/start-server.js",
+    "dev": "cross-env NODE_ENV=development npm_config_production=false npx nodemon --legacy-watch scripts/dev-tools/start-server.js",
     "dev:mongo": "node scripts/dev-tools/start-server.js --real-db",
     "dev:mock": "node scripts/dev-tools/start-server.js --mock-data",
     "dev:port": "node scripts/dev-tools/start-server.js --port=3001",
-    "dev:watch": "nodemon scripts/dev-tools/start-server.js --real-db",
-    "dev:watch:mock": "nodemon scripts/dev-tools/start-server.js",
+    "dev:watch": "npx nodemon scripts/dev-tools/start-server.js --real-db",
+    "dev:watch:mock": "npx nodemon scripts/dev-tools/start-server.js",
     "staging": "cross-env NODE_ENV=staging node server-start.js",
     "prod": "cross-env NODE_ENV=production node server-start.js",
     "copy-govuk-assets": "node ./scripts/copy-govuk-assets.js || echo 'Asset copy script failed but build will continue'",
@@ -30,7 +30,8 @@
     "test:e2e:report": "node ./tests/e2e/support/generate-report.js",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "standardize": "node ./scripts/standardize-templates.js"
+    "standardize": "node ./scripts/standardize-templates.js",
+    "dev:setup": "cross-env NODE_ENV=development npm_config_production=false npm install"
   },
   "dependencies": {
     "ajv": "^8.17.1",
@@ -48,7 +49,9 @@
     "csrf-tokens": "^2.0.0",
     "csurf": "^1.11.0",
     "date-fns": "^4.1.0",
+    "dayjs": "^1.11.13",
     "dotenv": "^16.3.1",
+    "exceljs": "^4.4.0",
     "express": "^4.18.2",
     "express-rate-limit": "^6.11.2",
     "express-session": "^1.17.3",
@@ -64,7 +67,8 @@
     "passport-local": "^1.0.0",
     "uid-safe": "^2.1.5",
     "uuid": "^11.1.0",
-    "winston": "^3.8.2"
+    "winston": "^3.8.2",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@babel/core": "^7.27.4",

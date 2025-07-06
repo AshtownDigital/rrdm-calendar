@@ -1,0 +1,24 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% set submission = submission or {} %}
+
+{% block title %}Submission History | Register Team Internal Services{% endblock %}
+
+{% block navigation %}{% include "partials/bcr-navigation.njk" %}{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">{{ submission.bcrCode or submission.submissionCode or 'Unknown' }} – History</h1>
+      <nav class="govuk-!-margin-bottom-6">
+        <ul class="govuk-list govuk-list--inline">
+          <li><a href="/submissions/{{ submission.id }}/details" class="govuk-link">Details</a></li>
+          <li><a href="/submissions/{{ submission.id }}/workflow" class="govuk-link">Workflow</a></li>
+          <li><a href="/submissions/{{ submission.id }}/history" class="govuk-link">History</a></li>
+        </ul>
+      </nav>
+
+      {% include "submissions/partials/history-section.njk" %}
+    </div>
+  </div>
+{% endblock %}

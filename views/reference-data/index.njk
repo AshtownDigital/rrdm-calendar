@@ -1,0 +1,112 @@
+{% extends "layouts/base.njk" %}
+
+{% block pageTitle %}
+  Reference Data | RD Internal Services
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Reference Data Management</h1>
+    <p class="govuk-body-l">Manage and maintain reference data for registration systems</p>
+  </div>
+</div>
+
+<!-- Analysis Section -->
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6 govuk-!-margin-bottom-4">Analysis Tools</h2>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <!-- Panel: Analysis Overview -->
+  <div class="govuk-grid-column-one-third">
+    <a href="/reference-data/analysisstructure" class="app-card-link">
+      <div class="app-card app-card--blue">
+        <h2 class="govuk-heading-m">Analysis Overview</h2>
+        <p class="govuk-body">Compare CSV and Register values across all categories</p>
+      </div>
+    </a>
+  </div>
+  
+  <!-- Panel: Gem Viewer -->
+  <div class="govuk-grid-column-one-third">
+    <a href="/reference-data/values" class="app-card-link">
+      <div class="app-card app-card--green">
+        <h2 class="govuk-heading-m">Gem Viewer</h2>
+        <p class="govuk-body">Browse and search register values</p>
+      </div>
+    </a>
+  </div>
+  
+  <!-- Panel: Dashboard -->
+  <div class="govuk-grid-column-one-third">
+    <a href="/reference-data/dashboard" class="app-card-link">
+      <div class="app-card app-card--yellow">
+        <h2 class="govuk-heading-m">Dashboard</h2>
+        <p class="govuk-body">View summary metrics and data counts</p>
+      </div>
+    </a>
+  </div>
+  
+  <!-- Panel: Reference Data Directory -->
+  <div class="govuk-grid-column-one-third">
+    <a href="/reference-data/directory" class="app-card-link">
+      <div class="app-card app-card--light-blue">
+        <h2 class="govuk-heading-m">Reference Data Directory</h2>
+        <p class="govuk-body">Comprehensive listing of all reference data categories</p>
+      </div>
+    </a>
+  </div>
+  
+  <!-- Panel: Field Mapping Reference -->
+  <div class="govuk-grid-column-one-third">
+    <a href="/reference-data/field-mapping" class="app-card-link">
+      <div class="app-card app-card--orange">
+        <h2 class="govuk-heading-m">Field Mapping Reference</h2>
+        <p class="govuk-body">View mappings between register, CSV and API field names</p>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Reference Data Management Section -->
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l govuk-!-margin-top-6 govuk-!-margin-bottom-4">Data Management</h2>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <!-- Panel: Items Management -->
+  <div class="govuk-grid-column-one-third">
+    <a href="/reference-data/items" class="app-card-link">
+      <div class="app-card app-card--turquoise">
+        <h2 class="govuk-heading-m">Items Management</h2>
+        <p class="govuk-body">Manage reference data items and categories</p>
+      </div>
+    </a>
+  </div>
+  
+  <!-- Panel: Release Notes -->
+  <div class="govuk-grid-column-one-third">
+    <a href="/reference-data/release-notes" class="app-card-link">
+      <div class="app-card app-card--purple">
+        <h2 class="govuk-heading-m">Release Notes</h2>
+        <p class="govuk-body">View changes across academic years</p>
+      </div>
+    </a>
+  </div>
+  
+  <!-- Panel: Restore Points -->
+  <div class="govuk-grid-column-one-third">
+    <a href="/reference-data/restore-points" class="app-card-link">
+      <div class="app-card app-card--pink">
+        <h2 class="govuk-heading-m">Restore Points</h2>
+        <p class="govuk-body">Manage data backups and restore points</p>
+      </div>
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "layouts/base.njk" %}
+
+{% block pageTitle %}Select categories to export | RRDM{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-l">Select categories to export</h1>
+    <form action="/reference-data/export-directory/confirm" method="post">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset" aria-describedby="categories-hint">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            <h2 class="govuk-fieldset__heading">Reference data categories</h2>
+          </legend>
+          <span id="categories-hint" class="govuk-hint">Select one or more categories</span>
+          <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="cat-all" type="checkbox">
+              <label class="govuk-label govuk-checkboxes__label" for="cat-all"><strong>Select all categories</strong></label>
+            </div>
+            {% for cat in categories %}
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="cat-{{ loop.index }}" name="categories" type="checkbox" value="{{ cat }}">
+                <label class="govuk-label govuk-checkboxes__label" for="cat-{{ loop.index }}">{{ cat }}</label>
+              </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+      </div>
+      <button class="govuk-button" data-module="govuk-button">Continue</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const selectAll = document.getElementById('cat-all');
+    const checkboxes = document.querySelectorAll('input[name="categories"]');
+    if (selectAll) {
+      selectAll.addEventListener('change', function () {
+        checkboxes.forEach(cb => {
+          cb.checked = selectAll.checked;
+        });
+      });
+    }
+  });
+</script>
+{% endblock %}

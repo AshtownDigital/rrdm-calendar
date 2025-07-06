@@ -1,0 +1,52 @@
+{# Submission section #}
+<h2 class="govuk-heading-l">Submission</h2>
+<div class="app-card govuk-!-margin-bottom-6">
+  <dl class="govuk-summary-list govuk-summary-list--no-border">
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Record number</dt><dd class="govuk-summary-list__value">{{ submission.recordNumber }}</dd></div>
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Submission code</dt><dd class="govuk-summary-list__value">{{ submission.submissionCode }}</dd></div>
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Status</dt><dd class="govuk-summary-list__value">
+      {% set statusClass = 'govuk-tag--blue' %}
+      {% if submission.status %}
+        {% if submission.status | lower == 'approved' %}{% set statusClass = 'govuk-tag--green' %}
+        {% elif submission.status | lower == 'rejected' %}{% set statusClass = 'govuk-tag--red' %}
+        {% elif submission.status | lower == 'pending' %}{% set statusClass = 'govuk-tag--yellow' %}
+        {% endif %}
+      {% endif %}
+      <strong class="govuk-tag {{ statusClass }}">{{ submission.status or 'Pending' }}</strong>
+    </dd></div>
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Urgency level</dt><dd class="govuk-summary-list__value">{{ submission.urgencyLevel }}</dd></div>
+    {% if submission.otherUrgencyDescription %}
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Other urgency description</dt><dd class="govuk-summary-list__value">{{ submission.otherUrgencyDescription }}</dd></div>
+    {% endif %}
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Brief description</dt><dd class="govuk-summary-list__value">{{ submission.briefDescription }}</dd></div>
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Justification</dt><dd class="govuk-summary-list__value">{{ submission.justification }}</dd></div>
+    {% if submission.additionalNotes %}
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Additional notes</dt><dd class="govuk-summary-list__value">{{ submission.additionalNotes }}</dd></div>
+    {% endif %}
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Declaration</dt><dd class="govuk-summary-list__value">{{ submission.declaration }}</dd></div>
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Impact areas</dt><dd class="govuk-summary-list__value">
+      {% if (submission.impactAreas | default([]) | length) %}
+      <div class="overflow-auto">
+        <ul class="govuk-list govuk-list--bullet">
+          {% for area in submission.impactAreas %}<li>{{ area }}</li>{% endfor %}
+        </ul>
+      </div>
+      {% else %}—{% endif %}
+    </dd></div>
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Technical dependencies</dt><dd class="govuk-summary-list__value">{{ submission.technicalDependencies or '—' }}</dd></div>
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Attachments</dt><dd class="govuk-summary-list__value">
+      {% if (submission.attachments | default([]) | length) %}
+      <ul class="govuk-list govuk-list--bullet">
+        {% for f in submission.attachments %}<li><a href="{{ f.url }}" class="govuk-link">{{ f.filename or 'File' }}</a></li>{% endfor %}
+      </ul>
+      {% else %}—{% endif %}
+    </dd></div>
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Related documents</dt><dd class="govuk-summary-list__value">
+      {% if (submission.relatedDocuments | default([]) | length) %}
+      <ul class="govuk-list govuk-list--bullet">
+        {% for d in submission.relatedDocuments %}<li><a href="{{ d.url }}" class="govuk-link">{{ d.title or 'Document' }}</a></li>{% endfor %}
+      </ul>
+      {% else %}—{% endif %}
+    </dd></div>
+  </dl>
+</div>

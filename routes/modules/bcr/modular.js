@@ -31,8 +31,8 @@ router.get('/workflow-progress/:id', workflowController.viewWorkflowProgress);
 router.post('/workflow-progress/:id', ensureAuthenticated, workflowController.updateWorkflowStatus);
 
 // Submission routes
-router.get('/submissions/new', submissionController.newSubmissionForm);
-router.post('/submissions/new', submissionController.createSubmission);
+
+
 router.get('/submissions', submissionController.listSubmissions);
 router.get('/submissions/:id', submissionController.viewSubmission);
 router.get('/submissions/:id/edit', ensureAuthenticated, submissionController.editSubmissionForm);

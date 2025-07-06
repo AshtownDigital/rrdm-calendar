@@ -9,33 +9,45 @@
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-xl">New Impact Area</h1>
       
-      <form action="/bcr/impacted-areas" method="post" class="govuk-form">
+      {% if errors %}
+  <div class="govuk-error-summary" data-module="govuk-error-summary">
+    <div role="alert">
+      <h2 class="govuk-error-summary__title">There is a problem</h2>
+      <div class="govuk-error-summary__body">
+        <ul class="govuk-list govuk-error-summary__list">
+          {% for field, msg in errors %}
+            <li><a href="#{{ field }}">{{ msg }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+{% endif %}
+{% if errors.name == 'An impact area with this name already exists' %}
+  <div class="govuk-inset-text govuk-!-margin-bottom-4">
+    {{ errors.name }}
+  </div>
+{% endif %}
+<form action="/bcr/impact-areas/new" method="post" class="govuk-form">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <div class="govuk-form-group">
           <label class="govuk-label govuk-label--m" for="name">
             Name
           </label>
-          <input class="govuk-input" id="name" name="name" type="text" required>
+          {% if errors.name %}<span class="govuk-error-message">{{ errors.name }}</span>{% endif %}
+          <input class="govuk-input{% if errors.name %} govuk-input--error{% endif %}" id="name" name="name" type="text" value="{{ formData.name }}" required>
         </div>
 
         <div class="govuk-form-group">
           <label class="govuk-label govuk-label--m" for="description">
             Description
           </label>
-          <textarea class="govuk-textarea" id="description" name="description" rows="5"></textarea>
+          <textarea class="govuk-textarea" id="description" name="description" rows="5">{{ formData.description }}</textarea>
         </div>
 
-        <div class="govuk-form-group">
-          <label class="govuk-label govuk-label--m" for="displayOrder">
-            Display Order
-          </label>
-          <input class="govuk-input govuk-input--width-5" id="displayOrder" name="displayOrder" type="number" value="10">
-          <div class="govuk-hint">
-            Lower numbers appear first in lists
-          </div>
-        </div>
 
         <button type="submit" class="govuk-button">Create Impact Area</button>
-        <a href="/bcr/impacted-areas" class="govuk-button govuk-button--secondary">Cancel</a>
+        <a href="/bcr/impact-areas" class="govuk-button govuk-button--secondary">Cancel</a>
       </form>
     </div>
   </div>

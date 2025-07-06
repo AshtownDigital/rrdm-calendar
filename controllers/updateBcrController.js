@@ -10,7 +10,7 @@ const phaseRulesService = require('../../../services/modules/bcr/phaseRulesServi
 const releaseService = require('../../../services/releaseService');
 
 // Ensure models are registered
-require('../../../models');
+require('../models');
 
 /**
  * Render the workflow update form

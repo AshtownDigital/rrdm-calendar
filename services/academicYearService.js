@@ -797,6 +797,18 @@ function getMockAcademicYears() {
   return [];
 }
 
+// Check if an academic year starting with given year exists (real DB or mock)
+async function existsAcademicYearStarting(year) {
+  if (USE_MOCK_DATA) {
+    return mockAcademicYears.some(y => {
+      const start = new Date(y.startDate).getUTCFullYear();
+      return start === year;
+    });
+  }
+  const startDate = new Date(Date.UTC(year, 8, 1)); // 1 Sept
+  return await AcademicYear.exists({ startDate });
+}
+
 module.exports = {
   createAcademicYear,
   listAcademicYears,
@@ -809,4 +821,5 @@ module.exports = {
   getNextAcademicYearStart,
   deleteAllAcademicYears,
   getMockAcademicYears,
+  existsAcademicYearStarting,
 };

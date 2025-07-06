@@ -77,7 +77,7 @@ res.render('modules/bcr/[subfolder]/[template]', { ... });
 
 For example:
 ```javascript
-res.render('modules/bcr/submissions/list', { ... });
+res.render('modules/submissions/list', { ... });
 res.render('modules/bcr/bcrs/details', { ... });
 res.render('modules/bcr/workflow/index', { ... });
 ```

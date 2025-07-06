@@ -2,8 +2,15 @@ console.log('<<<<< Current NODE_ENV is:', process.env.NODE_ENV, '>>>>>');/**
  * Clean server.js for RRDM application
  * Updated to use MongoDB instead of Prisma
  */
+
+// Pre-load all Mongoose models before anything else
+const preloadModels = require('./preload-models');
+preloadModels.ensureAllModelsLoaded();
+
 const express = require('express');
 const app = express();
+// Track Mongo connection status for views
+app.locals.mongoConnected = false;
 
 // VERY EARLY REQUEST LOGGER - Placed immediately after app instantiation
 app.use((req, res, next) => {
@@ -15,17 +22,66 @@ const nunjucks = require('nunjucks');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const { connect, mongoose } = require('./config/database.mongo');
-const { setupMockMongoose } = require('./config/mockMongoose');
 
-// Determine if we should initialise mock MongoDB
-const SHOULD_USE_MOCK_DB = (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') && process.env.BYPASS_MOCK !== 'true';
 
-// EARLY MOCK SETUP FOR DEVELOPMENT/TEST ENVIRONMENTS
-if (SHOULD_USE_MOCK_DB) {
-  console.log('DEVELOPMENT/TEST MODE: Initializing Mongoose mocks EARLY...');
-  setupMockMongoose(); // This patches mongoose.model and sets up mock connection
-  console.log('DEVELOPMENT/TEST MODE: Mongoose mocks initialized EARLY.');
-}
+
+// URL pattern validator to prevent malformed URLs
+const validateUrlPattern = (pattern) => {
+  if (!pattern || typeof pattern !== 'string') {
+    throw new TypeError('URL pattern must be a non-empty string');
+  }
+  // Check for malformed patterns that might cause path-to-regexp errors
+  if (pattern.includes('://') || pattern.includes('..')) {
+    throw new TypeError(`Invalid URL pattern: ${pattern}`);
+  }
+  return pattern.replace(/\/+/g, '/'); // Normalize multiple slashes
+};
+
+// Static file serving middleware with proper error handling
+const serveStaticWithFallback = (urlPath, filePath) => {
+  const validatedPath = validateUrlPattern(urlPath);
+  return (req, res, next) => {
+    // Validate the request URL
+    if (req.url.includes('://') || req.url.includes('..')) {
+      return next(new TypeError('Invalid request URL'));
+    }
+    const fullPath = path.join(__dirname, filePath);
+    res.sendFile(fullPath, (err) => {
+      if (err && err.code === 'ENOENT') {
+        // File not found, continue to next middleware
+        next();
+      } else if (err) {
+        // Other errors, send to error handler
+        next(err);
+      }
+    });
+  };
+};
+
+// --- STATIC ASSET MIDDLEWARE (must be before any session/auth middleware) ---
+app.use('/assets', express.static(path.join(__dirname, 'node_modules/govuk-frontend/govuk/assets'), { fallthrough: true, index: false }));
+app.use('/govuk-frontend/dist/govuk', express.static(path.join(__dirname, 'node_modules/govuk-frontend/dist/govuk'), { fallthrough: true, index: false }));
+app.use('/stylesheets', express.static(path.join(__dirname, 'public/stylesheets'), { fallthrough: true, index: false }));
+app.use('/assets/images', express.static(path.join(__dirname, 'public/images'), { fallthrough: true, index: false }));
+app.use('/scripts', express.static(path.join(__dirname, 'public/scripts')));
+app.use('/govuk-frontend', express.static(path.join(__dirname, 'node_modules/govuk-frontend')));
+app.use('/assets/manifest.json', serveStaticWithFallback('/assets/manifest.json', 'public/assets/manifest.json'));
+app.use(express.static(path.join(__dirname, 'public')));
+// --- END STATIC ASSET MIDDLEWARE ---
+
+// Update connection status on mongoose events
+mongoose.connection.on('connected', () => {
+  app.locals.mongoConnected = true;
+});
+mongoose.connection.on('disconnected', () => {
+  app.locals.mongoConnected = false;
+});
+mongoose.connection.on('error', () => {
+  app.locals.mongoConnected = false;
+});
+// Mock DB removed – always use real MongoDB
+
+
 
 const flash = require('connect-flash');
 const compression = require('compression');
@@ -55,6 +111,9 @@ const homeRouter = require('./routes/modules/home/routes');
 // Funding module routes
 const fundingRouter = require('./routes/modules/funding/routes');
 
+// Data Gem module routes
+const dataGemRouter = require('./routes/modules/data-gem/routes');
+
 // Academic Year module routes
 const academicYearRouter = require('./routes/academicYearRoutes');
 const { updateAcademicYearStatuses } = require('./services/academicYearService'); // Added for one-time status update
@@ -63,35 +122,30 @@ const releaseRoutes = require('./routes/releaseRoutes'); // Added for Release Di
 // View routes (for rendering Nunjucks templates)
 const viewRoutes = require('./routes/viewRoutes');
 const debugRoutes = require('./routes/debugRoutes'); // Debug routes for testing
+const testRoutes = require('./routes/test-routes'); // Test routes for layout testing
 
 // Note: Legacy modules have been removed as part of modularization
 
 // Load environment variables
 require('dotenv').config();
 
-// Connect to MongoDB with automatic reconnection - BYPASSED FOR TESTING
+// Connect to MongoDB with automatic reconnection
 const connectWithRetry = async () => {
-  if (SHOULD_USE_MOCK_DB) {
-    console.log('DEVELOPMENT/TEST MODE: Mock MongoDB connection should already be established by early setup.');
-    // setupMockMongoose() was called earlier, so mongoose.connection is already mocked.
-    // We can verify readyState if needed: console.log('Mongoose connection readyState:', mongoose.connection.readyState);
+  console.log('Connecting to local MongoDB...');
+  try {
+    await connect();
+    console.log('Connected to MongoDB successfully');
     return true;
-  } else {
-    // Real connection logic for production would go here
-    console.log('PRODUCTION MODE: Connecting to real MongoDB');
-    try {
-      await connect();
-      console.log('Connected to MongoDB successfully');
-      return true;
-    } catch (error) {
-      console.error('MongoDB connection failed:', error);
-      return false;
-    }
+  } catch (error) {
+    console.error('MongoDB connection failed:', error);
+    return false;
   }
 };
 
 // Initial connection attempt
-connectWithRetry();
+connectWithRetry().then((success)=>{
+  app.locals.mongoConnected = !!success;
+});
 
 // Configure session middleware with memory store for testing purposes
 // const MongoStore = require('connect-mongo');
@@ -104,6 +158,13 @@ app.use(cookieParser(process.env.SESSION_SECRET || 'your-secret-key'));
 app.use(express.urlencoded({ extended: false }));
 // Middleware to parse JSON bodies (as sent by API clients)
 app.use(express.json());
+
+// ---- Connection status middleware (placed EARLY so all downstream routes can use it) ----
+app.use((req, res, next) => {
+  // readyState 1 === connected
+  res.locals.mongoConnected = (mongoose.connection.readyState === 1);
+  next();
+});
 
 // TESTING MODE: Using in-memory session store instead of MongoDB
 console.log('TESTING MODE: Using in-memory session store');
@@ -124,10 +185,24 @@ app.use(session({
 // Flash messages middleware - should be after session middleware
 app.use(flash());
 
+// Register login routes first (public)
+const loginRouter = require('./routes/login');
+app.use(loginRouter);
+
+// Make authentication status available to all templates
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = !!(req.session && req.session.authenticated);
+  next();
+});
+
+// PIN auth middleware – protect subsequent routes
+const pinAuth = require('./middleware/pinAuth');
+app.use(pinAuth);
+
 // Configure Nunjucks view engine
 const env = nunjucks.configure([
   path.join(__dirname, 'views'),
-  path.join(__dirname, 'node_modules', 'govuk-frontend')
+  path.join(__dirname, 'node_modules', 'govuk-frontend', 'dist')
 ], {
   autoescape: true,
   express: app,
@@ -139,7 +214,7 @@ const env = nunjucks.configure([
 app.set('view engine', 'njk');
 app.set('views', [
   path.join(__dirname, 'views'),
-  path.join(__dirname, 'node_modules', 'govuk-frontend')
+  path.join(__dirname, 'node_modules', 'govuk-frontend', 'dist')
 ]);
 
 // Add custom filters
@@ -198,6 +273,48 @@ env.addFilter('date', function(date, format) {
   return dateObj.toISOString(); // Fallback for unhandled formats
 });
 
+// Disable Express view caching in development to ensure templates are always fresh
+if (process.env.NODE_ENV !== 'production') {
+  app.set('view cache', false);
+  // Temporary debugging route to inspect the runtime version of view.njk around the reported error lines
+  app.get('/__debug_template', (req, res) => {
+    try {
+      // Render with dummy context to ensure template compiles even if it expects variables
+      env.render('bcr/submissions/view.njk', {
+        submission: {}, bcr: {}, workflow: {},
+        phases: [], statuses: [], submissionDates: []
+      });
+      const tpl = env.getTemplate('bcr/submissions/view.njk');
+      const snippet = tpl.src.split('\n').slice(60, 90).join('\n');
+      res.type('text/plain').send(snippet);
+    } catch (e) {
+      res.status(500).send('Still cannot load template: ' + e.message);
+    }
+  });
+}
+
+// StartsWith filter for strings
+env.addFilter('startsWith', function(str, prefix) {
+  return typeof str === 'string' && str.startsWith(prefix);
+});
+
+// Simple map filter similar to Django's map: returns array of property values
+env.addFilter('map', function(arr, attribute) {
+  if (!Array.isArray(arr)) return [];
+  return arr.map(item => (item && attribute in item) ? item[attribute] : undefined);
+});
+
+// Simple UK date filter (DD/MM/YYYY)
+env.addFilter('ukDate', function(date) {
+  if (!date) return '';
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  if (!(dateObj instanceof Date) || isNaN(dateObj.getTime())) return date;
+  const day = dateObj.getDate().toString().padStart(2, '0');
+  const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+  const year = dateObj.getFullYear();
+  return `${day}/${month}/${year}`;
+});
+
 env.addFilter('ukDateWithDay', function(date) {
   if (!date) return '';
   
@@ -231,39 +348,9 @@ app.get('/', (req, res) => {
   });
 });
 
-// URL pattern validator to prevent malformed URLs
-const validateUrlPattern = (pattern) => {
-  if (!pattern || typeof pattern !== 'string') {
-    throw new TypeError('URL pattern must be a non-empty string');
-  }
-  // Check for malformed patterns that might cause path-to-regexp errors
-  if (pattern.includes('://') || pattern.includes('..')) {
-    throw new TypeError(`Invalid URL pattern: ${pattern}`);
-  }
-  return pattern.replace(/\/+/g, '/'); // Normalize multiple slashes
-};
 
-// Static file serving middleware with proper error handling
-const serveStaticWithFallback = (urlPath, filePath) => {
-  const validatedPath = validateUrlPattern(urlPath);
-  return (req, res, next) => {
-    // Validate the request URL
-    if (req.url.includes('://') || req.url.includes('..')) {
-      return next(new TypeError('Invalid request URL'));
-    }
 
-    const fullPath = path.join(__dirname, filePath);
-    res.sendFile(fullPath, (err) => {
-      if (err && err.code === 'ENOENT') {
-        // File not found, continue to next middleware
-        next();
-      } else if (err) {
-        // Other errors, send to error handler
-        next(err);
-      }
-    });
-  };
-};
+
 
 // GOV.UK Frontend assets with validated paths
 app.use('/assets', express.static(path.join(__dirname, 'node_modules/govuk-frontend/govuk/assets'), {
@@ -336,11 +423,14 @@ app.use((req, res, next) => {
   next();
 });
 
-// Pass user info to all views
+// Pass connection status & user info to all views
 app.use((req, res, next) => {
+  // Use live connection state instead of cached app.locals value
+  res.locals.mongoConnected = (mongoose.connection.readyState === 1);
   res.locals.user = req.user;
   next();
 });
+
 
 // === CORE ROUTES ===
 // Add debug wrapper for routers to identify undefined routes
@@ -485,12 +575,25 @@ app.use('/api/v1/academic-years', wrapRouter('academicYearApi', academicYearRout
 app.use('/api/academic-years', wrapRouter('academicYearApiAlias', academicYearRouter));
 app.use('/api/v1/release-management', wrapRouter('releaseApi', releaseRoutes));
 
-// Debug routes for testing calendar (no authentication required)
+// Debug route to get DB connection status
+app.get('/debug/dbstatus', (req, res) => {
+  const statusMap = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
+  return res.json({ readyState: mongoose.connection.readyState, status: statusMap[mongoose.connection.readyState] || 'unknown' });
+});
+
+// Debug routes for testing (no authentication required)
 app.use('/debug', debugRoutes);
+
+// Test routes for layout testing
+app.use('/', testRoutes);
 
 // Register module-specific routes with prefixes
 // BCR Module - preserves all BCR functionality including workflows, urgency levels, and impact areas
 app.use('/bcr', wrapRouter('bcr', bcrRouter));
+
+// Submissions Module - standalone
+const submissionsRouter = require('./routes/submissions');
+app.use('/submissions', wrapRouter('submissions', submissionsRouter));
 
 // Reference Data Module
 app.use('/reference-data', wrapRouter('reference-data', refDataRouter));
@@ -500,6 +603,9 @@ app.use('/dashboard', wrapRouter('dashboard', dashboardRouter));
 
 // Access Module
 app.use('/access', wrapRouter('access', accessRouter));
+
+// Data Gem Module
+app.use('/data-gem', wrapRouter('data-gem', dataGemRouter));
 
 // === Supporting Modules ===
 app.use('/funding', wrapRouter('funding', fundingRouter));

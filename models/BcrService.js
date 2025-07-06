@@ -11,6 +11,19 @@ const BcrConfig = require('./BcrConfig');
 const User = require('./User');
 const Phase = require('./Phase');
 const Status = require('./Status');
+const ImpactArea = require('./ImpactArea');
+
+// Impact Area Enum (legacy list)
+const IMPACT_AREA_ENUM = [
+  'API',
+  'Backend',
+  'CSV',
+  'Documentation & Guidance',
+  'Frontend',
+  'Funding',
+  'Policy',
+  'Reference Data'
+];
 
 // Helper function to get a status tag for display based on submission status
 const getSubmissionStatusTag = (submission) => {
@@ -208,31 +221,8 @@ exports.createSubmission = async (submissionData) => {
  * Get all impact areas from BcrConfig
  */
 exports.getAllImpactAreas = async () => {
-  try {
-    // Check if the collection exists and has documents
-    const collectionExists = mongoose.connection.readyState === 1;
-    
-    if (!collectionExists) {
-      console.warn('MongoDB connection not ready when querying impact areas');
-      return []; // Return empty array instead of failing
-    }
-    
-    // Set a timeout for the query
-    const impactAreas = await BcrConfig.find({
-      type: 'impactArea',
-      deleted: { $ne: true }
-    })
-      .sort({ displayOrder: 1 })
-      .maxTimeMS(5000) // Set a 5-second timeout for this query
-      .exec();
-    
-    return impactAreas || [];
-  } catch (error) {
-    console.error('Error in getAllImpactAreas:', error);
-    // Return empty array instead of throwing error
-    console.warn('Returning empty impact areas array due to error');
-    return [];
-  }
+  // Return enum list as objects { id, name }
+  return IMPACT_AREA_ENUM.map((name, idx) => ({ _id: idx, name }));
 };
 
 /**
@@ -345,10 +335,7 @@ exports.getConfigById = async (id) => {
  */
 exports.createImpactArea = async (impactAreaData) => {
   try {
-    const impactArea = new BcrConfig({
-      ...impactAreaData,
-      type: 'impactArea' // Ensure correct type
-    });
+    const impactArea = new ImpactArea(impactAreaData);
     await impactArea.save();
     return impactArea;
   } catch (error) {
@@ -360,15 +347,16 @@ exports.createImpactArea = async (impactAreaData) => {
 /**
  * Update a config item (impact area or urgency level)
  */
+// Update impact area (or other config). If the document exists in ImpactArea, update there; otherwise fall back to BcrConfig.
 exports.updateConfig = async (id, configData) => {
   try {
-    const config = await BcrConfig.findByIdAndUpdate(
-      id,
-      configData,
-      { new: true }
-    ).exec();
-    
-    return config;
+    // Try updating in ImpactArea collection first
+    let updated = await ImpactArea.findByIdAndUpdate(id, configData, { new: true }).exec();
+    if (updated) return updated;
+
+    // Fallback to legacy BcrConfig (for non-impact-area types still using it)
+    updated = await BcrConfig.findByIdAndUpdate(id, configData, { new: true }).exec();
+    return updated;
   } catch (error) {
     console.error('Error in updateConfig:', error);
     throw error;
@@ -380,14 +368,13 @@ exports.updateConfig = async (id, configData) => {
  */
 exports.deleteConfig = async (id) => {
   try {
-    // Soft delete
-    const config = await BcrConfig.findByIdAndUpdate(
-      id,
-      { deleted: true },
-      { new: true }
-    ).exec();
-    
-    return config;
+    // Hard delete from ImpactArea first
+    let deleted = await ImpactArea.findByIdAndDelete(id).exec();
+    if (deleted) return deleted;
+
+    // Soft delete legacy config as fallback
+    deleted = await BcrConfig.findByIdAndUpdate(id, { deleted: true }, { new: true }).exec();
+    return deleted;
   } catch (error) {
     console.error('Error in deleteConfig:', error);
     throw error;

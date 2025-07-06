@@ -54,23 +54,13 @@ const SubmissionSchema = new Schema({
     type: String,
     // Only required if urgencyLevel is 'Other'
   },
-  impactAreas: {
-    type: [String],
-    required: true
-  },
-  affectedReferenceDataArea: {
-    type: String
-  },
+  impactAreas: [{ type: String }],
+  affectedReferenceData: [{ type: String }],
   technicalDependencies: {
     type: String
   },
-  relatedDocuments: {
-    type: String
-  },
-  attachments: {
-    type: String,
-    required: true
-  },
+  relatedDocuments: [{ type: Schema.Types.ObjectId, ref: 'RelatedDocument' }],
+  attachments: [{ type: Schema.Types.ObjectId, ref: 'Attachment' }],
   additionalNotes: {
     type: String
   },

@@ -120,7 +120,7 @@
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-one-third">
-    <a href="/bcr/submissions?status=pending" class="app-card-link">
+    <a href="/submissions?status=pending" class="app-card-link">
       <div class="app-card app-card--blue">
         <h2 class="govuk-heading-m">{{ stats.pending }}</h2>
         <p class="govuk-body">Pending Submissions</p>
@@ -129,7 +129,7 @@
     </a>
   </div>
   <div class="govuk-grid-column-one-third">
-    <a href="/bcr/submissions?status=approved" class="app-card-link">
+    <a href="/submissions?status=approved" class="app-card-link">
       <div class="app-card app-card--green">
         <h2 class="govuk-heading-m">{{ stats.approved }}</h2>
         <p class="govuk-body">Approved Submissions</p>
@@ -138,7 +138,7 @@
     </a>
   </div>
   <div class="govuk-grid-column-one-third">
-    <a href="/bcr/submissions?status=rejected" class="app-card-link">
+    <a href="/submissions?status=rejected" class="app-card-link">
       <div class="app-card app-card--red">
         <h2 class="govuk-heading-m">{{ stats.rejected }}</h2>
         <p class="govuk-body">Rejected Submissions</p>
@@ -150,7 +150,7 @@
 
 <div class="govuk-grid-row govuk-!-margin-top-4">
   <div class="govuk-grid-column-one-third">
-    <a href="/bcr/submissions?status=in%20review" class="app-card-link">
+    <a href="/submissions?status=in%20review" class="app-card-link">
       <div class="app-card app-card--purple">
         <h2 class="govuk-heading-m">{% if phases['In Review'] %}{{ phases['In Review'] }}{% else %}0{% endif %}</h2>
         <p class="govuk-body">In Review</p>
@@ -159,7 +159,7 @@
     </a>
   </div>
   <div class="govuk-grid-column-one-third">
-    <a href="/bcr/submissions?status=implementation" class="app-card-link">
+    <a href="/submissions?status=implementation" class="app-card-link">
       <div class="app-card app-card--orange">
         <h2 class="govuk-heading-m">{% if phases['Implementation'] %}{{ phases['Implementation'] }}{% else %}0{% endif %}</h2>
         <p class="govuk-body">In Implementation</p>
@@ -168,7 +168,7 @@
     </a>
   </div>
   <div class="govuk-grid-column-one-third">
-    <a href="/bcr/submissions?status=completed" class="app-card-link">
+    <a href="/submissions?status=completed" class="app-card-link">
       <div class="app-card app-card--turquoise">
         <h2 class="govuk-heading-m">{{ stats.implemented }}</h2>
         <p class="govuk-body">Completed</p>
@@ -195,7 +195,7 @@
     </a>
   </div>
   <div class="govuk-grid-column-one-third">
-    <a href="/bcr/submissions" class="app-card-link">
+    <a href="/submissions" class="app-card-link">
       <div class="app-card app-card--turquoise">
         <h2 class="govuk-heading-m">View Submissions</h2>
         <p class="govuk-body">Browse and search all submissions.</p>
@@ -298,7 +298,7 @@
               </td>
               <td class="govuk-table__cell">{{ bcr.createdAt }}</td>
               <td class="govuk-table__cell">
-                <a href="/bcr/submissions/{{ bcr.id }}" class="govuk-link">View</a>
+                <a href="/submissions/{{ bcr.id }}" class="govuk-link">View</a>
               </td>
             </tr>
           {% endfor %}

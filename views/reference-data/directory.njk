@@ -1,0 +1,257 @@
+{% extends "layouts/base.njk" %}
+
+{% block pageTitle %}
+  Reference Data Directory | RD Internal Services
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Reference Data Directory</h1>
+    <p class="govuk-body-l">Comprehensive listing of all reference data categories</p>
+    <a href="/reference-data/export-directory/select" class="govuk-button" data-module="govuk-button">
+      Export to Excel
+      <span class="govuk-visually-hidden">Export reference data directory to Excel workbook</span>
+    </a>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          Filter by:
+        </legend>
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-one-quarter">
+            <label class="govuk-label" for="filter-field">Register Field Name</label>
+            <select class="govuk-select" id="filter-field">
+              <option value="">All fields</option>
+              {% set fields = [] %}
+              {% for item in items %}
+                {% if item.fieldName not in fields %}
+                  {% set fields = (fields.push(item.fieldName), fields) %}
+                {% endif %}
+              {% endfor %}
+              {% for field in fields | sort %}
+                <option value="{{ field }}">{{ field }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="govuk-grid-column-one-quarter">
+            <label class="govuk-label" for="filter-status">Status</label>
+            <select class="govuk-select" id="filter-status">
+              <option value="">All statuses</option>
+              <option value="new">New</option>
+              <option value="removed">Removed</option>
+              <option value="no-change">No Change</option>
+            </select>
+          </div>
+          <div class="govuk-grid-column-one-quarter">
+            <label class="govuk-label" for="filter-text">Search</label>
+            <input class="govuk-input" id="filter-text" type="text" placeholder="Search in code or label">
+          </div>
+          <div class="govuk-grid-column-one-quarter" style="margin-top: 25px;">
+            <button class="govuk-button" id="clear-filters">Clear Filters</button>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="govuk-inset-text" id="results-count">
+      Showing <span id="filtered-count">{{ items.length }}</span> of <span id="total-count">{{ items.length }}</span> items
+    </div>
+    <table class="govuk-table" id="directory-table">
+      <caption class="govuk-table__caption govuk-table__caption--m">Reference Data Fields</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header govuk-table__header--text-align-left sortable" data-sort="fieldName">Register Field Name</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--text-align-left">CSV Field Name</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--text-align-left">API Field Name</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--text-align-left">HESA Alignment</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--text-align-left sortable" data-sort="code">Code</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--text-align-left sortable" data-sort="label">Label</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--text-align-left sortable" data-sort="academicYear">Academic Year</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--text-align-left sortable" data-sort="status">Status</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for item in items %}
+        <tr class="govuk-table__row" data-field="{{ item.fieldName }}" data-status="{{ item.status }}">
+          <td class="govuk-table__cell">{{ item.fieldName }}</td>
+          <td class="govuk-table__cell">
+            {% for mapping in fieldMappings %}
+              {% if mapping.registerFieldName == item.fieldName %}
+                {{ mapping.csvFieldName }}
+              {% endif %}
+            {% endfor %}
+          </td>
+          <td class="govuk-table__cell">
+            {% for mapping in fieldMappings %}
+              {% if mapping.registerFieldName == item.fieldName %}
+                {{ mapping.apiFieldName }}
+              {% endif %}
+            {% endfor %}
+          </td>
+          <td class="govuk-table__cell">
+            {% for key, value in hesaMapping %}
+              {% if value.split(',')[0].trim() == item.fieldName %}
+                {{ key }}
+              {% endif %}
+            {% endfor %}
+          </td>
+          <td class="govuk-table__cell">{{ item.code }}</td>
+          <td class="govuk-table__cell">{{ item.label }}</td>
+          <td class="govuk-table__cell">{{ item.academicYear }}</td>
+          <td class="govuk-table__cell">
+            {% if item.status == 'new' %}
+            <strong class="govuk-tag govuk-tag--green">
+              New
+            </strong>
+            {% elif item.status == 'removed' %}
+            <strong class="govuk-tag govuk-tag--red">
+              Removed
+            </strong>
+            {% else %}
+            <strong class="govuk-tag govuk-tag--grey">
+              No change
+            </strong>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const table = document.getElementById('directory-table');
+    const rows = Array.from(table.querySelectorAll('tbody tr'));
+    const fieldFilter = document.getElementById('filter-field');
+    const statusFilter = document.getElementById('filter-status');
+    const textFilter = document.getElementById('filter-text');
+    const clearButton = document.getElementById('clear-filters');
+    const sortableHeaders = document.querySelectorAll('.sortable');
+    
+    // Add sort indicators to headers
+    sortableHeaders.forEach(header => {
+      header.style.cursor = 'pointer';
+      header.innerHTML += ' <span class="sort-indicator"></span>';
+      header.addEventListener('click', () => sortTable(header));
+    });
+    
+    // Current sort state
+    let currentSort = {
+      column: null,
+      direction: 'asc'
+    };
+    
+    function sortTable(header) {
+      const column = header.dataset.sort;
+      const indicators = document.querySelectorAll('.sort-indicator');
+      
+      // Reset all indicators
+      indicators.forEach(ind => ind.textContent = '');
+      
+      // Update sort direction
+      if (currentSort.column === column) {
+        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSort.column = column;
+        currentSort.direction = 'asc';
+      }
+      
+      // Show indicator
+      const indicator = header.querySelector('.sort-indicator');
+      indicator.textContent = currentSort.direction === 'asc' ? ' ▲' : ' ▼';
+      
+      // Sort rows
+      rows.sort((a, b) => {
+        let valueA, valueB;
+        
+        if (column === 'status') {
+          valueA = a.querySelector('td:nth-child(5) strong').textContent.trim();
+          valueB = b.querySelector('td:nth-child(5) strong').textContent.trim();
+        } else {
+          const colIndex = ['fieldName', 'code', 'label', 'academicYear'].indexOf(column);
+          valueA = a.querySelector(`td:nth-child(${colIndex + 1})`).textContent.trim();
+          valueB = b.querySelector(`td:nth-child(${colIndex + 1})`).textContent.trim();
+        }
+        
+        if (currentSort.direction === 'asc') {
+          return valueA.localeCompare(valueB);
+        } else {
+          return valueB.localeCompare(valueA);
+        }
+      });
+      
+      // Reorder DOM
+      const tbody = table.querySelector('tbody');
+      rows.forEach(row => tbody.appendChild(row));
+      
+      // Apply filters after sorting
+      applyFilters();
+    }
+    
+    function applyFilters() {
+      const fieldValue = fieldFilter.value;
+      const statusValue = statusFilter.value;
+      const textValue = textFilter.value.toLowerCase();
+      let visibleCount = 0;
+      
+      rows.forEach(row => {
+        const rowField = row.getAttribute('data-field');
+        const rowStatus = row.getAttribute('data-status');
+        const rowCode = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+        const rowLabel = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+        
+        const fieldMatch = !fieldValue || rowField === fieldValue;
+        const statusMatch = !statusValue || rowStatus === statusValue;
+        const textMatch = !textValue || rowCode.includes(textValue) || rowLabel.includes(textValue);
+        
+        if (fieldMatch && statusMatch && textMatch) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+      
+      // Update the count display
+      document.getElementById('filtered-count').textContent = visibleCount;
+    }
+    
+    // Event listeners
+    fieldFilter.addEventListener('change', applyFilters);
+    statusFilter.addEventListener('change', applyFilters);
+    textFilter.addEventListener('input', applyFilters);
+    
+    clearButton.addEventListener('click', () => {
+      fieldFilter.value = '';
+      statusFilter.value = '';
+      textFilter.value = '';
+      applyFilters();
+    });
+    
+    // Initialize with all rows visible
+    applyFilters();
+  });
+</script>
+
+<style>
+  .sortable {
+    position: relative;
+    cursor: pointer;
+  }
+  .sortable:hover {
+    background-color: #f3f2f1;
+  }
+  .sort-indicator {
+    display: inline-block;
+    width: 10px;
+  }
+</style>
+{% endblock %}

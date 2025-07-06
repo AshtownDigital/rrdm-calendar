@@ -22,4 +22,8 @@ router.post('/:submissionId/edit', bcrController.updateSubmission);
 router.get('/:submissionId/review', reviewController.renderReviewForm);
 router.post('/:submissionId/review', reviewController.processReview);
 
+// Delete submission
+router.get('/:submissionId/delete', bcrController.deleteSubmissionConfirm);
+router.post('/:submissionId/delete', bcrController.deleteSubmission);
+
 module.exports = router;

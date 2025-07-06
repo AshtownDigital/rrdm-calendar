@@ -1,0 +1,196 @@
+# List of Nationalities
+- Afghan
+- Albanian
+- Algerian
+- American
+- Andorran
+- Angolan
+- Argentine
+- Armenian
+- Australian
+- Austrian
+- Azerbaijani
+- Bahamian
+- Bahraini
+- Bangladeshi
+- Barbadian
+- Belarusian
+- Belgian
+- Belizean
+- Beninese
+- Bhutanese
+- Bolivian
+- Bosnian
+- Botswanan
+- Brazilian
+- British
+- Bruneian
+- Bulgarian
+- Burkinan
+- Burmese
+- Burundian
+- Cambodian
+- Cameroonian
+- Canadian
+- Cape Verdean
+- Central African
+- Chadian
+- Chilean
+- Chinese
+- Colombian
+- Comoran
+- Congolese (Congo-Brazzaville)
+- Congolese (Congo-Kinshasa)
+- Costa Rican
+- Croatian
+- Cuban
+- Cypriot
+- Czech
+- Danish
+- Djiboutian
+- Dominican
+- Dutch
+- East Timorese
+- Ecuadorean
+- Egyptian
+- Emirati
+- Equatorial Guinean
+- Eritrean
+- Estonian
+- Ethiopian
+- Fijian
+- Finnish
+- French
+- Gabonese
+- Gambian
+- Georgian
+- German
+- Ghanaian
+- Greek
+- Grenadian
+- Guatemalan
+- Guinea-Bissauan
+- Guinean
+- Guyanese
+- Haitian
+- Honduran
+- Hungarian
+- Icelandic
+- Indian
+- Indonesian
+- Iranian
+- Iraqi
+- Irish
+- Israeli
+- Italian
+- Ivorian
+- Jamaican
+- Japanese
+- Jordanian
+- Kazakh
+- Kenyan
+- Kiribati
+- Kittitian
+- Kosovan
+- Kuwaiti
+- Kyrgyz
+- Laotian
+- Latvian
+- Lebanese
+- Liberian
+- Libyan
+- Liechtensteiner
+- Lithuanian
+- Luxembourger
+- Macedonian
+- Malagasy
+- Malawian
+- Malaysian
+- Maldivian
+- Malian
+- Maltese
+- Marshallese
+- Mauritanian
+- Mauritian
+- Mexican
+- Micronesian
+- Moldovan
+- Mongolian
+- Montenegrin
+- Monégasque
+- Moroccan
+- Mozambican
+- Namibian
+- Nauruan
+- Nepalese
+- New Zealander
+- Nicaraguan
+- Nigerian
+- Nigerien
+- North Korean
+- Norwegian
+- Omani
+- Pakistani
+- Palauan
+- Palestinian
+- Panamanian
+- Papua New Guinean
+- Paraguayan
+- Peruvian
+- Philippine
+- Polish
+- Portuguese
+- Qatari
+- Romanian
+- Russian
+- Rwandan
+- Saint Lucian
+- Salvadoran
+- Samoan
+- San Marinese
+- Sao Tomean
+- Saudi Arabian
+- Scottish
+- Senegalese
+- Serbian
+- Seychellois
+- Sierra Leonean
+- Singaporean
+- Slovak
+- Slovene
+- Solomon Islander
+- Somali
+- South African
+- South Korean
+- South Sudanese
+- Spanish
+- Sri Lankan
+- Sudanese
+- Surinamese
+- Swazi
+- Swedish
+- Swiss
+- Syrian
+- Taiwanese
+- Tajik
+- Tanzanian
+- Thai
+- Togolese
+- Tongan
+- Trinidadian
+- Tunisian
+- Turkish
+- Turkmen
+- Tuvaluan
+- Ugandan
+- Ukrainian
+- Uruguayan
+- Uzbek
+- Vanuatuan
+- Venezuelan
+- Vietnamese
+- Welsh
+- Yemeni
+- Zambian
+- Zimbabwean
+- Zulu

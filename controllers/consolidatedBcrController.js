@@ -302,6 +302,7 @@ exports.newSubmissionForm = async (req, res) => {
 /**
  * Create a new BCR submission
  */
+// Two-step create submission (with confirm flag)
 exports.createSubmission = async (req, res) => {
   try {
     moduleLogger.info('Creating new submission', { userId: req.user?.id });
@@ -309,7 +310,53 @@ exports.createSubmission = async (req, res) => {
     // Implementation of submission creation
     // This would include validation, saving to database, etc.
     
-    res.redirect('/bcr/submissions');
+        // --- Two-step flow ---
+    const { confirm } = req.body;
+    const isConfirm = confirm === 'yes';
+
+    // Basic validation example (extend as required)
+    const errors = {};
+    if (!req.body.briefDescription) {
+      errors.briefDescription = 'Brief description is required';
+    }
+
+    // Duplicate submissionCode check (case-insensitive)
+    let duplicate = null;
+    if (req.body.submissionCode) {
+      duplicate = await Submission.findOne({ submissionCode: { $regex: `^${req.body.submissionCode}$`, $options: 'i' } });
+    }
+    if (duplicate) {
+      errors.submissionCode = 'Submission code already exists';
+    }
+
+    if (Object.keys(errors).length && !isConfirm) {
+      return res.render('bcr/submissions/new', {
+        title: 'New BCR Submission',
+        errors,
+        formData: req.body,
+        csrfToken: req.csrfToken ? req.csrfToken() : '',
+        user: req.user
+      });
+    }
+
+    if (!isConfirm) {
+      // Show confirmation page before save
+      return res.render('bcr/submissions/create-check', {
+        title: 'Check Submission Details',
+        formData: req.body,
+        csrfToken: req.csrfToken ? req.csrfToken() : '',
+        user: req.user
+      });
+    }
+
+    // Save submission
+    const newSubmission = await Submission.create(req.body);
+
+    return res.render('bcr/submissions/create-confirmation', {
+      title: 'Submission Created',
+      submission: newSubmission,
+      user: req.user
+    });
   } catch (error) {
     moduleLogger.error('Error creating submission', error);
     res.status(500).render('error', {
@@ -365,16 +412,22 @@ exports.viewSubmission = async (req, res) => {
 exports.listImpactAreas = async (req, res) => {
   try {
     moduleLogger.info('Retrieving impact areas...');
-    const impactAreas = await ImpactedArea.find().sort({ name: 1 });
+    // If DB connection is not ready, return empty array instead of failing
+    const isDbConnected = mongoose.connection.readyState === 1;
+    let impactAreas = [];
+    if (isDbConnected) {
+      impactAreas = await ImpactedArea.find().sort({ name: 1 }).exec();
+    }
+    if (!Array.isArray(impactAreas)) {
+      impactAreas = [];
+    }
     moduleLogger.info(`Found ${impactAreas.length} impact areas`);
     
     // Map MongoDB document structure to template structure
     const mappedImpactAreas = impactAreas.map(area => ({
       id: area._id.toString(),
       name: area.name,
-      description: area.description || 'No description provided',
-      createdAt: area.createdAt,
-      updatedAt: area.updatedAt
+      description: area.description || ''
     }));
     
     res.render('bcr/impact-areas/list', {
@@ -421,32 +474,63 @@ exports.newImpactAreaForm = async (req, res) => {
  */
 exports.createImpactArea = async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, confirm } = req.body;
     moduleLogger.info(`Creating new impact area: ${name}`);
     
-    // Validate input
-    if (!name) {
+    // Trim and validate
+    const trimmedName = (name || '').trim();
+    const trimmedDesc = (description || '').trim();
+    const errors = {};
+    if (!trimmedName) {
+      errors.name = 'Name is required';
+    }
+    const isConfirm = confirm === 'yes';
+    // Duplicate name (case-insensitive)
+    const duplicate = await ImpactedArea.findOne({ name: { $regex: `^${trimmedName}$`, $options: 'i' } });
+    if (!isConfirm && duplicate) {
+      errors.name = 'An impact area with this name already exists';
+    }
+    if (Object.keys(errors).length) {
       return res.status(400).render('bcr/impact-areas/new', {
         title: 'New Impact Area',
-        error: 'Name is required',
-        formData: req.body,
+        errors,
+        formData: { name: trimmedName, description: trimmedDesc },
+        csrfToken: req.csrfToken ? req.csrfToken() : '',
+        user: req.user
+      });
+    }
+
+    // If not confirmed yet, show check page
+    if (!isConfirm) {
+      return res.render('bcr/impact-areas/create-check', {
+        title: 'Confirm new impact area',
+        formData: { name: trimmedName, description: trimmedDesc },
         csrfToken: req.csrfToken ? req.csrfToken() : '',
         user: req.user
       });
     }
     
-    // Create new impact area
-    const newImpactArea = new ImpactedArea({
-      name,
-      description,
-      createdAt: new Date(),
-      updatedAt: new Date()
+    // Create new impact area in a way that works for both real and mock mongoose models
+    let newImpactArea;
+    const data = { name: trimmedName, description: trimmedDesc, createdAt: new Date(), updatedAt: new Date() };
+    if (typeof ImpactedArea.create === 'function') {
+      // Mock model or mongoose model supports static create()
+      newImpactArea = await ImpactedArea.create(data);
+    } else if (typeof ImpactedArea === 'function') {
+      // Real mongoose model instance via constructor
+      newImpactArea = new ImpactedArea(data);
+      await newImpactArea.save();
+    } else {
+      throw new Error('ImpactedArea model is not properly configured');
+    }
+
+    moduleLogger.info(`Created new impact area with ID: ${newImpactArea._id || 'N/A'}`);
+    
+    return res.render('bcr/impact-areas/create-confirmation', {
+      title: 'Impact Area Created',
+      impactArea: newImpactArea,
+      user: req.user
     });
-    
-    await newImpactArea.save();
-    moduleLogger.info(`Created new impact area with ID: ${newImpactArea._id}`);
-    
-    res.redirect('/bcr/impact-areas');
   } catch (error) {
     moduleLogger.error('Error creating impact area', error);
     res.status(500).render('error', {
@@ -500,10 +584,44 @@ exports.editImpactAreaForm = async (req, res) => {
 exports.updateImpactArea = async (req, res) => {
   try {
     const { impactAreaId } = req.params;
-    const { name, description } = req.body;
+    const { name, description, confirm } = req.body;
     moduleLogger.info(`Updating impact area ${impactAreaId}`);
     
-    // Validate input
+    // Trim and validate
+    const trimmedName = (name || '').trim();
+    const trimmedDesc = (description || '').trim();
+    const isConfirm = confirm === 'yes';
+
+    const errors = {};
+    if (!trimmedName) {
+      errors.name = 'Name is required';
+    }
+    // Duplicate check (exclude current document)
+    const duplicate = await ImpactedArea.findOne({ _id: { $ne: impactAreaId }, name: { $regex: `^${trimmedName}$`, $options: 'i' } });
+    if (!isConfirm && duplicate) {
+      errors.name = 'An impact area with this name already exists';
+    }
+
+    if (Object.keys(errors).length) {
+      return res.status(400).render('bcr/impact-areas/edit', {
+        title: 'Edit Impact Area',
+        errors,
+        impactArea: { id: impactAreaId, name: trimmedName, description: trimmedDesc },
+        csrfToken: req.csrfToken ? req.csrfToken() : '',
+        user: req.user
+      });
+    }
+
+    // If not confirmed yet, show confirmation check page
+    if (!isConfirm) {
+      return res.render('bcr/impact-areas/edit-check', {
+        title: 'Confirm impact area changes',
+        impactAreaId,
+        formData: { name: trimmedName, description: trimmedDesc },
+        csrfToken: req.csrfToken ? req.csrfToken() : '',
+        user: req.user
+      });
+    }
     if (!name) {
       return res.status(400).render('bcr/impact-areas/edit', {
         title: 'Edit Impact Area',
@@ -514,7 +632,7 @@ exports.updateImpactArea = async (req, res) => {
       });
     }
     
-    // Update impact area
+    // Perform update
     const updatedImpactArea = await ImpactedArea.findByIdAndUpdate(
       impactAreaId,
       {
@@ -535,7 +653,11 @@ exports.updateImpactArea = async (req, res) => {
     }
     
     moduleLogger.info(`Updated impact area ${impactAreaId}`);
-    res.redirect('/bcr/impact-areas');
+    return res.render('bcr/impact-areas/edit-confirmation', {
+      title: 'Impact Area Updated',
+      impactArea: updatedImpactArea,
+      user: req.user
+    });
   } catch (error) {
     moduleLogger.error('Error updating impact area', error);
     res.status(500).render('error', {
@@ -639,6 +761,96 @@ exports.listWorkflowPhases = async (req, res) => {
       error: process.env.NODE_ENV === 'development' ? error : {},
       user: req.user
     });
+  }
+};
+
+// ===== SUBMISSION EDIT / DELETE =====
+
+/**
+ * Render edit submission form
+ */
+exports.editSubmissionForm = async (req, res) => {
+  try {
+    const { submissionId } = req.params;
+    const submission = await Submission.findById(submissionId);
+    if (!submission) {
+      return res.status(404).render('error', { title: 'Not Found', message: 'Submission not found', error: { status: 404 }, user: req.user });
+    }
+    res.render('bcr/submissions/edit', {
+      title: `Edit Submission ${submission.submissionCode || submission.recordNumber}`,
+      submission,
+      csrfToken: req.csrfToken ? req.csrfToken() : '',
+      user: req.user
+    });
+  } catch (err) {
+    moduleLogger.error('Error rendering edit submission form', err);
+    res.status(500).render('error', { title: 'Error', message: 'An error occurred', error: process.env.NODE_ENV==='development'?err:{}, user: req.user });
+  }
+};
+
+/**
+ * Update submission (two-step)
+ */
+exports.updateSubmission = async (req, res) => {
+  try {
+    const { submissionId } = req.params;
+    const { confirm } = req.body;
+    const isConfirm = confirm === 'yes';
+
+    const errors = {};
+    if (!req.body.briefDescription) errors.briefDescription = 'Brief description is required';
+
+    // Duplicate submissionCode check (exclude self)
+    if (req.body.submissionCode) {
+      const dup = await Submission.findOne({ _id: { $ne: submissionId }, submissionCode: { $regex: `^${req.body.submissionCode}$`, $options: 'i' } });
+      if (dup) errors.submissionCode = 'Submission code already exists';
+    }
+
+    if (Object.keys(errors).length && !isConfirm) {
+      const submission = await Submission.findById(submissionId);
+      return res.render('bcr/submissions/edit', { title: 'Edit Submission', errors, submission, csrfToken: req.csrfToken ? req.csrfToken() : '', user: req.user });
+    }
+
+    if (!isConfirm) {
+      return res.render('bcr/submissions/edit-check', { title: 'Check Changes', submissionId, formData: req.body, csrfToken: req.csrfToken ? req.csrfToken() : '', user: req.user });
+    }
+
+    const updated = await Submission.findByIdAndUpdate(submissionId, req.body, { new: true });
+    return res.render('bcr/submissions/edit-confirmation', { title: 'Submission Updated', submission: updated, user: req.user });
+  } catch (err) {
+    moduleLogger.error('Error updating submission', err);
+    res.status(500).render('error', { title: 'Error', message: 'An error occurred', error: process.env.NODE_ENV==='development'?err:{}, user: req.user });
+  }
+};
+
+/**
+ * Delete confirmation page
+ */
+exports.deleteSubmissionConfirm = async (req, res) => {
+  try {
+    const { submissionId } = req.params;
+    const submission = await Submission.findById(submissionId);
+    if (!submission) {
+      return res.status(404).render('error', { title: 'Not Found', message: 'Submission not found', error: { status: 404 }, user: req.user });
+    }
+    res.render('bcr/submissions/delete', { title: 'Delete Submission', submission, csrfToken: req.csrfToken ? req.csrfToken() : '', user: req.user });
+  } catch (err) {
+    moduleLogger.error('Error rendering delete submission confirm', err);
+    res.status(500).render('error', { title: 'Error', message: 'An error occurred', error: process.env.NODE_ENV==='development'?err:{}, user: req.user });
+  }
+};
+
+/**
+ * Perform deletion
+ */
+exports.deleteSubmission = async (req, res) => {
+  try {
+    const { submissionId } = req.params;
+    await Submission.findByIdAndDelete(submissionId);
+    res.redirect('/bcr/submissions');
+  } catch (err) {
+    moduleLogger.error('Error deleting submission', err);
+    res.status(500).render('error', { title: 'Error', message: 'An error occurred', error: process.env.NODE_ENV==='development'?err:{}, user: req.user });
   }
 };
 

@@ -96,6 +96,17 @@
                 {% set tag_class = 'govuk-tag--grey' %}
               {% endif %}
               
+              {# Check if this is the current academic year #}
+              {% if currentAcademicYearForBanner and (
+                   (currentAcademicYearForBanner.uuid and year.uuid and currentAcademicYearForBanner.uuid == year.uuid) or
+                   (currentAcademicYearForBanner._id and year._id and currentAcademicYearForBanner._id == year._id) or
+                   (currentAcademicYearForBanner.startDate and currentAcademicYearForBanner.endDate and
+                     year.startDate and year.endDate and
+                     year.startDate == currentAcademicYearForBanner.startDate) ) %}
+                {% set tag_class = 'govuk-tag--green' %}
+                {% set tag_text = 'Current' %}
+              {% endif %}
+              
               {# Check if this is the next academic year #}
               {% if nextAcademicYear and nextAcademicYear.uuid and year.uuid and nextAcademicYear.uuid == year.uuid %}
                 {% set tag_class = 'govuk-tag--blue' %}

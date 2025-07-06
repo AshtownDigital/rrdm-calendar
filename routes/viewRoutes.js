@@ -168,12 +168,92 @@ router.get('/academic-years', async (req, res) => {
 // Academic Year - New Form
 // router.get('/academic-years/new', isAuthenticated, isSysAdmin, (req, res) => { // isAuthenticated, isSysAdmin temporarily removed
 router.get('/academic-years/new', (req, res) => {
+  const errorsFlash = req.flash('formErrors')[0];
+  const valuesFlash = req.flash('formValues')[0];
+  const errors = errorsFlash ? JSON.parse(errorsFlash) : {};
+  const values = valuesFlash ? JSON.parse(valuesFlash) : {};
+
   res.render('academic-years/new', {
-    pageTitle: 'New Academic Year - RRDM',
-    formData: {},
-    errors: {},
+    pageTitle: 'Generate Academic Years - RRDM',
+    errors,
+    values,
+    csrfToken: req.csrfToken ? req.csrfToken() : '',
   });
 });
+
+// Handle bulk-create form submission (pre-check for duplicates)
+router.post('/academic-years/bulk-create', async (req, res) => {
+  try {
+    let { startYear, numberOfYears } = req.body;
+    const errors = {};
+
+    const startYearInt = parseInt(startYear, 10);
+    const numYearsInt = parseInt(numberOfYears, 10);
+
+    if (isNaN(startYearInt) || String(startYearInt).length !== 4) {
+      errors.startYear = 'Enter a 4-digit year, for example 2024';
+    }
+    if (isNaN(numYearsInt) || numYearsInt <= 0 || numYearsInt > 10) {
+      errors.numberOfYears = 'Enter a number between 1 and 10';
+    }
+    if (Object.keys(errors).length) {
+      req.flash('formErrors', JSON.stringify(errors));
+      req.flash('formValues', JSON.stringify({ startYear, numberOfYears }));
+      return res.redirect('/academic-years/new');
+    }
+
+    // Determine duplicates without creating
+    const years = Array.from({ length: numYearsInt }, (_, i) => startYearInt + i);
+    const duplicates = [];
+    const yearsToCreate = [];
+    for (const y of years) {
+      const exists = await academicYearService.existsAcademicYearStarting(y);
+      if (exists) duplicates.push(y); else yearsToCreate.push(y);
+    }
+
+    return res.render('academic-years/bulk-confirm', {
+      pageTitle: 'Confirm Academic Year Generation',
+      startYear: startYearInt,
+      numberOfYears: numYearsInt,
+      duplicates,
+      yearsToCreate,
+      csrfToken: req.csrfToken ? req.csrfToken() : '',
+    });
+  } catch (err) {
+    console.error('Error preparing bulk-create confirmation:', err);
+    req.flash('error', 'Problem preparing confirmation page.');
+    return res.redirect('/academic-years');
+  }
+});
+
+// Confirmation route to actually create non-duplicates
+router.post('/academic-years/bulk-create/confirm', async (req, res) => {
+  try {
+    const { startYear, numberOfYears } = req.body;
+    const startYearInt = parseInt(startYear, 10);
+    const numYearsInt = parseInt(numberOfYears, 10);
+
+    const userId = req.user?.id || 'SYSTEM_BULK';
+    const username = req.user?.username || 'system_bulk';
+
+    const result = await academicYearService.createMultipleAcademicYears(startYearInt, numYearsInt, userId, username);
+
+    if (result.createdYears.length === 0) {
+      req.flash('info', 'No new academic years were created because they already exist.');
+    } else if (result.errorsEncountered.length) {
+      req.flash('warning', `Created ${result.createdYears.length} year(s). ${result.errorsEncountered.length} duplicate(s) skipped.`);
+    } else {
+      req.flash('success', `Successfully created ${result.createdYears.length} academic year(s).`);
+    }
+    return res.redirect('/academic-years');
+  } catch (err) {
+    console.error('Error confirming bulk-create:', err);
+    req.flash('error', 'An unexpected error occurred while generating academic years.');
+    return res.redirect('/academic-years');
+  }
+});
+
+
 
 // Academic Year - Edit Form
 // router.get('/academic-years/:identifier/edit', isAuthenticated, isSysAdmin, async (req, res) => { // isAuthenticated, isSysAdmin temporarily removed

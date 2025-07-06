@@ -1,0 +1,39 @@
+{% extends "layout.njk" %}
+{% block pageTitle %}Reference Data Analysis Overview{% endblock %}
+{% block content %}
+<div class="govuk-width-container">
+  <main class="govuk-main-wrapper" id="main-content" role="main">
+    <h1 class="govuk-heading-xl">Reference Data Analysis Overview</h1>
+    <table class="govuk-table">
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th class="govuk-table__header">Register Field</th>
+          <th class="govuk-table__header">Alignment Code</th>
+          <th class="govuk-table__header" style="width:1%">HESA Values</th>
+          <th class="govuk-table__header" style="width:1%">Register Values</th>
+          <th class="govuk-table__header" style="width:1%">Aligned</th>
+          <th class="govuk-table__header" style="width:1%">Only CSV</th>
+          <th class="govuk-table__header" style="width:1%">Only Gem</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for r in rows %}
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell"><a class="govuk-link" href="/reference-data/analysis/{{ r.code }}">{{ r.register }}</a></td>
+          <td class="govuk-table__cell">{{ r.code }}</td>
+          {% if r.error %}
+            <td class="govuk-table__cell" colspan="5"><strong class="govuk-tag govuk-tag--red">CSV Missing</strong></td>
+          {% else %}
+            <td class="govuk-table__cell">{{ r.csv }}</td>
+            <td class="govuk-table__cell">{{ r.gem }}</td>
+            <td class="govuk-table__cell">{{ r.aligned }}</td>
+            <td class="govuk-table__cell">{{ r.onlyCsv }}</td>
+            <td class="govuk-table__cell">{{ r.onlyGem }}</td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </main>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{# Dates panel content extracted from BCR submissions view template #}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-l">BCR Timeline</h2>
+    
+    <div class="app-card govuk-!-margin-bottom-6">
+      <h3 class="govuk-heading-m">Key Dates</h3>
+      
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Submission Date</dt>
+          <dd class="govuk-summary-list__value">{{ submission.createdAt | date }}</dd>
+        </div>
+        
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Last Updated</dt>
+          <dd class="govuk-summary-list__value">{{ submission.updatedAt | date }}</dd>
+        </div>
+        
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Requested Go-Live Date</dt>
+          <dd class="govuk-summary-list__value">{{ submission.goLiveDate | date or 'Not specified' }}</dd>
+        </div>
+        
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">UAT Date</dt>
+          <dd class="govuk-summary-list__value">{{ submission.uatDate | date or 'Not specified' }}</dd>
+        </div>
+        
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Sandbox Date</dt>
+          <dd class="govuk-summary-list__value">{{ submission.sandboxDate | date or 'Not specified' }}</dd>
+        </div>
+      </dl>
+    </div>
+    
+    <div class="app-card govuk-!-margin-bottom-6">
+      <h3 class="govuk-heading-m">Review Timeline</h3>
+      
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Review Status</dt>
+          <dd class="govuk-summary-list__value">
+            {% if submission.reviewStatus %}
+              <strong class="govuk-tag {% if submission.reviewStatus == 'Approved' %}govuk-tag--green{% elif submission.reviewStatus == 'Rejected' %}govuk-tag--red{% elif submission.reviewStatus == 'More Info Required' %}govuk-tag--yellow{% else %}govuk-tag--blue{% endif %}">{{ submission.reviewStatus }}</strong>
+            {% else %}
+              Pending Review
+            {% endif %}
+          </dd>
+        </div>
+        
+        {% if submission.infoRequestedDate %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Information Requested</dt>
+          <dd class="govuk-summary-list__value">{{ submission.infoRequestedDate | date }}</dd>
+        </div>
+        {% endif %}
+        
+        {% if submission.infoReceivedDate %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Information Received</dt>
+          <dd class="govuk-summary-list__value">{{ submission.infoReceivedDate | date }}</dd>
+        </div>
+        {% endif %}
+      </dl>
+    </div>
+  </div>
+</div>

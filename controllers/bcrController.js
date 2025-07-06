@@ -8,6 +8,8 @@ const bcrModel = require('../models/BcrService');
 const releaseService = require('../services/releaseService');
 const AcademicYear = require('../models/academicYear');
 const Submission = require('../models/Submission');
+// const ImpactArea = require('../models/ImpactArea'); // Not required – fetch via BCR config service instead
+const ReferenceDataArea = require('../models/ReferenceDataArea');
 const workflowService = require('../services/modules/bcr/workflowService');
 const counterService = require('../services/modules/bcr/counterService');
 const { createModuleLogger } = require('../services/shared/loggerService');
@@ -24,13 +26,42 @@ exports.newSubmissionForm = async (req, res) => {
     
     // Get academic years for the form
     const academicYears = await AcademicYear.find({ active: true }).sort({ startYear: -1 });
+    // Use existing BCR config service to retrieve impact areas so we get the same data used elsewhere
+    const rawImpactAreas = await bcrModel.getAllImpactAreas();
+    const impactAreas = rawImpactAreas.map(area => ({
+      id: area._id,
+      name: area.name || area.displayName || area.value
+    }));
+    const refAreas = await ReferenceDataArea.find().sort({ displayOrder: 1, name: 1 }).lean();
+    // Static list of register field enums (Reference Data fields)
+    const referenceDataFields = [
+      { label: 'Funding Method', value: 'BURSLEV' },
+      { label: 'Awarding Institution', value: 'DEGEST' },
+      { label: 'Degree Grade', value: 'DEGCLSS' },
+      { label: 'Degree Type', value: 'DEGTYPE' },
+      { label: 'Disability', value: 'DISABLE' },
+      { label: 'Degree Country', value: 'DEGCTRY' },
+      { label: 'Nationality', value: 'NATION' },
+      { label: 'Training Route', value: 'ENTRYRTE' },
+      { label: 'Degree Subject', value: 'DEGSBJ' },
+      { label: 'Ethnicity', value: 'ETHNIC' },
+      { label: 'Fund Code', value: 'FUNDCODE' },
+      { label: 'Training Initiative', value: 'INITIATIVES' },
+      { label: 'ITT Aim', value: 'ITTAIM' },
+      { label: 'Course Age Range', value: 'ITTPHSC' },
+      { label: 'Study Mode', value: 'MODE' },
+      { label: 'Qualification Aim', value: 'QLAIM' },
+      { label: 'Sex', value: 'SEXID' },
+      { label: 'Course Subject', value: 'SBJCA' }
+    ];
     
-    res.render('bcr/submissions/new', {
-      title: 'New BCR Submission',
-      academicYears,
-      csrfToken: req.csrfToken(),
+    // Legacy submission form removed; inform user to use new namespace
+    return res.status(410).render('error', {
+      title: 'Deprecated Route',
+      message: 'This submission form has moved to /submissions/new',
       user: req.user
     });
+
   } catch (error) {
     moduleLogger.error('Error rendering submission form', error, { userId: req.user?.id });
     res.status(500).render('error', {
@@ -1108,12 +1139,72 @@ function getStatusColor(status) {
 }
 
 /**
+ * Render delete submission confirmation
+ */
+exports.deleteSubmissionConfirm = async (req, res) => {
+  try {
+    const submissionId = req.params.submissionId || req.params.id;
+    const submission = await Submission.findById(submissionId).lean();
+
+    if (!submission) {
+      return res.status(404).render('error', {
+        title: 'Not Found',
+        message: 'The requested submission was not found',
+        error: {},
+        user: req.user
+      });
+    }
+
+    res.render('submissions/delete-confirm', {
+      title: `Delete Submission ${submission.submissionCode || submission._id}`,
+      submission,
+      csrfToken: req.csrfToken ? req.csrfToken() : '',
+      user: req.user
+    });
+  } catch (error) {
+    moduleLogger.error('Error loading delete confirmation', { error: error.message });
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An error occurred while loading the delete confirmation',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+};
+
+/**
+ * Permanently delete a submission
+ */
+exports.deleteSubmission = async (req, res) => {
+  try {
+    const submissionId = req.params.submissionId || req.params.id;
+    await Submission.findByIdAndDelete(submissionId);
+
+    if (req.flash) {
+      req.flash('success', 'Submission deleted successfully');
+    }
+
+    res.redirect('/bcr/submissions');
+  } catch (error) {
+    moduleLogger.error('Error deleting submission', { error: error.message });
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'An error occurred while deleting the submission',
+      error: process.env.NODE_ENV === 'development' ? error : {},
+      user: req.user
+    });
+  }
+};
+
+/**
  * View a specific BCR submission
  */
 exports.viewSubmission = async (req, res) => {
   try {
     // Check MongoDB connection state
     const isDbConnected = mongoose.connection.readyState === 1;
+    // Accept both /:submissionId and /:id params depending on router
+    const submissionId = req.params.submissionId || req.params.id;
     let timedOut = false;
     let submission = null;
     
@@ -1129,7 +1220,7 @@ exports.viewSubmission = async (req, res) => {
         
         // Race the query against the timeout
         submission = await Promise.race([
-          bcrModel.getSubmissionById(req.params.id),
+          bcrModel.getSubmissionById(submissionId),
           timeoutPromise
         ]);
       } catch (queryError) {
@@ -1259,14 +1350,55 @@ exports.newImpactAreaForm = async (req, res) => {
  */
 exports.createImpactArea = async (req, res) => {
   try {
+    const { name = '', description = '', confirm } = req.body;
+
+    // Field-level validation
+    const errors = [];
+    if (!name.trim()) {
+      errors.push({ field: 'name', message: 'Enter an impact-area name' });
+    }
+
+    // Duplicate check (case-insensitive)
+    const duplicate = await bcrModel.BcrConfig.findOne({
+      type: 'impactArea',
+      name: { $regex: `^${name}$`, $options: 'i' },
+      deleted: { $ne: true }
+    });
+
+    if (duplicate) {
+      errors.push({ field: 'name', message: 'An impact area with this name already exists' });
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).render('bcr/impact-areas/new', {
+        title: 'New Impact Area',
+        errors,
+        formData: { name, description },
+        csrfToken: req.csrfToken ? req.csrfToken() : '',
+        user: req.user
+      });
+    }
+
+    // If not yet confirmed, render confirmation page
+    if (!confirm) {
+      return res.render('bcr/impact-areas/create-confirmation', {
+        title: 'Confirm new impact area',
+        impactArea: { name, description },
+        csrfToken: req.csrfToken ? req.csrfToken() : '',
+        user: req.user
+      });
+    }
+
+    // Create the impact area (auto recordNumber + alphabetical listing)
     await bcrModel.createImpactArea({
       type: 'impactArea',
-      value: req.body.value,
-      displayName: req.body.displayName,
-      displayOrder: parseInt(req.body.displayOrder, 10) || 0
+      name: name.trim(),
+      value: description,
+      description
     });
-    
-    res.redirect('/bcr/impact-areas/list');
+
+    // Redirect to confirmation (success)
+    res.redirect(`/bcr/impact-areas/confirm?name=${encodeURIComponent(name.trim())}`);
   } catch (error) {
     moduleLogger.error('Error in create impact area controller:', { error: error.message });
     res.status(500).render('bcr/impact-areas/new', {
@@ -1400,6 +1532,9 @@ exports.editSubmissionForm = async (req, res) => {
     let impactAreas = [];
     let urgencyLevels = [];
     
+    // Accept both /:submissionId and /:id params depending on calling router
+    const submissionId = req.params.submissionId || req.params.id;
+    
     if (isDbConnected) {
       try {
         // Set a timeout for this operation to prevent hanging
@@ -1412,7 +1547,7 @@ exports.editSubmissionForm = async (req, res) => {
         
         // Race the query against the timeout
         submission = await Promise.race([
-          bcrModel.getSubmissionById(req.params.id),
+          bcrModel.getSubmissionById(submissionId),
           timeoutPromise
         ]);
         
@@ -1444,9 +1579,18 @@ exports.editSubmissionForm = async (req, res) => {
       });
     }
     
-    res.render('bcr/submissions/edit', {
+    // Map legacy field names for template compatibility
+    const viewSubmission = submission ? {
+      ...submission.toObject ? submission.toObject() : submission,
+      submitterName: submission.fullName,
+      submitterEmail: submission.emailAddress,
+      submitterOrganisation: submission.organisation
+    } : null;
+
+    console.log('DEBUG viewSubmission:', viewSubmission);
+    res.render('submissions/edit', {
       title: `Edit Submission ${submission.submissionCode}`,
-      submission,
+      submission: viewSubmission,
       impactAreas,
       urgencyLevels,
       statusTag: getSubmissionStatusTag(submission),
@@ -1472,7 +1616,7 @@ exports.editSubmissionForm = async (req, res) => {
  */
 exports.updateSubmission = async (req, res) => {
   try {
-    const submissionId = req.params.id;
+    const submissionId = req.params.submissionId || req.params.id;
     
     // Get the current submission
     const currentSubmission = await bcrModel.getSubmissionById(submissionId);
@@ -1486,14 +1630,15 @@ exports.updateSubmission = async (req, res) => {
     }
     
     // Prepare update data from form
+    // Support both legacy (submitter*) field names and new ones
     const updateData = {
-      fullName: req.body.fullName,
-      emailAddress: req.body.emailAddress,
-      organisation: req.body.organisation,
+      fullName: req.body.submitterName || req.body.fullName,
+      emailAddress: req.body.submitterEmail || req.body.emailAddress,
+      organisation: req.body.submitterOrganisation || req.body.organisation,
       briefDescription: req.body.briefDescription,
       justification: req.body.justification,
       urgencyLevel: req.body.urgencyLevel,
-      impactAreas: Array.isArray(req.body.impactAreas) ? req.body.impactAreas : [req.body.impactAreas],
+      impactAreas: Array.isArray(req.body.impactAreas) ? req.body.impactAreas : (req.body.impactAreas ? [req.body.impactAreas] : []),
       technicalDependencies: req.body.technicalDependencies,
       additionalNotes: req.body.additionalNotes,
       updatedAt: new Date()
@@ -1503,7 +1648,7 @@ exports.updateSubmission = async (req, res) => {
     await bcrModel.Submission.findByIdAndUpdate(submissionId, updateData);
     
     // Redirect to the submission view page
-    res.redirect(`/bcr/submissions/${submissionId}`);
+    res.redirect(`/submissions/${submissionId}`);
   } catch (error) {
     console.error('Error in update submission controller:', error);
     res.status(500).render('error', {

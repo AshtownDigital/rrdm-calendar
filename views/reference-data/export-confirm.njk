@@ -1,0 +1,47 @@
+{% extends "layouts/base.njk" %}
+
+{% block pageTitle %}Confirm export | RRDM{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-l">Confirm categories to export</h1>
+    <div class="govuk-warning-text">
+      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+      <strong class="govuk-warning-text__text">
+        You are about to export the following categories:
+      </strong>
+      <table class="govuk-table govuk-!-margin-top-3">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Category</th>
+            <th scope="col" class="govuk-table__header">New</th>
+            <th scope="col" class="govuk-table__header">No Change</th>
+            <th scope="col" class="govuk-table__header">Removed</th>
+            <th scope="col" class="govuk-table__header">Total</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for s in stats %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell">{{ s.category }}</td>
+              <td class="govuk-table__cell">{{ s.new }}</td>
+              <td class="govuk-table__cell">{{ s.noChange }}</td>
+              <td class="govuk-table__cell">{{ s.removed }}</td>
+              <td class="govuk-table__cell">{{ s.total }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <form action="/reference-data/export-directory/download" method="post">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      {% for cat in categories %}
+        <input type="hidden" name="categories" value="{{ cat }}">
+      {% endfor %}
+      <button class="govuk-button" data-module="govuk-button">Start export</button>
+    </form>
+    <p class="govuk-body"><a class="govuk-link" href="/reference-data/export-directory/select">Go back and change selection</a></p>
+  </div>
+</div>
+{% endblock %}

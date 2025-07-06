@@ -36,6 +36,18 @@
             </span>
           </a>
         </div>
+        {% if isAuthenticated %}
+          <nav class="govuk-header__navigation" aria-label="Account">
+            <ul class="govuk-header__navigation-list">
+              <li class="govuk-header__navigation-item">
+                <span class="govuk-header__navigation-item govuk-!-font-weight-bold">Signed in</span>
+              </li>
+              <li class="govuk-header__navigation-item">
+                <a class="govuk-header__link" href="/logout">Sign out</a>
+              </li>
+            </ul>
+          </nav>
+        {% endif %}
         <div class="govuk-header__content">
           <nav aria-label="Menu" class="govuk-header__navigation">
             <button type="button" class="govuk-header__menu-button govuk-js-header-toggle" aria-controls="navigation" aria-label="Show or hide menu">Menu</button>
@@ -61,7 +73,7 @@
                 </a>
               </li>
               <li class="govuk-header__navigation-item">
-                <a class="govuk-header__link" href="/bcr/submit">
+                <a class="govuk-header__link" href="/submissions/new">
                   New Submission
                 </a>
               </li>
@@ -74,7 +86,17 @@
           </nav>
         </div>
       </div>
-    </header>
+      <nav class="govuk-width-container" aria-label="Breadcrumb">
+      <ol class="govuk-breadcrumbs__list">
+        <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/data-gem/categories">Data Gem</a></li>
+        {% if currentPage == 'viewer' %}
+          <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/data-gem/sections?file={{ currentFile | urlencode }}">Sections</a></li>
+        {% elseif currentPage == 'sections' %}
+          <li class="govuk-breadcrumbs__list-item">Sections</li>
+        {% endif %}
+      </ol>
+  </nav>
+</header>
 
     <div class="govuk-width-container">
       {% block beforeContent %}
@@ -82,6 +104,9 @@
           <p class="govuk-phase-banner__content">
             <strong class="govuk-tag govuk-phase-banner__content__tag">
               Beta
+            </strong>
+            <strong class="govuk-tag govuk-phase-banner__content__tag {% if mongoConnected %}govuk-tag--green{% else %}govuk-tag--red{% endif %}">
+              {% if mongoConnected %}DB Connected{% else %}DB Offline{% endif %}
             </strong>
             <span class="govuk-phase-banner__text">
               This is a new service – your <a class="govuk-link" href="#">feedback</a> will help us to improve it.

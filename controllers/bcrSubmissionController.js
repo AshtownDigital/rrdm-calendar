@@ -39,14 +39,8 @@ exports.newSubmissionForm = async (req, res) => {
     }
     
     logger.info('New submission form loaded successfully');
-    res.render('bcr/submissions/new', {
-      title: 'New BCR Submission',
-      impactAreas,
-      urgencyLevels,
-      connectionIssue: !isDbConnected,
-      csrfToken: req.csrfToken ? req.csrfToken() : '',
-      user: req.user
-    });
+    return res.redirect('/submissions/new');
+
   } catch (error) {
     logger.error('Error in new submission form controller', error, { userId: req.user?.id });
     res.status(500).render('error', {

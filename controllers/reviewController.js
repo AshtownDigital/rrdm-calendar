@@ -2,8 +2,9 @@
  * BCR Review Controller
  * Handles the review process for BCR submissions
  */
-const { Submission } = require('../../../models');
-const workflowService = require('../../../services/modules/bcr/workflowService');
+const { Submission } = require('../models');
+const dayjs = require('dayjs');
+const workflowService = require('../services/modules/bcr/workflowService');
 
 /**
  * Render the submission review form
@@ -59,13 +60,20 @@ exports.renderReviewForm = async (req, res) => {
 exports.processReview = async (req, res) => {
   try {
     const submissionId = req.params.submissionId;
-    const { status, comments } = req.body;
+    const { reviewStatus, comments, infoRequestedDate, infoReceivedDate, urgencyLevel } = req.body;
+    const status = reviewStatus || req.body.status;
     
-    // Update the submission status
-    const result = await workflowService.updateSubmissionStatus(submissionId, status, {
+    // Prepare additional review data
+    const reviewData = {
       comments,
-      reviewerId: req.user ? req.user.id : null
-    });
+      reviewerId: req.user ? req.user.id : null,
+      infoRequestedDate: infoRequestedDate ? dayjs(infoRequestedDate, 'YYYY-MM-DD').toDate() : undefined,
+      infoReceivedDate: infoReceivedDate ? dayjs(infoReceivedDate, 'YYYY-MM-DD').toDate() : undefined,
+      urgencyLevel: urgencyLevel || undefined
+    };
+
+    // Update the submission status and additional fields
+    const result = await workflowService.updateSubmissionStatus(submissionId, status, reviewData);
     
     // If approved and BCR created, redirect to the Business Change Request page
     if (status === 'Approved' && result.bcr) {

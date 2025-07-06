@@ -1,0 +1,33 @@
+{% extends "layouts/govuk-login-base.njk" %}
+
+{% set pageTitle = "Test Layout - Reference Data Directory" %}
+{% block title %}{{ pageTitle }} - GOV.UK{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">Test Layout Page</h1>
+      
+      <p class="govuk-body">This is a test page to verify the GOV.UK layout template is working correctly.</p>
+      
+      <div class="govuk-inset-text">
+        This text should be styled as an inset text component.
+      </div>
+      
+      <h2 class="govuk-heading-m">Form Components</h2>
+      
+      <form class="govuk-form" action="/test" method="post">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="test-input">
+            Test input field
+          </label>
+          <input class="govuk-input" id="test-input" name="test-input" type="text">
+        </div>
+        
+        <button type="submit" class="govuk-button">
+          Continue
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

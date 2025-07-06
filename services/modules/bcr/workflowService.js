@@ -130,6 +130,10 @@ exports.updateSubmissionStatus = async (submissionId, status, options = {}) => {
     submission.status = status;
     submission.reviewComments = options.comments || '';
     submission.reviewedAt = new Date();
+    // Optional extra review fields
+    if (options.infoRequestedDate) submission.infoRequestedDate = options.infoRequestedDate;
+    if (options.infoReceivedDate) submission.infoReceivedDate = options.infoReceivedDate;
+    if (options.urgencyLevel) submission.urgencyLevel = options.urgencyLevel;
     
     // If approved, convert the submission to a Business Change Request
     let bcr = null;

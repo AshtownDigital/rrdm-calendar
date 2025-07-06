@@ -49,7 +49,10 @@ async function connect() {
   isConnecting = true;
   connectionPromise = new Promise(async (resolve, reject) => {
     try {
-      const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/rrdm';
+      // Use local database in development/test by default, even if a cloud URI is present
+const uri = process.env.NODE_ENV === 'production'
+  ? process.env.MONGODB_URI
+  : (process.env.LOCAL_MONGODB_URI || 'mongodb://localhost:27017/rrdm');
       let displayUri = uri;
       if (uri.startsWith('mongodb://') || uri.startsWith('mongodb+srv://')) {
         try {

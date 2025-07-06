@@ -1,0 +1,18 @@
+{% extends "layout.njk" %}
+
+{% block pageTitle %}Data Gem Sections - RRDM{% endblock %}
+
+{% block content %}
+  <div class="govuk-width-container">
+    <main class="govuk-main-wrapper" id="main-content" role="main">
+      <h1 class="govuk-heading-xl">Sections in {{ file }}</h1>
+      <ul class="govuk-list govuk-list--bullet">
+        {% for s in sections %}
+          <li><a href="/data-gem/viewer?file={{ file | urlencode }}&section={{ s.caption | urlencode }}" class="govuk-link">{{ s.caption }}</a></li>
+        {% endfor %}
+      </ul>
+      <p><a href="/data-gem/viewer?file={{ file | urlencode }}" class="govuk-link">View full file</a></p>
+      <p><a href="/data-gem/categories" class="govuk-link">Back to categories</a></p>
+    </main>
+  </div>
+{% endblock %}

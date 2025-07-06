@@ -1,0 +1,461 @@
+
+Code	Label
+AF	Afghanistan
+AL	Albania
+DZ	Algeria
+AS	American Samoa
+AD	Andorra
+AO	Angola
+AI	Anguilla
+AG	Antigua and Barbuda
+AR	Argentina
+AM	Armenia
+AU	Australia
+AT	Austria
+AZ	Azerbaijan
+BS	Bahamas, The
+BH	Bahrain
+BD	Bangladesh
+BB	Barbados
+BY	Belarus
+BE	Belgium
+BZ	Belize
+BJ	Benin
+BM	Bermuda
+BT	Bhutan
+BO	Bolivia [Bolivia, Plurinational State of]
+BA	Bosnia and Herzegovina
+BW	Botswana
+BR	Brazil
+IO	British Indian Ocean Territory (BIOT)
+VG	British Virgin Islands [Virgin Islands, British]
+BN	Brunei [Brunei Darussalam]
+BG	Bulgaria
+BF	Burkina Faso
+MM	Burma [Myanmar]
+BI	Burundi
+KH	Cambodia
+CM	Cameroon
+CA	Canada
+CV	Cape Verde
+KY	Cayman Islands
+CF	Central African Republic
+TD	Chad
+XL	Channel Islands not otherwise specified
+CL	Chile
+CN	China
+CO	Colombia
+KM	Comoros
+CG	Congo
+CD	Congo (Democratic Republic) [Congo (The Democratic Republic of the)]
+CR	Costa Rica
+HR	Croatia
+CU	Cuba
+XA	Cyprus (European Union)
+XB	Cyprus (Non-European Union)
+XC	Cyprus not otherwise specified
+CZ	Czech Republic
+XM	Czechoslovakia not otherwise specified
+DK	Denmark
+DJ	Djibouti
+DM	Dominica
+DO	Dominican Republic
+TL	East Timor [Timor Leste]
+EC	Ecuador
+EG	Egypt
+SV	El Salvador
+GQ	Equatorial Guinea
+ER	Eritrea
+EE	Estonia
+ET	Ethiopia
+FK	Falkland Islands [Falkland Islands (Malvinas)]
+FO	Faroe Islands
+FJ	Fiji
+FI	Finland
+FR	France
+GA	Gabon
+GM	Gambia, The
+GE	Georgia
+DE	Germany
+GH	Ghana
+GI	Gibraltar
+GR	Greece
+GL	Greenland
+GD	Grenada
+GU	Guam
+GT	Guatemala
+GG	Guernsey
+GN	Guinea
+GW	Guinea-Bissau
+GY	Guyana
+HT	Haiti
+HN	Honduras
+HK	Hong Kong (Special Administrative Region of China) [Hong Kong]
+HU	Hungary
+IS	Iceland
+IN	India
+ID	Indonesia
+IR	Iran [Iran, Islamic Republic of]
+IQ	Iraq
+IE	Ireland
+IM	Isle of Man
+IL	Israel
+IT	Italy
+CI	Ivory Coast [Côte D'ivoire]
+JM	Jamaica
+JP	Japan
+JE	Jersey
+JO	Jordan
+KZ	Kazakhstan
+KE	Kenya
+KI	Kiribati
+KP	Korea (North) [Korea, Democratic People's Republic of]
+KR	Korea (South) [Korea, Republic of]
+QO	Kosovo
+KW	Kuwait
+KG	Kyrgyzstan
+LA	Laos [Lao People's Democratic Republic]
+LV	Latvia
+LB	Lebanon
+LS	Lesotho
+LR	Liberia
+LY	Libya
+LI	Liechtenstein
+LT	Lithuania
+LU	Luxembourg
+MO	Macao (Special Administrative Region of China) [Macao]
+MK	Macedonia [Macedonia, The Former Yugoslav Republic of]
+MG	Madagascar
+MW	Malawi
+MY	Malaysia
+MV	Maldives
+ML	Mali
+MT	Malta
+MH	Marshall Islands
+MR	Mauritania
+MU	Mauritius
+MX	Mexico
+FM	Micronesia [Micronesia, Federated States of]
+MD	Moldova [Moldova, Republic of]
+MC	Monaco
+MN	Mongolia
+ME	Montenegro
+MS	Montserrat
+MA	Morocco
+MZ	Mozambique
+NA	Namibia
+NR	Nauru
+NP	Nepal
+NL	Netherlands
+NZ	New Zealand
+NI	Nicaragua
+NE	Niger
+NG	Nigeria
+MP	Northern Mariana Islands
+NO	Norway
+ZZ	Not known
+PS	Occupied Palestinian Territories [Palestine, State of]
+OM	Oman
+PK	Pakistan
+PW	Palau
+PA	Panama
+PG	Papua New Guinea
+PY	Paraguay
+PE	Peru
+PH	Philippines
+PN	Pitcairn, Henderson, Ducie and Oeno Islands [Pitcairn]
+PL	Poland
+PT	Portugal
+QA	Qatar
+RO	Romania
+RU	Russia [Russian Federation]
+RW	Rwanda
+WS	Samoa
+SM	San Marino
+ST	Sao Tome and Principe
+SA	Saudi Arabia
+SN	Senegal
+RS	Serbia
+QN	Serbia and Montenegro not otherwise specified
+SC	Seychelles
+SL	Sierra Leone
+SG	Singapore
+SK	Slovakia
+SI	Slovenia
+SB	Solomon Islands
+SO	Somalia
+ZA	South Africa
+GS	South Georgia and The South Sandwich Islands
+SS	South Sudan
+ES	Spain
+LK	Sri Lanka
+SH	St Helena, Ascension and Tristan da Cunha
+KN	St Kitts and Nevis
+LC	St Lucia
+VC	St Vincent and The Grenadines
+AA	Stateless
+SD	Sudan
+SR	Suriname
+SZ	Swaziland
+SE	Sweden
+CH	Switzerland
+SY	Syria [Syrian Arab Republic]
+TW	Taiwan [Taiwan, Province of China]
+TJ	Tajikistan
+TZ	Tanzania [Tanzania, United Republic of]
+TH	Thailand
+TG	Togo
+TO	Tonga
+TT	Trinidad and Tobago
+TN	Tunisia
+TR	Turkey
+TM	Turkmenistan
+TC	Turks and Caicos Islands
+TV	Tuvalu
+UG	Uganda
+UA	Ukraine
+XN	Union of Soviet Socialist Republics not otherwise specified
+AE	United Arab Emirates
+GB	United Kingdom
+US	United States
+UY	Uruguay
+UZ	Uzbekistan
+VU	Vanuatu
+VA	Vatican City [Holy See (Vatican City State)]
+VE	Venezuela [Venezuela, Bolivarian Republic of]
+VN	Vietnam [Viet Nam]
+EH	Western Sahara
+YE	Yemen
+XO	Yugoslavia not otherwise specified
+ZM	Zambia
+ZW	 Code	Label
+AF	Afghanistan
+AL	Albania
+DZ	Algeria
+AS	American Samoa
+AD	Andorra
+AO	Angola
+AI	Anguilla
+AG	Antigua and Barbuda
+AR	Argentina
+AM	Armenia
+AU	Australia
+AT	Austria
+AZ	Azerbaijan
+BS	Bahamas, The
+BH	Bahrain
+BD	Bangladesh
+BB	Barbados
+BY	Belarus
+BE	Belgium
+BZ	Belize
+BJ	Benin
+BM	Bermuda
+BT	Bhutan
+BO	Bolivia [Bolivia, Plurinational State of]
+BA	Bosnia and Herzegovina
+BW	Botswana
+BR	Brazil
+IO	British Indian Ocean Territory (BIOT)
+VG	British Virgin Islands [Virgin Islands, British]
+BN	Brunei [Brunei Darussalam]
+BG	Bulgaria
+BF	Burkina Faso
+MM	Burma [Myanmar]
+BI	Burundi
+KH	Cambodia
+CM	Cameroon
+CA	Canada
+CV	Cape Verde
+KY	Cayman Islands
+CF	Central African Republic
+TD	Chad
+XL	Channel Islands not otherwise specified
+CL	Chile
+CN	China
+CO	Colombia
+KM	Comoros
+CG	Congo
+CD	Congo (Democratic Republic) [Congo (The Democratic Republic of the)]
+CR	Costa Rica
+HR	Croatia
+CU	Cuba
+XA	Cyprus (European Union)
+XB	Cyprus (Non-European Union)
+XC	Cyprus not otherwise specified
+CZ	Czech Republic
+XM	Czechoslovakia not otherwise specified
+DK	Denmark
+DJ	Djibouti
+DM	Dominica
+DO	Dominican Republic
+TL	East Timor [Timor Leste]
+EC	Ecuador
+EG	Egypt
+SV	El Salvador
+GQ	Equatorial Guinea
+ER	Eritrea
+EE	Estonia
+ET	Ethiopia
+FK	Falkland Islands [Falkland Islands (Malvinas)]
+FO	Faroe Islands
+FJ	Fiji
+FI	Finland
+FR	France
+GA	Gabon
+GM	Gambia, The
+GE	Georgia
+DE	Germany
+GH	Ghana
+GI	Gibraltar
+GR	Greece
+GL	Greenland
+GD	Grenada
+GU	Guam
+GT	Guatemala
+GG	Guernsey
+GN	Guinea
+GW	Guinea-Bissau
+GY	Guyana
+HT	Haiti
+HN	Honduras
+HK	Hong Kong (Special Administrative Region of China) [Hong Kong]
+HU	Hungary
+IS	Iceland
+IN	India
+ID	Indonesia
+IR	Iran [Iran, Islamic Republic of]
+IQ	Iraq
+IE	Ireland
+IM	Isle of Man
+IL	Israel
+IT	Italy
+CI	Ivory Coast [Côte D'ivoire]
+JM	Jamaica
+JP	Japan
+JE	Jersey
+JO	Jordan
+KZ	Kazakhstan
+KE	Kenya
+KI	Kiribati
+KP	Korea (North) [Korea, Democratic People's Republic of]
+KR	Korea (South) [Korea, Republic of]
+QO	Kosovo
+KW	Kuwait
+KG	Kyrgyzstan
+LA	Laos [Lao People's Democratic Republic]
+LV	Latvia
+LB	Lebanon
+LS	Lesotho
+LR	Liberia
+LY	Libya
+LI	Liechtenstein
+LT	Lithuania
+LU	Luxembourg
+MO	Macao (Special Administrative Region of China) [Macao]
+MK	Macedonia [Macedonia, The Former Yugoslav Republic of]
+MG	Madagascar
+MW	Malawi
+MY	Malaysia
+MV	Maldives
+ML	Mali
+MT	Malta
+MH	Marshall Islands
+MR	Mauritania
+MU	Mauritius
+MX	Mexico
+FM	Micronesia [Micronesia, Federated States of]
+MD	Moldova [Moldova, Republic of]
+MC	Monaco
+MN	Mongolia
+ME	Montenegro
+MS	Montserrat
+MA	Morocco
+MZ	Mozambique
+NA	Namibia
+NR	Nauru
+NP	Nepal
+NL	Netherlands
+NZ	New Zealand
+NI	Nicaragua
+NE	Niger
+NG	Nigeria
+MP	Northern Mariana Islands
+NO	Norway
+ZZ	Not known
+PS	Occupied Palestinian Territories [Palestine, State of]
+OM	Oman
+PK	Pakistan
+PW	Palau
+PA	Panama
+PG	Papua New Guinea
+PY	Paraguay
+PE	Peru
+PH	Philippines
+PN	Pitcairn, Henderson, Ducie and Oeno Islands [Pitcairn]
+PL	Poland
+PT	Portugal
+QA	Qatar
+RO	Romania
+RU	Russia [Russian Federation]
+RW	Rwanda
+WS	Samoa
+SM	San Marino
+ST	Sao Tome and Principe
+SA	Saudi Arabia
+SN	Senegal
+RS	Serbia
+QN	Serbia and Montenegro not otherwise specified
+SC	Seychelles
+SL	Sierra Leone
+SG	Singapore
+SK	Slovakia
+SI	Slovenia
+SB	Solomon Islands
+SO	Somalia
+ZA	South Africa
+GS	South Georgia and The South Sandwich Islands
+SS	South Sudan
+ES	Spain
+LK	Sri Lanka
+SH	St Helena, Ascension and Tristan da Cunha
+KN	St Kitts and Nevis
+LC	St Lucia
+VC	St Vincent and The Grenadines
+AA	Stateless
+SD	Sudan
+SR	Suriname
+SZ	Swaziland
+SE	Sweden
+CH	Switzerland
+SY	Syria [Syrian Arab Republic]
+TW	Taiwan [Taiwan, Province of China]
+TJ	Tajikistan
+TZ	Tanzania [Tanzania, United Republic of]
+TH	Thailand
+TG	Togo
+TO	Tonga
+TT	Trinidad and Tobago
+TN	Tunisia
+TR	Turkey
+TM	Turkmenistan
+TC	Turks and Caicos Islands
+TV	Tuvalu
+UG	Uganda
+UA	Ukraine
+XN	Union of Soviet Socialist Republics not otherwise specified
+AE	United Arab Emirates
+GB	United Kingdom
+US	United States
+UY	Uruguay
+UZ	Uzbekistan
+VU	Vanuatu
+VA	Vatican City [Holy See (Vatican City State)]
+VE	Venezuela [Venezuela, Bolivarian Republic of]
+VN	Vietnam [Viet Nam]
+EH	Western Sahara
+YE	Yemen
+XO	Yugoslavia not otherwise specified
+ZM	Zambia
+ZW	Zimbabwe
+   

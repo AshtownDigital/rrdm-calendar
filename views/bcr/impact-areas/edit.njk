@@ -13,20 +13,21 @@
       
       <h1 class="govuk-heading-xl">Edit Impact Area</h1>
       
-      {% if error %}
+      {% if errors %}
         <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
-          <h2 class="govuk-error-summary__title" id="error-summary-title">
-            There is a problem
-          </h2>
+          <h2 class="govuk-error-summary__title" id="error-summary-title">There is a problem</h2>
           <div class="govuk-error-summary__body">
             <ul class="govuk-list govuk-error-summary__list">
-              <li>{{ error }}</li>
+              {% for field,msg in errors %}
+                <li><a href="#{{ field }}">{{ msg }}</a></li>
+              {% endfor %}
             </ul>
           </div>
         </div>
       {% endif %}
       
-      <form action="/bcr/impact-areas/edit/{{ impactArea.id }}" method="post" novalidate>
+      <form action="/bcr/impact-areas/{{ impactArea.id }}/edit" method="post" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <div class="govuk-form-group {% if error and not impactArea.name %}govuk-form-group--error{% endif %}">
           <label class="govuk-label govuk-label--m" for="name">
             Impact area name
@@ -52,15 +53,6 @@
           <textarea class="govuk-textarea" id="description" name="description" rows="5" aria-describedby="description-hint">{{ impactArea.description }}</textarea>
         </div>
         
-        <div class="govuk-form-group">
-          <label class="govuk-label govuk-label--m" for="displayOrder">
-            Display order
-          </label>
-          <div id="displayOrder-hint" class="govuk-hint">
-            Numeric value to determine the order in which this impact area appears (lower numbers appear first)
-          </div>
-          <input class="govuk-input govuk-input--width-5" id="displayOrder" name="displayOrder" type="number" min="0" aria-describedby="displayOrder-hint" value="{{ impactArea.displayOrder }}">
-        </div>
         
         <div class="govuk-button-group">
           <button class="govuk-button" data-module="govuk-button">

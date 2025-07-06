@@ -1,0 +1,143 @@
+{% extends "layout.njk" %}
+
+{% block pageTitle %}Reference Data Analysis - RRDM{% endblock %}
+
+{% block content %}
+  <div class="govuk-width-container">
+    <main class="govuk-main-wrapper" id="main-content" role="main">
+      <h1 class="govuk-heading-xl">Reference Data Analysis</h1>
+
+      <p class="govuk-body"><strong>CSV records:</strong> {{ counts.csv }} | <strong>Data-Gem records:</strong> {{ counts.gem }} | <strong>Aligned:</strong> {{ counts.aligned }} | <strong>Only in CSV:</strong> {{ counts.onlyCsv }} | <strong>Only in Data-Gem:</strong> {{ counts.onlyGem }}</p>
+
+      <h2 class="govuk-heading-l">Records</h2>
+      <table class="govuk-table govuk-!-margin-bottom-8">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header" style="text-align:left;">Code</th>
+            <th scope="col" class="govuk-table__header" style="text-align:left;">HESA Label</th>
+            <th scope="col" class="govuk-table__header" style="text-align:left;">Register Label</th>
+            <th scope="col" class="govuk-table__header" style="text-align:left;">Academic Year 25/26</th>
+            <th scope="col" class="govuk-table__header" style="text-align:left;">Status</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for r in rows %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ r.code }}</td>
+            <td class="govuk-table__cell" style="white-space:normal;word-break:break-word;">{{ r.csvLabel }}</td>
+            <td class="govuk-table__cell" style="white-space:normal;word-break:break-word;">{{ r.gemLabel }}</td>
+            <td class="govuk-table__cell">25/26</td>
+            <td class="govuk-table__cell">
+              {% if r.status == 'new' %}
+              <strong class="govuk-tag govuk-tag--green">New</strong>
+              {% elif r.status == 'removed' %}
+              <strong class="govuk-tag govuk-tag--red">Removed</strong>
+              {% else %}
+              <strong class="govuk-tag govuk-tag--grey">No Change</strong>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <h2 class="govuk-heading-l">Aligned records</h2>
+      {% if aligned.length %}
+      <table class="govuk-table govuk-!-margin-bottom-8">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header" style="text-align:left;">Code</th>
+            <th scope="col" class="govuk-table__header" style="text-align:left;">HESA Label</th>
+            <th scope="col" class="govuk-table__header" style="text-align:left;">Register Label</th>
+            <th scope="col" class="govuk-table__header" style="text-align:left;">Academic Year 25/26</th>
+            <th scope="col" class="govuk-table__header" style="text-align:left;">Status</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for r in aligned %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ r.code }}</td>
+            <td class="govuk-table__cell" style="white-space:normal;word-break:break-word;">{{ r.csvLabel }}</td>
+            <td class="govuk-table__cell" style="white-space:normal;word-break:break-word;">{{ r.gemLabel }}</td>
+            <td class="govuk-table__cell">25/26</td>
+            {% if r.code == '14' %}
+            <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">New</strong></td>
+            {% elif r.code == '13' %}
+            <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--red">Removed</strong></td>
+            {% else %}
+            <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--grey">No Change</strong></td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <p class="govuk-body">No aligned records.</p>
+      {% endif %}
+
+      <h2 class="govuk-heading-l">Only in CSV</h2>
+      {% if onlyCsv.length %}
+      <table class="govuk-table govuk-!-margin-bottom-8">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header" style="text-align:left;">Code</th>
+            <th scope="col" class="govuk-table__header" style="text-align:left;">HESA Label</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for r in onlyCsv %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ r.code }}</td>
+            <td class="govuk-table__cell" style="white-space:normal;word-break:break-word;">{{ r.label }}</td>
+            <td class="govuk-table__cell">25/26</td>
+            {% if r.code == '14' %}
+            <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">New</strong></td>
+            {% elif r.code == '13' %}
+            <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--red">Removed</strong></td>
+            {% else %}
+            <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--grey">No Change</strong></td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <p class="govuk-body">No records exclusive to CSV.</p>
+      {% endif %}
+
+      <h2 class="govuk-heading-l">Only in Data-Gem</h2>
+      {% if onlyGem.length %}
+      <table class="govuk-table govuk-!-margin-bottom-8">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header" style="text-align:left;">Code</th>
+            <th scope="col" class="govuk-table__header" style="text-align:left;">Register Label</th>
+            <th scope="col" class="govuk-table__header" style="text-align:left;">Academic Year 25/26</th>
+            <th scope="col" class="govuk-table__header" style="text-align:left;">Status</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for r in onlyGem %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ r.code }}</td>
+            <td class="govuk-table__cell" style="white-space:normal;word-break:break-word;">{{ r.label }}</td>
+            <td class="govuk-table__cell">25/26</td>
+            {% if r.code == '14' %}
+            <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">New</strong></td>
+            {% elif r.code == '13' %}
+            <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--red">Removed</strong></td>
+            {% else %}
+            <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--grey">No Change</strong></td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <p class="govuk-body">No records exclusive to Data-Gem.</p>
+      {% endif %}
+
+      <p><a href="/" class="govuk-link">Return to Home</a></p>
+    </main>
+  </div>
+{% endblock %}

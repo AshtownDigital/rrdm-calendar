@@ -1,0 +1,117 @@
+{% extends "layouts/base-with-nav.njk" %}
+
+{% block title %}Review Submission | Register Team Internal Services{% endblock %}
+
+{% block navigation %}
+  {% include "partials/bcr-navigation.njk" %}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container">
+  <main class="govuk-main-wrapper" id="main-content" role="main">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        <h1 class="govuk-heading-xl">Review Submission</h1>
+        
+        <div class="govuk-panel govuk-panel--confirmation">
+          <h2 class="govuk-panel__title">
+            Submission: {{ submission.submissionCode or submission._id }}
+          </h2>
+          <div class="govuk-panel__body">
+            {{ submission.title }}
+          </div>
+        </div>
+        
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-two-thirds">
+            <h2 class="govuk-heading-m">Submission Details</h2>
+            <dl class="govuk-summary-list">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Submitted By</dt>
+                <dd class="govuk-summary-list__value">
+                  {% if submission.submittedBy %}
+                    {{ submission.submittedBy.name }}
+                  {% else %}
+                    Unknown
+                  {% endif %}
+                </dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Submission Date</dt>
+                <dd class="govuk-summary-list__value">{{ submission.createdAt | date }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Description</dt>
+                <dd class="govuk-summary-list__value">{{ submission.description }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Current Status</dt>
+                <dd class="govuk-summary-list__value">
+                  {% if submission.status %}
+                    <span class="govuk-tag govuk-tag--{{ submission.status | statusColor }}">
+                      {{ submission.status }}
+                    </span>
+                  {% else %}
+                    <span class="govuk-tag">Pending Review</span>
+                  {% endif %}
+                </dd>
+              </div>
+            </dl>
+            
+            <h2 class="govuk-heading-m">Review Decision</h2>
+            <form action="/submissions/{{ submission._id }}/review" method="post" novalidate>
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              
+              <div class="govuk-form-group">
+                <fieldset class="govuk-fieldset">
+                  <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                    <h3 class="govuk-fieldset__heading">
+                      Review Status
+                    </h3>
+                  </legend>
+                  <div class="govuk-radios" data-module="govuk-radios">
+                    {% for option in statusOptions %}
+                      <div class="govuk-radios__item">
+                        <input class="govuk-radios__input" id="status-{{ option.value }}" name="status" type="radio" value="{{ option.value }}">
+                        <label class="govuk-label govuk-radios__label" for="status-{{ option.value }}">
+                          {{ option.text }}
+                        </label>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </fieldset>
+              </div>
+              
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="comments">
+                  Review Comments
+                </label>
+                <textarea class="govuk-textarea" id="comments" name="comments" rows="5"></textarea>
+              </div>
+              
+              <div class="govuk-button-group">
+                <button type="submit" class="govuk-button">Submit Review</button>
+                <a href="/submissions/{{ submission._id }}/details" class="govuk-button govuk-button--secondary">Cancel</a>
+              </div>
+            </form>
+          </div>
+          
+          <div class="govuk-grid-column-one-third">
+            <div class="govuk-panel govuk-panel--grey">
+              <h2 class="govuk-heading-m">Actions</h2>
+              <ul class="govuk-list">
+                <li>
+                  <a href="/submissions/{{ submission._id }}/details" class="govuk-link">View Full Submission</a>
+                </li>
+                <li>
+                  <a href="/submissions/list" class="govuk-link">Back to Submissions List</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

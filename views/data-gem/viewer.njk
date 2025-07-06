@@ -1,0 +1,101 @@
+{% extends "layout.njk" %}
+
+{% block pageTitle %}
+  Data Gem Viewer - RRDM
+{% endblock %}
+
+{% block breadcrumbs %}
+  <li class="govuk-breadcrumbs__list-item">
+    <a class="govuk-breadcrumbs__link" href="/data-gem/viewer">Data Gem Viewer</a>
+  </li>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-width-container">
+    <main class="govuk-main-wrapper" id="main-content" role="main">
+      <h1 class="govuk-heading-xl">Data Gem Viewer</h1>
+      <p class="govuk-body govuk-!-margin-bottom-2"><strong>Total records:</strong> {{ totalRecords }} | <strong>Missing mappings:</strong> {{ missingCount }}</p>
+      {% if hasMissing %}
+        <strong class="govuk-tag govuk-tag--red">Missing mappings detected</strong>
+      {% endif %}
+<p><a href="/data-gem/categories" class="govuk-link">Browse categories</a></p>
+
+      {# Removed split view and replaced with single-column layout #}
+{% if not sectionSelected %}
+  <h2 class="govuk-heading-l">General Categories</h2>
+  <table class="govuk-table">
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">Register Value</th>
+        <th scope="col" class="govuk-table__header">Total Records</th>
+        <th scope="col" class="govuk-table__header">Missing Mappings</th>
+        <th scope="col" class="govuk-table__header">HESA Alignment</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+    {% for s in generalStats %}
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell"><a href="/data-gem/viewer?file=ref_data%20(1).md&section={{ s.caption | urlencode }}" class="govuk-link">{{ s.caption }}</a></td>
+        <td class="govuk-table__cell">{{ s.total }}</td>
+        <td class="govuk-table__cell">{{ s.missing }}</td>
+        <td class="govuk-table__cell">{{ s.alignment }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+
+{% if sectionSelected and sections and sections.length %}
+
+{# begin selected category table(s) #}
+
+
+        {% for sec in sections %}
+          <h2 class="govuk-heading-m">{{ sec.caption }}</h2>
+          <table class="govuk-table">
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">HESA Code</th>
+              <th scope="col" class="govuk-table__header">HESA Label</th>
+              <th scope="col" class="govuk-table__header">Register Value</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for row in sec.rows %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">{{ row['HESA Code'] }}</td>
+                <td class="govuk-table__cell">{{ row['HESA Label'] }}</td>
+                <td class="govuk-table__cell">{{ row['Register Value'] }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endfor %}
+      {% else %}
+        <p class="govuk-body">No data available.</p>
+      {% endif %}
+
+{% if hasMissing and missingRows and missingRows.length %}
+  <h2 class="govuk-heading-m govuk-!-margin-top-6">Missing mappings</h2>
+  <table class="govuk-table">
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">HESA Code</th>
+        <th scope="col" class="govuk-table__header">HESA Label</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      {% for r in missingRows %}
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell">{{ r['HESA Code'] }}</td>
+        <td class="govuk-table__cell">{{ r['HESA Label'] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+
+<p><a href="/" class="govuk-link">Return to Home</a></p>
+    </main>
+  </div>
+{% endblock %}

@@ -19,6 +19,9 @@ function registerModels() {
   if (!mongoose.models.Submission) {
     require('./Submission');
   }
+  if (!mongoose.models.Status) {
+    require('./Status');
+  }
   if (!mongoose.models.BcrWorkflowActivity) {
     require('./BcrWorkflowActivity');
   }
@@ -27,6 +30,12 @@ function registerModels() {
   }
   if (!mongoose.models.ImpactedArea) {
     require('./ImpactedArea');
+  }
+  if (!mongoose.models.ImpactArea) {
+    require('./ImpactArea');
+  }
+  if (!mongoose.models.ReferenceDataArea) {
+    require('./ReferenceDataArea');
   }
   if (!mongoose.models.Funding) {
     require('./Funding');

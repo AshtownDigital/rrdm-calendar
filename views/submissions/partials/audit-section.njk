@@ -1,0 +1,10 @@
+{# Audit section #}
+<h2 class="govuk-heading-l">Audit</h2>
+<div class="app-card govuk-!-margin-bottom-6">
+  <dl class="govuk-summary-list govuk-summary-list--no-border">
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Submitted by</dt><dd class="govuk-summary-list__value">{% if submission.submittedById and submission.submittedById.name %}{{ submission.submittedById.name }}{% else %}{{ submission.fullName or '—' }}{% endif %}</dd></div>
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Created at</dt><dd class="govuk-summary-list__value">{{ submission.createdAt | date }}</dd></div>
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Updated at</dt><dd class="govuk-summary-list__value">{{ submission.updatedAt | date }}</dd></div>
+    {% if submission.deletedAt %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Deleted at</dt><dd class="govuk-summary-list__value">{{ submission.deletedAt | date }}</dd></div>{% endif %}
+  </dl>
+</div>

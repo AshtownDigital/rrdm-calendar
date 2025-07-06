@@ -1,0 +1,55 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}Confirm Academic Year Generation - RRDM{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container">
+  <main class="govuk-main-wrapper" id="main-content" role="main">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Confirm academic year generation</h1>
+
+        {% if duplicates.length %}
+          <div class="govuk-warning-text govuk-!-margin-bottom-6">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+              <span class="govuk-warning-text__assistive">Warning</span>
+              The following academic years already exist and will <strong>not</strong> be created again:
+            </strong>
+            <ul class="govuk-list govuk-list--bullet govuk-!-margin-top-2 govuk-!-margin-bottom-2">
+              {% for y in duplicates %}
+                <li>{{ y }} / {{ y + 1 }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        {% if yearsToCreate.length %}
+          <p class="govuk-body">The following new academic years will be created:</p>
+          <ul class="govuk-list govuk-list--bullet">
+            {% for y in yearsToCreate %}
+              <li>{{ y }} / {{ y + 1 }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="govuk-body">No new academic years will be created.</p>
+        {% endif %}
+
+        <form method="POST" action="/academic-years/bulk-create/confirm" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="startYear" value="{{ startYear }}">
+          <input type="hidden" name="numberOfYears" value="{{ numberOfYears }}">
+          <div class="govuk-button-group">
+            <button class="govuk-button govuk-button--primary" data-module="govuk-button" type="submit" {% if yearsToCreate.length == 0 %}disabled{% endif %}>
+              Yes, create academic years
+            </button>
+            <a href="/academic-years/new" class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button">
+              Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

@@ -1,0 +1,2142 @@
+[
+  {
+    "code": "AF",
+    "label": "Afghanistan",
+    "adjectival": "Afghan"
+  },
+  {
+    "code": "AL",
+    "label": "Albania",
+    "adjectival": "Albanian"
+  },
+  {
+    "code": "DZ",
+    "label": "Algeria",
+    "adjectival": "Algerian"
+  },
+  {
+    "code": "AS",
+    "label": "American Samoa",
+    "adjectival": "American"
+  },
+  {
+    "code": "AD",
+    "label": "Andorra",
+    "adjectival": "Andorran"
+  },
+  {
+    "code": "AO",
+    "label": "Angola",
+    "adjectival": "Angolan"
+  },
+  {
+    "code": "AI",
+    "label": "Anguilla",
+    "adjectival": null
+  },
+  {
+    "code": "AG",
+    "label": "Antigua And Barbuda",
+    "adjectival": "Antiguan"
+  },
+  {
+    "code": "AR",
+    "label": "Argentina",
+    "adjectival": null
+  },
+  {
+    "code": "AM",
+    "label": "Armenia",
+    "adjectival": "Armenian"
+  },
+  {
+    "code": "AU",
+    "label": "Australia",
+    "adjectival": "Australian"
+  },
+  {
+    "code": "AT",
+    "label": "Austria",
+    "adjectival": "Austrian"
+  },
+  {
+    "code": "AZ",
+    "label": "Azerbaijan",
+    "adjectival": "Azerbaijani"
+  },
+  {
+    "code": "BS",
+    "label": "Bahamas, The",
+    "adjectival": "Bahamian"
+  },
+  {
+    "code": "BH",
+    "label": "Bahrain",
+    "adjectival": "Bahraini"
+  },
+  {
+    "code": "BD",
+    "label": "Bangladesh",
+    "adjectival": "Bangladeshi"
+  },
+  {
+    "code": "BB",
+    "label": "Barbados",
+    "adjectival": "Barbadian"
+  },
+  {
+    "code": "BY",
+    "label": "Belarus",
+    "adjectival": "Belarusian"
+  },
+  {
+    "code": "BE",
+    "label": "Belgium",
+    "adjectival": null
+  },
+  {
+    "code": "BZ",
+    "label": "Belize",
+    "adjectival": "Belizean"
+  },
+  {
+    "code": "BJ",
+    "label": "Benin",
+    "adjectival": "Beninese"
+  },
+  {
+    "code": "BM",
+    "label": "Bermuda",
+    "adjectival": null
+  },
+  {
+    "code": "BT",
+    "label": "Bhutan",
+    "adjectival": "Bhutanese"
+  },
+  {
+    "code": "BO",
+    "label": "Bolivia",
+    "adjectival": "Bolivian"
+  },
+  {
+    "code": "BA",
+    "label": "Bosnia And Herzegovina",
+    "adjectival": "Bosnian"
+  },
+  {
+    "code": "BW",
+    "label": "Botswana",
+    "adjectival": "Botswanan"
+  },
+  {
+    "code": "BR",
+    "label": "Brazil",
+    "adjectival": "Brazilian"
+  },
+  {
+    "code": "BN",
+    "label": "Brunei",
+    "adjectival": "Bruneian"
+  },
+  {
+    "code": "BG",
+    "label": "Bulgaria",
+    "adjectival": "Bulgarian"
+  },
+  {
+    "code": "BF",
+    "label": "Burkina Faso",
+    "adjectival": null
+  },
+  {
+    "code": "MM",
+    "label": "Burma",
+    "adjectival": "Burmese"
+  },
+  {
+    "code": "BI",
+    "label": "Burundi",
+    "adjectival": "Burundian"
+  },
+  {
+    "code": "KH",
+    "label": "Cambodia",
+    "adjectival": "Cambodian"
+  },
+  {
+    "code": "CM",
+    "label": "Cameroon",
+    "adjectival": "Cameroonian"
+  },
+  {
+    "code": "CA",
+    "label": "Canada",
+    "adjectival": null
+  },
+  {
+    "code": "CV",
+    "label": "Cape Verde",
+    "adjectival": "Cape Verdean"
+  },
+  {
+    "code": "CF",
+    "label": "Central African Republic",
+    "adjectival": "Central African"
+  },
+  {
+    "code": "TD",
+    "label": "Chad",
+    "adjectival": "Chadian"
+  },
+  {
+    "code": "CL",
+    "label": "Chile",
+    "adjectival": "Chilean"
+  },
+  {
+    "code": "CN",
+    "label": "China",
+    "adjectival": null
+  },
+  {
+    "code": "CO",
+    "label": "Colombia",
+    "adjectival": "Colombian"
+  },
+  {
+    "code": "KM",
+    "label": "Comoros",
+    "adjectival": null
+  },
+  {
+    "code": "CG",
+    "label": "Congo",
+    "adjectival": "Congolese (Congo-Brazzaville)"
+  },
+  {
+    "code": "CD",
+    "label": "Congo ]",
+    "adjectival": null
+  },
+  {
+    "code": "CR",
+    "label": "Costa Rica",
+    "adjectival": "Costa Rican"
+  },
+  {
+    "code": "HR",
+    "label": "Croatia",
+    "adjectival": "Croatian"
+  },
+  {
+    "code": "CU",
+    "label": "Cuba",
+    "adjectival": "Cuban"
+  },
+  {
+    "code": "XA",
+    "label": "Cyprus",
+    "adjectival": null
+  },
+  {
+    "code": "XB",
+    "label": "Cyprus",
+    "adjectival": null
+  },
+  {
+    "code": "XC",
+    "label": "Cyprus Not Otherwise Specified",
+    "adjectival": null
+  },
+  {
+    "code": "CZ",
+    "label": "Czech Republic",
+    "adjectival": "Czech"
+  },
+  {
+    "code": "XM",
+    "label": "Czechoslovakia Not Otherwise Specified",
+    "adjectival": "Czech"
+  },
+  {
+    "code": "DK",
+    "label": "Denmark",
+    "adjectival": null
+  },
+  {
+    "code": "DJ",
+    "label": "Djibouti",
+    "adjectival": "Djiboutian"
+  },
+  {
+    "code": "DM",
+    "label": "Dominica",
+    "adjectival": "Dominican"
+  },
+  {
+    "code": "DO",
+    "label": "Dominican Republic",
+    "adjectival": "Dominican"
+  },
+  {
+    "code": "TL",
+    "label": "East Timor",
+    "adjectival": "East Timorese"
+  },
+  {
+    "code": "EC",
+    "label": "Ecuador",
+    "adjectival": "Ecuadorean"
+  },
+  {
+    "code": "EG",
+    "label": "Egypt",
+    "adjectival": "Egyptian"
+  },
+  {
+    "code": "SV",
+    "label": "El Salvador",
+    "adjectival": null
+  },
+  {
+    "code": "GQ",
+    "label": "Equatorial Guinea",
+    "adjectival": "Equatorial Guinean"
+  },
+  {
+    "code": "ER",
+    "label": "Eritrea",
+    "adjectival": "Eritrean"
+  },
+  {
+    "code": "EE",
+    "label": "Estonia",
+    "adjectival": "Estonian"
+  },
+  {
+    "code": "ET",
+    "label": "Ethiopia",
+    "adjectival": "Ethiopian"
+  },
+  {
+    "code": "FJ",
+    "label": "Fiji",
+    "adjectival": "Fijian"
+  },
+  {
+    "code": "FI",
+    "label": "Finland",
+    "adjectival": null
+  },
+  {
+    "code": "FR",
+    "label": "France",
+    "adjectival": null
+  },
+  {
+    "code": "GA",
+    "label": "Gabon",
+    "adjectival": "Gabonese"
+  },
+  {
+    "code": "GM",
+    "label": "Gambia, The",
+    "adjectival": "Gambian"
+  },
+  {
+    "code": "GE",
+    "label": "Georgia",
+    "adjectival": "Georgian"
+  },
+  {
+    "code": "DE",
+    "label": "Germany",
+    "adjectival": "German"
+  },
+  {
+    "code": "GH",
+    "label": "Ghana",
+    "adjectival": "Ghanaian"
+  },
+  {
+    "code": "GI",
+    "label": "Gibraltar",
+    "adjectival": null
+  },
+  {
+    "code": "GR",
+    "label": "Greece",
+    "adjectival": null
+  },
+  {
+    "code": "GL",
+    "label": "Greenland",
+    "adjectival": null
+  },
+  {
+    "code": "GD",
+    "label": "Grenada",
+    "adjectival": null
+  },
+  {
+    "code": "GU",
+    "label": "Guam",
+    "adjectival": null
+  },
+  {
+    "code": "GT",
+    "label": "Guatemala",
+    "adjectival": "Guatemalan"
+  },
+  {
+    "code": "GG",
+    "label": "Guernsey",
+    "adjectival": null
+  },
+  {
+    "code": "GN",
+    "label": "Guinea",
+    "adjectival": "Equatorial Guinean"
+  },
+  {
+    "code": "GW",
+    "label": "Guinea-Bissau",
+    "adjectival": "Guinea-Bissauan"
+  },
+  {
+    "code": "GY",
+    "label": "Guyana",
+    "adjectival": null
+  },
+  {
+    "code": "HT",
+    "label": "Haiti",
+    "adjectival": "Haitian"
+  },
+  {
+    "code": "HN",
+    "label": "Honduras",
+    "adjectival": null
+  },
+  {
+    "code": "HU",
+    "label": "Hungary",
+    "adjectival": null
+  },
+  {
+    "code": "IS",
+    "label": "Iceland",
+    "adjectival": "Icelandic"
+  },
+  {
+    "code": "IN",
+    "label": "India",
+    "adjectival": "Indian"
+  },
+  {
+    "code": "ID",
+    "label": "Indonesia",
+    "adjectival": "Indonesian"
+  },
+  {
+    "code": "IR",
+    "label": "Iran",
+    "adjectival": "Iranian"
+  },
+  {
+    "code": "IQ",
+    "label": "Iraq",
+    "adjectival": "Iraqi"
+  },
+  {
+    "code": "IE",
+    "label": "Ireland",
+    "adjectival": null
+  },
+  {
+    "code": "IM",
+    "label": "Isle Of Man",
+    "adjectival": null
+  },
+  {
+    "code": "IL",
+    "label": "Israel",
+    "adjectival": "Israeli"
+  },
+  {
+    "code": "IT",
+    "label": "Italy",
+    "adjectival": null
+  },
+  {
+    "code": "CI",
+    "label": "Ivory Coast",
+    "adjectival": "Ivorian"
+  },
+  {
+    "code": "JM",
+    "label": "Jamaica",
+    "adjectival": "Jamaican"
+  },
+  {
+    "code": "JP",
+    "label": "Japan",
+    "adjectival": "Japanese"
+  },
+  {
+    "code": "JE",
+    "label": "Jersey",
+    "adjectival": null
+  },
+  {
+    "code": "JO",
+    "label": "Jordan",
+    "adjectival": "Jordanian"
+  },
+  {
+    "code": "KZ",
+    "label": "Kazakhstan",
+    "adjectival": "Kazakh"
+  },
+  {
+    "code": "KE",
+    "label": "Kenya",
+    "adjectival": "Kenyan"
+  },
+  {
+    "code": "KI",
+    "label": "Kiribati",
+    "adjectival": "Kiribati"
+  },
+  {
+    "code": "KP",
+    "label": "Korea",
+    "adjectival": "North Korean"
+  },
+  {
+    "code": "KR",
+    "label": "Korea",
+    "adjectival": "North Korean"
+  },
+  {
+    "code": "QO",
+    "label": "Kosovo",
+    "adjectival": null
+  },
+  {
+    "code": "KW",
+    "label": "Kuwait",
+    "adjectival": "Kuwaiti"
+  },
+  {
+    "code": "KG",
+    "label": "Kyrgyzstan",
+    "adjectival": "Kyrgyz"
+  },
+  {
+    "code": "LA",
+    "label": "Laos",
+    "adjectival": "Laotian"
+  },
+  {
+    "code": "LV",
+    "label": "Latvia",
+    "adjectival": "Latvian"
+  },
+  {
+    "code": "LB",
+    "label": "Lebanon",
+    "adjectival": null
+  },
+  {
+    "code": "LS",
+    "label": "Lesotho",
+    "adjectival": null
+  },
+  {
+    "code": "LR",
+    "label": "Liberia",
+    "adjectival": "Liberian"
+  },
+  {
+    "code": "LY",
+    "label": "Libya",
+    "adjectival": "Libyan"
+  },
+  {
+    "code": "LI",
+    "label": "Liechtenstein",
+    "adjectival": "Liechtensteiner"
+  },
+  {
+    "code": "LT",
+    "label": "Lithuania",
+    "adjectival": "Lithuanian"
+  },
+  {
+    "code": "LU",
+    "label": "Luxembourg",
+    "adjectival": "Luxembourger"
+  },
+  {
+    "code": "MK",
+    "label": "Macedonia",
+    "adjectival": "Macedonian"
+  },
+  {
+    "code": "MG",
+    "label": "Madagascar",
+    "adjectival": null
+  },
+  {
+    "code": "MW",
+    "label": "Malawi",
+    "adjectival": "Malawian"
+  },
+  {
+    "code": "MY",
+    "label": "Malaysia",
+    "adjectival": "Malaysian"
+  },
+  {
+    "code": "MV",
+    "label": "Maldives",
+    "adjectival": null
+  },
+  {
+    "code": "ML",
+    "label": "Mali",
+    "adjectival": "Malian"
+  },
+  {
+    "code": "MT",
+    "label": "Malta",
+    "adjectival": null
+  },
+  {
+    "code": "MR",
+    "label": "Mauritania",
+    "adjectival": "Mauritanian"
+  },
+  {
+    "code": "MU",
+    "label": "Mauritius",
+    "adjectival": null
+  },
+  {
+    "code": "MX",
+    "label": "Mexico",
+    "adjectival": null
+  },
+  {
+    "code": "FM",
+    "label": "Micronesia",
+    "adjectival": "Micronesian"
+  },
+  {
+    "code": "MD",
+    "label": "Moldova",
+    "adjectival": "Moldovan"
+  },
+  {
+    "code": "MC",
+    "label": "Monaco",
+    "adjectival": null
+  },
+  {
+    "code": "MN",
+    "label": "Mongolia",
+    "adjectival": "Mongolian"
+  },
+  {
+    "code": "ME",
+    "label": "Montenegro",
+    "adjectival": "Montenegrin"
+  },
+  {
+    "code": "MS",
+    "label": "Montserrat",
+    "adjectival": null
+  },
+  {
+    "code": "MA",
+    "label": "Morocco",
+    "adjectival": null
+  },
+  {
+    "code": "MZ",
+    "label": "Mozambique",
+    "adjectival": null
+  },
+  {
+    "code": "NA",
+    "label": "Namibia",
+    "adjectival": "Namibian"
+  },
+  {
+    "code": "NR",
+    "label": "Nauru",
+    "adjectival": "Nauruan"
+  },
+  {
+    "code": "NP",
+    "label": "Nepal",
+    "adjectival": "Nepalese"
+  },
+  {
+    "code": "NL",
+    "label": "Netherlands",
+    "adjectival": null
+  },
+  {
+    "code": "NZ",
+    "label": "New Zealand",
+    "adjectival": "New Zealander"
+  },
+  {
+    "code": "NI",
+    "label": "Nicaragua",
+    "adjectival": "Nicaraguan"
+  },
+  {
+    "code": "NE",
+    "label": "Niger",
+    "adjectival": "Nigerian"
+  },
+  {
+    "code": "NG",
+    "label": "Nigeria",
+    "adjectival": "Nigerian"
+  },
+  {
+    "code": "NO",
+    "label": "Norway",
+    "adjectival": null
+  },
+  {
+    "code": "ZZ",
+    "label": "Not Known",
+    "adjectival": null
+  },
+  {
+    "code": "PS",
+    "label": "Occupied Palestinian Territories",
+    "adjectival": "Palestinian"
+  },
+  {
+    "code": "OM",
+    "label": "Oman",
+    "adjectival": "Omani"
+  },
+  {
+    "code": "PK",
+    "label": "Pakistan",
+    "adjectival": "Pakistani"
+  },
+  {
+    "code": "PW",
+    "label": "Palau",
+    "adjectival": "Palauan"
+  },
+  {
+    "code": "PA",
+    "label": "Panama",
+    "adjectival": "Panamanian"
+  },
+  {
+    "code": "PG",
+    "label": "Papua New Guinea",
+    "adjectival": "Papua New Guinean"
+  },
+  {
+    "code": "PY",
+    "label": "Paraguay",
+    "adjectival": "Paraguayan"
+  },
+  {
+    "code": "PE",
+    "label": "Peru",
+    "adjectival": "Peruvian"
+  },
+  {
+    "code": "PH",
+    "label": "Philippines",
+    "adjectival": "Philippine"
+  },
+  {
+    "code": "PL",
+    "label": "Poland",
+    "adjectival": null
+  },
+  {
+    "code": "PT",
+    "label": "Portugal",
+    "adjectival": null
+  },
+  {
+    "code": "QA",
+    "label": "Qatar",
+    "adjectival": "Qatari"
+  },
+  {
+    "code": "RO",
+    "label": "Romania",
+    "adjectival": "Omani"
+  },
+  {
+    "code": "RU",
+    "label": "Russia",
+    "adjectival": "Russian"
+  },
+  {
+    "code": "RW",
+    "label": "Rwanda",
+    "adjectival": "Rwandan"
+  },
+  {
+    "code": "WS",
+    "label": "Samoa",
+    "adjectival": "Samoan"
+  },
+  {
+    "code": "SM",
+    "label": "San Marino",
+    "adjectival": "San Marinese"
+  },
+  {
+    "code": "ST",
+    "label": "Sao Tome And Principe",
+    "adjectival": "Sao Tomean"
+  },
+  {
+    "code": "SA",
+    "label": "Saudi Arabia",
+    "adjectival": "Saudi Arabian"
+  },
+  {
+    "code": "SN",
+    "label": "Senegal",
+    "adjectival": "Senegalese"
+  },
+  {
+    "code": "RS",
+    "label": "Serbia",
+    "adjectival": "Serbian"
+  },
+  {
+    "code": "QN",
+    "label": "Serbia And Montenegro Not Otherwise Specified",
+    "adjectival": null
+  },
+  {
+    "code": "SC",
+    "label": "Seychelles",
+    "adjectival": "Seychellois"
+  },
+  {
+    "code": "SL",
+    "label": "Sierra Leone",
+    "adjectival": "Sierra Leonean"
+  },
+  {
+    "code": "SG",
+    "label": "Singapore",
+    "adjectival": "Singaporean"
+  },
+  {
+    "code": "SK",
+    "label": "Slovakia",
+    "adjectival": "Slovak"
+  },
+  {
+    "code": "SI",
+    "label": "Slovenia",
+    "adjectival": null
+  },
+  {
+    "code": "SO",
+    "label": "Somalia",
+    "adjectival": "Somali"
+  },
+  {
+    "code": "ZA",
+    "label": "South Africa",
+    "adjectival": "South African"
+  },
+  {
+    "code": "SS",
+    "label": "South Sudan",
+    "adjectival": "South Sudanese"
+  },
+  {
+    "code": "ES",
+    "label": "Spain",
+    "adjectival": null
+  },
+  {
+    "code": "LK",
+    "label": "Sri Lanka",
+    "adjectival": "Sri Lankan"
+  },
+  {
+    "code": "SH",
+    "label": "St Helena, Ascension And Tristan Da Cunha",
+    "adjectival": null
+  },
+  {
+    "code": "KN",
+    "label": "St Kitts And Nevis",
+    "adjectival": "Kittitian"
+  },
+  {
+    "code": "LC",
+    "label": "St Lucia",
+    "adjectival": "Saint Lucian"
+  },
+  {
+    "code": "VC",
+    "label": "St Vincent And The Grenadines",
+    "adjectival": "Saint Vincentian"
+  },
+  {
+    "code": "AA",
+    "label": "Stateless",
+    "adjectival": null
+  },
+  {
+    "code": "SD",
+    "label": "Sudan",
+    "adjectival": "Sudanese"
+  },
+  {
+    "code": "SR",
+    "label": "Suriname",
+    "adjectival": "Surinamese"
+  },
+  {
+    "code": "SZ",
+    "label": "Swaziland",
+    "adjectival": "Swazi"
+  },
+  {
+    "code": "SE",
+    "label": "Sweden",
+    "adjectival": null
+  },
+  {
+    "code": "CH",
+    "label": "Switzerland",
+    "adjectival": null
+  },
+  {
+    "code": "SY",
+    "label": "Syria",
+    "adjectival": "Syrian"
+  },
+  {
+    "code": "TJ",
+    "label": "Tajikistan",
+    "adjectival": "Tajik"
+  },
+  {
+    "code": "TZ",
+    "label": "Tanzania",
+    "adjectival": "Tanzanian"
+  },
+  {
+    "code": "TH",
+    "label": "Thailand",
+    "adjectival": "Thai"
+  },
+  {
+    "code": "TG",
+    "label": "Togo",
+    "adjectival": "Togolese"
+  },
+  {
+    "code": "TO",
+    "label": "Tonga",
+    "adjectival": "Tongan"
+  },
+  {
+    "code": "TT",
+    "label": "Trinidad And Tobago",
+    "adjectival": "Trinidadian"
+  },
+  {
+    "code": "TN",
+    "label": "Tunisia",
+    "adjectival": "Tunisian"
+  },
+  {
+    "code": "TR",
+    "label": "Turkey",
+    "adjectival": null
+  },
+  {
+    "code": "TM",
+    "label": "Turkmenistan",
+    "adjectival": "Turkmen"
+  },
+  {
+    "code": "TV",
+    "label": "Tuvalu",
+    "adjectival": "Tuvaluan"
+  },
+  {
+    "code": "UG",
+    "label": "Uganda",
+    "adjectival": "Ugandan"
+  },
+  {
+    "code": "UA",
+    "label": "Ukraine",
+    "adjectival": null
+  },
+  {
+    "code": "XN",
+    "label": "Union Of Soviet Socialist Republics Not Otherwise Specified",
+    "adjectival": null
+  },
+  {
+    "code": "AE",
+    "label": "United Arab Emirates",
+    "adjectival": null
+  },
+  {
+    "code": "GB",
+    "label": "United Kingdom",
+    "adjectival": "British"
+  },
+  {
+    "code": "US",
+    "label": "United States",
+    "adjectival": "American"
+  },
+  {
+    "code": "UY",
+    "label": "Uruguay",
+    "adjectival": "Uruguayan"
+  },
+  {
+    "code": "UZ",
+    "label": "Uzbekistan",
+    "adjectival": "Uzbek"
+  },
+  {
+    "code": "VU",
+    "label": "Vanuatu",
+    "adjectival": "Vanuatuan"
+  },
+  {
+    "code": "VA",
+    "label": "Vatican City ]",
+    "adjectival": null
+  },
+  {
+    "code": "VE",
+    "label": "Venezuela",
+    "adjectival": "Venezuelan"
+  },
+  {
+    "code": "VN",
+    "label": "Vietnam",
+    "adjectival": "Vietnamese"
+  },
+  {
+    "code": "EH",
+    "label": "Western Sahara",
+    "adjectival": null
+  },
+  {
+    "code": "YE",
+    "label": "Yemen",
+    "adjectival": "Yemeni"
+  },
+  {
+    "code": "XO",
+    "label": "Yugoslavia Not Otherwise Specified",
+    "adjectival": null
+  },
+  {
+    "code": "ZM",
+    "label": "Zambia",
+    "adjectival": "Zambian"
+  },
+  {
+    "code": "ZW",
+    "label": "Code",
+    "adjectival": null
+  },
+  {
+    "code": "AF",
+    "label": "Afghanistan",
+    "adjectival": "Afghan"
+  },
+  {
+    "code": "AL",
+    "label": "Albania",
+    "adjectival": "Albanian"
+  },
+  {
+    "code": "DZ",
+    "label": "Algeria",
+    "adjectival": "Algerian"
+  },
+  {
+    "code": "AS",
+    "label": "American Samoa",
+    "adjectival": "American"
+  },
+  {
+    "code": "AD",
+    "label": "Andorra",
+    "adjectival": "Andorran"
+  },
+  {
+    "code": "AO",
+    "label": "Angola",
+    "adjectival": "Angolan"
+  },
+  {
+    "code": "AI",
+    "label": "Anguilla",
+    "adjectival": null
+  },
+  {
+    "code": "AG",
+    "label": "Antigua And Barbuda",
+    "adjectival": "Antiguan"
+  },
+  {
+    "code": "AR",
+    "label": "Argentina",
+    "adjectival": null
+  },
+  {
+    "code": "AM",
+    "label": "Armenia",
+    "adjectival": "Armenian"
+  },
+  {
+    "code": "AU",
+    "label": "Australia",
+    "adjectival": "Australian"
+  },
+  {
+    "code": "AT",
+    "label": "Austria",
+    "adjectival": "Austrian"
+  },
+  {
+    "code": "AZ",
+    "label": "Azerbaijan",
+    "adjectival": "Azerbaijani"
+  },
+  {
+    "code": "BS",
+    "label": "Bahamas, The",
+    "adjectival": "Bahamian"
+  },
+  {
+    "code": "BH",
+    "label": "Bahrain",
+    "adjectival": "Bahraini"
+  },
+  {
+    "code": "BD",
+    "label": "Bangladesh",
+    "adjectival": "Bangladeshi"
+  },
+  {
+    "code": "BB",
+    "label": "Barbados",
+    "adjectival": "Barbadian"
+  },
+  {
+    "code": "BY",
+    "label": "Belarus",
+    "adjectival": "Belarusian"
+  },
+  {
+    "code": "BE",
+    "label": "Belgium",
+    "adjectival": null
+  },
+  {
+    "code": "BZ",
+    "label": "Belize",
+    "adjectival": "Belizean"
+  },
+  {
+    "code": "BJ",
+    "label": "Benin",
+    "adjectival": "Beninese"
+  },
+  {
+    "code": "BM",
+    "label": "Bermuda",
+    "adjectival": null
+  },
+  {
+    "code": "BT",
+    "label": "Bhutan",
+    "adjectival": "Bhutanese"
+  },
+  {
+    "code": "BO",
+    "label": "Bolivia",
+    "adjectival": "Bolivian"
+  },
+  {
+    "code": "BA",
+    "label": "Bosnia And Herzegovina",
+    "adjectival": "Bosnian"
+  },
+  {
+    "code": "BW",
+    "label": "Botswana",
+    "adjectival": "Botswanan"
+  },
+  {
+    "code": "BR",
+    "label": "Brazil",
+    "adjectival": "Brazilian"
+  },
+  {
+    "code": "BN",
+    "label": "Brunei",
+    "adjectival": "Bruneian"
+  },
+  {
+    "code": "BG",
+    "label": "Bulgaria",
+    "adjectival": "Bulgarian"
+  },
+  {
+    "code": "BF",
+    "label": "Burkina Faso",
+    "adjectival": null
+  },
+  {
+    "code": "MM",
+    "label": "Burma",
+    "adjectival": "Burmese"
+  },
+  {
+    "code": "BI",
+    "label": "Burundi",
+    "adjectival": "Burundian"
+  },
+  {
+    "code": "KH",
+    "label": "Cambodia",
+    "adjectival": "Cambodian"
+  },
+  {
+    "code": "CM",
+    "label": "Cameroon",
+    "adjectival": "Cameroonian"
+  },
+  {
+    "code": "CA",
+    "label": "Canada",
+    "adjectival": null
+  },
+  {
+    "code": "CV",
+    "label": "Cape Verde",
+    "adjectival": "Cape Verdean"
+  },
+  {
+    "code": "CF",
+    "label": "Central African Republic",
+    "adjectival": "Central African"
+  },
+  {
+    "code": "TD",
+    "label": "Chad",
+    "adjectival": "Chadian"
+  },
+  {
+    "code": "CL",
+    "label": "Chile",
+    "adjectival": "Chilean"
+  },
+  {
+    "code": "CN",
+    "label": "China",
+    "adjectival": null
+  },
+  {
+    "code": "CO",
+    "label": "Colombia",
+    "adjectival": "Colombian"
+  },
+  {
+    "code": "KM",
+    "label": "Comoros",
+    "adjectival": null
+  },
+  {
+    "code": "CG",
+    "label": "Congo",
+    "adjectival": "Congolese (Congo-Brazzaville)"
+  },
+  {
+    "code": "CD",
+    "label": "Congo ]",
+    "adjectival": null
+  },
+  {
+    "code": "CR",
+    "label": "Costa Rica",
+    "adjectival": "Costa Rican"
+  },
+  {
+    "code": "HR",
+    "label": "Croatia",
+    "adjectival": "Croatian"
+  },
+  {
+    "code": "CU",
+    "label": "Cuba",
+    "adjectival": "Cuban"
+  },
+  {
+    "code": "XA",
+    "label": "Cyprus",
+    "adjectival": null
+  },
+  {
+    "code": "XB",
+    "label": "Cyprus",
+    "adjectival": null
+  },
+  {
+    "code": "XC",
+    "label": "Cyprus Not Otherwise Specified",
+    "adjectival": null
+  },
+  {
+    "code": "CZ",
+    "label": "Czech Republic",
+    "adjectival": "Czech"
+  },
+  {
+    "code": "XM",
+    "label": "Czechoslovakia Not Otherwise Specified",
+    "adjectival": "Czech"
+  },
+  {
+    "code": "DK",
+    "label": "Denmark",
+    "adjectival": null
+  },
+  {
+    "code": "DJ",
+    "label": "Djibouti",
+    "adjectival": "Djiboutian"
+  },
+  {
+    "code": "DM",
+    "label": "Dominica",
+    "adjectival": "Dominican"
+  },
+  {
+    "code": "DO",
+    "label": "Dominican Republic",
+    "adjectival": "Dominican"
+  },
+  {
+    "code": "TL",
+    "label": "East Timor",
+    "adjectival": "East Timorese"
+  },
+  {
+    "code": "EC",
+    "label": "Ecuador",
+    "adjectival": "Ecuadorean"
+  },
+  {
+    "code": "EG",
+    "label": "Egypt",
+    "adjectival": "Egyptian"
+  },
+  {
+    "code": "SV",
+    "label": "El Salvador",
+    "adjectival": null
+  },
+  {
+    "code": "GQ",
+    "label": "Equatorial Guinea",
+    "adjectival": "Equatorial Guinean"
+  },
+  {
+    "code": "ER",
+    "label": "Eritrea",
+    "adjectival": "Eritrean"
+  },
+  {
+    "code": "EE",
+    "label": "Estonia",
+    "adjectival": "Estonian"
+  },
+  {
+    "code": "ET",
+    "label": "Ethiopia",
+    "adjectival": "Ethiopian"
+  },
+  {
+    "code": "FJ",
+    "label": "Fiji",
+    "adjectival": "Fijian"
+  },
+  {
+    "code": "FI",
+    "label": "Finland",
+    "adjectival": null
+  },
+  {
+    "code": "FR",
+    "label": "France",
+    "adjectival": null
+  },
+  {
+    "code": "GA",
+    "label": "Gabon",
+    "adjectival": "Gabonese"
+  },
+  {
+    "code": "GM",
+    "label": "Gambia, The",
+    "adjectival": "Gambian"
+  },
+  {
+    "code": "GE",
+    "label": "Georgia",
+    "adjectival": "Georgian"
+  },
+  {
+    "code": "DE",
+    "label": "Germany",
+    "adjectival": "German"
+  },
+  {
+    "code": "GH",
+    "label": "Ghana",
+    "adjectival": "Ghanaian"
+  },
+  {
+    "code": "GI",
+    "label": "Gibraltar",
+    "adjectival": null
+  },
+  {
+    "code": "GR",
+    "label": "Greece",
+    "adjectival": null
+  },
+  {
+    "code": "GL",
+    "label": "Greenland",
+    "adjectival": null
+  },
+  {
+    "code": "GD",
+    "label": "Grenada",
+    "adjectival": null
+  },
+  {
+    "code": "GU",
+    "label": "Guam",
+    "adjectival": null
+  },
+  {
+    "code": "GT",
+    "label": "Guatemala",
+    "adjectival": "Guatemalan"
+  },
+  {
+    "code": "GG",
+    "label": "Guernsey",
+    "adjectival": null
+  },
+  {
+    "code": "GN",
+    "label": "Guinea",
+    "adjectival": "Equatorial Guinean"
+  },
+  {
+    "code": "GW",
+    "label": "Guinea-Bissau",
+    "adjectival": "Guinea-Bissauan"
+  },
+  {
+    "code": "GY",
+    "label": "Guyana",
+    "adjectival": null
+  },
+  {
+    "code": "HT",
+    "label": "Haiti",
+    "adjectival": "Haitian"
+  },
+  {
+    "code": "HN",
+    "label": "Honduras",
+    "adjectival": null
+  },
+  {
+    "code": "HU",
+    "label": "Hungary",
+    "adjectival": null
+  },
+  {
+    "code": "IS",
+    "label": "Iceland",
+    "adjectival": "Icelandic"
+  },
+  {
+    "code": "IN",
+    "label": "India",
+    "adjectival": "Indian"
+  },
+  {
+    "code": "ID",
+    "label": "Indonesia",
+    "adjectival": "Indonesian"
+  },
+  {
+    "code": "IR",
+    "label": "Iran",
+    "adjectival": "Iranian"
+  },
+  {
+    "code": "IQ",
+    "label": "Iraq",
+    "adjectival": "Iraqi"
+  },
+  {
+    "code": "IE",
+    "label": "Ireland",
+    "adjectival": null
+  },
+  {
+    "code": "IM",
+    "label": "Isle Of Man",
+    "adjectival": null
+  },
+  {
+    "code": "IL",
+    "label": "Israel",
+    "adjectival": "Israeli"
+  },
+  {
+    "code": "IT",
+    "label": "Italy",
+    "adjectival": null
+  },
+  {
+    "code": "CI",
+    "label": "Ivory Coast",
+    "adjectival": "Ivorian"
+  },
+  {
+    "code": "JM",
+    "label": "Jamaica",
+    "adjectival": "Jamaican"
+  },
+  {
+    "code": "JP",
+    "label": "Japan",
+    "adjectival": "Japanese"
+  },
+  {
+    "code": "JE",
+    "label": "Jersey",
+    "adjectival": null
+  },
+  {
+    "code": "JO",
+    "label": "Jordan",
+    "adjectival": "Jordanian"
+  },
+  {
+    "code": "KZ",
+    "label": "Kazakhstan",
+    "adjectival": "Kazakh"
+  },
+  {
+    "code": "KE",
+    "label": "Kenya",
+    "adjectival": "Kenyan"
+  },
+  {
+    "code": "KI",
+    "label": "Kiribati",
+    "adjectival": "Kiribati"
+  },
+  {
+    "code": "KP",
+    "label": "Korea",
+    "adjectival": "North Korean"
+  },
+  {
+    "code": "KR",
+    "label": "Korea",
+    "adjectival": "North Korean"
+  },
+  {
+    "code": "QO",
+    "label": "Kosovo",
+    "adjectival": null
+  },
+  {
+    "code": "KW",
+    "label": "Kuwait",
+    "adjectival": "Kuwaiti"
+  },
+  {
+    "code": "KG",
+    "label": "Kyrgyzstan",
+    "adjectival": "Kyrgyz"
+  },
+  {
+    "code": "LA",
+    "label": "Laos",
+    "adjectival": "Laotian"
+  },
+  {
+    "code": "LV",
+    "label": "Latvia",
+    "adjectival": "Latvian"
+  },
+  {
+    "code": "LB",
+    "label": "Lebanon",
+    "adjectival": null
+  },
+  {
+    "code": "LS",
+    "label": "Lesotho",
+    "adjectival": null
+  },
+  {
+    "code": "LR",
+    "label": "Liberia",
+    "adjectival": "Liberian"
+  },
+  {
+    "code": "LY",
+    "label": "Libya",
+    "adjectival": "Libyan"
+  },
+  {
+    "code": "LI",
+    "label": "Liechtenstein",
+    "adjectival": "Liechtensteiner"
+  },
+  {
+    "code": "LT",
+    "label": "Lithuania",
+    "adjectival": "Lithuanian"
+  },
+  {
+    "code": "LU",
+    "label": "Luxembourg",
+    "adjectival": "Luxembourger"
+  },
+  {
+    "code": "MK",
+    "label": "Macedonia",
+    "adjectival": "Macedonian"
+  },
+  {
+    "code": "MG",
+    "label": "Madagascar",
+    "adjectival": null
+  },
+  {
+    "code": "MW",
+    "label": "Malawi",
+    "adjectival": "Malawian"
+  },
+  {
+    "code": "MY",
+    "label": "Malaysia",
+    "adjectival": "Malaysian"
+  },
+  {
+    "code": "MV",
+    "label": "Maldives",
+    "adjectival": null
+  },
+  {
+    "code": "ML",
+    "label": "Mali",
+    "adjectival": "Malian"
+  },
+  {
+    "code": "MT",
+    "label": "Malta",
+    "adjectival": null
+  },
+  {
+    "code": "MR",
+    "label": "Mauritania",
+    "adjectival": "Mauritanian"
+  },
+  {
+    "code": "MU",
+    "label": "Mauritius",
+    "adjectival": null
+  },
+  {
+    "code": "MX",
+    "label": "Mexico",
+    "adjectival": null
+  },
+  {
+    "code": "FM",
+    "label": "Micronesia",
+    "adjectival": "Micronesian"
+  },
+  {
+    "code": "MD",
+    "label": "Moldova",
+    "adjectival": "Moldovan"
+  },
+  {
+    "code": "MC",
+    "label": "Monaco",
+    "adjectival": null
+  },
+  {
+    "code": "MN",
+    "label": "Mongolia",
+    "adjectival": "Mongolian"
+  },
+  {
+    "code": "ME",
+    "label": "Montenegro",
+    "adjectival": "Montenegrin"
+  },
+  {
+    "code": "MS",
+    "label": "Montserrat",
+    "adjectival": null
+  },
+  {
+    "code": "MA",
+    "label": "Morocco",
+    "adjectival": null
+  },
+  {
+    "code": "MZ",
+    "label": "Mozambique",
+    "adjectival": null
+  },
+  {
+    "code": "NA",
+    "label": "Namibia",
+    "adjectival": "Namibian"
+  },
+  {
+    "code": "NR",
+    "label": "Nauru",
+    "adjectival": "Nauruan"
+  },
+  {
+    "code": "NP",
+    "label": "Nepal",
+    "adjectival": "Nepalese"
+  },
+  {
+    "code": "NL",
+    "label": "Netherlands",
+    "adjectival": null
+  },
+  {
+    "code": "NZ",
+    "label": "New Zealand",
+    "adjectival": "New Zealander"
+  },
+  {
+    "code": "NI",
+    "label": "Nicaragua",
+    "adjectival": "Nicaraguan"
+  },
+  {
+    "code": "NE",
+    "label": "Niger",
+    "adjectival": "Nigerian"
+  },
+  {
+    "code": "NG",
+    "label": "Nigeria",
+    "adjectival": "Nigerian"
+  },
+  {
+    "code": "NO",
+    "label": "Norway",
+    "adjectival": null
+  },
+  {
+    "code": "ZZ",
+    "label": "Not Known",
+    "adjectival": null
+  },
+  {
+    "code": "PS",
+    "label": "Occupied Palestinian Territories",
+    "adjectival": "Palestinian"
+  },
+  {
+    "code": "OM",
+    "label": "Oman",
+    "adjectival": "Omani"
+  },
+  {
+    "code": "PK",
+    "label": "Pakistan",
+    "adjectival": "Pakistani"
+  },
+  {
+    "code": "PW",
+    "label": "Palau",
+    "adjectival": "Palauan"
+  },
+  {
+    "code": "PA",
+    "label": "Panama",
+    "adjectival": "Panamanian"
+  },
+  {
+    "code": "PG",
+    "label": "Papua New Guinea",
+    "adjectival": "Papua New Guinean"
+  },
+  {
+    "code": "PY",
+    "label": "Paraguay",
+    "adjectival": "Paraguayan"
+  },
+  {
+    "code": "PE",
+    "label": "Peru",
+    "adjectival": "Peruvian"
+  },
+  {
+    "code": "PH",
+    "label": "Philippines",
+    "adjectival": "Philippine"
+  },
+  {
+    "code": "PL",
+    "label": "Poland",
+    "adjectival": null
+  },
+  {
+    "code": "PT",
+    "label": "Portugal",
+    "adjectival": null
+  },
+  {
+    "code": "QA",
+    "label": "Qatar",
+    "adjectival": "Qatari"
+  },
+  {
+    "code": "RO",
+    "label": "Romania",
+    "adjectival": "Omani"
+  },
+  {
+    "code": "RU",
+    "label": "Russia",
+    "adjectival": "Russian"
+  },
+  {
+    "code": "RW",
+    "label": "Rwanda",
+    "adjectival": "Rwandan"
+  },
+  {
+    "code": "WS",
+    "label": "Samoa",
+    "adjectival": "Samoan"
+  },
+  {
+    "code": "SM",
+    "label": "San Marino",
+    "adjectival": "San Marinese"
+  },
+  {
+    "code": "ST",
+    "label": "Sao Tome And Principe",
+    "adjectival": "Sao Tomean"
+  },
+  {
+    "code": "SA",
+    "label": "Saudi Arabia",
+    "adjectival": "Saudi Arabian"
+  },
+  {
+    "code": "SN",
+    "label": "Senegal",
+    "adjectival": "Senegalese"
+  },
+  {
+    "code": "RS",
+    "label": "Serbia",
+    "adjectival": "Serbian"
+  },
+  {
+    "code": "QN",
+    "label": "Serbia And Montenegro Not Otherwise Specified",
+    "adjectival": null
+  },
+  {
+    "code": "SC",
+    "label": "Seychelles",
+    "adjectival": "Seychellois"
+  },
+  {
+    "code": "SL",
+    "label": "Sierra Leone",
+    "adjectival": "Sierra Leonean"
+  },
+  {
+    "code": "SG",
+    "label": "Singapore",
+    "adjectival": "Singaporean"
+  },
+  {
+    "code": "SK",
+    "label": "Slovakia",
+    "adjectival": "Slovak"
+  },
+  {
+    "code": "SI",
+    "label": "Slovenia",
+    "adjectival": null
+  },
+  {
+    "code": "SO",
+    "label": "Somalia",
+    "adjectival": "Somali"
+  },
+  {
+    "code": "ZA",
+    "label": "South Africa",
+    "adjectival": "South African"
+  },
+  {
+    "code": "SS",
+    "label": "South Sudan",
+    "adjectival": "South Sudanese"
+  },
+  {
+    "code": "ES",
+    "label": "Spain",
+    "adjectival": null
+  },
+  {
+    "code": "LK",
+    "label": "Sri Lanka",
+    "adjectival": "Sri Lankan"
+  },
+  {
+    "code": "SH",
+    "label": "St Helena, Ascension And Tristan Da Cunha",
+    "adjectival": null
+  },
+  {
+    "code": "KN",
+    "label": "St Kitts And Nevis",
+    "adjectival": "Kittitian"
+  },
+  {
+    "code": "LC",
+    "label": "St Lucia",
+    "adjectival": "Saint Lucian"
+  },
+  {
+    "code": "VC",
+    "label": "St Vincent And The Grenadines",
+    "adjectival": "Saint Vincentian"
+  },
+  {
+    "code": "AA",
+    "label": "Stateless",
+    "adjectival": null
+  },
+  {
+    "code": "SD",
+    "label": "Sudan",
+    "adjectival": "Sudanese"
+  },
+  {
+    "code": "SR",
+    "label": "Suriname",
+    "adjectival": "Surinamese"
+  },
+  {
+    "code": "SZ",
+    "label": "Swaziland",
+    "adjectival": "Swazi"
+  },
+  {
+    "code": "SE",
+    "label": "Sweden",
+    "adjectival": null
+  },
+  {
+    "code": "CH",
+    "label": "Switzerland",
+    "adjectival": null
+  },
+  {
+    "code": "SY",
+    "label": "Syria",
+    "adjectival": "Syrian"
+  },
+  {
+    "code": "TJ",
+    "label": "Tajikistan",
+    "adjectival": "Tajik"
+  },
+  {
+    "code": "TZ",
+    "label": "Tanzania",
+    "adjectival": "Tanzanian"
+  },
+  {
+    "code": "TH",
+    "label": "Thailand",
+    "adjectival": "Thai"
+  },
+  {
+    "code": "TG",
+    "label": "Togo",
+    "adjectival": "Togolese"
+  },
+  {
+    "code": "TO",
+    "label": "Tonga",
+    "adjectival": "Tongan"
+  },
+  {
+    "code": "TT",
+    "label": "Trinidad And Tobago",
+    "adjectival": "Trinidadian"
+  },
+  {
+    "code": "TN",
+    "label": "Tunisia",
+    "adjectival": "Tunisian"
+  },
+  {
+    "code": "TR",
+    "label": "Turkey",
+    "adjectival": null
+  },
+  {
+    "code": "TM",
+    "label": "Turkmenistan",
+    "adjectival": "Turkmen"
+  },
+  {
+    "code": "TV",
+    "label": "Tuvalu",
+    "adjectival": "Tuvaluan"
+  },
+  {
+    "code": "UG",
+    "label": "Uganda",
+    "adjectival": "Ugandan"
+  },
+  {
+    "code": "UA",
+    "label": "Ukraine",
+    "adjectival": null
+  },
+  {
+    "code": "XN",
+    "label": "Union Of Soviet Socialist Republics Not Otherwise Specified",
+    "adjectival": null
+  },
+  {
+    "code": "AE",
+    "label": "United Arab Emirates",
+    "adjectival": null
+  },
+  {
+    "code": "GB",
+    "label": "United Kingdom",
+    "adjectival": "British"
+  },
+  {
+    "code": "US",
+    "label": "United States",
+    "adjectival": "American"
+  },
+  {
+    "code": "UY",
+    "label": "Uruguay",
+    "adjectival": "Uruguayan"
+  },
+  {
+    "code": "UZ",
+    "label": "Uzbekistan",
+    "adjectival": "Uzbek"
+  },
+  {
+    "code": "VU",
+    "label": "Vanuatu",
+    "adjectival": "Vanuatuan"
+  },
+  {
+    "code": "VA",
+    "label": "Vatican City ]",
+    "adjectival": null
+  },
+  {
+    "code": "VE",
+    "label": "Venezuela",
+    "adjectival": "Venezuelan"
+  },
+  {
+    "code": "VN",
+    "label": "Vietnam",
+    "adjectival": "Vietnamese"
+  },
+  {
+    "code": "EH",
+    "label": "Western Sahara",
+    "adjectival": null
+  },
+  {
+    "code": "YE",
+    "label": "Yemen",
+    "adjectival": "Yemeni"
+  },
+  {
+    "code": "XO",
+    "label": "Yugoslavia Not Otherwise Specified",
+    "adjectival": null
+  },
+  {
+    "code": "ZM",
+    "label": "Zambia",
+    "adjectival": "Zambian"
+  },
+  {
+    "code": "ZW",
+    "label": "Zimbabwe",
+    "adjectival": "Zimbabwean"
+  }
+]

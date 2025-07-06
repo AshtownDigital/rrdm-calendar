@@ -49,6 +49,7 @@ const updateBcrController = require('../../../controllers/updateBcrController');
 const releaseAssignmentController = require('../../../controllers/releaseAssignmentController');
 const updateWorkflowController = require('../../../controllers/updateWorkflowController');
 
+
 // Import workflow routes
 const workflowRoutes = require('./workflow');
 
@@ -66,14 +67,27 @@ router.get('/workflow', bcrController.showWorkflow);
 // Mount the workflow routes
 router.use('/workflow', workflowRoutes);
 
-// === Submission Routes (Pre-BCR) ===
+// === Submission Routes (Deprecated) ===
+// Redirect any /bcr/submissions... URL to the new standalone /submissions module
+router.use('/submissions', (req, res) => {
+  // Strip leading '/bcr' from the path and preserve query string
+  const newPath = req.originalUrl.replace(/^\/bcr/, '') || '/submissions';
+  return res.redirect(301, newPath);
+});
+
+
+
 router.get('/submit', bcrController.newSubmissionForm);
 router.post('/submit', csrfProtection, bcrController.createSubmission);
-router.get('/submissions', bcrController.listSubmissions);
-router.get('/submissions/dashboard', bcrController.submissionDashboard); // Add specific route for submissions dashboard
-router.get('/submissions/:submissionId', bcrController.viewSubmission);
-router.get('/submissions/:submissionId/review', csrfProtection, reviewController.renderReviewForm);
-router.post('/submissions/:submissionId/review', csrfProtection, reviewController.processReview);
+
+
+
+// Legacy path with /view segment
+
+// Preferred path
+
+
+
 
 // === Impact Areas Routes ===
 // Main impact areas route to list all impact areas

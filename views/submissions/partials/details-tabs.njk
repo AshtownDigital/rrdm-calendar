@@ -1,0 +1,29 @@
+{# Simple tabs wrapper that pulls in cleaned section partials #}
+
+<div class="govuk-tabs" data-module="govuk-tabs">
+  <h2 class="govuk-tabs__title">Contents</h2>
+
+  <ul class="govuk-tabs__list">
+    <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+      <a class="govuk-tabs__tab" href="#submission">Submission</a>
+    </li>
+    <li class="govuk-tabs__list-item">
+      <a class="govuk-tabs__tab" href="#review">Review &amp; BCR Details</a>
+    </li>
+    <li class="govuk-tabs__list-item">
+      <a class="govuk-tabs__tab" href="#audit">Audit</a>
+    </li>
+  </ul>
+
+  <section id="submission" class="govuk-tabs__panel" aria-label="Submission details">
+    {% include "submissions/partials/submission-section.njk" %}
+  </section>
+
+  <section id="review" class="govuk-tabs__panel govuk-tabs__panel--hidden" aria-label="Review and BCR details">
+    {% include "submissions/partials/review-section.njk" %}
+  </section>
+
+  <section id="audit" class="govuk-tabs__panel govuk-tabs__panel--hidden" aria-label="Audit information">
+    {% include "submissions/partials/audit-section.njk" %}
+  </section>
+</div>

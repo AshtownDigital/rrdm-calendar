@@ -115,7 +115,7 @@
               </dt>
               <dd class="govuk-summary-list__value">
                 {% if submission %}
-                  <a href="/bcr/submissions/{{ submission._id }}" class="govuk-link">{{ submission.submissionCode }}</a>
+                  <a href="/submissions/{{ submission._id }}" class="govuk-link">{{ submission.submissionCode }}</a>
                 {% else %}
                   Not available
                 {% endif %}
@@ -234,7 +234,7 @@
     <div class="govuk-button-group">
       <a href="/bcr/business-change-requests" class="govuk-button govuk-button--secondary">Back to Business Change Requests</a>
       {% if submission %}
-        <a href="/bcr/submissions/{{ submission._id }}" class="govuk-link">View Original Submission</a>
+        <a href="/submissions/{{ submission._id }}" class="govuk-link">View Original Submission</a>
       {% endif %}
     </div>
   </div>

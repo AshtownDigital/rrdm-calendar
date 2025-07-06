@@ -1,0 +1,37 @@
+{% extends "layout.njk" %}
+
+{% block pageTitle %}
+  Data Gem Categories - RRDM
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-width-container">
+    <main class="govuk-main-wrapper" id="main-content" role="main">
+      <h1 class="govuk-heading-xl">Data Gem Categories</h1>
+      <p class="govuk-body">Select a category to explore its datasets.</p>
+
+      <h2 class="govuk-heading-l">General</h2>
+      <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-6">
+        {% for s in headings %}
+          <li><a href="/data-gem/viewer?file=ref_data%20(1).md&section={{ s | urlencode }}" class="govuk-link">{{ s }}</a></li>
+        {% endfor %}
+      </ul>
+
+      <h2 class="govuk-heading-l">Other Categories</h2>
+      <ul class="govuk-list govuk-list--bullet">
+        {% for cat in folderCategories %}
+          <li><a href="/data-gem/viewer?category={{ cat | urlencode }}" class="govuk-link">{{ cat }}</a></li>
+                  <li><a href="/data-gem/viewer?file=ref_data%20(1).md&section={{ s | urlencode }}" class="govuk-link">{{ s }}</a></li>
+                {% endfor %}
+              </ul>
+            </li>
+          {% else %}
+            <li><a href="/data-gem/sections?file={{ c | urlencode }}" class="govuk-link">{{ c }}</a></li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+
+      <p><a href="/" class="govuk-link">Return to Home</a></p>
+    </main>
+  </div>
+{% endblock %}

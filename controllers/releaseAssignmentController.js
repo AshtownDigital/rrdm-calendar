@@ -8,7 +8,7 @@ const bcrModel = require('../../../models/modules/bcr/model');
 const releaseService = require('../../../services/releaseService');
 
 // Ensure models are registered
-require('../../../models');
+require('../models');
 
 // Get models
 const { AcademicYear, Release } = mongoose.models;

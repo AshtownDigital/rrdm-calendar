@@ -1,0 +1,59 @@
+{% extends "../layout.njk" %}
+
+{% block pageTitle %}
+  Field Mapping Reference - {{ serviceName }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">Field Mapping Reference</h1>
+      
+      <p class="govuk-body">This page provides a reference for how field names are mapped across different systems.</p>
+      
+      <div class="govuk-inset-text">
+        <p>Field names may appear differently in various parts of the system:</p>
+        <ul class="govuk-list govuk-list--bullet">
+          <li><strong>Register Field Name</strong>: The canonical name used in the Register system</li>
+          <li><strong>CSV Field Name</strong>: The name used in CSV and Excel files</li>
+          <li><strong>API Field Name</strong>: The name used in API calls (typically snake_case)</li>
+          <li><strong>HESA Code</strong>: The corresponding HESA reference code</li>
+        </ul>
+      </div>
+      
+      <a href="/reference-data" class="govuk-back-link">Back to Reference Data</a>
+    </div>
+  </div>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-table__caption--m">Field Name Mappings</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header govuk-table__header--text-align-left">Register Field Name</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--text-align-left">CSV Field Name</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--text-align-left">API Field Name</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--text-align-left">HESA Code</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for mapping in fieldMappings %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ mapping.registerFieldName }}</td>
+            <td class="govuk-table__cell">{{ mapping.csvFieldName }}</td>
+            <td class="govuk-table__cell">{{ mapping.apiFieldName }}</td>
+            <td class="govuk-table__cell">
+              {% for key, value in hesaMapping %}
+                {% if value.split(',')[0].trim() == mapping.registerFieldName %}
+                  {{ key }}
+                {% endif %}
+              {% endfor %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

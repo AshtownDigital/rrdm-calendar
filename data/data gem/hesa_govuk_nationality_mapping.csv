@@ -1,0 +1,459 @@
+Code,HESA_Label,ISO_Name,GOVUK_Adjectival,Territory,Match_Source
+AF,Afghanistan,Afghanistan,Afghan,No,Direct
+AL,Albania,Albania,Albanian,No,Direct
+DZ,Algeria,Algeria,Algerian,No,Direct
+AS,American Samoa,American Samoa,American,No,Direct
+AD,Andorra,Andorra,Andorran,No,Direct
+AO,Angola,Angola,Angolan,No,Direct
+AI,Anguilla,Anguilla,,No,
+AG,Antigua and Barbuda,Antigua And Barbuda,Antiguan,No,Special
+AR,Argentina,Argentina,,No,
+AM,Armenia,Armenia,Armenian,No,Direct
+AU,Australia,Australia,Australian,No,Direct
+AT,Austria,Austria,Austrian,No,Direct
+AZ,Azerbaijan,Azerbaijan,Azerbaijani,No,Direct
+BS,"Bahamas, The","Bahamas, The",Bahamian,No,Special
+BH,Bahrain,Bahrain,Bahraini,No,Direct
+BD,Bangladesh,Bangladesh,Bangladeshi,No,Direct
+BB,Barbados,Barbados,Barbadian,No,Special
+BY,Belarus,Belarus,Belarusian,No,Special
+BE,Belgium,Belgium,,No,
+BZ,Belize,Belize,Belizean,No,Direct
+BJ,Benin,Benin,Beninese,No,Direct
+BM,Bermuda,Bermuda,,No,
+BT,Bhutan,Bhutan,Bhutanese,No,Direct
+BO,"Bolivia [Bolivia, Plurinational State of]",Bolivia,Bolivian,No,Direct
+BA,Bosnia and Herzegovina,Bosnia And Herzegovina,Bosnian,No,Special
+BW,Botswana,Botswana,Botswanan,No,Direct
+BR,Brazil,Brazil,Brazilian,No,Direct
+IO,British Indian Ocean Territory (BIOT),British Indian Ocean Territory,British,Yes,Direct
+VG,"British Virgin Islands [Virgin Islands, British]",British Virgin Islands,British Virgin Islander,Yes,Special
+BN,Brunei [Brunei Darussalam],Brunei,Bruneian,No,Direct
+BG,Bulgaria,Bulgaria,Bulgarian,No,Direct
+BF,Burkina Faso,Burkina Faso,,No,
+MM,Burma [Myanmar],Burma,Burmese,No,Special
+BI,Burundi,Burundi,Burundian,No,Direct
+KH,Cambodia,Cambodia,Cambodian,No,Direct
+CM,Cameroon,Cameroon,Cameroonian,No,Direct
+CA,Canada,Canada,,No,
+CV,Cape Verde,Cape Verde,Cape Verdean,No,Special
+KY,Cayman Islands,Cayman Islands,,Yes,
+CF,Central African Republic,Central African Republic,Central African,No,Special
+TD,Chad,Chad,Chadian,No,Direct
+XL,Channel Islands not otherwise specified,Channel Islands Not Otherwise Specified,,Yes,
+CL,Chile,Chile,Chilean,No,Direct
+CN,China,China,,No,
+CO,Colombia,Colombia,Colombian,No,Direct
+KM,Comoros,Comoros,,No,
+CG,Congo,Congo,Congolese (Congo-Brazzaville),No,Special
+CD,Congo (Democratic Republic) [Congo (The Democratic Republic of the)],Congo ],,No,
+CR,Costa Rica,Costa Rica,Costa Rican,No,Direct
+HR,Croatia,Croatia,Croatian,No,Direct
+CU,Cuba,Cuba,Cuban,No,Direct
+XA,Cyprus (European Union),Cyprus,,No,
+XB,Cyprus (Non-European Union),Cyprus,,No,
+XC,Cyprus not otherwise specified,Cyprus Not Otherwise Specified,,No,
+CZ,Czech Republic,Czech Republic,Czech,No,Special
+XM,Czechoslovakia not otherwise specified,Czechoslovakia Not Otherwise Specified,Czech,No,Direct
+DK,Denmark,Denmark,,No,
+DJ,Djibouti,Djibouti,Djiboutian,No,Direct
+DM,Dominica,Dominica,Dominican,No,Direct
+DO,Dominican Republic,Dominican Republic,Dominican,No,Special
+TL,East Timor [Timor Leste],East Timor,East Timorese,No,Special
+EC,Ecuador,Ecuador,Ecuadorean,No,Direct
+EG,Egypt,Egypt,Egyptian,No,Direct
+SV,El Salvador,El Salvador,,No,
+GQ,Equatorial Guinea,Equatorial Guinea,Equatorial Guinean,No,Direct
+ER,Eritrea,Eritrea,Eritrean,No,Direct
+EE,Estonia,Estonia,Estonian,No,Direct
+ET,Ethiopia,Ethiopia,Ethiopian,No,Direct
+FK,Falkland Islands [Falkland Islands (Malvinas)],Falkland Islands ],,Yes,
+FO,Faroe Islands,Faroe Islands,Faroese,Yes,Special
+FJ,Fiji,Fiji,Fijian,No,Direct
+FI,Finland,Finland,,No,
+FR,France,France,,No,
+GA,Gabon,Gabon,Gabonese,No,Direct
+GM,"Gambia, The","Gambia, The",Gambian,No,Special
+GE,Georgia,Georgia,Georgian,No,Direct
+DE,Germany,Germany,German,No,Direct
+GH,Ghana,Ghana,Ghanaian,No,Direct
+GI,Gibraltar,Gibraltar,,No,
+GR,Greece,Greece,,No,
+GL,Greenland,Greenland,,No,
+GD,Grenada,Grenada,,No,
+GU,Guam,Guam,,No,
+GT,Guatemala,Guatemala,Guatemalan,No,Direct
+GG,Guernsey,Guernsey,,No,
+GN,Guinea,Guinea,Equatorial Guinean,No,Direct
+GW,Guinea-Bissau,Guinea-Bissau,Guinea-Bissauan,No,Direct
+GY,Guyana,Guyana,,No,
+HT,Haiti,Haiti,Haitian,No,Direct
+HN,Honduras,Honduras,,No,
+HK,Hong Kong (Special Administrative Region of China) [Hong Kong],Hong Kong,,Yes,
+HU,Hungary,Hungary,,No,
+IS,Iceland,Iceland,Icelandic,No,Direct
+IN,India,India,Indian,No,Direct
+ID,Indonesia,Indonesia,Indonesian,No,Direct
+IR,"Iran [Iran, Islamic Republic of]",Iran,Iranian,No,Direct
+IQ,Iraq,Iraq,Iraqi,No,Direct
+IE,Ireland,Ireland,,No,
+IM,Isle of Man,Isle Of Man,,No,
+IL,Israel,Israel,Israeli,No,Direct
+IT,Italy,Italy,,No,
+CI,Ivory Coast [Côte D'ivoire],Ivory Coast,Ivorian,No,Special
+JM,Jamaica,Jamaica,Jamaican,No,Direct
+JP,Japan,Japan,Japanese,No,Direct
+JE,Jersey,Jersey,,No,
+JO,Jordan,Jordan,Jordanian,No,Direct
+KZ,Kazakhstan,Kazakhstan,Kazakh,No,Direct
+KE,Kenya,Kenya,Kenyan,No,Direct
+KI,Kiribati,Kiribati,Kiribati,No,Direct
+KP,"Korea (North) [Korea, Democratic People's Republic of]",Korea,North Korean,No,Direct
+KR,"Korea (South) [Korea, Republic of]",Korea,North Korean,No,Direct
+QO,Kosovo,Kosovo,,No,
+KW,Kuwait,Kuwait,Kuwaiti,No,Direct
+KG,Kyrgyzstan,Kyrgyzstan,Kyrgyz,No,Direct
+LA,Laos [Lao People's Democratic Republic],Laos,Laotian,No,Special
+LV,Latvia,Latvia,Latvian,No,Direct
+LB,Lebanon,Lebanon,,No,
+LS,Lesotho,Lesotho,,No,
+LR,Liberia,Liberia,Liberian,No,Direct
+LY,Libya,Libya,Libyan,No,Direct
+LI,Liechtenstein,Liechtenstein,Liechtensteiner,No,Direct
+LT,Lithuania,Lithuania,Lithuanian,No,Direct
+LU,Luxembourg,Luxembourg,Luxembourger,No,Direct
+MO,Macao (Special Administrative Region of China) [Macao],Macao,Macanese,Yes,Special
+MK,"Macedonia [Macedonia, The Former Yugoslav Republic of]",Macedonia,Macedonian,No,Direct
+MG,Madagascar,Madagascar,,No,
+MW,Malawi,Malawi,Malawian,No,Direct
+MY,Malaysia,Malaysia,Malaysian,No,Direct
+MV,Maldives,Maldives,,No,
+ML,Mali,Mali,Malian,No,Direct
+MT,Malta,Malta,,No,
+MH,Marshall Islands,Marshall Islands,Marshallese,Yes,Special
+MR,Mauritania,Mauritania,Mauritanian,No,Direct
+MU,Mauritius,Mauritius,,No,
+MX,Mexico,Mexico,,No,
+FM,"Micronesia [Micronesia, Federated States of]",Micronesia,Micronesian,No,Special
+MD,"Moldova [Moldova, Republic of]",Moldova,Moldovan,No,Direct
+MC,Monaco,Monaco,,No,
+MN,Mongolia,Mongolia,Mongolian,No,Direct
+ME,Montenegro,Montenegro,Montenegrin,No,Special
+MS,Montserrat,Montserrat,,No,
+MA,Morocco,Morocco,,No,
+MZ,Mozambique,Mozambique,,No,
+NA,Namibia,Namibia,Namibian,No,Direct
+NR,Nauru,Nauru,Nauruan,No,Direct
+NP,Nepal,Nepal,Nepalese,No,Direct
+NL,Netherlands,Netherlands,,No,
+NZ,New Zealand,New Zealand,New Zealander,No,Direct
+NI,Nicaragua,Nicaragua,Nicaraguan,No,Direct
+NE,Niger,Niger,Nigerian,No,Direct
+NG,Nigeria,Nigeria,Nigerian,No,Direct
+MP,Northern Mariana Islands,Northern Mariana Islands,Northern Mariana Islander,Yes,Special
+NO,Norway,Norway,,No,
+ZZ,Not known,Not Known,,No,
+PS,"Occupied Palestinian Territories [Palestine, State of]",Occupied Palestinian Territories,Palestinian,No,Special
+OM,Oman,Oman,Omani,No,Direct
+PK,Pakistan,Pakistan,Pakistani,No,Direct
+PW,Palau,Palau,Palauan,No,Direct
+PA,Panama,Panama,Panamanian,No,Direct
+PG,Papua New Guinea,Papua New Guinea,Papua New Guinean,No,Direct
+PY,Paraguay,Paraguay,Paraguayan,No,Direct
+PE,Peru,Peru,Peruvian,No,Direct
+PH,Philippines,Philippines,Philippine,No,Direct
+PN,"Pitcairn, Henderson, Ducie and Oeno Islands [Pitcairn]","Pitcairn, Henderson, Ducie And Oeno Islands",,Yes,
+PL,Poland,Poland,,No,
+PT,Portugal,Portugal,,No,
+QA,Qatar,Qatar,Qatari,No,Direct
+RO,Romania,Romania,Omani,No,Direct
+RU,Russia [Russian Federation],Russia,Russian,No,Direct
+RW,Rwanda,Rwanda,Rwandan,No,Direct
+WS,Samoa,Samoa,Samoan,No,Direct
+SM,San Marino,San Marino,San Marinese,No,Special
+ST,Sao Tome and Principe,Sao Tome And Principe,Sao Tomean,No,Special
+SA,Saudi Arabia,Saudi Arabia,Saudi Arabian,No,Direct
+SN,Senegal,Senegal,Senegalese,No,Direct
+RS,Serbia,Serbia,Serbian,No,Special
+QN,Serbia and Montenegro not otherwise specified,Serbia And Montenegro Not Otherwise Specified,,No,
+SC,Seychelles,Seychelles,Seychellois,No,Special
+SL,Sierra Leone,Sierra Leone,Sierra Leonean,No,Direct
+SG,Singapore,Singapore,Singaporean,No,Direct
+SK,Slovakia,Slovakia,Slovak,No,Direct
+SI,Slovenia,Slovenia,,No,
+SB,Solomon Islands,Solomon Islands,Solomon Islander,Yes,Special
+SO,Somalia,Somalia,Somali,No,Direct
+ZA,South Africa,South Africa,South African,No,Direct
+GS,South Georgia and The South Sandwich Islands,South Georgia And The South Sandwich Islands,,Yes,
+SS,South Sudan,South Sudan,South Sudanese,No,Special
+ES,Spain,Spain,,No,
+LK,Sri Lanka,Sri Lanka,Sri Lankan,No,Direct
+SH,"St Helena, Ascension and Tristan da Cunha","St Helena, Ascension And Tristan Da Cunha",,No,
+KN,St Kitts and Nevis,St Kitts And Nevis,Kittitian,No,Special
+LC,St Lucia,St Lucia,Saint Lucian,No,Special
+VC,St Vincent and The Grenadines,St Vincent And The Grenadines,Saint Vincentian,No,Special
+AA,Stateless,Stateless,,No,
+SD,Sudan,Sudan,Sudanese,No,Special
+SR,Suriname,Suriname,Surinamese,No,Direct
+SZ,Swaziland,Swaziland,Swazi,No,Direct
+SE,Sweden,Sweden,,No,
+CH,Switzerland,Switzerland,,No,
+SY,Syria [Syrian Arab Republic],Syria,Syrian,No,Direct
+TW,"Taiwan [Taiwan, Province of China]",Taiwan,Taiwanese,Yes,Special
+TJ,Tajikistan,Tajikistan,Tajik,No,Direct
+TZ,"Tanzania [Tanzania, United Republic of]",Tanzania,Tanzanian,No,Direct
+TH,Thailand,Thailand,Thai,No,Direct
+TG,Togo,Togo,Togolese,No,Direct
+TO,Tonga,Tonga,Tongan,No,Direct
+TT,Trinidad and Tobago,Trinidad And Tobago,Trinidadian,No,Special
+TN,Tunisia,Tunisia,Tunisian,No,Direct
+TR,Turkey,Turkey,,No,
+TM,Turkmenistan,Turkmenistan,Turkmen,No,Direct
+TC,Turks and Caicos Islands,Turks And Caicos Islands,,Yes,
+TV,Tuvalu,Tuvalu,Tuvaluan,No,Direct
+UG,Uganda,Uganda,Ugandan,No,Direct
+UA,Ukraine,Ukraine,,No,
+XN,Union of Soviet Socialist Republics not otherwise specified,Union Of Soviet Socialist Republics Not Otherwise Specified,,No,
+AE,United Arab Emirates,United Arab Emirates,,No,
+GB,United Kingdom,United Kingdom,British,No,Special
+US,United States,United States,American,No,Special
+UY,Uruguay,Uruguay,Uruguayan,No,Direct
+UZ,Uzbekistan,Uzbekistan,Uzbek,No,Direct
+VU,Vanuatu,Vanuatu,Vanuatuan,No,Direct
+VA,Vatican City [Holy See (Vatican City State)],Vatican City ],,No,
+VE,"Venezuela [Venezuela, Bolivarian Republic of]",Venezuela,Venezuelan,No,Direct
+VN,Vietnam [Viet Nam],Vietnam,Vietnamese,No,Direct
+EH,Western Sahara,Western Sahara,,No,
+YE,Yemen,Yemen,Yemeni,No,Direct
+XO,Yugoslavia not otherwise specified,Yugoslavia Not Otherwise Specified,,No,
+ZM,Zambia,Zambia,Zambian,No,Direct
+ZW,Code,Code,,No,
+AF,Afghanistan,Afghanistan,Afghan,No,Direct
+AL,Albania,Albania,Albanian,No,Direct
+DZ,Algeria,Algeria,Algerian,No,Direct
+AS,American Samoa,American Samoa,American,No,Direct
+AD,Andorra,Andorra,Andorran,No,Direct
+AO,Angola,Angola,Angolan,No,Direct
+AI,Anguilla,Anguilla,,No,
+AG,Antigua and Barbuda,Antigua And Barbuda,Antiguan,No,Special
+AR,Argentina,Argentina,,No,
+AM,Armenia,Armenia,Armenian,No,Direct
+AU,Australia,Australia,Australian,No,Direct
+AT,Austria,Austria,Austrian,No,Direct
+AZ,Azerbaijan,Azerbaijan,Azerbaijani,No,Direct
+BS,"Bahamas, The","Bahamas, The",Bahamian,No,Special
+BH,Bahrain,Bahrain,Bahraini,No,Direct
+BD,Bangladesh,Bangladesh,Bangladeshi,No,Direct
+BB,Barbados,Barbados,Barbadian,No,Special
+BY,Belarus,Belarus,Belarusian,No,Special
+BE,Belgium,Belgium,,No,
+BZ,Belize,Belize,Belizean,No,Direct
+BJ,Benin,Benin,Beninese,No,Direct
+BM,Bermuda,Bermuda,,No,
+BT,Bhutan,Bhutan,Bhutanese,No,Direct
+BO,"Bolivia [Bolivia, Plurinational State of]",Bolivia,Bolivian,No,Direct
+BA,Bosnia and Herzegovina,Bosnia And Herzegovina,Bosnian,No,Special
+BW,Botswana,Botswana,Botswanan,No,Direct
+BR,Brazil,Brazil,Brazilian,No,Direct
+IO,British Indian Ocean Territory (BIOT),British Indian Ocean Territory,British,Yes,Direct
+VG,"British Virgin Islands [Virgin Islands, British]",British Virgin Islands,British Virgin Islander,Yes,Special
+BN,Brunei [Brunei Darussalam],Brunei,Bruneian,No,Direct
+BG,Bulgaria,Bulgaria,Bulgarian,No,Direct
+BF,Burkina Faso,Burkina Faso,,No,
+MM,Burma [Myanmar],Burma,Burmese,No,Special
+BI,Burundi,Burundi,Burundian,No,Direct
+KH,Cambodia,Cambodia,Cambodian,No,Direct
+CM,Cameroon,Cameroon,Cameroonian,No,Direct
+CA,Canada,Canada,,No,
+CV,Cape Verde,Cape Verde,Cape Verdean,No,Special
+KY,Cayman Islands,Cayman Islands,,Yes,
+CF,Central African Republic,Central African Republic,Central African,No,Special
+TD,Chad,Chad,Chadian,No,Direct
+XL,Channel Islands not otherwise specified,Channel Islands Not Otherwise Specified,,Yes,
+CL,Chile,Chile,Chilean,No,Direct
+CN,China,China,,No,
+CO,Colombia,Colombia,Colombian,No,Direct
+KM,Comoros,Comoros,,No,
+CG,Congo,Congo,Congolese (Congo-Brazzaville),No,Special
+CD,Congo (Democratic Republic) [Congo (The Democratic Republic of the)],Congo ],,No,
+CR,Costa Rica,Costa Rica,Costa Rican,No,Direct
+HR,Croatia,Croatia,Croatian,No,Direct
+CU,Cuba,Cuba,Cuban,No,Direct
+XA,Cyprus (European Union),Cyprus,,No,
+XB,Cyprus (Non-European Union),Cyprus,,No,
+XC,Cyprus not otherwise specified,Cyprus Not Otherwise Specified,,No,
+CZ,Czech Republic,Czech Republic,Czech,No,Special
+XM,Czechoslovakia not otherwise specified,Czechoslovakia Not Otherwise Specified,Czech,No,Direct
+DK,Denmark,Denmark,,No,
+DJ,Djibouti,Djibouti,Djiboutian,No,Direct
+DM,Dominica,Dominica,Dominican,No,Direct
+DO,Dominican Republic,Dominican Republic,Dominican,No,Special
+TL,East Timor [Timor Leste],East Timor,East Timorese,No,Special
+EC,Ecuador,Ecuador,Ecuadorean,No,Direct
+EG,Egypt,Egypt,Egyptian,No,Direct
+SV,El Salvador,El Salvador,,No,
+GQ,Equatorial Guinea,Equatorial Guinea,Equatorial Guinean,No,Direct
+ER,Eritrea,Eritrea,Eritrean,No,Direct
+EE,Estonia,Estonia,Estonian,No,Direct
+ET,Ethiopia,Ethiopia,Ethiopian,No,Direct
+FK,Falkland Islands [Falkland Islands (Malvinas)],Falkland Islands ],,Yes,
+FO,Faroe Islands,Faroe Islands,Faroese,Yes,Special
+FJ,Fiji,Fiji,Fijian,No,Direct
+FI,Finland,Finland,,No,
+FR,France,France,,No,
+GA,Gabon,Gabon,Gabonese,No,Direct
+GM,"Gambia, The","Gambia, The",Gambian,No,Special
+GE,Georgia,Georgia,Georgian,No,Direct
+DE,Germany,Germany,German,No,Direct
+GH,Ghana,Ghana,Ghanaian,No,Direct
+GI,Gibraltar,Gibraltar,,No,
+GR,Greece,Greece,,No,
+GL,Greenland,Greenland,,No,
+GD,Grenada,Grenada,,No,
+GU,Guam,Guam,,No,
+GT,Guatemala,Guatemala,Guatemalan,No,Direct
+GG,Guernsey,Guernsey,,No,
+GN,Guinea,Guinea,Equatorial Guinean,No,Direct
+GW,Guinea-Bissau,Guinea-Bissau,Guinea-Bissauan,No,Direct
+GY,Guyana,Guyana,,No,
+HT,Haiti,Haiti,Haitian,No,Direct
+HN,Honduras,Honduras,,No,
+HK,Hong Kong (Special Administrative Region of China) [Hong Kong],Hong Kong,,Yes,
+HU,Hungary,Hungary,,No,
+IS,Iceland,Iceland,Icelandic,No,Direct
+IN,India,India,Indian,No,Direct
+ID,Indonesia,Indonesia,Indonesian,No,Direct
+IR,"Iran [Iran, Islamic Republic of]",Iran,Iranian,No,Direct
+IQ,Iraq,Iraq,Iraqi,No,Direct
+IE,Ireland,Ireland,,No,
+IM,Isle of Man,Isle Of Man,,No,
+IL,Israel,Israel,Israeli,No,Direct
+IT,Italy,Italy,,No,
+CI,Ivory Coast [Côte D'ivoire],Ivory Coast,Ivorian,No,Special
+JM,Jamaica,Jamaica,Jamaican,No,Direct
+JP,Japan,Japan,Japanese,No,Direct
+JE,Jersey,Jersey,,No,
+JO,Jordan,Jordan,Jordanian,No,Direct
+KZ,Kazakhstan,Kazakhstan,Kazakh,No,Direct
+KE,Kenya,Kenya,Kenyan,No,Direct
+KI,Kiribati,Kiribati,Kiribati,No,Direct
+KP,"Korea (North) [Korea, Democratic People's Republic of]",Korea,North Korean,No,Direct
+KR,"Korea (South) [Korea, Republic of]",Korea,North Korean,No,Direct
+QO,Kosovo,Kosovo,,No,
+KW,Kuwait,Kuwait,Kuwaiti,No,Direct
+KG,Kyrgyzstan,Kyrgyzstan,Kyrgyz,No,Direct
+LA,Laos [Lao People's Democratic Republic],Laos,Laotian,No,Special
+LV,Latvia,Latvia,Latvian,No,Direct
+LB,Lebanon,Lebanon,,No,
+LS,Lesotho,Lesotho,,No,
+LR,Liberia,Liberia,Liberian,No,Direct
+LY,Libya,Libya,Libyan,No,Direct
+LI,Liechtenstein,Liechtenstein,Liechtensteiner,No,Direct
+LT,Lithuania,Lithuania,Lithuanian,No,Direct
+LU,Luxembourg,Luxembourg,Luxembourger,No,Direct
+MO,Macao (Special Administrative Region of China) [Macao],Macao,Macanese,Yes,Special
+MK,"Macedonia [Macedonia, The Former Yugoslav Republic of]",Macedonia,Macedonian,No,Direct
+MG,Madagascar,Madagascar,,No,
+MW,Malawi,Malawi,Malawian,No,Direct
+MY,Malaysia,Malaysia,Malaysian,No,Direct
+MV,Maldives,Maldives,,No,
+ML,Mali,Mali,Malian,No,Direct
+MT,Malta,Malta,,No,
+MH,Marshall Islands,Marshall Islands,Marshallese,Yes,Special
+MR,Mauritania,Mauritania,Mauritanian,No,Direct
+MU,Mauritius,Mauritius,,No,
+MX,Mexico,Mexico,,No,
+FM,"Micronesia [Micronesia, Federated States of]",Micronesia,Micronesian,No,Special
+MD,"Moldova [Moldova, Republic of]",Moldova,Moldovan,No,Direct
+MC,Monaco,Monaco,,No,
+MN,Mongolia,Mongolia,Mongolian,No,Direct
+ME,Montenegro,Montenegro,Montenegrin,No,Special
+MS,Montserrat,Montserrat,,No,
+MA,Morocco,Morocco,,No,
+MZ,Mozambique,Mozambique,,No,
+NA,Namibia,Namibia,Namibian,No,Direct
+NR,Nauru,Nauru,Nauruan,No,Direct
+NP,Nepal,Nepal,Nepalese,No,Direct
+NL,Netherlands,Netherlands,,No,
+NZ,New Zealand,New Zealand,New Zealander,No,Direct
+NI,Nicaragua,Nicaragua,Nicaraguan,No,Direct
+NE,Niger,Niger,Nigerian,No,Direct
+NG,Nigeria,Nigeria,Nigerian,No,Direct
+MP,Northern Mariana Islands,Northern Mariana Islands,Northern Mariana Islander,Yes,Special
+NO,Norway,Norway,,No,
+ZZ,Not known,Not Known,,No,
+PS,"Occupied Palestinian Territories [Palestine, State of]",Occupied Palestinian Territories,Palestinian,No,Special
+OM,Oman,Oman,Omani,No,Direct
+PK,Pakistan,Pakistan,Pakistani,No,Direct
+PW,Palau,Palau,Palauan,No,Direct
+PA,Panama,Panama,Panamanian,No,Direct
+PG,Papua New Guinea,Papua New Guinea,Papua New Guinean,No,Direct
+PY,Paraguay,Paraguay,Paraguayan,No,Direct
+PE,Peru,Peru,Peruvian,No,Direct
+PH,Philippines,Philippines,Philippine,No,Direct
+PN,"Pitcairn, Henderson, Ducie and Oeno Islands [Pitcairn]","Pitcairn, Henderson, Ducie And Oeno Islands",,Yes,
+PL,Poland,Poland,,No,
+PT,Portugal,Portugal,,No,
+QA,Qatar,Qatar,Qatari,No,Direct
+RO,Romania,Romania,Omani,No,Direct
+RU,Russia [Russian Federation],Russia,Russian,No,Direct
+RW,Rwanda,Rwanda,Rwandan,No,Direct
+WS,Samoa,Samoa,Samoan,No,Direct
+SM,San Marino,San Marino,San Marinese,No,Special
+ST,Sao Tome and Principe,Sao Tome And Principe,Sao Tomean,No,Special
+SA,Saudi Arabia,Saudi Arabia,Saudi Arabian,No,Direct
+SN,Senegal,Senegal,Senegalese,No,Direct
+RS,Serbia,Serbia,Serbian,No,Special
+QN,Serbia and Montenegro not otherwise specified,Serbia And Montenegro Not Otherwise Specified,,No,
+SC,Seychelles,Seychelles,Seychellois,No,Special
+SL,Sierra Leone,Sierra Leone,Sierra Leonean,No,Direct
+SG,Singapore,Singapore,Singaporean,No,Direct
+SK,Slovakia,Slovakia,Slovak,No,Direct
+SI,Slovenia,Slovenia,,No,
+SB,Solomon Islands,Solomon Islands,Solomon Islander,Yes,Special
+SO,Somalia,Somalia,Somali,No,Direct
+ZA,South Africa,South Africa,South African,No,Direct
+GS,South Georgia and The South Sandwich Islands,South Georgia And The South Sandwich Islands,,Yes,
+SS,South Sudan,South Sudan,South Sudanese,No,Special
+ES,Spain,Spain,,No,
+LK,Sri Lanka,Sri Lanka,Sri Lankan,No,Direct
+SH,"St Helena, Ascension and Tristan da Cunha","St Helena, Ascension And Tristan Da Cunha",,No,
+KN,St Kitts and Nevis,St Kitts And Nevis,Kittitian,No,Special
+LC,St Lucia,St Lucia,Saint Lucian,No,Special
+VC,St Vincent and The Grenadines,St Vincent And The Grenadines,Saint Vincentian,No,Special
+AA,Stateless,Stateless,,No,
+SD,Sudan,Sudan,Sudanese,No,Special
+SR,Suriname,Suriname,Surinamese,No,Direct
+SZ,Swaziland,Swaziland,Swazi,No,Direct
+SE,Sweden,Sweden,,No,
+CH,Switzerland,Switzerland,,No,
+SY,Syria [Syrian Arab Republic],Syria,Syrian,No,Direct
+TW,"Taiwan [Taiwan, Province of China]",Taiwan,Taiwanese,Yes,Special
+TJ,Tajikistan,Tajikistan,Tajik,No,Direct
+TZ,"Tanzania [Tanzania, United Republic of]",Tanzania,Tanzanian,No,Direct
+TH,Thailand,Thailand,Thai,No,Direct
+TG,Togo,Togo,Togolese,No,Direct
+TO,Tonga,Tonga,Tongan,No,Direct
+TT,Trinidad and Tobago,Trinidad And Tobago,Trinidadian,No,Special
+TN,Tunisia,Tunisia,Tunisian,No,Direct
+TR,Turkey,Turkey,,No,
+TM,Turkmenistan,Turkmenistan,Turkmen,No,Direct
+TC,Turks and Caicos Islands,Turks And Caicos Islands,,Yes,
+TV,Tuvalu,Tuvalu,Tuvaluan,No,Direct
+UG,Uganda,Uganda,Ugandan,No,Direct
+UA,Ukraine,Ukraine,,No,
+XN,Union of Soviet Socialist Republics not otherwise specified,Union Of Soviet Socialist Republics Not Otherwise Specified,,No,
+AE,United Arab Emirates,United Arab Emirates,,No,
+GB,United Kingdom,United Kingdom,British,No,Special
+US,United States,United States,American,No,Special
+UY,Uruguay,Uruguay,Uruguayan,No,Direct
+UZ,Uzbekistan,Uzbekistan,Uzbek,No,Direct
+VU,Vanuatu,Vanuatu,Vanuatuan,No,Direct
+VA,Vatican City [Holy See (Vatican City State)],Vatican City ],,No,
+VE,"Venezuela [Venezuela, Bolivarian Republic of]",Venezuela,Venezuelan,No,Direct
+VN,Vietnam [Viet Nam],Vietnam,Vietnamese,No,Direct
+EH,Western Sahara,Western Sahara,,No,
+YE,Yemen,Yemen,Yemeni,No,Direct
+XO,Yugoslavia not otherwise specified,Yugoslavia Not Otherwise Specified,,No,
+ZM,Zambia,Zambia,Zambian,No,Direct
+ZW,Zimbabwe,Zimbabwe,Zimbabwean,No,Direct

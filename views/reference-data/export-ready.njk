@@ -1,0 +1,26 @@
+{% extends "layouts/base.njk" %}
+
+{% block pageTitle %}
+  Reference Data Export | RD Internal Services
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-xl">Your export is ready</h1>
+    <p class="govuk-body-l">Your Excel workbook will start downloading automatically. If it doesn’t, <a href="/reference-data/export-directory/download" id="download-link">click here to download manually</a>.</p>
+    <p class="govuk-body"><a class="govuk-link" href="/reference-data/directory">Back to Reference Data Directory</a></p>
+  </div>
+</div>
+
+<script>
+  // Trigger the download after the page loads
+  window.addEventListener('DOMContentLoaded', function () {
+    // Start the download via hidden iframe to keep user on the page
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = '/reference-data/export-directory/download';
+    document.body.appendChild(iframe);
+  });
+</script>
+{% endblock %}
